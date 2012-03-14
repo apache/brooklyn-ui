@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>brooklyn-web-console</artifactId>
     <packaging>war</packaging>
 
-    <name>Brooklyn Management Console webapp</name>
-    <description>Brooklyn Management Console Web Application</description>
-    <url>http://brooklyn</url>
+    <artifactId>brooklyn-web-console</artifactId>
+
+    <name>Brooklyn Web Console</name>
+    <description>
+        Web App for inspecting Brooklyn operations
+    </description>
 
     <parent>
         <groupId>brooklyn</groupId>
         <artifactId>brooklyn-parent</artifactId>
         <version>0.3.0-SNAPSHOT</version>
-        <relativePath>../parent/pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <properties>
@@ -34,8 +37,14 @@
         <dependency>
             <groupId>brooklyn</groupId>
             <artifactId>brooklyn-core</artifactId>
-            <version>${project.version}</version><!--$NO-MVN-MAN-VER$-->
+            <version>${project.version}</version><!--$NO-MVN-MAN-VER$ -->
             <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>brooklyn</groupId>
+            <artifactId>brooklyn-software-webapp</artifactId>
+            <version>${project.version}</version><!--$NO-MVN-MAN-VER$ -->
             <scope>test</scope>
         </dependency>
 
@@ -196,7 +205,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>
@@ -322,11 +331,10 @@
             <id>codehaus.snapshots</id>
             <url>http://snapshots.repository.codehaus.org/</url>
         </pluginRepository>
-        <!-- suggested for org.xhtmlrenderer:core-renderer:jar:R8 needed by grails-eclipse-plugin to run eclipse:eclpse,
-             at http://grails.1312388.n4.nabble.com/Several-problems-starting-grails-application-with-Maven-according-to-tutorial-td3208760.html,
-             possibly a bug according to http://jira.grails.org/browse/MAVEN-153?page=com.atlassian.jira.plugin.system.issuetabpanels%3Aall-tabpanel;
-             according to https://cwiki.apache.org/confluence/display/MAVEN/PluginResolutionException it must be a plugin repository,
-             as well as a repository (above) -->
+        <!-- suggested for org.xhtmlrenderer:core-renderer:jar:R8 needed by grails-eclipse-plugin to run eclipse:eclpse, at http://grails.1312388.n4.nabble.com/Several-problems-starting-grails-application-with-Maven-according-to-tutorial-td3208760.html, 
+            possibly a bug according to http://jira.grails.org/browse/MAVEN-153?page=com.atlassian.jira.plugin.system.issuetabpanels%3Aall-tabpanel; 
+            according to https://cwiki.apache.org/confluence/display/MAVEN/PluginResolutionException it must be a plugin repository, as well 
+            as a repository (above) -->
         <pluginRepository>
             <id>maven-repository.dev.java.net</id>
             <name>Java Dev Net Repository</name>
@@ -342,35 +350,39 @@
     </pluginRepositories>
 
     <profiles>
-      <profile>
-        <activation><property><name>skipShade</name></property></activation>
-        <id>shade</id>
-        <build>
-         <plugins>
-            <!-- with grails, for "skipShade", we set "development" env 
-                 when invoking grails, which is read in BuildConfig to make skinny war -->
-            <plugin>
-                <groupId>org.grails</groupId>
-                <artifactId>grails-maven-plugin</artifactId>
-                <version>${grails.version}</version>
-                <extensions>true</extensions>
-                <executions>
-                    <execution>
-                        <id>main</id>
-                        <goals>
-                            <!-- note: plugins are installed and classpath correctly tweaked by maven-compile! -->
-                            <goal>maven-compile</goal>
-                            <goal>maven-war</goal>
-                        </goals>
-                        <configuration>
-                            <env>development</env>
-                        </configuration>
-                    </execution>
-                </executions>
-          </plugin>
-         </plugins>
-        </build>
-      </profile>
+        <profile>
+            <activation>
+                <property>
+                    <name>skipShade</name>
+                </property>
+            </activation>
+            <id>shade</id>
+            <build>
+                <plugins>
+                    <!-- with grails, for "skipShade", we set "development" env when invoking grails, which is read in BuildConfig 
+                        to make skinny war -->
+                    <plugin>
+                        <groupId>org.grails</groupId>
+                        <artifactId>grails-maven-plugin</artifactId>
+                        <version>${grails.version}</version>
+                        <extensions>true</extensions>
+                        <executions>
+                            <execution>
+                                <id>main</id>
+                                <goals>
+                                    <!-- note: plugins are installed and classpath correctly tweaked by maven-compile! -->
+                                    <goal>maven-compile</goal>
+                                    <goal>maven-war</goal>
+                                </goals>
+                                <configuration>
+                                    <env>development</env>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <build>
