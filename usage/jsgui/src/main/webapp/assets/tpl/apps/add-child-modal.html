@@ -18,24 +18,18 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<!-- modal to render policy config default value-->
+<!-- modal to render effector-->
 
-<div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3>Reconfigure <%= policyName %></h3>
-</div>
+    <h4 style="margin-bottom: 9px;">YAML Specification</h4>
+    <p>Add a child or children to this entity by providing a YAML blueprint</p>
 
-<div class="modal-body">
-    <p>
-        <strong>Update the value for <%= name %></strong>
-    </p>
-    <p>
-        <%= description %>
-    </p>
-    <input id="policy-config-value" type="text" class="input-medium" name="value" value="<%= value %>">
-</div>
+    <div class="for-textarea">
+      <textarea id="child-spec" class="code-textarea" style="height: 120px;"/>
+    </div>
+    
+    <label><input type="checkbox" id="child-autostart" checked="checked"/> Auto-start </label>
 
-<div class="modal-footer">
-    <button type="button" class="btn btn-info btn-mini" data-dismiss="modal">Cancel</button>
-    <button type="button" class="btn btn-danger btn-mini save-policy-config">Save</button>
-</div>
+    <div class="hide alert alert-error child-add-error-container" style="margin-top: 9px;">
+        <strong>Error</strong>
+        <span class="child-add-error-message"></span>
+    </div>

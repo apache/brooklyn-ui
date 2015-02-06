@@ -20,44 +20,38 @@
  * Render entity expungement as a modal
  */
 define([
-    "underscore", "jquery", "backbone",
-    "text!tpl/apps/expunge-modal.html"
-], function(_, $, Backbone, ExpungeModalHtml) {
+    "underscore", "jquery", "backbone", "brooklyn-utils",
+    "text!tpl/apps/change-name-modal.html"
+], function(_, $, Backbone, Util, ChangeNameModalHtml) {
     return Backbone.View.extend({
-        template: _.template(ExpungeModalHtml),
-        events: {
-            "click .invoke-expunge": "invokeExpunge",
-            "hide": "hide"
+        template: _.template(ChangeNameModalHtml),
+        initialize: function() {
+            this.title = "Change Name of "+this.options.entity.get('name');
         },
         render: function() {
-            this.$el.html(this.template(this.model));
+            this.$el.html(this.template({ name: this.options.entity.get('name') }));
             return this;
         },
-        invokeExpunge: function() {
+        onSubmit: function() {
             var self = this;
-            var release = this.$("#release").is(":checked");
-            var url = this.model.links.expunge + "?release=" + release + "&timeout=0:";
-            $.ajax({
+            var newName = this.$("#new-name").val();
+            var url = this.options.entity.get('links').rename + "?name=" + encodeURIComponent(newName);
+            var ajax = $.ajax({
                 type: "POST",
                 url: url,
                 contentType: "application/json",
                 success: function() {
-                    self.trigger("entity.expunged")
+                    self.options.target.reload();
                 },
-                error: function(data) {
-                    self.$el.fadeTo(100,1).delay(200).fadeTo(200,0.2).delay(200).fadeTo(200,1);
-                    // TODO render the error better than poor-man's flashing
-                    // (would just be connection error -- with timeout=0 we get a task even for invalid input)
-
-                    log("ERROR invoking effector");
-                    log(data)
+                error: function(response) {
+                    self.showError(Util.extractError(response, "Error contacting server", url));
                 }
             });
-            this.$el.fadeTo(500, 0.5);
-            this.$el.modal("hide");
+            return ajax;
         },
-        hide: function() {
-            this.undelegateEvents();
+        showError: function (message) {
+            this.$(".change-name-error-container").removeClass("hide");
+            this.$(".change-name-error-message").html(message);
         }
     });
 });

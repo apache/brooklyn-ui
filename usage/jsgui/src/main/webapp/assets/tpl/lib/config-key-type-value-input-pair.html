@@ -16,9 +16,8 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 -->
-
-<!-- Template for rendering a key-value configuration inside the new location form -->
-<li>
-    <span class="key"><%= key %></span> : <span class="value"><%= value %></span>
-    <span class="icon-remove-sign remove" style="margin-left:10px;"></span>
-</li>
+<div class="config-key-input-pair form-inline">
+    <input type="text" class="config-key-type" placeholder="Name" value="<%= type %>"/>
+    <input type="text" class="config-key-value" placeholder="Value" value="<%= value %>"/>
+    <button type="button" class="btn config-key-row-remove">-</button>
+</div>
