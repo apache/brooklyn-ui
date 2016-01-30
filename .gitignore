@@ -30,3 +30,4 @@ brooklyn*.log.*
 *brooklyn-persisted-state/
 
 ignored
+/build/
