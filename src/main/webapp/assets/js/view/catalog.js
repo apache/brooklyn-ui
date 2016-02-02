@@ -165,56 +165,15 @@ define([
         },
         showFormForType: function (type) {
             this.context = type;
-            if (type == "yaml" || type == "entity") {
-                this.contextView = newYamlForm(this, this.options.parent);
-            } else if (type == "location") {
+            if (type == "location") {
                 this.contextView = newLocationForm(this, this.options.parent);
-            } else if (type !== undefined) {
-                console.log("unknown catalog type " + type);
-                this.showFormForType("yaml");
-                return;
+                Backbone.history.navigate("/v1/catalog/new/" + type);
+                this.$("#catalog-add-form").html(this.contextView.$el);
+            }else{
+                Backbone.history.navigate('/v1/editor/catalog/'+ type, {trigger: true});
             }
-            Backbone.history.navigate("/v1/catalog/new/" + type);
-            this.$("#catalog-add-form").html(this.contextView.$el);
         }
     });
-
-    function newYamlForm(addView, addViewParent) {
-        return new Brooklyn.view.Form({
-            template: _.template(AddYamlHtml),
-            onSubmit: function (model) {
-                var submitButton = this.$(".catalog-submit-button");
-                // "loading" is an indicator to Bootstrap, not a string to display
-                submitButton.button("loading");
-                var self = this;
-                var options = {
-                    url: "/v1/catalog/",
-                    data: model.get("yaml"),
-                    processData: false,
-                    type: "post"
-                };
-                $.ajax(options)
-                    .done(function (data, status, xhr) {
-                        // Can extract location of new item with:
-                        //model.url = Brooklyn.util.pathOf(xhr.getResponseHeader("Location"));
-                        if (_.size(data)==0) {
-                          addView.clearWithHtml( "No items supplied." );
-                        } else {
-                          addView.clearWithHtml( "Added: "+_.escape(_.keys(data).join(", ")) 
-                            + (_.size(data)==1 ? ". Loading..." : "") );
-                          addViewParent.loadAnyAccordionItem(_.size(data)==1 ? _.keys(data)[0] : undefined);
-                        }
-                    })
-                    .fail(function (xhr, status, error) {
-                        submitButton.button("reset");
-                        self.$(".catalog-save-error")
-                            .removeClass("hide")
-                            .find(".catalog-error-message")
-                            .html(_.escape(Brooklyn.util.extractError(xhr, "Could not add catalog item:\n'n" + error)));
-                    });
-            }
-        });
-    }
 
     // Could adapt to edit existing locations too.
     function newLocationForm(addView, addViewParent) {

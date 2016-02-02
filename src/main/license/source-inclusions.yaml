@@ -20,10 +20,9 @@
 # extras file for org.heneveld.license-audit-maven-plugin
 # listing projects from which *source* files are included
 
-- id: jquery-core:1.7.2
-- id: swagger-ui:2.1.4
-# we use other versions of the above in other projs
-
+- id: jquery-core
+- id: swagger
+- id: swagger-ui
 - id: jquery.wiggle.min.js
 - id: require.js
 - id: require.js/r.js
@@ -40,3 +39,4 @@
 - id: js-yaml.js
 - id: jquery.form.js
 - id: marked.js
+- id: codemirror.js
