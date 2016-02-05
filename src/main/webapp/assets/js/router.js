@@ -137,7 +137,6 @@ define([
         },
 
         showView: function(selector, view) {
-            console.log("showView");
             // close the previous view - does binding clean-up and avoids memory leaks
             if (this.currentView) {
                 this.currentView.close();
