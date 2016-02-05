@@ -77,7 +77,6 @@ define([
                 this.editor = CodeMirror.fromTextArea(this.$("#yaml_code")[0], {
                     lineNumbers: true,
                     extraKeys: {"Ctrl-Space": "autocomplete"},
-                    // TODO: feature request: to allow custom theme: http://codemirror.net/demo/theme.html#base16-light
                     mode: {
                         name: "yaml",
                         globalVars: true
@@ -91,11 +90,9 @@ define([
             var yaml = this.editor.getValue();
             try{
                 jsYaml.safeLoad(yaml);
-                log('valid yaml :: true');
                 return true;
             }catch (e){
                 this.showFailure(e.message);
-                log('valid yaml :: false');
                 return false;
             }
         },
@@ -156,7 +153,6 @@ define([
             return false
         },
         submitCatalog: function () {
-            log("submitCatalog");
             var that = this;
             $.ajax({
                 url:'/v1/catalog',
@@ -165,18 +161,18 @@ define([
                 processData:false,
                 data: that.editor.getValue(),
                 success:function (data) {
-                    that.onSubmissionComplete(true, data, 'catalog')
+                    that.onSubmissionComplete(true, data, 'catalog');
                 },
                 error:function (data) {
-                    that.onSubmissionComplete(false, data, 'catalog')
+                    that.onSubmissionComplete(false, data, 'catalog');
                 }
             });
             return false;
         },
         showFailure: function(text) {
-            if (!text) text = "Failure performing the specified action";
-            log("showing error: "+text);
-            this.$('div.error-message .error-message-text').html(_.escape(text));
+            var _text = text || "Failure performing the specified action";
+            log("showing error: "+_text);
+            this.$('div.error-message .error-message-text').html(_.escape(_text));
             // flash the error, but make sure it goes away (we do not currently have any other logic for hiding this error message)
             this.$('div.error-message').slideDown(250).delay(10000).slideUp(500);
         }

@@ -33,7 +33,7 @@ define([
     "text!tpl/app-add-wizard/deploy-version-option.html",
     "text!tpl/app-add-wizard/deploy-location-row.html",
     "text!tpl/app-add-wizard/deploy-location-option.html",
-    // ↓ not part of the constructor
+    //below not part of constructor
     "codemirror-mode-yaml",
     "codemirror-addon-show-hint",
     "codemirror-addon-anyword-hint",
@@ -114,7 +114,6 @@ define([
             this.model.yaml = "";
             this.model.mode = "template";  // or "yaml" or "other"
             this.currentStep = 0;
-            log("ModalWizard::initialize()");
             this.steps = [
                           {
                               step_id:'what-app',
@@ -163,7 +162,6 @@ define([
             this.updateButtonVisibility();
         },
         updateButtonVisibility:function () {
-            log("::updateButtonVisibility()")
             var currentStepObj = this.steps[this.currentStep]
             
             setVisibility(this.$("#prev_step"), (this.currentStep > 0))
@@ -266,16 +264,12 @@ define([
             this.renderCurrentStep();
         },
         nextStep:function () {
-            log("ModalWizard::nextStep()");
             if (this.currentStep == 0) {
                 if (this.currentView.validate()) {
-                    log("nextStep ... validate");
                     var yaml = (this.currentView && this.currentView.selectedTemplate && this.currentView.selectedTemplate.yaml);
-                    log("nextStep ... yaml: " + yaml);
                     if (yaml) {
                         try {
                             yaml = JsYaml.safeLoad(yaml);
-                            log("nextStep ... safeYaml: " + yaml);
                             hasLocation = yaml.location || yaml.locations;
                             if (!hasLocation) {
                               // look for locations defined in locations
@@ -296,7 +290,6 @@ define([
                             yaml = false;
                         }
                     }
-                    log("nextStep ... boolYaml: " + yaml);
                     if (yaml) {
                         // it's a yaml catalog template which includes a location, show the yaml tab navigate to editor
                         this.currentView.redirectToEditorTab(this.currentView.selectedTemplate.id);
@@ -313,7 +306,6 @@ define([
             }
         },
         previewStep:function () {
-            log("ModalWizard::previewStep()");
             if (this.currentView.validate()) {
                 this.currentStep = 0;
                 var that = this;
@@ -359,7 +351,6 @@ define([
         template:_.template(CreateHtml),
         wizard: null,
         initialize:function () {
-            log("ModalWizard.StepCreate::initialize()");
             var self = this
             self.catalogEntityIds = []
 
@@ -388,7 +379,6 @@ define([
                     if (collection.size() > 0) {
                         self.addTemplateLozenges();
                     } else {
-                        log("collection is empty");
                         $('#catalog-applications-empty').show();
                         self.showYamlTab();
                     }
@@ -411,7 +401,6 @@ define([
             return this;
         },
         onTabChange: function(e) {
-            log("onTabChange()");
             var tabText = $(e.target).text();
             if (tabText=="Catalog") {
                 $("li.text-filter").show()
@@ -431,7 +420,6 @@ define([
                 this.options.wizard.updateButtonVisibility();
         },
         onYamlCodeChange: function() {
-            log("ModalWizard.StepCreate::onYamlCodeChange() ... event");
             if (this.options.wizard)
                 this.options.wizard.updateButtonVisibility();
         },
@@ -471,7 +459,6 @@ define([
             })
         },
         addTemplateLozenge: function(that, item) {
-            log("ModalWizard.StepCreate::addTemplateLozenge() ... planYaml: " + item.get('planYaml'));
             var $tempel = _.template(CreateStepTemplateEntryHtml, {
                 id: item.get('id'),
                 type: item.get('type'),
@@ -483,7 +470,6 @@ define([
             $("#create-step-template-entries", that.$el).append($tempel)
         },
         templateClick: function(event) {
-            log("ModalWizard.StepCreate::templateClick()");
             var $tl = $(event.target).closest(".template-lozenge");
             var wasSelected = $tl.hasClass("selected")
             $(".template-lozenge").removeClass("selected")
@@ -495,7 +481,6 @@ define([
                     name: $tl.data("name"),
                     yaml: $tl.data("yaml"),
                 };
-                log("::templateClick() ... selectedYaml: " + this.selectedTemplate.yaml);
                 if (this.selectedTemplate.yaml) {
                     $("textarea#yaml_code").val(this.selectedTemplate.yaml);
                 } else {
@@ -595,9 +580,7 @@ define([
 
         validate:function () {
             var that = this;
-            // TODO: enforce ';' as javascript conventions
             var tabName = $('#app-add-wizard-create-tab li[class="active"] a').attr('href');
-            log("::validate() ... tabName: "+tabName);
             if (tabName=='#entitiesTab') {
                 delete this.model.spec.attributes["id"]
                 var allokay = true
@@ -827,6 +810,7 @@ define([
                 return candidate.get("id")==loc_id;
             });
             if (!locationValid) {
+                log("invalid location "+loc_id);
                 this.showFailure("Invalid location "+loc_id);
                 this.model.spec.set("locations",[]);
             } else {
@@ -842,8 +826,6 @@ define([
                 this.model.spec.set("name", "");
         },
         validate:function () {
-            log("::validate()");
-            log(this.model.spec);
             this.model.spec.set("config", this.getConfigMap())
             if (this.model.spec.get("locations").length !== 0) {
                 return true;
