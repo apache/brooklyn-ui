@@ -40,8 +40,4 @@
 - id: js-yaml.js
 - id: jquery.form.js
 - id: marked.js
-- id: codemirror.{js,css}
-- id: show-hint.{js,css}
-- id: placeholder.js
-- id: anyword-hint.js
-- id: yaml.js
+- id: codemirror.js
