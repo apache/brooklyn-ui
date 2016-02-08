@@ -48,6 +48,12 @@ define(["underscore", "backbone"], function (_, Backbone) {
         },
         getVersions: function(type) {
             return this.chain().filter(function(model) {return model.get('type') === type}).map(function(model) {return model.get('version')}).value();
+        },
+        getId: function(id){
+            return this.find(function(model) {
+                console.info("model", model, model.get('id') === id);
+                return model.get('id') === id;
+            });
         }
     })
 

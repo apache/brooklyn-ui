@@ -21,7 +21,7 @@
  * Also creates an empty Application model.
  */
 define([
-    "underscore", "jquery", "backbone", "brooklyn-utils", "js-yaml",
+    "underscore", "jquery", "backbone", "brooklyn-utils", "js-yaml", "codemirror",
     "model/entity", "model/application", "model/location", "model/catalog-application",
     "text!tpl/app-add-wizard/modal-wizard.html",
     "text!tpl/app-add-wizard/create.html",
@@ -33,14 +33,17 @@ define([
     "text!tpl/app-add-wizard/deploy-version-option.html",
     "text!tpl/app-add-wizard/deploy-location-row.html",
     "text!tpl/app-add-wizard/deploy-location-option.html",
+    //below not part of constructor
+    "codemirror-mode-yaml",
+    "codemirror-addon-show-hint",
+    "codemirror-addon-anyword-hint",
+    "codemirror-addon-display-placeholder",
     "bootstrap"
-    
-], function (_, $, Backbone, Util, JsYaml, Entity, Application, Location, CatalogApplication,
+], function (_, $, Backbone, Util, JsYaml, CodeMirror, Entity, Application, Location, CatalogApplication,
              ModalHtml, CreateHtml, CreateStepTemplateEntryHtml, CreateEntityEntryHtml,
              RequiredConfigEntryHtml, EditConfigEntryHtml, DeployHtml,
              DeployVersionOptionHtml, DeployLocationRowHtml, DeployLocationOptionHtml
 ) {
-
     /** Special ID to indicate that no locations will be provided when starting the server. */
     var NO_LOCATION_INDICATOR = "__NONE__";
 
@@ -187,14 +190,13 @@ define([
             }
             
             // finish from config step, preview step, and from first step if yaml tab selected (and valid)
-            var finishVisible = (this.currentStep >= 1)
-            var finishEnabled = finishVisible
+            var finishVisible = (this.currentStep >= 1);
+            var finishEnabled = finishVisible;
             if (!finishEnabled && this.currentStep==0) {
                 if (this.model.mode == "yaml") {
                     // should do better validation than non-empty
                     finishVisible = true;
-                    var yaml_code = this.$("#yaml_code").val()
-                    if (yaml_code) {
+                    if (self.editor && self.editor && self.editor.getValue()) {
                         finishEnabled = true;
                     }
                 }
@@ -289,9 +291,8 @@ define([
                         }
                     }
                     if (yaml) {
-                        // it's a yaml catalog template which includes a location, show the yaml tab
-           	            $("ul#app-add-wizard-create-tab").find("a[href='#yamlTab']").tab('show');
-                        $("#yaml_code").setCaretToStart();
+                        // it's a yaml catalog template which includes a location, show the yaml tab navigate to editor
+                        this.currentView.redirectToEditorTab(this.currentView.selectedTemplate.id);
                     } else {
                         // it's a java catalog template or yaml template without a location, go to wizard
                         this.currentStep += 1;
@@ -311,9 +312,6 @@ define([
                 this.renderCurrentStep(function callback(view) {
                     // Drop any "None" locations.
                     that.model.spec.pruneLocations();
-                    $("textarea#yaml_code").val(JsYaml.safeDump(oldSpecToCamp(that.model.spec.toJSON())));
-                    $("ul#app-add-wizard-create-tab").find("a[href='#yamlTab']").tab('show');
-                    $("#yaml_code").setCaretToStart();
                 });
             } else {
                 // call to validate should showFailure
@@ -348,7 +346,7 @@ define([
             'paste #yaml_code':'onYamlCodeChange',
             'shown a[data-toggle="tab"]':'onTabChange',
             'click #templateTab #catalog-add':'switchToCatalogAdd',
-            'click #templateTab #catalog-yaml':'showYamlTab'
+            'click #templateTab #catalog-yaml':'redirectToEditorTab'
         },
         template:_.template(CreateHtml),
         wizard: null,
@@ -367,7 +365,8 @@ define([
                 self.catalogEntityItems = result
                 self.catalogEntityIds = _.map(result, function(item) { return item.id })
                 self.$(".entity-type-input").typeahead().data('typeahead').source = self.catalogEntityIds
-            })
+            });
+            
             this.options.catalog.applications = new CatalogApplication.Collection();
             this.options.catalog.applications.fetch({
                 data: $.param({
@@ -378,7 +377,7 @@ define([
                     $('#catalog-applications-throbber').hide();
                     $('#catalog-applications-empty').hide();
                     if (collection.size() > 0) {
-                        self.addTemplateLozenges()
+                        self.addTemplateLozenges();
                     } else {
                         $('#catalog-applications-empty').show();
                         self.showYamlTab();
@@ -397,9 +396,9 @@ define([
         },
         updateForState: function () {},
         render:function () {
-            this.renderConfiguredEntities()
-            this.delegateEvents()
-            return this
+            this.renderConfiguredEntities();
+            this.delegateEvents();
+            return this;
         },
         onTabChange: function(e) {
             var tabText = $(e.target).text();
@@ -430,8 +429,14 @@ define([
             window.location.href="#v1/catalog/new";
         },
         showYamlTab: function() {
-            $("ul#app-add-wizard-create-tab").find("a[href='#yamlTab']").tab('show')
+            $("ul#app-add-wizard-create-tab").find("a[href='#yamlTab']").tab('show');
             $("#yaml_code").focus();
+        },
+        redirectToEditorTab: function(catalogId){
+            var $modal = $('.add-app #modal-container .modal');
+            $modal.modal('hide');
+            $modal.fadeTo(500,1);
+            Backbone.history.navigate("/v1/editor/app/"+ (typeof catalogId === 'string' ? catalogId : '') ,{trigger: true});
         },
         applyFilter: function(e) {
             var filter = $(e.currentTarget).val().toLowerCase()
@@ -574,8 +579,8 @@ define([
         },
 
         validate:function () {
-            var that = this
-            var tabName = $('#app-add-wizard-create-tab li[class="active"] a').attr('href')
+            var that = this;
+            var tabName = $('#app-add-wizard-create-tab li[class="active"] a').attr('href');
             if (tabName=='#entitiesTab') {
                 delete this.model.spec.attributes["id"]
                 var allokay = true
@@ -601,9 +606,13 @@ define([
                     return true
                 }
             } else if (tabName=='#yamlTab') {
-                this.model.yaml = this.$("#yaml_code").val();
-                if (this.model.yaml) {
-                    return true;
+                if (self.editor !== null) {
+                    this.model.yaml = self.editor.getValue();
+                    if (this.model.yaml) {
+                        return true;
+                    }
+                } else {
+                    console.info("No text in the editor!");
                 }
             } else {
                 console.info("NOT IMPLEMENTED YET")
@@ -819,7 +828,7 @@ define([
         validate:function () {
             this.model.spec.set("config", this.getConfigMap())
             if (this.model.spec.get("locations").length !== 0) {
-                return true
+                return true;
             } else {
                 this.showFailure("A location is required");
                 return false;
