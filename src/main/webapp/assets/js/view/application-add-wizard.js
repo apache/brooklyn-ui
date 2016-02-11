@@ -166,12 +166,39 @@ define([
             
             setVisibility(this.$("#prev_step"), (this.currentStep > 0))
 
+            this.isTemplate = false;
+            {
+                var yaml = (this.currentView && this.currentView.selectedTemplate && this.currentView.selectedTemplate.yaml);
+                if (yaml) {
+                    try {
+                        yaml = JsYaml.safeLoad(yaml);
+                        hasLocation = yaml.location || yaml.locations;
+                        if (!hasLocation) {
+                          // look for locations defined in locations
+                          svcs = yaml.services;
+                          if (svcs) {
+                            for (svcI in svcs) {
+                              if (svcs[svcI].location || svcs[svcI].locations) {
+                                hasLocation = true;
+                                break;
+                              }
+                            }
+                          }
+                        }
+                        this.isTemplate = (hasLocation ? true : false);
+                    } catch (e) {
+                        log("Warning: could not parse yaml template of selected item")
+                        log(yaml);
+                    }
+                }
+            }
+            
             // next shown for first step, but not for yaml
-            var nextVisible = (this.currentStep < 1) && (this.model.mode != "yaml")
+            var nextVisible = (this.currentStep < 1) && (this.model.mode != "yaml") && (!this.isTemplate);
             setVisibility(this.$("#next_step"), nextVisible)
             
-            // previous shown for step 2 (but again, not yaml)
-            var previewVisible = (this.currentStep == 1) && (this.model.mode != "yaml")
+            // preview (aka "Open in Composer") shown for step 2 or for template (but again, not yaml)
+            var previewVisible = (((this.currentStep < 1) && this.isTemplate) || (this.currentStep == 1)) && (this.model.mode != "yaml")
             setVisibility(this.$("#preview_step"), previewVisible)
             
             // now set next/preview enablement
@@ -266,38 +293,9 @@ define([
         nextStep:function () {
             if (this.currentStep == 0) {
                 if (this.currentView.validate()) {
-                    this.isTemplate = false;
-                    var yaml = (this.currentView && this.currentView.selectedTemplate && this.currentView.selectedTemplate.yaml);
-                    if (yaml) {
-                        try {
-                            yaml = JsYaml.safeLoad(yaml);
-                            hasLocation = yaml.location || yaml.locations;
-                            if (!hasLocation) {
-                              // look for locations defined in locations
-                              svcs = yaml.services;
-                              if (svcs) {
-                                for (svcI in svcs) {
-                                  if (svcs[svcI].location || svcs[svcI].locations) {
-                                    hasLocation = true;
-                                    break;
-                                  }
-                                }
-                              }
-                            }
-                            this.isTemplate = (hasLocation ? true : false);
-                        } catch (e) {
-                            log("Warning: could not parse yaml template")
-                            log(yaml);
-                        }
-                    }
-                    if (this.isTemplate) {
-                        // it's a yaml catalog *template* (because it includes a location); go to composer
-                        this.redirectToEditorTabToDeployId(this.currentView.selectedTemplate.id);
-                    } else {
-                        // it's a java catalog template or yaml template without a location, go to wizard
-                        this.currentStep += 1;
-                        this.renderCurrentStep();
-                    }
+                    // next not visible if it's a template, so go to create (configure) step
+                    this.currentStep += 1;
+                    this.renderCurrentStep();
                 } else {
                     // the call to validate will have done the showFailure
                 }
@@ -307,16 +305,21 @@ define([
         },
         previewStep:function () {
             if (this.currentView.validate()) {
-                var yaml;
-                if (this.model.mode == "yaml") {
-                    yaml = this.model.yaml;
+                if (this.isTemplate) {
+                    // it's a yaml catalog *template* (because it includes a location); go to composer
+                    this.redirectToEditorTabToDeployId(this.currentView.selectedTemplate.id);
                 } else {
-                    // Drop any "None" locations.
-                    this.model.spec.pruneLocations();
-                    yaml = JsYaml.safeDump(oldSpecToCamp(this.model.spec.toJSON()));
+                    var yaml;
+                    if (this.model.mode == "yaml") {
+                        yaml = this.model.yaml;
+                    } else {
+                        // Drop any "None" locations.
+                        this.model.spec.pruneLocations();
+                        yaml = JsYaml.safeDump(oldSpecToCamp(this.model.spec.toJSON()));
+                    }
+    
+                    this.redirectToEditorTabToDeployYaml(yaml);
                 }
-
-                this.redirectToEditorTabToDeployYaml(yaml);
             } else {
                 // call to validate should showFailure
             }
@@ -417,6 +420,7 @@ define([
             this.delegateEvents();
             return this;
         },
+        // TODO tabs no longer relevant
         onTabChange: function(e) {
             var tabText = $(e.target).text();
             if (tabText=="Catalog") {
@@ -426,6 +430,7 @@ define([
             }
 
             if (tabText=="YAML") {
+                // TODO this mode no longer used
                 this.model.mode = "yaml";
             } else if (tabText=="Template") {
                 this.model.mode = "template";
