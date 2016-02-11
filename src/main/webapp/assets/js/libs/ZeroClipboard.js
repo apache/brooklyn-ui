@@ -4,14 +4,14 @@
 * Copyright (c) 2014 Jon Rohan, James M. Greene
 * Licensed MIT
 * http://zeroclipboard.org/
-* v1.3.1
+* v1.3.5
 *
 * BROOKLYN NOTE: The accompanying SWF artifact can also be built from source using a free toolchain
 * as described at https://github.com/zeroclipboard/zeroclipboard/blob/master/CONTRIBUTING.md .
 * (It has been included in the Apache project as a binary artifact because building it is tedious.
 * Also- it is small!) This paragraph is the only change to this source file.
 */
-(function() {
+(function(window) {
   "use strict";
   var currentElement;
   var flashState = {
@@ -449,6 +449,12 @@
     }
     return obj;
   };
+  var _safeActiveElement = function() {
+    try {
+      return document.activeElement;
+    } catch (err) {}
+    return null;
+  };
   var _detectFlashSupport = function() {
     var hasFlash = false;
     if (typeof flashState.disabled === "boolean") {
@@ -505,22 +511,28 @@
   ZeroClipboard.prototype.setText = function(newText) {
     if (newText && newText !== "") {
       _clipData["text/plain"] = newText;
-      if (flashState.ready === true && flashState.bridge) {
+      if (flashState.ready === true && flashState.bridge && typeof flashState.bridge.setText === "function") {
         flashState.bridge.setText(newText);
-      } else {}
+      } else {
+        flashState.ready = false;
+      }
     }
     return this;
   };
   ZeroClipboard.prototype.setSize = function(width, height) {
-    if (flashState.ready === true && flashState.bridge) {
+    if (flashState.ready === true && flashState.bridge && typeof flashState.bridge.setSize === "function") {
       flashState.bridge.setSize(width, height);
-    } else {}
+    } else {
+      flashState.ready = false;
+    }
     return this;
   };
   var _setHandCursor = function(enabled) {
-    if (flashState.ready === true && flashState.bridge) {
+    if (flashState.ready === true && flashState.bridge && typeof flashState.bridge.setHandCursor === "function") {
       flashState.bridge.setHandCursor(enabled);
-    } else {}
+    } else {
+      flashState.ready = false;
+    }
   };
   ZeroClipboard.prototype.destroy = function() {
     this.unclip();
@@ -537,7 +549,7 @@
     }
     return clients;
   };
-  ZeroClipboard.version = "1.3.1";
+  ZeroClipboard.version = "1.3.5";
   var _globalConfig = {
     swfPath: _swfPath,
     trustedDomains: window.location.host ? [ window.location.host ] : [],
@@ -669,8 +681,10 @@
         htmlBridge.style.height = pos.height + "px";
         htmlBridge.style.zIndex = pos.zIndex + 1;
       }
-      if (flashState.ready === true && flashState.bridge) {
+      if (flashState.ready === true && flashState.bridge && typeof flashState.bridge.setSize === "function") {
         flashState.bridge.setSize(pos.width, pos.height);
+      } else {
+        flashState.ready = false;
       }
     }
     return this;
@@ -867,7 +881,7 @@
     if (typeof eventName === "string" && eventName) {
       var cleanEventName = eventName.toLowerCase().replace(/^on/, "");
       if (cleanEventName) {
-        var clients = currentElement ? _getAllClientsClippedToElement(currentElement) : _getAllClients();
+        var clients = currentElement && _globalConfig.autoActivate === true ? _getAllClientsClippedToElement(currentElement) : _getAllClients();
         for (var i = 0, len = clients.length; i < len; i++) {
           _receiveEvent.call(clients[i], cleanEventName, args);
         }
@@ -978,16 +992,18 @@
       break;
 
      case "datarequested":
-      var targetId = element.getAttribute("data-clipboard-target"), targetEl = !targetId ? null : document.getElementById(targetId);
-      if (targetEl) {
-        var textContent = targetEl.value || targetEl.textContent || targetEl.innerText;
-        if (textContent) {
-          this.setText(textContent);
-        }
-      } else {
-        var defaultText = element.getAttribute("data-clipboard-text");
-        if (defaultText) {
-          this.setText(defaultText);
+      if (element) {
+        var targetId = element.getAttribute("data-clipboard-target"), targetEl = !targetId ? null : document.getElementById(targetId);
+        if (targetEl) {
+          var textContent = targetEl.value || targetEl.textContent || targetEl.innerText;
+          if (textContent) {
+            this.setText(textContent);
+          }
+        } else {
+          var defaultText = element.getAttribute("data-clipboard-text");
+          if (defaultText) {
+            this.setText(defaultText);
+          }
         }
       }
       performCallbackAsync = false;
@@ -995,6 +1011,9 @@
 
      case "complete":
       _deleteOwnProperties(_clipData);
+      if (element && element !== _safeActiveElement() && element.focus) {
+        element.focus();
+      }
       break;
     }
     var context = element;
@@ -1006,10 +1025,12 @@
       _amdModuleId = module && module.id || null;
       return ZeroClipboard;
     });
-  } else if (typeof module === "object" && module && typeof module.exports === "object" && module.exports) {
+  } else if (typeof module === "object" && module && typeof module.exports === "object" && module.exports && typeof window.require === "function") {
     _cjsModuleId = module.id || null;
     module.exports = ZeroClipboard;
   } else {
     window.ZeroClipboard = ZeroClipboard;
   }
-})();
+})(function() {
+  return this;
+}());
