@@ -179,7 +179,6 @@ define([
                 });
                 var that = this;
                 this.editor.on("changes", function(editor, changes) {
-                    console.log("editor changed", editor, changes);
                     that.refreshOnMinorChange();
                 });
             }
@@ -209,7 +208,6 @@ define([
             var yaml = this.editor.getValue();
             try{
                 var parsed = this.parse(true);
-                console.log('parse', parsed);
                 if (parsed.problem) throw parsed.problem;
                 if (this.mode!=MODE_CATALOG && parsed.result['brooklyn.catalog'] &&
                       !parsed.result['services']) {
@@ -233,7 +231,6 @@ define([
                     "    iconUrl: http://www.apache.org/foundation/press/kit/poweredBy/Apache_PoweredBy.png\n"+
                     "    itemType: template\n"+
                     "    item:\n"+
-                    "    - \n"+
                 // indent 6 spaces:
                 this.editor.getValue().replace(/^(.*$)/gm,'      $1');
                 this.mode = MODE_CATALOG;

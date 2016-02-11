@@ -97,6 +97,20 @@ define([
             return value;
         }
     }
+
+    function redirectToEditorTabToDeployId(catalogId){
+        redirectTo("/v1/editor/app/"+ (typeof catalogId === 'string' ? catalogId : '')); 
+    }
+    function redirectToEditorTabToDeployYaml(yaml){
+        redirectTo("/v1/editor/app/_/"+encodeURIComponent(yaml));
+    }
+    function redirectTo(url){
+        var $modal = $('.add-app #modal-container .modal');
+        $modal.modal('hide');
+        $modal.fadeTo(500,1);
+        Backbone.history.navigate(url, {trigger: true});
+    }
+        
     
     var ModalWizard = Backbone.View.extend({
         tagName:'div',
@@ -206,7 +220,8 @@ define([
             var nextEnabled = true;
             if (this.currentStep==0 && currentStepObj && currentStepObj.view) {
                 // disable if nothing is selected in template (app lozenge list) view
-                if (! currentStepObj.view.selectedTemplate)
+                // or if it is a template with a location
+                if (!currentStepObj.view.selectedTemplate || isTemplateWithLocation)
                     nextEnabled = false;
             }
                 
@@ -291,9 +306,9 @@ define([
             if (this.currentStep==0) {
                 // from first step, composer should load yaml from the catalog item
                 if (this.currentView.selectedTemplate && this.currentView.selectedTemplate.id) {
-                    this.redirectToEditorTabToDeployId(this.currentView.selectedTemplate.id);
+                    redirectToEditorTabToDeployId(this.currentView.selectedTemplate.id);
                 } else {
-                    this.redirectToEditorTabToDeployId();
+                    redirectToEditorTabToDeployId();
                 }
             } else {
                 // on second step we generate yaml
@@ -301,7 +316,7 @@ define([
                 this.model.spec.pruneLocations();
                 var yaml = JsYaml.safeDump(oldSpecToCamp(this.model.spec.toJSON()));
 
-                this.redirectToEditorTabToDeployYaml(yaml);
+                redirectToEditorTabToDeployYaml(yaml);
             }
         },
         finishStep:function () {
@@ -310,19 +325,6 @@ define([
             } else {
                 // call to validate should showFailure
             }
-        },
-        
-        redirectToEditorTabToDeployId: function(catalogId){
-            this.redirectTo("/v1/editor/app/"+ (typeof catalogId === 'string' ? catalogId : '')); 
-        },
-        redirectToEditorTabToDeployYaml: function(yaml){
-            this.redirectTo("/v1/editor/app/_/"+encodeURIComponent(yaml));
-        },
-        redirectTo: function(url){
-            var $modal = $('.add-app #modal-container .modal');
-            $modal.modal('hide');
-            $modal.fadeTo(500,1);
-            Backbone.history.navigate(url, {trigger: true});
         },
     })
     
@@ -368,7 +370,6 @@ define([
                         self.addTemplateLozenges();
                     } else {
                         $('#catalog-applications-empty').show();
-                        self.showYamlTab();
                     }
                 }
             });
@@ -405,8 +406,8 @@ define([
             $modal.modal('hide');
             window.location.href="#v1/catalog/new";
         },
-        redirectToEditorTab: function() {
-            this.redirectToEditorTabToDeployId();
+        redirectToEditorTab: function () {
+            redirectToEditorTabToDeployId();
         },
         applyFilter: function(e) {
             var filter = $(e.currentTarget).val().toLowerCase()
