@@ -21,14 +21,26 @@ under the License.
         <div class="span12 composer" id="composer">
             <div class="navbar_top">
                 <h3 style="margin-top: 6px;">Blueprint Composer</h3>
-                <div class="apps-tree-toolbar" style="margin-top: -24px !important;">
-                    <!-- text will be changed by JS -->
-                    <button id="button-convert" class="btn btn-sm">Convert</button>
-                    <button id="button-switch" class="btn btn-sm">Switch</button>
-                    <button id="button-example" class="btn btn-sm">Insert Example</button>
-                    <button id="button-delete" class="btn btn-danger btn-sm">Clear</button>
+                <div class="apps-tree-toolbar btn-toolbar" style="margin-top: -24px !important;">
+                    <span class="btn-group">
+                    <button id="button-example" class="btn btn-sm" style="margin-right: 12px;">Insert Example</button>
+                    </span>
                     
-                    <button id="button-run" class="btn btn-success btn-sm" style="margin-left: 36px;">Run</button>
+                    <!-- no need for this
+                    <span class="btn-group">
+                    <button id="button-delete" class="btn btn-danger btn-sm">Clear</button>
+                    </span>
+                    -->
+                    
+                    <span class="btn-group" role="group">
+                        <button id="button-switch-app" class="btn btn-sm">Application</button>
+                        <button id="button-switch-catalog" class="btn btn-sm">Catalog</button>
+                    </span>
+                    
+                    <!-- text will be changed by JS -->
+                    <span class="btn-group" style="width: 12em;">
+                            <button id="button-run" class="btn btn-success btn-sm" style="margin-left: 24px; float: right;">Go</button>
+                    </span>
                 </div>
             </div>
             <div class="navbar_main_wrapper">
@@ -43,6 +55,18 @@ under the License.
                         </div>
                         <textarea id="yaml_code" placeholder="<enter blueprint yaml here>" mode="yaml" class="code-textarea" style="height:760px; width:98%"></textarea>
                     </div>
+                </div>
+            </div>
+            <div class="navbar_main_wrapper" style="background-color: #f0f0f0 !important;">
+                <div class="apps-tree-toolbar btn-toolbar" style="margin: 9px 12px 6px 12px !important; float: none;">
+                    <span class="btn-group" style="float: left;">
+                        <button id="button-delete" class="btn btn-danger btn-sm">Clear</button>
+                    </span>
+                    
+                    <!-- text will be changed by JS -->
+                    <span class="btn-group" style="width: 12em;">
+                            <button id="button-run" class="btn btn-success btn-sm" style="margin-left: 24px; float: right;">Go</button>
+                    </span>
                 </div>
             </div>
         </div>

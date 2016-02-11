@@ -60,8 +60,8 @@ define([
         events: {
             'click #button-run':'runBlueprint',
             'click #button-delete':'removeBlueprint',
-            'click #button-convert':'convertBlueprint',
-            'click #button-switch':'switchMode',
+            'click #button-switch-app':'switchModeApp',
+            'click #button-switch-catalog':'switchModeCatalog',
             'click #button-example':'populateExampleBlueprint',
         },
         editorTemplate:_.template(EditorHtml),
@@ -99,36 +99,39 @@ define([
         },
         refresh: function() {
             $("#button-run", this.$el).html(this.mode==MODE_CATALOG ? "Add to Catalog" : "Deploy");
-            $("#button-delete", this.$el).html("Clear");
-            $("#button-example", this.$el).html(this.mode==MODE_CATALOG ? "Insert Catalog Example" : "Insert Blueprint Example");
-            $("#button-switch", this.$el).html(this.mode==MODE_CATALOG ? "Switch to Application Blueprint Mode" : "Switch to Catalog Mode");
+            if (this.mode==MODE_CATALOG) {
+                $("#button-switch-catalog", this.$el).addClass('active')
+                $("#button-switch-app", this.$el).removeClass('active')
+            } else {
+                $("#button-switch-app", this.$el).addClass('active')
+                $("#button-switch-catalog", this.$el).removeClass('active')
+            }
             this.refreshOnMinorChange();
         },
         refreshOnMinorChange: function() {
             var yaml = this.editor && this.editor.getValue();
             var parse = this.parse();
             
-            if (!yaml || parse.problem || this.mode==MODE_CATALOG) {
-                $("#button-convert", this.$el).hide();
+            // fine to switch to catalog
+            /* always enable the switch to app button -- worst case it's invalid
+            if (this.mode==MODE_CATALOG && yaml && (parse.problem || parse.result['brooklyn.catalog']) {
+                $("#button-switch-app", this.$el).attr('disabled', 'disabled');
             } else {
-                $("#button-convert", this.$el).html("Convert to Catalog Item");
-                $("#button-convert", this.$el).show();
+                $("#button-switch-app", this.$el).attr('disabled', false);
             }
+            */
             
             if (!yaml) {
                 // no yaml
                 $("#button-run", this.$el).attr('disabled','disabled');
-                $("#button-delete", this.$el).hide();
-                // example and switch mode only shown when empty
+                $("#button-delete", this.$el).attr('disabled','disabled');
+                // example only shown when empty
                 $("#button-example", this.$el).show();
-                $("#button-switch", this.$el).show();
             } else {
-                $("#button-run", this.$el).attr('disabled','false');
+                $("#button-run", this.$el).attr('disabled',false);
                 // we have yaml
-                $("#button-run", this.$el).show();
-                $("#button-delete", this.$el).show();
+                $("#button-delete", this.$el).attr('disabled',false);
                 $("#button-example", this.$el).hide();
-                $("#button-switch", this.$el).hide();
             }
         },
         initializeEditor: function() {
@@ -167,6 +170,7 @@ define([
             if (this.editor == null) {
                 this.editor = CodeMirror.fromTextArea(this.$("#yaml_code")[0], {
                     lineNumbers: true,
+                    viewportMargin: Infinity, /* recommended if height auto */
                     extraKeys: {"Ctrl-Space": "autocomplete"},
                     mode: {
                         name: "yaml",
@@ -205,28 +209,33 @@ define([
             var yaml = this.editor.getValue();
             try{
                 var parsed = this.parse(true);
+                console.log('parse', parsed);
                 if (parsed.problem) throw parsed.problem;
+                if (this.mode!=MODE_CATALOG && parsed.result['brooklyn.catalog'] &&
+                      !parsed.result['services']) {
+                    console.log("This document is using brooklyn.catalog syntax but you are attempting to deploy it.");
+                    throw "This document is using brooklyn.catalog syntax but you are attempting to deploy it."; 
+                }
                 return true;
             }catch (e){
-                this.showFailure(e.message);
+                this.showFailure(e.message || e);
                 return false;
             }
         },
-        convertBlueprint: function() {
-            if (this.mode === MODE_CATALOG) {
-                // not yet supported
-            } else {
+        convertBlueprintToCatalog: function() {
+            if (this.mode === MODE_APP && this.lastParse && !this.lastParse.problems && this.lastParse.result && this.lastParse.result['services']) {
+                // convert to catalog syntax if it has services at the root
                 var newBlueprint = "brooklyn.catalog:\n"+
                     "  version: 0.0.1\n"+
-                    "    items:\n"+
-                    "    - id: TODO_identifier_for_this_item \n"+
-                    "      description: Some text to display about this\n"+
-                    "      iconUrl: http://www.apache.org/foundation/press/kit/poweredBy/Apache_PoweredBy.png\n"+
-                    "      itemType: template\n"+
-                    "      item:\n"+
-                    "      - \n"+
-                    // indent 8 spaces:
-                    this.editor.getValue().replace(/(\n|^)(.*\n|.+$)/gm,'        $1$2');
+                    "  items:\n"+
+                    "  - id: TODO_identifier_for_this_item \n"+
+                    "    description: Some text to display about this\n"+
+                    "    iconUrl: http://www.apache.org/foundation/press/kit/poweredBy/Apache_PoweredBy.png\n"+
+                    "    itemType: template\n"+
+                    "    item:\n"+
+                    "    - \n"+
+                // indent 6 spaces:
+                this.editor.getValue().replace(/^(.*$)/gm,'      $1');
                 this.mode = MODE_CATALOG;
                 this.editor.setValue(newBlueprint);
                 this.refresh();
@@ -246,6 +255,15 @@ define([
         },
         switchMode: function() {
             this.setMode(this.mode == MODE_CATALOG ? MODE_APP : MODE_CATALOG);
+        },
+        switchModeApp: function() { this.setMode(MODE_APP); },
+        switchModeCatalog: function() {
+            var plan = this.parse().result;
+            if (plan && plan.services) {
+                this.convertBlueprintToCatalog();
+            } else { 
+                this.setMode(MODE_CATALOG);
+            } 
         },
         populateExampleBlueprint: function() {
             this.editor.setValue(this.mode==MODE_CATALOG ? _DEFAULT_CATALOG : _DEFAULT_BLUEPRINT);
