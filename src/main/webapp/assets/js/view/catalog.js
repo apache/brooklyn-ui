@@ -43,6 +43,7 @@ define([
     var CatalogItemDetailsView = Backbone.View.extend({
 
         events: {
+            "click .composer": "composeItem",
             "click .delete": "deleteItem"
         },
 
@@ -109,6 +110,11 @@ define([
             return this;
         },
 
+        composeItem: function(event) {
+            // TODO could make this a catalog item
+            Backbone.history.navigate("/v1/editor/app/"+ encodeURIComponent($(event.currentTarget).data("name")),
+                {trigger: true});
+        },
         deleteItem: function(event) {
             // Could use wait flag to block removal of model from collection
             // until server confirms deletion and success handler to perform
