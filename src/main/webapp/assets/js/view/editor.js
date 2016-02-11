@@ -49,6 +49,10 @@ define([
         '      services:\n'+
         '      - type: <your service here>\n'+
         '      location: <your cloud here>\n';
+        
+    // is the user working on an app blueprint or a catalog item
+    var MODE_APP = "app";
+    var MODE_CATALOG = "catalog";
 
     var EditorView = Backbone.View.extend({
         tagName:"div",
@@ -63,6 +67,14 @@ define([
 
         initialize:function () {
             var vm = this;
+            if (!this.options.type || this.options.type === MODE_APP) {
+                this.setMode(MODE_APP);
+            } else if (this.options.type === MODE_CATALOG) {
+                this.setMode(MODE_CATALOG);
+            } else {
+                console.log("unknown mode '"+this.option.type+"'; using '"+MODE_APP+"'");
+                this.setMode(MODE_APP);
+            }
             this.options.catalog = new CatalogApplication.Collection();
             this.options.catalog.fetch({
                 data: $.param({allVersions: true}),
@@ -71,10 +83,20 @@ define([
                 }
             });
         },
+        setMode: function(mode) {
+            if (this.mode === mode) return;
+            this.mode = mode;
+            this.refresh();
+        },
         render:function (eventName) {
             this.$el.html(_.template(EditorHtml, {}));
             this.loadEditor();
+            this.refresh();
             return this;
+        },
+        refresh: function() {
+            $("#button-run", this.$el).html(this.mode==MODE_CATALOG ? "Add to Catalog" : "Deploy");
+            $("#button-delete", this.$el).html("Clear");
         },
         refreshEditor: function() {
             var cm = this.editor;
@@ -138,7 +160,7 @@ define([
         },
         runBlueprint: function() {
             if (this.validate()){
-                if(this.editor.getValue().slice(0,16) === 'brooklyn.catalog'){
+                if (this.mode === MODE_CATALOG) {
                     this.submitCatalog();
                 }else{
                     this.submitApplication();
