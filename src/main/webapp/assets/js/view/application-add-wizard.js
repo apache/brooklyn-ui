@@ -266,6 +266,7 @@ define([
         nextStep:function () {
             if (this.currentStep == 0) {
                 if (this.currentView.validate()) {
+                    this.isTemplate = false;
                     var yaml = (this.currentView && this.currentView.selectedTemplate && this.currentView.selectedTemplate.yaml);
                     if (yaml) {
                         try {
@@ -283,16 +284,15 @@ define([
                                 }
                               }
                             }
-                            yaml = (hasLocation ? true : false);
+                            this.isTemplate = (hasLocation ? true : false);
                         } catch (e) {
                             log("Warning: could not parse yaml template")
                             log(yaml);
-                            yaml = false;
                         }
                     }
-                    if (yaml) {
-                        // it's a yaml catalog template which includes a location, show the yaml tab navigate to editor
-                        this.currentView.redirectToEditorTab(this.currentView.selectedTemplate.id);
+                    if (this.isTemplate) {
+                        // it's a yaml catalog *template* (because it includes a location); go to composer
+                        this.redirectToEditorTabToDeployId(this.currentView.selectedTemplate.id);
                     } else {
                         // it's a java catalog template or yaml template without a location, go to wizard
                         this.currentStep += 1;
@@ -307,12 +307,16 @@ define([
         },
         previewStep:function () {
             if (this.currentView.validate()) {
-                this.currentStep = 0;
-                var that = this;
-                this.renderCurrentStep(function callback(view) {
+                var yaml;
+                if (this.model.mode == "yaml") {
+                    yaml = this.model.yaml;
+                } else {
                     // Drop any "None" locations.
-                    that.model.spec.pruneLocations();
-                });
+                    this.model.spec.pruneLocations();
+                    yaml = JsYaml.safeDump(oldSpecToCamp(this.model.spec.toJSON()));
+                }
+
+                this.redirectToEditorTabToDeployYaml(yaml);
             } else {
                 // call to validate should showFailure
             }
@@ -323,7 +327,20 @@ define([
             } else {
                 // call to validate should showFailure
             }
-        }
+        },
+        
+        redirectToEditorTabToDeployId: function(catalogId){
+            this.redirectTo("/v1/editor/app/"+ (typeof catalogId === 'string' ? catalogId : '')); 
+        },
+        redirectToEditorTabToDeployYaml: function(yaml){
+            this.redirectTo("/v1/editor/app/_/"+encodeURIComponent(yaml));
+        },
+        redirectTo: function(url){
+            var $modal = $('.add-app #modal-container .modal');
+            $modal.modal('hide');
+            $modal.fadeTo(500,1);
+            Backbone.history.navigate(url, {trigger: true});
+        },
     })
     
     // Note: this does not restore values on a back click; setting type and entity type+name is easy,
@@ -432,11 +449,8 @@ define([
             $("ul#app-add-wizard-create-tab").find("a[href='#yamlTab']").tab('show');
             $("#yaml_code").focus();
         },
-        redirectToEditorTab: function(catalogId){
-            var $modal = $('.add-app #modal-container .modal');
-            $modal.modal('hide');
-            $modal.fadeTo(500,1);
-            Backbone.history.navigate("/v1/editor/app/"+ (typeof catalogId === 'string' ? catalogId : '') ,{trigger: true});
+        redirectToEditorTab: function() {
+            this.redirectToEditorTabToDeployId();
         },
         applyFilter: function(e) {
             var filter = $(e.currentTarget).val().toLowerCase()

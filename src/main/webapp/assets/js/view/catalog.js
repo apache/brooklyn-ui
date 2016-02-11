@@ -170,7 +170,8 @@ define([
                 Backbone.history.navigate("/v1/catalog/new/" + type);
                 this.$("#catalog-add-form").html(this.contextView.$el);
             }else{
-                Backbone.history.navigate('/v1/editor/catalog/'+ type, {trigger: true});
+                // go to composer
+                Backbone.history.navigate('/v1/editor/catalog/', {trigger: true});
             }
         }
     });

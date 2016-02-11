@@ -27,9 +27,28 @@ define([
     "handlebars",
     "bootstrap"
 ], function (_, $, Backbone, CatalogApplication, jsYaml, CodeMirror, EditorHtml) {
-    var _DEFAULT_BLUEPRINT = 'name: Empty Software Process\nlocation: localhost\nservices:\n- type: org.apache.brooklyn.entity.software.base.EmptySoftwareProcess';
-    var _DEFAULT_CATALOG = 'brooklyn.catalog:\n  version: 0.0.1\n  items:\n  - id: example\n    description: This is an example catalog application\n    ' +
-        'itemType: template\n    item:\n      name: Empty Software Process\n      services:\n      - type: org.apache.brooklyn.entity.software.base.EmptySoftwareProcess';
+    var _DEFAULT_BLUEPRINT = 
+        'name: Sample Blueprint\n'+
+        'description: runs `sleep` for sixty seconds then stops triggering ON_FIRE in Brooklyn\n'+
+        'location: localhost\n'+
+        'services:\n'+
+        '- type: org.apache.brooklyn.entity.software.base.VanillaSoftwareProcess\n'+
+        '  launch.command: |\n'+
+        '    echo hello world\n'+
+        '    nohup sleep 60 &\n'+
+        '    echo $! > ${PID_FILE:-pid.txt}\n';
+    var _DEFAULT_CATALOG = 
+        'brooklyn.catalog:\n'+
+        '  version: 0.0.1\n'+
+        '  items:\n'+
+        '  - id: example\n'+
+        '    description: This is an example catalog application\n'+
+        '    itemType: template\n'+
+        '    item:\n'+
+        '      name: Sample Blueprint Template\n'+
+        '      services:\n'+
+        '      - type: <your service here>\n'+
+        '      location: <your cloud here>\n';
 
     var EditorView = Backbone.View.extend({
         tagName:"div",
@@ -60,14 +79,35 @@ define([
         refreshEditor: function() {
             var cm = this.editor;
             if (typeof(cm) !== "undefined") {
-                if(this.options.type && this.options.type === 'catalog'){
-                    cm.getDoc().setValue(_DEFAULT_CATALOG);
-                }else{
-                    //assume blueprint
-                    var item = this.options.catalog.getId(this.options.typeId);
-                    cm.getDoc().setValue((item ? item['attributes']['planYaml'] : _DEFAULT_BLUEPRINT ));
+                var itemText;
+                if (this.options.typeId === '_') {
+                    // _ indicates a literal is being supplied
+                    itemText = this.options.content;
+                } else {
+                    if (this.options.content) {
+                        console.log('ignoring content when typeId is not _; given:', this.options.type, this.options.typeId, this.options.content);
+                    } 
+                    if (this.options.typeId) {
+                        var item = this.options.catalog.getId(this.options.typeId);
+                        if (item) itemText = item['attributes']['planYaml'];
+                        if (!itemText) {
+                            itemText = '# unknown type - this is an example blueprint that would reference it\n'+
+                                'services:\n- type: '+this.options.typeId+'\n';
+                            
+                        }
+                    }
                 }
-                cm.focus();
+                if (!itemText) {
+                    if (this.options.type === 'catalog') {
+                        itemText = _DEFAULT_CATALOG;
+                    } else {
+                        itemText = _DEFAULT_BLUEPRINT;
+                    }
+                }
+                cm.getDoc().setValue(itemText);
+                //better not to focus as focussing puts the cursor at the beginning which is odd
+                //and cmd-shift-[ and tab are intercepted so user can't navigate
+                // cm.focus();
                 cm.refresh();
             }
 
