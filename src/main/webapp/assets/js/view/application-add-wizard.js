@@ -16,17 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
 */
+
 /**
- * Builds a Twitter Bootstrap modal as the framework for a Wizard.
- * Also creates an empty Application model.
+ * Supplies a modal (wizardy) with a list of apps a user can pick.
+ * Templates (items with yaml and with a location) go to composer, 
+ * other items (java, or yaml without a location) go to next *or* open in composer. 
  */
+ 
 define([
     "underscore", "jquery", "backbone", "brooklyn-utils", "js-yaml", "codemirror",
     "model/entity", "model/application", "model/location", "model/catalog-application",
     "text!tpl/app-add-wizard/modal-wizard.html",
     "text!tpl/app-add-wizard/create.html",
     "text!tpl/app-add-wizard/create-step-template-entry.html", 
-    "text!tpl/app-add-wizard/create-entity-entry.html", 
     "text!tpl/app-add-wizard/required-config-entry.html",
     "text!tpl/app-add-wizard/edit-config-entry.html",
     "text!tpl/app-add-wizard/deploy.html",
@@ -40,7 +42,7 @@ define([
     "codemirror-addon-display-placeholder",
     "bootstrap"
 ], function (_, $, Backbone, Util, JsYaml, CodeMirror, Entity, Application, Location, CatalogApplication,
-             ModalHtml, CreateHtml, CreateStepTemplateEntryHtml, CreateEntityEntryHtml,
+             ModalHtml, CreateHtml, CreateStepTemplateEntryHtml, 
              RequiredConfigEntryHtml, EditConfigEntryHtml, DeployHtml,
              DeployVersionOptionHtml, DeployLocationRowHtml, DeployLocationOptionHtml
 ) {
@@ -112,7 +114,6 @@ define([
             this.model = {}
             this.model.spec = new Application.Spec;
             this.model.yaml = "";
-            this.model.mode = "template";  // or "yaml" or "other"
             this.currentStep = 0;
             this.steps = [
                           {
@@ -166,7 +167,7 @@ define([
             
             setVisibility(this.$("#prev_step"), (this.currentStep > 0))
 
-            this.isTemplate = false;
+            var isTemplateWithLocation = false;
             {
                 var yaml = (this.currentView && this.currentView.selectedTemplate && this.currentView.selectedTemplate.yaml);
                 if (yaml) {
@@ -185,7 +186,7 @@ define([
                             }
                           }
                         }
-                        this.isTemplate = (hasLocation ? true : false);
+                        isTemplateWithLocation = (hasLocation ? true : false);
                     } catch (e) {
                         log("Warning: could not parse yaml template of selected item")
                         log(yaml);
@@ -193,41 +194,27 @@ define([
                 }
             }
             
-            // next shown for first step, but not for yaml
-            var nextVisible = (this.currentStep < 1) && (this.model.mode != "yaml") && (!this.isTemplate);
-            setVisibility(this.$("#next_step"), nextVisible)
+            // preview (aka "Open in Composer") enabled and shown always
+            setVisibility(this.$("#preview_step"), true);
+            setEnablement(this.$("#preview_step"), true)
             
-            // preview (aka "Open in Composer") shown for step 2 or for template (but again, not yaml)
-            var previewVisible = (((this.currentStep < 1) && this.isTemplate) || (this.currentStep == 1)) && (this.model.mode != "yaml")
-            setVisibility(this.$("#preview_step"), previewVisible)
+            // next shown for first step, but not for templates
+            var nextVisible = (this.currentStep < 1) && (!this.isTemplate);
+            setVisibility(this.$("#next_step"), nextVisible);
             
             // now set next/preview enablement
-            if (nextVisible || previewVisible) {
-                var nextEnabled = true;
-                if (this.currentStep==0 && this.model.mode=="template" && currentStepObj && currentStepObj.view) {
-                    // disable if this is template selction (lozenge) view, and nothing is selected
-                    if (! currentStepObj.view.selectedTemplate)
-                        nextEnabled = false;
-                }
-                
-                if (nextVisible)
-                    setEnablement(this.$("#next_step"), nextEnabled)
-                if (previewVisible)
-                    setEnablement(this.$("#preview_step"), nextEnabled)
+            var nextEnabled = true;
+            if (this.currentStep==0 && currentStepObj && currentStepObj.view) {
+                // disable if nothing is selected in template (app lozenge list) view
+                if (! currentStepObj.view.selectedTemplate)
+                    nextEnabled = false;
             }
+                
+            if (nextVisible) setEnablement(this.$("#next_step"), nextEnabled)
             
-            // finish from config step, preview step, and from first step if yaml tab selected (and valid)
+            // finish ("deploy") is shown on the config step
             var finishVisible = (this.currentStep >= 1);
             var finishEnabled = finishVisible;
-            if (!finishEnabled && this.currentStep==0) {
-                if (this.model.mode == "yaml") {
-                    // should do better validation than non-empty
-                    finishVisible = true;
-                    if (self.editor && self.editor && self.editor.getValue()) {
-                        finishEnabled = true;
-                    }
-                }
-            }
             setVisibility(this.$("#finish_step"), finishVisible)
             setEnablement(this.$("#finish_step"), finishEnabled)
         },
@@ -238,13 +225,9 @@ define([
             $modal.fadeTo(500,0.5);
             
             var yaml;
-            if (this.model.mode == "yaml") {
-                yaml = this.model.yaml;
-            } else {
-                // Drop any "None" locations.
-                this.model.spec.pruneLocations();
-                yaml = JsYaml.safeDump(oldSpecToCamp(this.model.spec.toJSON()));
-            }
+            // Drop any "None" locations.
+            this.model.spec.pruneLocations();
+            yaml = JsYaml.safeDump(oldSpecToCamp(this.model.spec.toJSON()));
 
             $.ajax({
                 url:'/v1/applications',
@@ -304,24 +287,21 @@ define([
             }
         },
         previewStep:function () {
-            if (this.currentView.validate()) {
-                if (this.isTemplate) {
-                    // it's a yaml catalog *template* (because it includes a location); go to composer
+            // no need for validation if going to composer
+            if (this.currentStep==0) {
+                // from first step, composer should load yaml from the catalog item
+                if (this.currentView.selectedTemplate && this.currentView.selectedTemplate.id) {
                     this.redirectToEditorTabToDeployId(this.currentView.selectedTemplate.id);
                 } else {
-                    var yaml;
-                    if (this.model.mode == "yaml") {
-                        yaml = this.model.yaml;
-                    } else {
-                        // Drop any "None" locations.
-                        this.model.spec.pruneLocations();
-                        yaml = JsYaml.safeDump(oldSpecToCamp(this.model.spec.toJSON()));
-                    }
-    
-                    this.redirectToEditorTabToDeployYaml(yaml);
+                    this.redirectToEditorTabToDeployId();
                 }
             } else {
-                // call to validate should showFailure
+                // on second step we generate yaml
+                // Drop any "None" locations.
+                this.model.spec.pruneLocations();
+                var yaml = JsYaml.safeDump(oldSpecToCamp(this.model.spec.toJSON()));
+
+                this.redirectToEditorTabToDeployYaml(yaml);
             }
         },
         finishStep:function () {
@@ -351,19 +331,12 @@ define([
     ModalWizard.StepCreate = Backbone.View.extend({
         className:'modal-body',
         events:{
-            'click #add-app-entity':'addEntityBox',
-            'click .editable-entity-heading':'expandEntity',
-            'click .remove-entity-button':'removeEntityClick',
-            'click .editable-entity-button':'saveEntityClick',
             'click #remove-config':'removeConfigRow',
             'click #add-config':'addConfigRow',
             'click .template-lozenge':'templateClick',
             'keyup .text-filter input':'applyFilter',
             'change .text-filter input':'applyFilter',
             'paste .text-filter input':'applyFilter',
-            'keyup #yaml_code':'onYamlCodeChange',
-            'change #yaml_code':'onYamlCodeChange',
-            'paste #yaml_code':'onYamlCodeChange',
             'shown a[data-toggle="tab"]':'onTabChange',
             'click #templateTab #catalog-add':'switchToCatalogAdd',
             'click #templateTab #catalog-yaml':'redirectToEditorTab'
@@ -376,15 +349,11 @@ define([
 
             this.$el.html(this.template({}))
 
-            // for building from entities
-            this.addEntityBox()
-
             // TODO: Make into models, allow options to override, then pass in in test
             // with overrridden url. Can then think about fixing tests in application-add-wizard-spec.js.
             $.get('/v1/catalog/entities', {}, function (result) {
                 self.catalogEntityItems = result
                 self.catalogEntityIds = _.map(result, function(item) { return item.id })
-                self.$(".entity-type-input").typeahead().data('typeahead').source = self.catalogEntityIds
             });
             
             this.options.catalog.applications = new CatalogApplication.Collection();
@@ -393,7 +362,6 @@ define([
                     allVersions: true
                 }),
                 success: function (collection, response, options) {
-                    self.$("#appClassTab .application-type-input").typeahead().data('typeahead').source = collection.getTypes();
                     $('#catalog-applications-throbber').hide();
                     $('#catalog-applications-empty').hide();
                     if (collection.size() > 0) {
@@ -429,19 +397,6 @@ define([
                 $("li.text-filter").hide()
             }
 
-            if (tabText=="YAML") {
-                // TODO this mode no longer used
-                this.model.mode = "yaml";
-            } else if (tabText=="Template") {
-                this.model.mode = "template";
-            } else {
-                this.model.mode = "other";
-            }
-
-            if (this.options.wizard)
-                this.options.wizard.updateButtonVisibility();
-        },
-        onYamlCodeChange: function() {
             if (this.options.wizard)
                 this.options.wizard.updateButtonVisibility();
         },
@@ -449,10 +404,6 @@ define([
             var $modal = $('.add-app #modal-container .modal')
             $modal.modal('hide');
             window.location.href="#v1/catalog/new";
-        },
-        showYamlTab: function() {
-            $("ul#app-add-wizard-create-tab").find("a[href='#yamlTab']").tab('show');
-            $("#yaml_code").focus();
         },
         redirectToEditorTab: function() {
             this.redirectToEditorTabToDeployId();
@@ -500,43 +451,12 @@ define([
                     name: $tl.data("name"),
                     yaml: $tl.data("yaml"),
                 };
-                if (this.selectedTemplate.yaml) {
-                    $("textarea#yaml_code").val(this.selectedTemplate.yaml);
-                } else {
-                    $("textarea#yaml_code").val("services:\n- type: "+this.selectedTemplate.type);
-                }
             } else {
                 this.selectedTemplate = null;
             }
 
             if (this.options.wizard)
                 this.options.wizard.updateButtonVisibility();
-        },
-        expandEntity:function (event) {
-            $(event.currentTarget).next().show('fast').delay(1000).prev().hide('slow')
-        },
-        saveEntityClick:function (event) {
-            this.saveEntity($(event.currentTarget).closest(".editable-entity-group"));
-        },
-        saveEntity:function ($entityGroup) {
-            var that = this
-            var name = $('#entity-name',$entityGroup).val()
-            var type = $('#entity-type',$entityGroup).val()
-            if (type=="" || !_.contains(that.catalogEntityIds, type)) {
-                that.showFailure("Missing or invalid type");
-                return false
-            }
-            var saveTarget = this.model.spec.get("entities")[$entityGroup.index()];
-            this.model.spec.set("type", null)
-            saveTarget.name = name
-            saveTarget.type = type
-            saveTarget.config = this.getConfigMap($entityGroup)
-
-            if (name=="") name=type;
-            if (name=="") name="<i>(new entity)</i>";
-            $('#entity-name-header',$entityGroup).html( name )
-            $('.editable-entity-body',$entityGroup).prev().show('fast').next().hide('fast')
-            return true;
         },
         getConfigMap:function (root) {
             var map = {}
@@ -572,21 +492,11 @@ define([
             this.model.spec.set("type", type);
             return true;
         },
-        addEntityBox:function () {
-            var entity = new Entity.Model
-            this.model.spec.addEntity( entity )
-            this.addEntityHtml($('#entitiesAccordionish', this.$el), entity)
-        },
         addEntityHtml:function (parent, entity) {
             var $entity = _.template(CreateEntityEntryHtml, {})
             var that = this
             parent.append($entity)
             parent.children().last().find('.entity-type-input').typeahead({ source: that.catalogEntityIds })
-        },
-        removeEntityClick:function (event) {
-            var $entityGroup = $(event.currentTarget).parent().parent().parent();
-            this.model.spec.removeEntityIndex($entityGroup.index())
-            $entityGroup.remove()
         },
 
         addConfigRow:function (event) {
@@ -599,44 +509,10 @@ define([
 
         validate:function () {
             var that = this;
-            var tabName = $('#app-add-wizard-create-tab li[class="active"] a').attr('href');
-            if (tabName=='#entitiesTab') {
-                delete this.model.spec.attributes["id"]
-                var allokay = true
-                $($.find('.editable-entity-group')).each(
-                    function (i,$entityGroup) {
-                        allokay = that.saveEntity($($entityGroup)) & allokay
-                    })
-                if (!allokay) return false;
-                if (this.model.spec.get("entities") && this.model.spec.get("entities").length > 0) {
-                    this.model.spec.set("type", null);
-                    return true;
-                }
-            } else if (tabName=='#templateTab') {
-                delete this.model.spec.attributes["id"]
-                if (this.saveTemplate()) {
-                    this.model.spec.set("entities", []);
-                    return true
-                }
-            } else if (tabName=='#appClassTab') {
-                delete this.model.spec.attributes["id"]
-                if (this.saveAppClass()) {
-                    this.model.spec.set("entities", []);
-                    return true
-                }
-            } else if (tabName=='#yamlTab') {
-                if (self.editor !== null) {
-                    this.model.yaml = self.editor.getValue();
-                    if (this.model.yaml) {
-                        return true;
-                    }
-                } else {
-                    console.info("No text in the editor!");
-                }
-            } else {
-                console.info("NOT IMPLEMENTED YET")
-                // TODO - other tabs not implemented yet 
-                // do nothing, show error return false below
+            delete this.model.spec.attributes["id"]
+            if (this.saveTemplate()) {
+                this.model.spec.set("entities", []);
+                return true
             }
             this.showFailure("Invalid application type/spec");
             return false
