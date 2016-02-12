@@ -50,15 +50,11 @@ require.config({
         "zeroclipboard":"libs/ZeroClipboard",
         "js-yaml":"libs/js-yaml",
 
-        "codemirror":"lib/codemirror",
-
-        "mode":"mode",
-        "addon":"addon",
-
-        "codemirror-mode-yaml":"mode/yaml/yaml",
-        "codemirror-addon-show-hint":"addon/hint/show-hint",
-        "codemirror-addon-anyword-hint":"addon/hint/anyword-hint",
-        "codemirror-addon-display-placeholder":"addon/display/placeholder",
+        "codemirror":"libs/codemirror",
+        "codemirror-mode-yaml":"libs/codemirror/mode/yaml/yaml",
+        "codemirror-addon-show-hint":"libs/codemirror/addon/hint/show-hint",
+        "codemirror-addon-anyword-hint":"libs/codemirror/addon/hint/anyword-hint",
+        "codemirror-addon-display-placeholder":"libs/codemirror/addon/display/placeholder",
 
         "tpl":"../tpl"
     },
