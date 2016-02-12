@@ -42,6 +42,8 @@
         "uri":"js/libs/URI",
         "zeroclipboard":"js/libs/ZeroClipboard",
         "js-yaml":"js/libs/js-yaml",
+        "js-yaml-parser":"js/util/code-complete/js-yaml-parser",
+        "brooklyn-yaml-completion-proposals":"js/util/code-complete/brooklyn-yaml-completion-proposals",
 
         "codemirror":"js/libs/codemirror",
         "codemirror-mode-yaml":"js/libs/codemirror/mode/yaml/yaml",

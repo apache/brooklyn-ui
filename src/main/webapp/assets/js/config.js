@@ -49,6 +49,8 @@ require.config({
         "uri":"libs/URI",
         "zeroclipboard":"libs/ZeroClipboard",
         "js-yaml":"libs/js-yaml",
+        "js-yaml-parser":"util/code-complete/js-yaml-parser",
+        "brooklyn-yaml-completion-proposals":"util/code-complete/brooklyn-yaml-completion-proposals",
 
         "codemirror":"libs/codemirror",
         "codemirror-mode-yaml":"libs/codemirror/mode/yaml/yaml",
