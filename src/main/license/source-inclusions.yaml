@@ -41,3 +41,6 @@
 - id: jquery.form.js
 - id: marked.js
 - id: codemirror.js
+- id: font-awesome-fonts
+- id: font-awesome-code
+
