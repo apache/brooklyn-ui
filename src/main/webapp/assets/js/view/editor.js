@@ -63,6 +63,7 @@ define([
             'click #button-switch-app':'switchModeApp',
             'click #button-switch-catalog':'switchModeCatalog',
             'click #button-example':'populateExampleBlueprint',
+            'click #button-docs':'openDocumentation',
         },
         editorTemplate:_.template(EditorHtml),
 
@@ -285,6 +286,9 @@ define([
         },
         populateExampleBlueprint: function() {
             this.editor.setValue(this.mode==MODE_CATALOG ? _DEFAULT_CATALOG : _DEFAULT_BLUEPRINT);
+        },
+        openDocumentation: function() {
+            window.open(this.mode==MODE_CATALOG ? "https://brooklyn.apache.org/v/latest/ops/catalog/" : "https://brooklyn.apache.org/v/latest/yaml/yaml-reference.html", "_blank");
         },
         
         onSubmissionComplete: function(succeeded, data, type) {
