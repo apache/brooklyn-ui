@@ -29,11 +29,12 @@ textarea {
 
 /* HEADER  */
 .logo {
-    height: 44px !important;
-    width: 195px !important;
-    background: url(../images/brooklyn-logo.png) no-repeat;
-    margin-top: 50px;
-    margin-left: 40px;
+    height: 86px !important;
+    width: 240px !important;
+    margin-top: 16px;
+    background: url(../img/apache-brooklyn-feather-atop-720px.png) no-repeat;
+    background-size: contain;
+    margin-left: 15px;
 }
 
 .navbar-inner {
