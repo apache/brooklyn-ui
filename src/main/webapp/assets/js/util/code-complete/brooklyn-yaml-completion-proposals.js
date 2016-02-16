@@ -27,6 +27,7 @@ define([
     var catalogE = new Catalog(undefined, { name: "catalog/entities" });
     var catalogA = new Catalog(undefined, { name: "catalog/applications" });
     var catalogL = new Catalog(undefined, { name: "locations" });
+    // if browser opened while server is starting this will fail on first completion
     catalogA.fetch();
     catalogE.fetch();
     catalogL.fetch();
@@ -178,7 +179,6 @@ define([
         
         getServiceTypes: function(n) {
             var result = [];
-            console.log(catalogE);
             catalogE.fetch();
             catalogA.fetch();
             result = result.concat(_.map(catalogE.models, function(m) { return m.get('symbolicName'); })); 
@@ -284,7 +284,6 @@ define([
         try {
             parse = JsYamlParser.parse(text);
             if (typeof parse.result == 'string') {
-                console.log("prim");
                 throw "primitive not supported, parse as empty and let completion apply";
             }
         } catch (e) {
@@ -332,7 +331,6 @@ define([
             }
             result = _.compact(_.map(result, function(proposal) {
                 var proposalObj;
-                console.log("considering",proposal,"wrt",wordSoFar,"/",lineSoFar);
                 if (typeof proposal === 'object') {
                     proposalObj = proposal;
                     proposal = proposalObj.text;

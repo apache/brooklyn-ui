@@ -136,6 +136,13 @@ textarea {
     margin-top: 10px !important
 }
 
+.row-fluid .span12 {
+    margin-left: 34px !important;
+    margin-right: -26px !important;
+    margin-top: 10px !important;
+    width: 927px !important;
+}
+
 .navbar_top {
     background-color: #f0f0f0 !important;
     -webkit-border-radius: 13px 13px 0 0 !important;
@@ -145,8 +152,9 @@ textarea {
     border-bottom: none;
 }
 
-.navbar_top  h3 {
+.navbar_top h3 {
     line-height: 24px !important;
+    margin-top: 6px;
 }
 
 .navbar_main_wrapper {
