@@ -29,23 +29,6 @@ under the License.
 <div id="app-add-wizard-create-body">
 
     <ul class="nav nav-tabs" id="app-add-wizard-create-tab">
-        <li class="active"><a href="#templateTab" data-toggle="tab">Catalog</a></li>
-        <!-- li><a href="#yamlTab" data-toggle="tab">YAML</a></li -->
-        
-        <li class="dropdown"><a class="dropdown-toggle" id="dropLanguage"
-            role="button" data-toggle="dropdown" href="#">Other <b class="caret"></b></a>
-            <ul id="menuLanguage" class="dropdown-menu" role="menu" aria-labelledby="dropLanguage">
-                <li><a tabindex="-1" data-toggle="tab" href="#entitiesTab">Build from Entities</a></li>
-                <li><a tabindex="-1" data-toggle="tab" href="#appClassTab">Specify App Class</a></li>
-<!-- TODO
-                <li class="divider"></li>
-                <li><a tabindex="-1" data-toggle="tab" href="#jsonTab">JSON</a></li>
-                <li><a tabindex="-1" data-toggle="tab" href="#xmlTab">XML</a></li>
-                <li><a tabindex="-1" data-toggle="tab" href="#groovyTab">Groovy</a></li>
-                <li><a tabindex="-1" data-toggle="tab" href="#uploadTab">JAR</a></li>
- -->
-            </ul>
-        </li>
        <li class="text-filter pull-right"><input type="text"/></li>
     </ul>
 
@@ -64,33 +47,6 @@ under the License.
     </div>
     <div id="create-step-template-entries"/>
   </div>
-  
-  <div class="tab-pane" id="entitiesTab">
-    <div id="entitiesAccordionish"></div>
-    <button id="add-app-entity" class="btn btn-info btn-mini" style="margin:5px;">Add Additional Entity</button>
-  </div>
-
-  <div class="tab-pane" id="appClassTab">
-        <div class="control-group">
-            <div class="app-add-wizard-create-entity-label-newline">Type</div>
-            <div class="controls app-type">
-                <input id="app-java-type" type="text" name="type" class="input-large app-add-wizard-create-entity-input application-type-input" placeholder="type">
-            </div>
-        </div>
-  </div>
-
-  <div class="tab-pane" id="jsonTab">
-    <br/><br/><i>coming soon!</i>
-  </div>
-  <div class="tab-pane" id="xmlTab">
-    <br/><br/><i>coming soon!</i>
-  </div>
-  <div class="tab-pane" id="groovyTab">
-    <br/><br/><i>coming soon!</i>
-  </div>
-  <div class="tab-pane" id="uploadTab">
-    <br/><br/><i>coming soon!</i>
-  </div>
-    
+      
  </div></div>
 </div>

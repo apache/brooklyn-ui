@@ -51,7 +51,6 @@ define(["underscore", "backbone"], function (_, Backbone) {
         },
         getId: function(id){
             return this.find(function(model) {
-                console.info("model", model, model.get('id') === id);
                 return model.get('id') === id;
             });
         }
