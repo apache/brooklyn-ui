@@ -56,14 +56,20 @@ define([
         
         if (n.result === null) {
             n.type = 'null';
-        } else if (typeof n.result === 'object') {
-            if (typeof n.result.length !== 'undefined') {
-                // ^^^ messy way to check is parent a list
-                n.type = 'list';
-            } else {
-                n.type = 'map';
+        } else if (n.kind == 'sequence') {
+            if (typeof n.result.length === 'undefined') {
+                console.log("WARN: mismatch expected list but had no length", n);
             }
+            n.type = 'list';
+        } else if (n.kind == 'mapping') {
+            if (typeof n.result.length !== 'undefined') {
+                console.log("WARN: mismatch expected map but had length", n);
+            }
+            n.type = 'map';
         } else {
+            if (n.kind != 'scalar') {
+                console.log("WARN: mismatch expected scalar/primitive", n);
+            }
             n.type = 'primitive';
         }
         
