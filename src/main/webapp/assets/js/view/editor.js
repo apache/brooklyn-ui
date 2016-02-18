@@ -17,7 +17,7 @@
  * under the License.
 */
 define([
-    "underscore", "jquery", "backbone", "model/catalog-application", "js-yaml", "codemirror",
+    "underscore", "jquery", "backbone", "model/catalog-application", "js-yaml", "brooklyn-yaml-completion-proposals", "codemirror",
     "text!tpl/editor/page.html",
 
     // no constructor
@@ -26,7 +26,7 @@ define([
     "jquery-ba-bbq",
     "handlebars",
     "bootstrap"
-], function (_, $, Backbone, CatalogApplication, jsYaml, CodeMirror, EditorHtml) {
+], function (_, $, Backbone, CatalogApplication, jsYaml, BrooklynCompletion, CodeMirror, EditorHtml) {
     var _DEFAULT_BLUEPRINT = 
         'name: Sample Blueprint\n'+
         'description: runs `sleep` for sixty seconds then stops triggering ON_FIRE in Brooklyn\n'+
@@ -63,6 +63,7 @@ define([
             'click #button-switch-app':'switchModeApp',
             'click #button-switch-catalog':'switchModeCatalog',
             'click #button-example':'populateExampleBlueprint',
+            'click #button-docs':'openDocumentation',
         },
         editorTemplate:_.template(EditorHtml),
 
@@ -171,12 +172,33 @@ define([
                 this.editor = CodeMirror.fromTextArea(this.$("#yaml_code")[0], {
                     lineNumbers: true,
                     viewportMargin: Infinity, /* recommended if height auto */
+                    
                     extraKeys: {"Ctrl-Space": "autocomplete"},
                     mode: {
                         name: "yaml",
                         globalVars: true
+                    },
+                    
+                    hintOptions: {
+                        completeSingle: false,
+//                        closeOnUnfocus: false,   // handy for debugging
                     }
                 });
+                var oldYamlHint = CodeMirror.hint.yaml;
+                var that = this;
+                CodeMirror.hint.yaml = function(cm) {
+                    var result = {from: cm.getCursor(), to: cm.getCursor(), list: [] };
+                    result.list = BrooklynCompletion.getCompletionProposals(that.mode, cm);
+                    
+                    //result.list = result.list.concat(otherwords.list);
+                    // could return other proposals *additionally* but better only if we found nothing else 
+                    if (!result.list) {
+                        result = CodeMirror.hint.anyword(cm);
+                    }
+                    
+                    return result;
+                };
+                
                 var that = this;
                 this.editor.on("changes", function(editor, changes) {
                     that.refreshOnMinorChange();
@@ -264,6 +286,9 @@ define([
         },
         populateExampleBlueprint: function() {
             this.editor.setValue(this.mode==MODE_CATALOG ? _DEFAULT_CATALOG : _DEFAULT_BLUEPRINT);
+        },
+        openDocumentation: function() {
+            window.open(this.mode==MODE_CATALOG ? "https://brooklyn.apache.org/v/latest/ops/catalog/" : "https://brooklyn.apache.org/v/latest/yaml/yaml-reference.html", "_blank");
         },
         
         onSubmissionComplete: function(succeeded, data, type) {

@@ -27,3 +27,17 @@
 }
 .CodeMirror .CodeMirror-gutter.CodeMirror-linenumbers {
 }
+
+li.CodeMirror-hint {
+  max-width: inherit;
+  overflow: visible;
+}
+ul.CodeMirror-hints {
+  overflow: scroll;
+  max-width: 30em;
+}
+
+.CodeMirror-hints .CodeMirror-hint.summary {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-style: italic;
+}
