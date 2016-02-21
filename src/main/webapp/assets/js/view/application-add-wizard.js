@@ -20,7 +20,7 @@
 /**
  * Supplies a modal (wizardy) with a list of apps a user can pick.
  * Templates (items with yaml and with a location) go to composer, 
- * other items (java, or yaml without a location) go to next *or* open in composer. 
+ * other items (java, or yaml without a location) go to next *or* yaml composer. 
  */
  
 define([
@@ -208,7 +208,7 @@ define([
                 }
             }
             
-            // preview (aka "Open in Composer") enabled and shown always
+            // preview (aka "YAML Composer") enabled and shown always
             setVisibility(this.$("#preview_step"), true);
             setEnablement(this.$("#preview_step"), true)
             

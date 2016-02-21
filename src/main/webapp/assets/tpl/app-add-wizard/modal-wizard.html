@@ -29,7 +29,10 @@ under the License.
 
 <div class="modal-footer">
     <button id="prev_step" type="button button-previous" class="btn btn-mini btn-info">Back</button>
-    <button id="preview_step" type="button button-preview" class="btn btn-mini btn-info">Open in Composer</button>
-    <button id="next_step" type="button button-next" class="btn btn-mini btn-info">Next</button>
-    <button id="finish_step" type="button button-finish" class="btn btn-mini btn-info">Deploy</button>
+    <button id="preview_step" type="button button-preview" class="btn btn-mini btn-info"
+        title="Go to the Composer view where the YAML code for the blueprint can be edited. If an item is selected the Composer will be pre-populated with its YAML.">YAML Composer</button>
+    <button id="next_step" type="button button-next" class="btn btn-mini btn-info"
+        title="Customize the blueprint further using the wizard view. (Only available for Wizard items. Templates can only be opened in the Composer.)">Next</button>
+    <button id="finish_step" type="button button-finish" class="btn btn-mini btn-info"
+        title="Instantiate this blueprint in the configured location or locations.">Deploy</button>
 </div>
