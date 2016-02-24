@@ -296,9 +296,10 @@ define([
             if(succeeded){
                 log("Submit [succeeded] ... redirecting back to " + type);
                 if(type && type === 'catalog'){
-                    Backbone.history.navigate('v1/catalog' ,{trigger: true});
+                    Backbone.history.navigate('v1/catalog', {trigger: true});
                 }else{
-                    Backbone.history.navigate('v1/home' ,{trigger: true});
+                    // no need to refresh apps (this.collection) because homePage route does that
+                    Backbone.history.navigate('v1/home', {trigger: true});
                 }
             }else{
                 log("Submit [failed] ... " + data.responseText);
