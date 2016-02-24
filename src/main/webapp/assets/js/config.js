@@ -100,3 +100,17 @@ require([
 ], function (Router) {
     new Router().startBrooklynGui();
 });
+
+/*
+ * Prepend a base URL to REST API calls
+ */
+$.ajaxSetup({
+    beforeSend: function(jqXHR, settings) {
+//        var baseURL = "/api/brooklyn/";
+        var baseURL = "";
+
+        if (baseURL && settings.url.startsWith("/v1")) {
+            settings.url = (baseURL + settings.url).replace("//", "/");
+        }
+    }
+});
