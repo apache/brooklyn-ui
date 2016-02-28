@@ -31,3 +31,4 @@ brooklyn*.log.*
 
 ignored
 /build/
+/target/

@@ -1,6 +1,3 @@
-<!DOCTYPE web-app PUBLIC
- "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
- "http://java.sun.com/dtd/web-app_2_3.dtd" >
 <!--
     Licensed to the Apache Software Foundation (ASF) under one
     or more contributor license agreements.  See the NOTICE file
@@ -19,6 +16,38 @@
     specific language governing permissions and limitations
     under the License.
 -->
-<web-app>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
+
   <display-name>Brooklyn</display-name>
+
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Logout</web-resource-name>
+      <url-pattern>/v1/logout</url-pattern>
+    </web-resource-collection>
+  </security-constraint>
+
+  <!-- Ignored programmatically if noConsoleSecurity -->
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>All</web-resource-name>
+      <url-pattern>/</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>webconsole</role-name>
+    </auth-constraint>
+  </security-constraint>
+
+  <login-config>
+    <auth-method>BASIC</auth-method>
+    <realm-name>webconsole</realm-name>
+  </login-config>
+
+  <security-role>
+    <role-name>webconsole</role-name>
+  </security-role>
+
 </web-app>

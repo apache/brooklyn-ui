@@ -178,7 +178,7 @@ define([
         $.ajax({
             type: "POST",
             dataType: "text",
-            url: "/logout",
+            url: "/v1/logout",
             success: function() {
                 window.location.replace("/");
             },
