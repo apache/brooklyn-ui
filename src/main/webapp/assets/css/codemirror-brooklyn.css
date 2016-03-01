@@ -19,11 +19,15 @@
 
 /* overrides for brooklyn */
 
+.composer-editor {
+  height: calc(100vh - 290px);
+}
+
 .CodeMirror {
   height: auto;
 }
 .CodeMirror-scroll {
-  min-height: 480px;
+  min-height: calc(100vh - 285px);
 }
 .CodeMirror .CodeMirror-gutter.CodeMirror-linenumbers {
 }
