@@ -175,12 +175,16 @@ define([
     }
     
     var AppBlueprintProposer = {
-        getRootProposals: function() {
-          return [
-              { displayText: "name:", text: "name: " },
-              { displayText: "location:", text: "location:\n  " },
-              { displayText: "services:", text: "services:\n- type: " }
-            ];
+        getRootProposals: function(node) {
+          var result = [];
+          if (!node || !node.name)
+            result = result.concat( { displayText: "name:", text: "name: " } );
+          if (!node || !node.services)
+            result = result.concat( { displayText: "services:", text: "services:\n- type: " } );
+          if (!node || !(node.location || node.locations))
+            result = result.concat( { displayText: "location:", text: "location:\n  " } );
+          
+          return result;
         },
         
         getServiceTypes: function(n) {
@@ -228,6 +232,11 @@ define([
             var result = [];
 //            console.log("context at position "+position, nn);
             while (n.role === 'primitive') n = n.parent;
+            var fromHereToEndOfOuterBlock;
+            if (nn[1].key) {
+                fromHereToEndOfOuterBlock = position <= nn[1].end ? nn[1].doc.substring(position, nn[1].end) : nn[1].doc.substring(nn[1].end, position);
+                fromHereToEndOfOuterBlock = fromHereToEndOfOuterBlock.trim();
+            }
             if (nn[1].key && nn[1].key.result === 'services') {
                 // in services block
                 var canAddService = true;
@@ -262,8 +271,8 @@ define([
                 if (n.depth > 2) {
                     // deep in a service, no special assistance currently offered
                 }
-                
-                if (canAddService && (position == nn[1].end || position == nn[1].end+1)) {
+
+                if (canAddService && fromHereToEndOfOuterBlock.length==0) {
                     result.push( { displayText: 'Add a service', className: 'summary', text: '\n- type: ' } );
                 }
             }
@@ -273,7 +282,14 @@ define([
                             return t+'\n'; }));
                 }
             }
+            
             // TODO other blocks
+            
+            // finally add root proposals
+            if (cmPosition.ch==0 && fromHereToEndOfOuterBlock && fromHereToEndOfOuterBlock.length==0) {
+                result = result.concat(this.getRootProposals(nn[0] ? nn[0].result : null));
+            }
+            
             return result;
         }
     }
@@ -316,7 +332,7 @@ define([
                     var nn = findContexts(n, position);
                     
                     if (n.role === 'root') {
-                      result = proposer.getRootProposals();
+                      result = proposer.getRootProposals(n.result);
                     } else {
                       result = proposer.getProposals(nn, position, cmPosition);
                     }
