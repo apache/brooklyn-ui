@@ -22,41 +22,41 @@ define([
 
     var View = Backbone.View.extend({
         render:function () {
-            this.$el.html("<p>fake view</p>")
-            return this
+            this.$el.html("<p>fake view</p>");
+            return this;
         }
-    })
+    });
 
     describe("router", function () {
-        var view, router
+        var view, router;
 
         beforeEach(function () {
-            view = new View
-            router = new Router
-            $("body").append('<div id="container"></div>')
-        })
+            view = new View();
+            router = new Router();
+            $("body").append('<div id="container"></div>');
+        });
 
         afterEach(function () {
-            $("#container").remove()
-        })
+            $("#container").remove();
+        });
 
         it("shows the view inside div#container", function () {
-            expect($("body #container").length).toBe(1)
-            expect($("#container").text()).toBe("")
-            router.showView("#container", view)
-            expect($("#container").text()).toBe("fake view")
-        })
+            expect($("body #container").length).toBe(1);
+            expect($("#container").text()).toBe("");
+            router.showView("#container", view);
+            expect($("#container").text()).toBe("fake view");
+        });
 
         it("should call 'close' of old views", function () {
-            spyOn(view, "close")
+            spyOn(view, "close");
 
-            router.showView("#container", view)
-            expect(view.close).not.toHaveBeenCalled()
+            router.showView("#container", view);
+            expect(view.close).not.toHaveBeenCalled();
             // it should close the old view
-            router.showView("#container", new View)
-            expect(view.close).toHaveBeenCalled()
-        })
-    })
+            router.showView("#container", new View);
+            expect(view.close).toHaveBeenCalled();
+        });
+    });
 
     describe("Periodic functions", function() {
         var CallbackView = View.extend({
@@ -69,23 +69,23 @@ define([
         });
 
         // Expects callback to have been called at least once
-        it("should have 'this' set to the owning view", function() {
+        it("should have 'this' set to the owning view", function(done) {
             Brooklyn.view.refresh = true;
             var view = new CallbackView();
-            waits(15);
-            runs(function() {
+            setTimeout(function() {
                 expect(view.counter).toBeGreaterThan(0);
-            });
+                done();
+            },15);
         });
 
-        it("should not be run if Brooklyn.view.refresh is false", function() {
+        it("should not be run if Brooklyn.view.refresh is false", function(done) {
             Brooklyn.view.refresh = false;
             var view = new CallbackView();
-            waits(15);
-            runs(function() {
+            setTimeout(function() {
                 expect(view.counter).toEqual(0);
                 Brooklyn.view.refresh = true;
-            });
+                done();
+            },15);
         });
     });
 

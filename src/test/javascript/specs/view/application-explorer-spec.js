@@ -67,14 +67,14 @@ define([
                 expect(view.$("div#app-tree").length).toBe(1)
             })
 
-            it("triggers collection fetch on application refresh", function () {
-                spyOn(apps, "fetch").andCallThrough()
-                view.$(".application-tree-refresh").trigger("click")
-                waits(100)
-                runs(function () {
-                    expect(view.collection.fetch).toHaveBeenCalled()
-                })
-            })
+            it("triggers collection fetch on application refresh", function (done) {
+                spyOn(apps, "fetch").and.callThrough();
+                view.$(".application-tree-refresh").trigger("click");
+                setTimeout(function () {
+                    expect(view.collection.fetch).toHaveBeenCalled();
+                    done();
+                },100);
+            });
         })
     })
 })
