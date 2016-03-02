@@ -17,7 +17,8 @@
     specific language governing permissions and limitations
     under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -44,6 +45,7 @@
         </project.build.webapp>
         <nodejs.path>${project.basedir}/target/nodejs/node</nodejs.path>
         <jasmine-maven-plugin.version>2.1</jasmine-maven-plugin.version>
+        <phantomjs.version>2.1.1</phantomjs.version>
         <maven-dependency-plugin.version>2.8</maven-dependency-plugin.version>
         <nodejs-maven-plugin.version>1.0.3</nodejs-maven-plugin.version>
         <maven-war-plugin.version>2.4</maven-war-plugin.version>
@@ -90,7 +92,9 @@
                             <resources>
                                 <resource>
                                     <!-- copy rest-api fixtures from brooklyn-server submodule repo -->
-                                    <directory>${project.basedir}/../brooklyn-server/rest/rest-api/src/test/resources/fixtures</directory>
+                                    <directory>
+                                        ${project.basedir}/../brooklyn-server/rest/rest-api/src/test/resources/fixtures
+                                    </directory>
                                 </resource>
                             </resources>
                         </configuration>
@@ -109,6 +113,16 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <!--Version of phantomjs needs to be specified for linux-->
+                    <phantomjs>
+                        <version>${phantomjs.version}</version>
+                        <checkSystemPath>true</checkSystemPath>
+                        <enforceVersion>true</enforceVersion>
+                        <source>REPOSITORY</source>
+                        <baseUrl/>
+                        <outputDirectory>target/phantomjs</outputDirectory>
+                    </phantomjs>
+
                     <!--Uses the require.js test spec-->
                     <specRunnerTemplate>REQUIRE_JS</specRunnerTemplate>
                     <preloadSources>
@@ -220,49 +234,49 @@
                 </plugin>
                 <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
                 <plugin>
-                  <groupId>org.eclipse.m2e</groupId>
-                  <artifactId>lifecycle-mapping</artifactId>
-                  <version>1.0.0</version>
-                  <configuration>
-                    <lifecycleMappingMetadata>
-                      <pluginExecutions>
-                        <pluginExecution>
-                          <pluginExecutionFilter>
-                            <groupId>
-                              com.github.skwakman.nodejs-maven-plugin
-                            </groupId>
-                            <artifactId>
-                              nodejs-maven-plugin
-                            </artifactId>
-                            <versionRange>
-                              [1.0.3,)
-                            </versionRange>
-                            <goals>
-                              <goal>extract</goal>
-                            </goals>
-                          </pluginExecutionFilter>
-                          <action>
-                            <ignore></ignore>
-                          </action>
-                        </pluginExecution>
-                        <pluginExecution>
-                          <pluginExecutionFilter>
-                            <groupId>org.codehaus.mojo</groupId>
-                            <artifactId>
-                              wagon-maven-plugin
-                            </artifactId>
-                            <versionRange>[1.0,)</versionRange>
-                            <goals>
-                              <goal>download-single</goal>
-                            </goals>
-                          </pluginExecutionFilter>
-                          <action>
-                            <ignore></ignore>
-                          </action>
-                        </pluginExecution>
-                      </pluginExecutions>
-                    </lifecycleMappingMetadata>
-                  </configuration>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            com.github.skwakman.nodejs-maven-plugin
+                                        </groupId>
+                                        <artifactId>
+                                            nodejs-maven-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [1.0.3,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>extract</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.codehaus.mojo</groupId>
+                                        <artifactId>
+                                            wagon-maven-plugin
+                                        </artifactId>
+                                        <versionRange>[1.0,)</versionRange>
+                                        <goals>
+                                            <goal>download-single</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -272,7 +286,9 @@
         <profile>
             <id>nodejs-path-override</id>
             <activation>
-                <os><family>linux</family></os>
+                <os>
+                    <family>linux</family>
+                </os>
             </activation>
             <properties>
                 <nodejs.path>${project.basedir}/src/build/nodejs</nodejs.path>
@@ -293,20 +309,20 @@
                         <artifactId>maven-dependency-plugin</artifactId>
                         <version>${maven-dependency-plugin.version}</version>
                         <executions>
-                          <execution>
-                            <id>unpack-nodejs64</id>
-                            <phase>prepare-package</phase>
-                            <goals>
-                              <goal>unpack-dependencies</goal>
-                            </goals>
-                            <configuration>
-                              <includeGroupIds>com.github.skwakman.nodejs-maven-binaries</includeGroupIds>
-                              <includeArtifactIds>nodejs-maven-binaries</includeArtifactIds>
-                              <outputDirectory>
-                                 ${project.basedir}/target/nodejs64/
-                              </outputDirectory>
-                            </configuration>
-                          </execution>
+                            <execution>
+                                <id>unpack-nodejs64</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>unpack-dependencies</goal>
+                                </goals>
+                                <configuration>
+                                    <includeGroupIds>com.github.skwakman.nodejs-maven-binaries</includeGroupIds>
+                                    <includeArtifactIds>nodejs-maven-binaries</includeArtifactIds>
+                                    <outputDirectory>
+                                        ${project.basedir}/target/nodejs64/
+                                    </outputDirectory>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
@@ -437,10 +453,14 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <gzip src="${project.build.webapp}/assets/css/styles.min.css" destfile="${project.build.webapp}/assets/css/styles.min.css.gz" />
-                                        <gzip src="${project.build.webapp}/assets/css/brooklyn.css" destfile="${project.build.webapp}/assets/css/brooklyn.css.gz" />
-                                        <gzip src="${project.build.webapp}/assets/js/gui.all.min.js" destfile="${project.build.webapp}/assets/js/gui.all.min.js.gz" />
-                                        <gzip src="${project.build.webapp}/assets/js/libs/require.js" destfile="${project.build.webapp}/assets/js/libs/require.js.gz" />
+                                        <gzip src="${project.build.webapp}/assets/css/styles.min.css"
+                                              destfile="${project.build.webapp}/assets/css/styles.min.css.gz"/>
+                                        <gzip src="${project.build.webapp}/assets/css/brooklyn.css"
+                                              destfile="${project.build.webapp}/assets/css/brooklyn.css.gz"/>
+                                        <gzip src="${project.build.webapp}/assets/js/gui.all.min.js"
+                                              destfile="${project.build.webapp}/assets/js/gui.all.min.js.gz"/>
+                                        <gzip src="${project.build.webapp}/assets/js/libs/require.js"
+                                              destfile="${project.build.webapp}/assets/js/libs/require.js.gz"/>
                                     </target>
                                 </configuration>
                             </execution>
@@ -453,27 +473,33 @@
             <!-- see README in the directory referenced below -->
             <id>download-zeroclipboard</id>
             <activation>
-                <file><missing>src/main/webapp/assets/img/zeroclipboard/ZeroClipboard.swf</missing></file>
+                <file>
+                    <missing>src/main/webapp/assets/img/zeroclipboard/ZeroClipboard.swf</missing>
+                </file>
             </activation>
-            <build><plugins><plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>wagon-maven-plugin</artifactId>
-                <version>1.0</version>
-                <executions>
-                    <execution>
-                        <id>download-zeroclipboard</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>download-single</goal>
-                        </goals>
-                        <configuration>
-                            <url>http://cdnjs.cloudflare.com</url>
-                            <fromFile>/ajax/libs/zeroclipboard/1.3.5/ZeroClipboard.swf</fromFile>
-                            <toDir>src/main/webapp/assets/img/zeroclipboard/</toDir>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin></plugins></build>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>wagon-maven-plugin</artifactId>
+                        <version>1.0</version>
+                        <executions>
+                            <execution>
+                                <id>download-zeroclipboard</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>download-single</goal>
+                                </goals>
+                                <configuration>
+                                    <url>http://cdnjs.cloudflare.com</url>
+                                    <fromFile>/ajax/libs/zeroclipboard/1.3.5/ZeroClipboard.swf</fromFile>
+                                    <toDir>src/main/webapp/assets/img/zeroclipboard/</toDir>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
 
     </profiles>
