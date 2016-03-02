@@ -87,7 +87,10 @@ define([
                 }
                 this.preselectTab(tab, tabDetails);
             }
-            this.treeView.selectEntity(entityId)
+            if (!this.treeView.selectEntity(entityId)) {
+                // needs a load
+                this.displayEntityId(entityId);
+            }
         },
         createApplication:function () {
             var that = this;
@@ -163,6 +166,10 @@ define([
                 return that.displayEntityNotFound(id);
             };
             if (appName === undefined) {
+                var $treebox = that.treeView.getTreebox(id);
+                appName = $treebox.children(".entity_tree_node_wrapper").children(".entity_tree_node").data("app-id");
+            }
+            if (appName === undefined) {
                 if (!afterLoad) {
                     // try a reload if given an ID we don't recognise
                     this.collection.includeEntities([id]);
@@ -184,6 +191,8 @@ define([
 
             app.url = "/v1/applications/" + appName;
             entitySummary.url = "/v1/applications/" + appName + "/entities/" + id;
+            if (id !== this.treeView.selectedEntityId)
+                this.treeView.selectEntity(id);
 
             // in case the server response time is low, fade out while it refreshes
             // (since we can't show updated details until we've retrieved app + entity details)

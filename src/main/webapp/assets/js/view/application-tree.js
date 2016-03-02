@@ -144,14 +144,29 @@ define([
         );
     };
 
+    var ensureTreeboxVisible = function($treebox, treeView) {
+        if (!($treebox.length)) return false;
+        if ($treebox.is(':visible')) return true;
+        var $parentTreebox = $treebox.parent().closest('.tree-box');
+        if (!($parentTreebox) || $parentTreebox==$treebox) return false;
+        if (!ensureTreeboxVisible($parentTreebox, treeView)) return false;
+        treeView.showChildrenOf($parentTreebox, false);
+        return true;
+    };
+    
     var selectTreebox = function(id, $treebox, treeView) {
         $('.entity_tree_node_wrapper').removeClass('active');
         $treebox.children('.entity_tree_node_wrapper').addClass('active');
 
         var entity = treeView.collection.get(id);
         if (entity) {
+            ensureTreeboxVisible($treebox, treeView);
             treeView.selectedEntityId = id;
             treeView.trigger('entitySelected', entity);
+            return true;
+        } else {
+            // probably needs a load
+            return false;
         }
     };
 
@@ -182,27 +197,46 @@ define([
             // the empty contents of any placeholder tree nodes (.tree-box) that were created earlier.
             // The entity may have multiple 'treebox' views (in the case of group members).
 
-            // If the new entity is an application, we must create its placeholder in the DOM.
-            if (!entity.get('parentId')) {
-                var $treebox = getOrCreateApplicationTreebox(entity.id, entity.get('name'), this);
+            var $treebox;
+            var parentId = entity.get('parentId');
+            if (!parentId) {
+                // If the new entity is an application, we must create its placeholder in the DOM.
+                $treebox = getOrCreateApplicationTreebox(entity.id, entity.get('name'), this);
 
                 // Select the new app if there's no current selection.
                 if (!this.selectedEntityId)
                     selectTreebox(entity.id, $treebox, this);
+            } else {
+                // else create in parent
+                var parent = this.collection.get(parentId);
+                if (!parent) {
+                    return null;
+                }
+                $parentTreebox = this.entityAdded(parent);
+                if ($parentTreebox==null) {
+                    return null;
+                }
+                $treebox = getOrCreateChildTreebox(entity.id, entity.name, $parentTreebox.hasClass("indirect"), $parentTreebox);
             }
 
             this.entityChanged(entity);
+            return $treebox;
         },
 
         entityChanged: function(entity) {
             // The entity may have multiple 'treebox' views (in the case of group members).
             var that = this;
             findAllTreeboxes(entity.id).each(function() {
-                var $treebox = $(this);
-                updateTreeboxContent(entity, $treebox, that);
+                if ($(this).children('.node-children').is(':visible')) {
+                    // children are being shown
+                    if (that.collection.includeEntities(_.union(entity.get('children'), entity.get('members')))) {
+                        that.collection.fetch();
+                    }
+                }
+                updateTreeboxContent(entity, $(this), that);
             });
         },
-
+        
         entityRemoved: function(entity) {
             // The entity may have multiple 'treebox' views (in the case of group members).
             findAllTreeboxes(entity.id, this.$el).remove();
@@ -221,7 +255,10 @@ define([
 
         selectEntity: function(id) {
             var $treebox = findMasterTreebox(id, this.$el);
-            selectTreebox(id, $treebox, this);
+            return selectTreebox(id, $treebox, this);
+        },
+        getTreebox: function(id) {
+            return findMasterTreebox(id, this.$el);
         },
 
         renderFull: function() {
