@@ -70,7 +70,7 @@ define([
             return entities;
         },
 
-        // returns true if the included entities ahs changed as a result
+        // returns true if the included entities has changed as a result
         includeEntities: function(entities) {
             // accepts id as string or object with id field
             var oldLength = this.includedEntities.length;
