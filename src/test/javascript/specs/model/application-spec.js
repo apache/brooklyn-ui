@@ -24,105 +24,105 @@ define([
 
     describe('model/application Application model', function () {
 
-        var application = new Application.Model()
+        var application = new Application.Model();
 
-        application.url = 'fixtures/application.json'
-        application.fetch({async:false})
+        application.url = 'fixtures/application.json';
+        application.fetch({async:false});
 
         it('loads all model properties defined in fixtures/application.json', function () {
-            expect(application.get("status")).toEqual('STARTING')
-            expect(application.getLinkByName('self')).toEqual('/applications/myapp')
-            expect(application.getLinkByName('entities')).toEqual('fixtures/entity-summary-list.json')
-        })
+            expect(application.get("status")).toEqual('STARTING');
+            expect(application.getLinkByName('self')).toEqual('/applications/myapp');
+            expect(application.getLinkByName('entities')).toEqual('fixtures/entity-summary-list.json');
+        });
 
         it("loads the spec from fixtures/application.json", function () {
             var applicationSpec = application.getSpec(),
-                entity = new Entity.Model(applicationSpec.get("entities")[0])
+                entity = new Entity.Model(applicationSpec.get("entities")[0]);
 
-            expect(applicationSpec.get("name")).toEqual('myapp')
-            expect(applicationSpec.get("locations")[0]).toEqual('/locations/1')
-            expect(entity.get("name")).toEqual('Vanilla Java App')
-        })
+            expect(applicationSpec.get("name")).toEqual('myapp');
+            expect(applicationSpec.get("locations")[0]).toEqual('/locations/1');
+            expect(entity.get("name")).toEqual('Vanilla Java App');
+        });
 
         it('fetches entities from the spec url: fixtures/entity-summary-list.json', function () {
-            expect(application.getLinkByName('entities')).toBe('fixtures/entity-summary-list.json')
-        })
-    })
+            expect(application.getLinkByName('entities')).toBe('fixtures/entity-summary-list.json');
+        });
+    });
 
     describe('model/application', function () {
 
-        var spec, location, entity
+        var spec, location, entity;
 
         beforeEach(function () {
-            spec = new Application.Spec
-            location = "/locations/2"
-            entity = new Entity.Model({name:'test'})
+            spec = new Application.Spec;
+            location = "/locations/2";
+            entity = new Entity.Model({name:'test'});
 
-            spec.url = 'fixtures/application-spec.json'
-            spec.fetch({async:false})
-        })
+            spec.url = 'fixtures/application-spec.json';
+            spec.fetch({async:false});
+        });
 
         it('loads the properties from fixtures/application-spec.json', function () {
-            expect(spec.get("name")).toEqual('myapp')
-            expect(spec.get("locations")[0]).toEqual('/locations/1')
-            expect(spec.get("entities").length).toBe(1)
-        })
+            expect(spec.get("name")).toEqual('myapp');
+            expect(spec.get("locations")[0]).toEqual('/locations/1');
+            expect(spec.get("entities").length).toBe(1);
+        });
 
         it("loads the entity from fixtures/application-spec.json", function () {
-            var entity = new Entity.Model(spec.get("entities")[0])
-            expect(entity.get("name")).toEqual('Vanilla Java App')
-            expect(entity.get("type")).toEqual('org.apache.brooklyn.entity.java.VanillaJavaApp')
-            expect(entity.getConfigByName('initialSize')).toEqual('1')
-            expect(entity.getConfigByName('creationScriptUrl')).toEqual('http://my.brooklyn.io/storage/foo.sql')
-        })
+            var entity = new Entity.Model(spec.get("entities")[0]);
+            expect(entity.get("name")).toEqual('Vanilla Java App');
+            expect(entity.get("type")).toEqual('org.apache.brooklyn.entity.java.VanillaJavaApp');
+            expect(entity.getConfigByName('initialSize')).toEqual('1');
+            expect(entity.getConfigByName('creationScriptUrl')).toEqual('http://my.brooklyn.io/storage/foo.sql');
+        });
 
         it("triggers 'change' when we add a location", function () {
-            spyOn(spec, "trigger").andCallThrough()
-            spec.addLocation(location)
-            expect(spec.trigger).toHaveBeenCalled()
-            expect(spec.get("locations").length).toEqual(2)
-        })
+            spyOn(spec, "trigger").and.callThrough();
+            spec.addLocation(location);
+            expect(spec.trigger).toHaveBeenCalled();
+            expect(spec.get("locations").length).toEqual(2);
+        });
 
         it("triggers 'change' when we remove a location", function () {
-            spec.addLocation(location)
-            spyOn(spec, "trigger").andCallThrough()
+            spec.addLocation(location);
+            spyOn(spec, "trigger").and.callThrough();
 
-            spec.removeLocation('/invalid/location')
-            expect(spec.trigger).not.toHaveBeenCalled()
-            spec.removeLocation(location)
-            expect(spec.trigger).toHaveBeenCalled()
-            expect(spec.get("locations").length).toEqual(1)
-        })
+            spec.removeLocation('/invalid/location');
+            expect(spec.trigger).not.toHaveBeenCalled();
+            spec.removeLocation(location);
+            expect(spec.trigger).toHaveBeenCalled();
+            expect(spec.get("locations").length).toEqual(1);
+        });
 
         it('allows you to add the same location twice', function () {
             var spec = new Application.Spec,
-                location = '/ion/23'
-            spec.addLocation(location)
-            spec.addLocation(location)
-            expect(spec.get("locations").length).toEqual(2)
-        })
+                location = '/ion/23';
+            spec.addLocation(location);
+            spec.addLocation(location);
+            expect(spec.get("locations").length).toEqual(2);
+        });
 
         it("triggers 'change' when you add an entity", function () {
-            spyOn(spec, "trigger").andCallThrough()
-            spec.removeEntityByName(entity.get("name"))
-            expect(spec.trigger).not.toHaveBeenCalled()
-            spec.addEntity(entity)
-            expect(spec.trigger).toHaveBeenCalled()
-        })
+            spyOn(spec, "trigger").and.callThrough();
+            spec.removeEntityByName(entity.get("name"));
+            expect(spec.trigger).not.toHaveBeenCalled();
+            spec.addEntity(entity);
+            expect(spec.trigger).toHaveBeenCalled();
+        });
 
         it("triggers 'change' when you remove an entity", function () {
-            spec.addEntity(entity)
-            spyOn(spec, "trigger").andCallThrough()
-            spec.removeEntityByName(entity.get("name"))
-            expect(spec.trigger).toHaveBeenCalled()
-        })
+            spec.addEntity(entity);
+            spyOn(spec, "trigger").and.callThrough();
+            spec.removeEntityByName(entity.get("name"));
+            expect(spec.trigger).toHaveBeenCalled();
+        });
 
         it('allows you to add the same entity twice', function () {
             var spec = new Application.Spec,
-                entity = new Entity.Model({ name:'test-entity'})
-            spec.addEntity(entity)
-            spec.addEntity(entity)
-            expect(spec.get("entities").length).toEqual(2)
-        })
-    })
-})
+                entity = new Entity.Model({ name:'test-entity'});
+            spec.addEntity(entity);
+            spec.addEntity(entity);
+            expect(spec.get("entities").length).toEqual(2);
+        });
+    });
+});
