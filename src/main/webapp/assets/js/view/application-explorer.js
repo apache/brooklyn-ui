@@ -49,10 +49,12 @@ define([
                 collection:this.collection,
                 appRouter:this.options.appRouter
             })
+            if (this.options.initialTrail) this.show(this.options.initialTrail, true);
             this.treeView.on('entitySelected', function(e) {
                this.displayEntityId(e.id, e.get('applicationId'), false);
             }, this);
-            this.$('div#app-tree').html(this.treeView.renderFull().el)
+            // don't draw these -- wait for the "show" command
+            this.$('div#app-tree').html(this.treeView.renderFull().el);
             this.$('div#details').html(EntityDetailsEmptyHtml);
 
             ViewUtils.fetchRepeatedlyWithDelay(this, this.collection)
@@ -68,7 +70,7 @@ define([
             if (this.detailsView)
                 this.detailsView.close();
         },
-        show: function(entityId) {
+        show: function(entityId, isPre) {
             var tab = "";
             var tabDetails = "";
             if (entityId) {
@@ -88,8 +90,15 @@ define([
                 this.preselectTab(tab, tabDetails);
             }
             if (!this.treeView.selectEntity(entityId)) {
-                // needs a load
-                this.displayEntityId(entityId);
+                // needs a load, but only allowed if not pre-loading
+                if (isPre) { /* don't allow loading if this is a "pre-show" */ }
+                else { this.displayEntityId(entityId); }
+            }
+        },
+        showDefaultSelection: function() {
+            if (!this.treeView.selectedEntityId && !this.treeView.requestedEntityId) {
+                var firstApp = _.first(this.collection.getApplications());
+                if (firstApp) this.treeView.selectEntity(firstApp);
             }
         },
         createApplication:function () {
@@ -124,22 +133,27 @@ define([
             var that = this;
             ViewUtils.cancelFadeOnceLoaded($("div#details"));
 
-            var whichTab = this.currentTab;
-            if (!whichTab) {
-                whichTab = "summary";
-                if (this.detailsView) {
-                    whichTab = this.detailsView.$el.find(".tab-pane.active").attr("id");
-                    this.detailsView.close();
-                }
-            }
             if (this.detailsView) {
+                // if view open, take that tab, but clear the details if the id is different
+                if (this.detailsView.model && this.detailsView.model.id && this.detailsView.model.id != entitySummary.id)
+                    this.detailsView.options.preselectTabDetails = null;
+                this.preselectTab(
+                    //this.detailsView.$el.find(".tab-pane.active").attr("id")
+                    this.detailsView.options.preselectTab,
+                    this.detailsView.options.preselectTabDetails
+                    );
                 this.detailsView.close();
             }
+            if (!this.currentTab) {
+                // else if nothing preselect, use summary
+                this.preselectTab("summary");
+            }
+            
             this.detailsView = new EntityDetailsView({
                 model: entitySummary,
                 application: app,
                 appRouter: this.options.appRouter,
-                preselectTab: whichTab,
+                preselectTab: this.currentTab,
                 preselectTabDetails: this.currentTabDetails,
             });
 
@@ -159,6 +173,9 @@ define([
                 that.collection.fetch();
             });
             this.detailsView.render( $("div#details") );
+            // force the routes to be updated, and clear activities detail possibly (the tab is already shown)
+            // (this causes activities view to lose selected sub-tasks, but that's okay)
+            this.detailsView.openTab(this.currentTab + (this.currentTabDetails ? '/'+this.currentTabDetails : ''));
         },
         displayEntityId: function (id, appName, afterLoad) {
             var that = this;

@@ -197,10 +197,12 @@ define([
             this.appTree.fetch({success:function () {
                 var appExplorer = new ExplorerView({
                     collection:that.appTree,
-                    appRouter:that
-                })
+                    appRouter:that,
+                    initialTrail:trail
+                });
                 that.showView("#application-content", appExplorer)
                 if (trail !== undefined) appExplorer.show(trail)
+                else appExplorer.showDefaultSelection();
             }})
         },
         catalogPage: function (catalogItemKind, id) {

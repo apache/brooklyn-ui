@@ -107,11 +107,12 @@ define([
                     $(a).attr('href',entityHref+"/"+$(a).attr("data-target").slice(1));
                 });
             } else {
-                log("could not find entity href for tab");
+                // entity not available yet -- should be soon
+//                log("could not find entity href for tab");
             }
             if (this.options.preselectTab) {
                 var tabLink = this.$('a[data-target="#'+this.options.preselectTab+'"]');
-                var showFn = function() { tabLink.tab('show'); };
+                var showFn = function() { tabLink.tab('show', { duration: 0 }); };
                 if (optionalParent) showFn();
                 else _.defer(showFn);
             }
@@ -126,6 +127,9 @@ define([
             event.preventDefault();
             
             var tabName = $(event.currentTarget).attr("data-target").slice(1);
+            this.options.preselectTab = tabName;
+            this.options.preselectTabDetails = null;
+            
             var route = this.getTab(tabName);
             if (route) {
                 if (route[0]=='#') route = route.substring(1);

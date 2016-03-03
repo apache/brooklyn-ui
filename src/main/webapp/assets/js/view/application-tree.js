@@ -33,8 +33,8 @@ define([
         return $('.tree-box[data-entity-id="' + id + '"]', $scope);
     };
 
-    var findRootTreebox = function(id) {
-        return $('.lozenge-app-tree-wrapper').children('.tree-box[data-entity-id="' + id + '"]', this.$el);
+    var findRootTreebox = function(id, $scope) {
+        return $('.lozenge-app-tree-wrapper', $scope).children('.tree-box[data-entity-id="' + id + '"]', this.$el);
     };
 
     var findChildTreebox = function(id, $parentTreebox) {
@@ -45,24 +45,17 @@ define([
         return $('.tree-box[data-entity-id="' + id + '"]:not(.indirect)', $scope);
     };
 
-    var createEntityTreebox = function(id, name, $domParent, depth, indirect) {
-        // Tildes in sort key force entities with no name to bottom of list (z < ~).
-        var sortKey = (name ? name.toLowerCase() : "~~~") + "     " + id.toLowerCase();
-
-        // Create the wrapper.
-        var $treebox = $(
-                '<div data-entity-id="'+id+'" data-sort-key="'+sortKey+'" data-depth="'+depth+'" ' +
-                'class="tree-box toggler-group' +
-                    (indirect ? " indirect" : "") +
-                    (depth == 0 ? " outer" : " inner " + (depth % 2 ? " depth-odd" : " depth-even")+
-                    (depth == 1 ? " depth-first" : "")) + '">'+
-                '<div class="entity_tree_node_wrapper"></div>'+
-                '<div class="node-children toggler-target hide"></div>'+
-                '</div>');
-
-        // Insert into the passed DOM parent, maintaining sort order relative to siblings: name then id.
+    var sortKeyOfIdName = function(id, name) {
+        return (name ? name.toLowerCase() : "~~~") + "     " + id.toLowerCase();
+    };
+    var sortKeyOfEntity = function(entity) {
+        return sortKeyOfIdName(entity.id, entity.get('name'));
+    };
+    
+    var insertSorted = function($treebox, $domParent) {
         var placed = false;
         var contender = $(".toggler-group", $domParent).first();
+        var sortKey = $treebox.data('sort-key');
         while (contender.length && !placed) {
             var contenderKey = contender.data("sort-key");
             if (sortKey < contenderKey) {
@@ -77,11 +70,29 @@ define([
         }
         return $treebox;
     };
+    var createEntityTreebox = function(id, name, $domParent, depth, indirect) {
+        // Tildes in sort key force entities with no name to bottom of list (z < ~).
+        var sortKey = sortKeyOfIdName(id, name);
+        // Create the wrapper.
+        var $treebox = $(
+                '<div data-entity-id="'+id+'" data-sort-key="'+sortKey+'" data-depth="'+depth+'" ' +
+                'class="tree-box toggler-group' +
+                    (indirect ? " indirect" : "") +
+                    (depth == 0 ? " outer" : " inner " + (depth % 2 ? " depth-odd" : " depth-even")+
+                    (depth == 1 ? " depth-first" : "")) + '">'+
+                '<div class="entity_tree_node_wrapper"></div>'+
+                '<div class="node-children toggler-target hide"></div>'+
+                '</div>');
 
-    var getOrCreateApplicationTreebox = function(id, name, treeView) {
-        var $treebox = findRootTreebox(id);
+        // Insert into the passed DOM parent, maintaining sort order relative to siblings: name then id.
+        return insertSorted($treebox, $domParent);
+    }
+    
+    var getOrCreateApplicationTreebox = function(id, name, treeView, $el) {
+        if (!($el)) $el = treeView.$el;
+        var $treebox = findRootTreebox(id, $el);
         if (!$treebox.length) {
-            var $insertionPoint = $('.lozenge-app-tree-wrapper', treeView.$el);
+            var $insertionPoint = $('.lozenge-app-tree-wrapper', $el);
             if (!$insertionPoint.length) {
                 // entire view must be created
                 treeView.$el.html(
@@ -89,7 +100,7 @@ define([
                         '<div id="tree-list" class="navbar_main treeloz">'+
                         '<div class="lozenge-app-tree-wrapper">'+
                         '</div></div></div>');
-                $insertionPoint = $('.lozenge-app-tree-wrapper', treeView.$el);
+                $insertionPoint = $('.lozenge-app-tree-wrapper', $el);
             }
             $treebox = createEntityTreebox(id, name, $insertionPoint, 0, false);
         }
@@ -105,6 +116,9 @@ define([
     };
 
     var updateTreeboxContent = function(entity, $treebox, treeView) {
+        oldSortKey = $treebox.data('sort-key');
+        newSortKey = sortKeyOfEntity(entity);
+        
         var $newContent = $(treeView.template({
             id: entity.get('id'),
             parentId:  entity.get('parentId'),
@@ -122,6 +136,14 @@ define([
 
         $wrapper.html($newContent);
         addEventsToNode($treebox, treeView);
+        
+        if (newSortKey !== oldSortKey) {
+            // move this treebox to the right place in its parent
+            $treebox.data('sort-key', newSortKey);
+            $parent = $treebox.parent();
+            $treebox.detach();
+            insertSorted($treebox, $parent);
+        }
     };
 
     var addEventsToNode = function($node, treeView) {
@@ -148,22 +170,31 @@ define([
         if (!($treebox.length)) return false;
         if ($treebox.is(':visible')) return true;
         var $parentTreebox = $treebox.parent().closest('.tree-box');
-        if (!($parentTreebox) || $parentTreebox==$treebox) return false;
+        if (!($parentTreebox.length)) return true;  //means item is being rendered offscreen
+        if ($parentTreebox==$treebox) return false;  //should never happen
         if (!ensureTreeboxVisible($parentTreebox, treeView)) return false;
         treeView.showChildrenOf($parentTreebox, false);
         return true;
     };
     
     var selectTreebox = function(id, $treebox, treeView) {
-        $('.entity_tree_node_wrapper').removeClass('active');
+        treeView.requestedEntityId = id;
+        $('.entity_tree_node_wrapper', treeView.$el).removeClass('active');
         $treebox.children('.entity_tree_node_wrapper').addClass('active');
 
         var entity = treeView.collection.get(id);
         if (entity) {
-            ensureTreeboxVisible($treebox, treeView);
-            treeView.selectedEntityId = id;
-            treeView.trigger('entitySelected', entity);
-            return true;
+            if (ensureTreeboxVisible($treebox, treeView)) {
+                treeView.selectedEntityId = id;
+                treeView.requestedEntityId = null;
+                treeView.trigger('entitySelected', entity);
+                return true;
+            } else {
+                // children DOM nodes not yet existing; probably the model is not populated,
+                // e.g. using browser forward/back, maybe also if invoked before selected;
+                // callers should populate then re-select
+                return false;
+            }
         } else {
             // probably needs a load
             return false;
@@ -196,7 +227,6 @@ define([
             // Called when the full entity model is fetched into our collection, at which time we can replace
             // the empty contents of any placeholder tree nodes (.tree-box) that were created earlier.
             // The entity may have multiple 'treebox' views (in the case of group members).
-
             var $treebox;
             var parentId = entity.get('parentId');
             if (!parentId) {
@@ -204,8 +234,7 @@ define([
                 $treebox = getOrCreateApplicationTreebox(entity.id, entity.get('name'), this);
 
                 // Select the new app if there's no current selection.
-                if (!this.selectedEntityId)
-                    selectTreebox(entity.id, $treebox, this);
+                if (!this.selectedEntityId && !this.requestedEntityId) selectTreebox(entity.id, $treebox, this);
             } else {
                 // else create in parent
                 var parent = this.collection.get(parentId);
@@ -263,6 +292,8 @@ define([
 
         renderFull: function() {
             var that = this;
+            
+            // build up the new element in a hidden node
             this.$el.empty();
 
             // Display tree and highlight the selected entity.
@@ -275,14 +306,22 @@ define([
                     var $treebox = getOrCreateApplicationTreebox(entity.id, entity.name, that);
                     updateTreeboxContent(entity, $treebox, that);
                 });
+            
+                // expand to show selected or requested id
+                var target = this.selectedEntityId;
+                if (!target) target = this.requestedEntityId;
+                if (target) {
+                    // ensure this treebox is added and reselected
+                    var item = this.collection.get(target);
+                    if (item) {
+                        this.initialRender = true;
+                        this.entityAdded(item);
+                        this.selectEntity(target);
+                        this.initialRender = false;
+                    }
+                }
             }
 
-            // Select the first app if there's no current selection.
-            if (!this.selectedEntityId) {
-                var firstApp = _.first(this.collection.getApplications());
-                if (firstApp)
-                    this.selectEntity(firstApp);
-            }
             return this;
         },
 
@@ -377,7 +416,7 @@ define([
                 });
             }
 
-            $childContainer.slideDown(300);
+            $childContainer.slideDown(this.initialRender ? 0 : 300);
             $wrapper.find('.tree-node-state').removeClass('icon-chevron-right').addClass('icon-chevron-down');
             if (recurse) {
                 $childContainer.children('.tree-box').each(function () {
