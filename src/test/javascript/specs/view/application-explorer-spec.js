@@ -15,7 +15,7 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
-*/
+ */
 /**
  * Tests for application tree - view explorer.
  */
@@ -30,7 +30,7 @@ define([
             var apps = new AppTree.Collection,
                 view
             apps.url = 'fixtures/application-tree.json'
-            apps.fetch({async:false})
+            apps.fetch({async: false})
 
             var entityFetch, applicationFetch, defer;
 
@@ -41,11 +41,12 @@ define([
                 entityFetch = EntitySummary.Model.prototype.fetch;
                 applicationFetch = Application.Model.prototype.fetch;
                 defer = _.defer;
-                _.defer = EntitySummary.Model.prototype.fetch = Application.Model.prototype.fetch = function() {};
-                view = new ApplicationExplorerView({ collection:apps }).render()
+                _.defer = EntitySummary.Model.prototype.fetch = Application.Model.prototype.fetch = function () {
+                };
+                view = new ApplicationExplorerView({collection: apps}).render()
             })
 
-            afterEach(function() {
+            afterEach(function () {
                 EntitySummary.Model.prototype.fetch = entityFetch;
                 Application.Model.prototype.fetch = applicationFetch;
                 _.defer = defer;
@@ -68,12 +69,17 @@ define([
             })
 
             it("triggers collection fetch on application refresh", function (done) {
-                spyOn(apps, "fetch").and.callThrough();
+                if (jasmine.version) { // If version > 2.0
+                    spyOn(apps, "fetch").and.callThrough();
+                } else {
+                    spyOn(apps, "fetch").andCallThrough();
+                }
+
                 view.$(".application-tree-refresh").trigger("click");
                 setTimeout(function () {
                     expect(view.collection.fetch).toHaveBeenCalled();
                     done();
-                },100);
+                }, 100);
             });
         })
     })
