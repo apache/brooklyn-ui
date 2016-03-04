@@ -73,6 +73,27 @@
             </testResource>
         </testResources>
         <plugins>
+            <!-- require maven 3.1. jasmine will fail with cryptic error otherwise,
+                 so let's make it print a nicer message if running with the wrong maven. -->
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-enforcer-plugin</artifactId>
+              <executions>
+                <execution>
+                  <id>enforce-maven</id>
+                  <goals>
+                    <goal>enforce</goal>
+                  </goals>
+                  <configuration>
+                    <rules>
+                      <requireMavenVersion>
+                        <version>3.1</version>
+                      </requireMavenVersion>
+                    </rules>    
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>
             <!--
                  run js tests with: $ mvn clean process-test-resources jasmine:test
                  run tests in the browser with: $ mvn jasmine:bdd
