@@ -44,7 +44,7 @@
             ${project.build.directory}/${project.build.finalName}
         </project.build.webapp>
         <nodejs.path>${project.basedir}/target/nodejs/node</nodejs.path>
-        <jasmine-maven-plugin.version>2.1</jasmine-maven-plugin.version>
+        <jasmine-maven-plugin.version>1.3.1.6</jasmine-maven-plugin.version>
         <phantomjs.version>2.1.1</phantomjs.version>
         <maven-dependency-plugin.version>2.8</maven-dependency-plugin.version>
         <nodejs-maven-plugin.version>1.0.3</nodejs-maven-plugin.version>
@@ -113,16 +113,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!--Version of phantomjs needs to be specified for linux-->
-                    <phantomjs>
-                        <version>${phantomjs.version}</version>
-                        <checkSystemPath>true</checkSystemPath>
-                        <enforceVersion>true</enforceVersion>
-                        <source>REPOSITORY</source>
-                        <baseUrl/>
-                        <outputDirectory>target/phantomjs</outputDirectory>
-                    </phantomjs>
-
                     <!--Uses the require.js test spec-->
                     <specRunnerTemplate>REQUIRE_JS</specRunnerTemplate>
                     <preloadSources>

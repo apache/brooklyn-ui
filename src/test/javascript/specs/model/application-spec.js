@@ -15,19 +15,19 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
-*/
+ */
 define([
     "model/application", "model/entity"
 ], function (Application, Entity) {
 
-    $.ajaxSetup({ async:false });
+    $.ajaxSetup({async: false});
 
     describe('model/application Application model', function () {
 
         var application = new Application.Model();
 
         application.url = 'fixtures/application.json';
-        application.fetch({async:false});
+        application.fetch({async: false});
 
         it('loads all model properties defined in fixtures/application.json', function () {
             expect(application.get("status")).toEqual('STARTING');
@@ -56,10 +56,10 @@ define([
         beforeEach(function () {
             spec = new Application.Spec;
             location = "/locations/2";
-            entity = new Entity.Model({name:'test'});
+            entity = new Entity.Model({name: 'test'});
 
             spec.url = 'fixtures/application-spec.json';
-            spec.fetch({async:false});
+            spec.fetch({async: false});
         });
 
         it('loads the properties from fixtures/application-spec.json', function () {
@@ -77,7 +77,12 @@ define([
         });
 
         it("triggers 'change' when we add a location", function () {
-            spyOn(spec, "trigger").and.callThrough();
+            if (jasmine.version) {// If version > 2.0
+                spyOn(spec, "trigger").and.callThrough();
+            } else {
+                spyOn(spec, "trigger").andCallThrough();
+            }
+
             spec.addLocation(location);
             expect(spec.trigger).toHaveBeenCalled();
             expect(spec.get("locations").length).toEqual(2);
@@ -85,7 +90,12 @@ define([
 
         it("triggers 'change' when we remove a location", function () {
             spec.addLocation(location);
-            spyOn(spec, "trigger").and.callThrough();
+            if (jasmine.version) {// If version > 2.0
+                spyOn(spec, "trigger").and.callThrough();
+            } else {
+                spyOn(spec, "trigger").andCallThrough();
+            }
+
 
             spec.removeLocation('/invalid/location');
             expect(spec.trigger).not.toHaveBeenCalled();
@@ -103,7 +113,11 @@ define([
         });
 
         it("triggers 'change' when you add an entity", function () {
-            spyOn(spec, "trigger").and.callThrough();
+            if (jasmine.version) {// If version > 2.0
+                spyOn(spec, "trigger").and.callThrough();
+            } else {
+                spyOn(spec, "trigger").andCallThrough();
+            }
             spec.removeEntityByName(entity.get("name"));
             expect(spec.trigger).not.toHaveBeenCalled();
             spec.addEntity(entity);
@@ -112,14 +126,19 @@ define([
 
         it("triggers 'change' when you remove an entity", function () {
             spec.addEntity(entity);
-            spyOn(spec, "trigger").and.callThrough();
+            if (jasmine.version) {// If version > 2.0
+                spyOn(spec, "trigger").and.callThrough();
+            } else {
+                spyOn(spec, "trigger").andCallThrough();
+            }
+
             spec.removeEntityByName(entity.get("name"));
             expect(spec.trigger).toHaveBeenCalled();
         });
 
         it('allows you to add the same entity twice', function () {
             var spec = new Application.Spec,
-                entity = new Entity.Model({ name:'test-entity'});
+                entity = new Entity.Model({name: 'test-entity'});
             spec.addEntity(entity);
             spec.addEntity(entity);
             expect(spec.get("entities").length).toEqual(2);
