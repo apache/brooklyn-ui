@@ -1486,3 +1486,34 @@ textarea.param-value {
     color: transparent;
     text-shadow: 0 0 5px rgba(0,0,0,0.5);
 }
+
+/* Location wizard */
+.location-type {
+    width: 160px;
+    height: 200px;
+    float: left;
+    text-align: center;
+    border: 3px solid #EEE;
+    position: relative;
+    margin: 4px;
+}
+.location-type:hover {
+    border-color: #CCC;
+}
+.location-type.selected {
+    border-color: #793;
+}
+.location-type div {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 150px;
+    padding: 5px;
+}
+.location-type .fa {
+    font-size: 60px;
+    margin-bottom: 20px;
+}
+.location-type .location-type-title {
+    font-size: 30px;
+}
