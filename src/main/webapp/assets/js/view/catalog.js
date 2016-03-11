@@ -18,6 +18,7 @@
 */
 define([
     "underscore", "jquery", "backbone", "brooklyn",
+    "view/location-wizard",
     "model/location", "model/entity",
     "text!tpl/catalog/page.html",
     "text!tpl/catalog/details-entity.html",
@@ -30,6 +31,7 @@ define([
 
     "bootstrap", "jquery-form"
 ], function(_, $, Backbone, Brooklyn,
+        LocationWizard,
         Location, Entity,
         CatalogPageHtml, DetailsEntityHtml, DetailsGenericHtml, LocationDetailsHtml,
         AddCatalogEntryHtml, AddYamlHtml, AddLocationHtml, EntryHtml) {
@@ -184,51 +186,15 @@ define([
 
     // Could adapt to edit existing locations too.
     function newLocationForm(addView, addViewParent) {
-        // Renders with config key list
-        var body = new (Backbone.View.extend({
-            beforeClose: function() {
-                if (this.configKeyList) {
-                    this.configKeyList.close();
-                }
+        return new LocationWizard({
+            onLocationCreated: function(wizard, data) {
+                addViewParent.loadAccordionItem("locations", data.id);
             },
-            render: function() {
-                this.configKeyList = new Brooklyn.view.ConfigKeyInputPairList().render();
-                var template = _.template(AddLocationHtml);
-                this.$el.html(template);
-                this.$("#new-location-config").html(this.configKeyList.$el);
+            onFinish: function(wizard, data) {
+                addView.clearWithHtml( "Added: "+data.id+". Loading..." );
             },
-            showError: function (message) {
-                self.$(".catalog-save-error")
-                    .removeClass("hide")
-                    .find(".catalog-error-message")
-                    .html(message);
-            }
-        }));
-        var form = new Brooklyn.view.Form({
-            body: body,
-            model: Location.Model,
-            onSubmit: function (location) {
-                var configKeys = body.configKeyList.getConfigKeys();
-                if (!configKeys.displayName) {
-                    configKeys.displayName = location.get("name");
-                }
-                var submitButton = this.$(".catalog-submit-button");
-                // "loading" is an indicator to Bootstrap, not a string to display
-                submitButton.button("loading");
-                location.set("config", configKeys);
-                location.save()
-                    .done(function (data) {
-                        addView.clearWithHtml( "Added: "+data.id+". Loading..." ); 
-                        addViewParent.loadAccordionItem("locations", data.id);
-                    })
-                    .fail(function (response) {
-                        submitButton.button("reset");
-                        body.showError(Brooklyn.util.extractError(response));
-                    });
-            }
-        });
-
-        return form;
+            step: 1
+        }).render();
     }
 
     var Catalog = Backbone.Collection.extend({

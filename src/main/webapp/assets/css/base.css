@@ -1517,3 +1517,27 @@ textarea.param-value {
 .location-type .location-type-title {
     font-size: 30px;
 }
+#catalog-add-form .modal-header .close {
+    display: none;
+}
+#catalog-add-form .modal-body {
+    max-height: none;
+}
+#catalog-add-form .modal-body .tab-content {
+    min-height: 0;
+    background-color: transparent !important;
+    padding: 0;
+}
+#catalog-add-form .location-type {
+    border-color: #ddd;
+}
+
+#catalog-add-form .location-type:hover {
+    border-color: #CCC;
+}
+#catalog-add-form .location-type.selected {
+    border-color: #793;
+}
+#catalog-add-form .modal-footer {
+    background-color: transparent;
+}

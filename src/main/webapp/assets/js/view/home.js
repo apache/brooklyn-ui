@@ -41,7 +41,7 @@ define([
             'click #add-new-application':'createApplication',
             'click #reload-brooklyn-properties': 'reloadBrooklynProperties',
             'click #clear-ha-node-records': 'clearHaNodeRecords',
-            'click .addApplication':'createApplication',
+            'click .addApplication': 'createApplication',
             'click .addLocation': 'createLocation'
         },
         
@@ -163,7 +163,15 @@ define([
             if (this.options.offline || (this.options.cautionOverlay && this.options.cautionOverlay.warningActive)) {
                 // don't show wizard
             } else {
-                var wizard = new LocationWizard();
+                var wizard = new LocationWizard({
+                    onLocationCreated: function(wizard, data) {
+                        that.options.locations.fetch({reset:true});
+                    },
+                    onFinish: function(wizard) {
+                        that._modal.close();
+                    },
+                    isModal: true
+                });
                 this._modal = wizard;
                 this.$(".add-app #modal-container").html(wizard.render().el);
                 this.$(".add-app #modal-container .modal")

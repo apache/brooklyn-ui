@@ -26,7 +26,6 @@ define([
     'text!tpl/app-add-wizard/edit-config-entry.html',
 ], function(_, Backbone, $, Util, Location, ModalHtml, LocationTypeHtml, LocationConfigurationHtml, LocationProvisioningHtml, EditConfigEntryHtml) {
     var Wizard = Backbone.View.extend({
-        className:'modal hide fade',
         template: _.template(ModalHtml),
         events: {
             'click .location-wizard-previous': 'previousStep',
@@ -40,12 +39,11 @@ define([
             this.type = '';
             this.step = 0;
             this.location = new Location.Model;
+            this.onLocationCreated = _.isFunction(this.options.onLocationCreated) ? this.options.onLocationCreated : undefined;
+            this.onFinish = _.isFunction(this.options.onFinish) ? this.options.onFinish : undefined;
+            this.className = _.isBoolean(this.options.isModal) && this.options.isModal ? 'modal hide fade' : '';
 
             this.steps = [
-                {
-                    title: 'No locations defined',
-                    subtitle: 'You currently have no location to deploy applications to'
-                },
                 {
                     title: 'Location type',
                     subtitle: 'Select the location type you want to add',
@@ -80,7 +78,7 @@ define([
         },
 
         render: function() {
-            this.$el.html(this.template({}));
+            this.$el.addClass(this.className).html(this.template({}));
 
             this.renderStep();
 
@@ -92,6 +90,14 @@ define([
 
             this.$('.location-wizard-title').html(_.template(step.title)({type: this.capitalize(this.type)}));
             this.$('.location-wizard-subtitle').html(_.template(step.subtitle)({type: this.type}));
+
+            // Render actions buttons
+            var actionContainer = this.$('.location-wizard-actions').empty();
+            if ((this.type === 'cloud' && this.step === 2) || (this.type !== 'cloud' && this.step === 1)) {
+                _.each(this.actions, function(element, index, list) {
+                    actionContainer.append($('<button>').addClass('btn btn-mini btn-info location-wizard-action ' + element.class).html(element.label));
+                });
+            }
 
             if (_.isObject(step.view)) {
                 this.currentView = new step.view({wizard: this});
@@ -112,15 +118,6 @@ define([
                 next.hide();
             } else {
                 next.show();
-            }
-            this.$('.trail').html('Step ' + (this.step + 1) + ' of ' + this.steps.length);
-
-            // Render actions buttons
-            var actionContainer = this.$('.location-wizard-actions').empty();
-            if ((this.type === 'cloud' && this.step === 3) || (this.type !== 'cloud' && this.step === 2)) {
-                _.each(this.actions, function(element, index, list) {
-                    actionContainer.append($('<button>').addClass('btn btn-mini btn-info ' + element.class).html(element.label));
-                });
             }
 
             this.$('input').first().focus();
@@ -143,15 +140,14 @@ define([
                 }
                 this.step++;
                 this.renderStep();
-                this.enableNextStep(false);
             }
         },
 
-        enableNextStep: function(enabled) {
+        enableNextAction: function(enabled) {
             if (enabled) {
-                this.$('.location-wizard-next').removeAttr('disabled');
+                this.$('.location-wizard-action').removeAttr('disabled');
             } else {
-                this.$('.location-wizard-next').attr('disabled', 'disabled');
+                this.$('.location-wizard-action').attr('disabled', 'disabled');
             }
         },
 
@@ -173,10 +169,14 @@ define([
 
             this.location.save()
                 .done(function (data) {
+                    if (_.isFunction(that.onLocationCreated)) {
+                        that.onLocationCreated(that, data);
+                    }
+
                     if (_.isFunction(callback)) {
                         callback();
-                    } else {
-                        that.$('.close').click();
+                    } else if (_.isFunction(that.onFinish)) {
+                        that.onFinish(that, data);
                     }
                 })
                 .fail(function (response) {
@@ -187,7 +187,7 @@ define([
         saveAndReset: function() {
             var that = this;
             this.save(function() {
-                that.step = 1;
+                that.step = 0;
                 that.renderStep();
             });
         },
@@ -216,11 +216,13 @@ define([
         render: function() {
             this.$el.html(this.template());
 
+            this.wizard.enableNextAction(false);
+
             var that = this;
             this.$('.location-type').each(function () {
                 if ($(this).data('type') === that.wizard.type) {
                     $(this).addClass('selected');
-                    that.wizard.enableNextStep(true);
+                    that.wizard.enableNextAction(true);
                 }
             });
 
@@ -233,7 +235,7 @@ define([
 
             $elm.toggleClass('selected');
             this.wizard.type = $elm.hasClass('selected') ? type : '';
-            this.wizard.enableNextStep(this.wizard.type !== '');
+            this.wizard.enableNextAction(this.wizard.type !== '');
 
             if (this.wizard.location.get('spec') !== this.wizard.type) {
                 this.wizard.location = new Location.Model;
@@ -414,6 +416,8 @@ define([
         render: function() {
             this.$el.html(this.template());
 
+            this.wizard.enableNextAction(false);
+
             var that = this;
             var fields = this.fields[this.wizard.type];
             _.each(fields, function(field, index) {
@@ -504,7 +508,7 @@ define([
                 if ($(this).data('require')) {
                     enable = enable && $(this).val() !== '';
                 }
-                that.wizard.enableNextStep(enable);
+                that.wizard.enableNextAction(enable);
             });
         }
     });
@@ -524,6 +528,7 @@ define([
 
         render: function() {
             this.$el.html(this.template());
+            this.wizard.enableNextAction(true);
             return this;
         },
 
