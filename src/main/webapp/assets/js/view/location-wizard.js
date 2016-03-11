@@ -49,31 +49,32 @@ define([
                 {
                     title: 'Location type',
                     subtitle: 'Select the location type you want to add',
-                    view: new LocationType({wizard: this})
+                    view: LocationType
                 },
                 {
                     title: '<%= type %> Location - Configuration',
                     subtitle: 'Required information about your location',
-                    view: new LocationConfiguration({wizard: this})
+                    view: LocationConfiguration
                 },
                 {
                     title: '<%= type %> Location - Provisioning',
                     subtitle: 'Provisioning information about your location',
-                    view: new LocationProvisioning({wizard: this}),
-                    actions: [
-                        {
-                            label: 'Inject in YAML',
-                            class: 'location-wizard-inject'
-                        },
-                        {
-                            label: 'Save and add another',
-                            class: 'location-wizard-save-and-reset'
-                        },
-                        {
-                            label: 'Save',
-                            class: 'location-wizard-save'
-                        }
-                    ]
+                    view: LocationProvisioning
+                }
+            ];
+
+            this.actions = [
+                {
+                    label: 'Inject in YAML',
+                    class: 'location-wizard-inject'
+                },
+                {
+                    label: 'Save and add another',
+                    class: 'location-wizard-save-and-reset'
+                },
+                {
+                    label: 'Save',
+                    class: 'location-wizard-save'
                 }
             ];
         },
@@ -93,7 +94,8 @@ define([
             this.$('.location-wizard-subtitle').html(_.template(step.subtitle)({type: this.type}));
 
             if (_.isObject(step.view)) {
-                this.$('.modal-body').html(step.view.render().el);
+                this.currentView = new step.view({wizard: this});
+                this.$('.modal-body').html(this.currentView.render().el);
             }
 
             // Render prev / next buttons
@@ -106,6 +108,8 @@ define([
             }
             if (this.step == this.steps.length - 1) {
                 next.hide();
+            } else if (this.step == this.steps.length - 2 && this.type !== 'cloud') {
+                next.hide();
             } else {
                 next.show();
             }
@@ -113,15 +117,20 @@ define([
 
             // Render actions buttons
             var actionContainer = this.$('.location-wizard-actions').empty();
-            if (_.isArray(step.actions)) {
-                _.each(step.actions, function(element, index, list) {
-                    actionContainer.append($('<button>').addClass(element.class).html(element.label));
+            if ((this.type === 'cloud' && this.step === 3) || (this.type !== 'cloud' && this.step === 2)) {
+                _.each(this.actions, function(element, index, list) {
+                    actionContainer.append($('<button>').addClass('btn btn-mini btn-info ' + element.class).html(element.label));
                 });
             }
+
+            this.$('input').first().focus();
         },
 
         previousStep: function() {
             if (this.step > 0) {
+                if (this.currentView) {
+                    this.currentView.close();
+                }
                 this.step--;
                 this.renderStep();
             }
@@ -129,6 +138,9 @@ define([
 
         nextStep: function() {
             if (this.step < this.steps.length - 1) {
+                if (this.currentView) {
+                    this.currentView.close();
+                }
                 this.step++;
                 this.renderStep();
                 this.enableNextStep(false);
@@ -191,33 +203,46 @@ define([
     var LocationType = Backbone.View.extend({
         className: 'location-wizard-body',
         template: _.template(LocationTypeHtml),
+        events: {
+            'click .location-type': 'onSelectType'
+        },
+
         wizard: null,
 
-        render: function() {
-            this.$el.html(this.template({}));
+        initialize: function() {
+            this.wizard = this.options.wizard;
+        },
 
-            if (this.options.wizard.type != null) {
-                var that = this;
-                this.$('.location-type').each(function() {
-                    if ($(this).data('type') === that.options.wizard.type) {
-                        $(this).addClass('selected');
-                        that.options.wizard.enableNextStep(true);
-                    }
-                });
-            }
+        render: function() {
+            this.$el.html(this.template());
 
             var that = this;
-            this.$('.location-type').click(function() {
-                var type = $(this).data('type');
-                $(this).toggleClass('selected');
-                that.options.wizard.type = $(this).hasClass('selected') ? type : '';
-                that.options.wizard.enableNextStep(that.options.wizard.type !== '');
+            this.$('.location-type').each(function () {
+                if ($(this).data('type') === that.wizard.type) {
+                    $(this).addClass('selected');
+                    that.wizard.enableNextStep(true);
+                }
+            });
 
-                that.$('.location-type').each(function() {
-                    if ($(this).data('type') != type) {
-                        $(this).removeClass('selected');
-                    }
-                });
+            return this;
+        },
+
+        onSelectType: function(event) {
+            var $elm = this.$(event.currentTarget);
+            var type = $elm.data('type');
+
+            $elm.toggleClass('selected');
+            this.wizard.type = $elm.hasClass('selected') ? type : '';
+            this.wizard.enableNextStep(this.wizard.type !== '');
+
+            if (this.wizard.location.get('spec') !== this.wizard.type) {
+                this.wizard.location = new Location.Model;
+            }
+
+            this.$('.location-type').each(function() {
+                if ($(this).data('type') != type) {
+                    $(this).removeClass('selected');
+                }
             });
 
             return this;
@@ -227,6 +252,11 @@ define([
     var LocationConfiguration = Backbone.View.extend({
         className: 'location-wizard-body',
         template: _.template(LocationConfigurationHtml),
+        events: {
+            'blur input, textarea': 'onChange',
+            'change select': 'onChange'
+        },
+
         fields: {
             cloud: [
                 {
@@ -246,7 +276,7 @@ define([
                     label: 'Cloud type',
                     type: 'select',
                     values: {
-                        'jclouds:aws': 'Amazon',
+                        'jclouds:aws-ec2': 'Amazon',
                         'jclouds:softlayer': 'Softlayer',
                         'jclouds:openstack': 'Openstack',
                         other: 'Other'
@@ -258,7 +288,7 @@ define([
                     type: 'text',
                     require: {
                         spec: [
-                            'jclouds:aws', 'jclouds:softlayer'
+                            'jclouds:aws-ec2', 'jclouds:softlayer'
                         ]
                     },
                     disable: {
@@ -278,7 +308,7 @@ define([
                     },
                     disable: {
                         spec: [
-                            'jclouds:aws', 'jclouds:softlayer'
+                            'jclouds:aws-ec2', 'jclouds:softlayer'
                         ]
                     }
                 },
@@ -372,28 +402,32 @@ define([
             ]
         },
         wizard: null,
-        type: null,
+
+        initialize: function() {
+            this.wizard = this.options.wizard;
+
+            if (_.contains(['localhost', 'byon'], this.wizard.type)) {
+                this.wizard.location.set('spec', this.wizard.type);
+            }
+        },
 
         render: function() {
             this.$el.html(this.template());
 
             var that = this;
-            var fields = this.fields[this.options.wizard.type];
+            var fields = this.fields[this.wizard.type];
             _.each(fields, function(field, index) {
                 that.$('.tab-content').append(that.generateField(field));
             });
 
-            if (_.contains(['localhost', 'byon'], this.options.wizard.type)) {
-                this.options.wizard.location.set('spec', this.options.wizard.type);
-            }
+            // Force the onChange event to run
+            this.$('input,textarea').blur();
+            this.$('select').change();
 
             return this;
         },
 
         generateField: function(field) {
-            var that = this;
-            var location = this.options.wizard.location;
-
             var input = $('<input>').attr('type', field.type);
             if (field.type === 'textarea') {
                 input = $('<textarea>');
@@ -403,61 +437,75 @@ define([
                     input.append($('<option>').attr('value', key).html(value));
                 });
             }
-            input.data('list', _.isBoolean(field.list) ? field.list : false);
-            input.data('require', _.isBoolean(field.require) ? field.require : false);
 
-            // Handle dependencies between fields
-            if (_.isObject(field, 'require')) {
-                _.each(field.require, function (object, key) {
-                    that.$('#' + key).change(function () {
-                        that.$('#' + field.id).data('require', _.contains(object, $(this).val()));
-                    });
-                });
+            var value = '';
+            if (_.contains(['name', 'spec'], field.id)) {
+                value = this.wizard.location.get(field.id);
+            } else {
+                value = this.wizard.location.get('config')[field.id];
             }
 
-            if (_.isObject(field, 'disable')) {
-                _.each(field.disable, function (object, key) {
-                    that.$('#' + key).change(function () {
-                        if (_.contains(object, $(this).val())) {
-                            that.$('#' + field.id).attr('disabled', 'disabled')
-                        } else {
-                            that.$('#' + field.id).removeAttr('disabled');
-                        }
-                    });
-                });
-            }
-
-            var html = $('<div>').addClass('control-group')
-                .append($('<label>').addClass('control-label deploy-label').attr('for', field.id).html(field.label))
-                .append(input.attr({
-                    id: field.id,
-                    name: field.id
-                }));
-
-            input.change(function() {
-                if (_.contains(['name', 'spec'], $(this).attr('name'))) {
-                    location.set($(this).attr('name'), $(this).val());
-                } else {
-                    var config = {};
-                    config[$(this).attr('name')] = $(this).data('list') ? $(this).val().split("\n") : $(this).val();
-                    location.set('config', _.extend(location.get('config'), config));
-                }
-                that.checkRequired();
-            }).trigger("change");
-
-
-            return html;
+            return $('<div>').addClass('control-group')
+                .append($('<label>')
+                    .addClass('control-label deploy-label')
+                    .attr('for', field.id)
+                    .html(field.label))
+                .append(input
+                    .val(value)
+                    .data('list', _.isBoolean(field.list) ? field.list : false)
+                    .data('require', _.isBoolean(field.require) ? field.require : false)
+                    .data('require-deps', _.isObject(field.require) ? field.require : undefined)
+                    .data('disable-deps', _.isObject(field.disable) ? field.disable : undefined)
+                    .attr({
+                        id: field.id,
+                        name: field.id
+                    }));
         },
 
-        checkRequired: function() {
-            var valid = true;
-            this.$('input,textarea').each(function() {
-                if ($(this).data('require')) {
-                    valid = valid && $(this).val() !== '';
-                }
-            });
+        onChange: function(event) {
+            var that = this;
+            var enable = true;
+            var $elm = this.$(event.currentTarget);
 
-            this.options.wizard.enableNextStep(valid);
+            // Update the location object based on the field values
+            if (_.contains(['name', 'spec'], $elm.attr('name'))) {
+                this.wizard.location.set($elm.attr('name'), $elm.val());
+            } else {
+                var config = {};
+                config[$elm.attr('name')] = $elm.data('list') ? $elm.val().split("\n") : $elm.val();
+                this.wizard.location.set('config', _.extend(this.wizard.location.get('config'), config));
+            }
+
+            this.$('input, select, textarea').each(function() {
+                // Update the data-require attribute
+                if (_.isObject($(this).data('require-deps'))) {
+                    var require = true;
+                    _.each($(this).data('require-deps'), function(values, key) {
+                        require = require && _.contains(values, that.$('[name=' + key + ']').val());
+                    });
+                    $(this).data('require', require);
+                }
+
+                // Enable / disable field
+                if (_.isObject($(this).data('disable-deps'))) {
+                    var disable = true;
+                    _.each($(this).data('disable-deps'), function(values, key) {
+                        disable = disable && _.contains(values, that.$('[name=' + key + ']').val());
+                    });
+                    if (disable) {
+                        $(this).attr('disabled', 'disabled');
+                    } else {
+                        $(this).removeAttr('disabled');
+                    }
+                }
+
+
+                // Enable / disable next button based on the require attribute
+                if ($(this).data('require')) {
+                    enable = enable && $(this).val() !== '';
+                }
+                that.wizard.enableNextStep(enable);
+            });
         }
     });
 
@@ -470,17 +518,21 @@ define([
         },
         wizard: null,
 
+        initialize: function() {
+            this.wizard = this.options.wizard;
+        },
+
         render: function() {
-            this.$el.html(this.template({}));
+            this.$el.html(this.template());
             return this;
         },
 
         setProvisioningProperties: function() {
             var config = {};
-            $('.app-add-wizard-config-entry').each(function() {
+            this.$('.app-add-wizard-config-entry').each(function() {
                 config[$(this).find('input[name=key]').val()] = $(this).find('input[name=value]').val();
             });
-            this.options.wizard.location.set('config', _.extend(this.options.wizard.location.get('config'), config));
+            this.wizard.location.set('config', _.extend(this.wizard.location.get('config'), config));
         },
 
         addProvisioningProperty:function (event) {
