@@ -188,12 +188,11 @@ define([
     function newLocationForm(addView, addViewParent) {
         return new LocationWizard({
             onLocationCreated: function(wizard, data) {
-                addViewParent.loadAccordionItem("locations", data.id);
+                addViewParent.loadAccordionItem("locations", data.id, true);
             },
             onFinish: function(wizard, data) {
                 addView.clearWithHtml( "Added: "+data.id+". Loading..." );
-            },
-            step: 1
+            }
         }).render();
     }
 
@@ -473,7 +472,7 @@ define([
             this.loadAccordionItem("locations", id);
         },
 
-        loadAccordionItem: function (kind, id) {
+        loadAccordionItem: function (kind, id, noRedirect) {
             if (!this.accordion[kind]) {
                 console.error("No accordion for: " + kind);
             } else {
@@ -499,8 +498,8 @@ define([
                             }
                         }
                         // TODO could look in collection for any starting with ID
-                        if (model) {
-                            Backbone.history.navigate("/v1/catalog/"+kind+"/"+id);
+                        if (model && !noRedirect) {
+                            Backbone.history.navigate("/v1/catalog/" + kind + "/" + id);
                             activeDetailsView = kind;
                             accordion.activeCid = model.cid;
                             accordion.options.onItemSelected(kind, model);

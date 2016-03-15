@@ -163,20 +163,19 @@ define([
             if (this.options.offline || (this.options.cautionOverlay && this.options.cautionOverlay.warningActive)) {
                 // don't show wizard
             } else {
-                var wizard = new LocationWizard({
+                this._modal = new LocationWizard({
                     onLocationCreated: function(wizard, data) {
                         that.options.locations.fetch({reset:true});
                     },
                     onFinish: function(wizard) {
-                        that._modal.close();
+                        that.$(".add-app #modal-container .modal").modal('hide');
                     },
                     isModal: true
                 });
-                this._modal = wizard;
-                this.$(".add-app #modal-container").html(wizard.render().el);
+                this.$(".add-app #modal-container").html(this._modal.render().el);
                 this.$(".add-app #modal-container .modal")
                     .on("hidden",function () {
-                        wizard.close();
+                        that._modal.close();
                         that.options.locations.fetch({reset:true});
                     }).modal('show');
             }

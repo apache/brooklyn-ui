@@ -18,19 +18,21 @@
  */
 
 define([
-    'underscore', 'backbone', 'jquery', 'brooklyn-utils', 'model/location',
+    'underscore', 'backbone', 'jquery',
+    'brooklyn-utils', 'model/location',
     'text!tpl/location-wizard/modal.html',
     'text!tpl/location-wizard/location-type.html',
     'text!tpl/location-wizard/location-configuration.html',
     'text!tpl/location-wizard/location-provisioning.html',
-    'text!tpl/app-add-wizard/edit-config-entry.html',
-], function(_, Backbone, $, Util, Location, ModalHtml, LocationTypeHtml, LocationConfigurationHtml, LocationProvisioningHtml, EditConfigEntryHtml) {
+    'text!tpl/location-wizard/location-provisioning-entry.html',
+
+    'jquery-easy-autocomplete'
+], function(_, Backbone, $, Util, Location, ModalHtml, LocationTypeHtml, LocationConfigurationHtml, LocationProvisioningHtml, LocationProvisioningEntry) {
     var Wizard = Backbone.View.extend({
         template: _.template(ModalHtml),
         events: {
             'click .location-wizard-previous': 'previousStep',
             'click .location-wizard-next': 'nextStep',
-            'click .location-wizard-inject': 'inject',
             'click .location-wizard-save': 'save',
             'click .location-wizard-save-and-reset': 'saveAndReset'
         },
@@ -62,10 +64,6 @@ define([
             ];
 
             this.actions = [
-                {
-                    label: 'Inject in YAML',
-                    class: 'location-wizard-inject'
-                },
                 {
                     label: 'Save and add another',
                     class: 'location-wizard-save-and-reset'
@@ -155,16 +153,11 @@ define([
             return text && text.charAt(0).toUpperCase() + text.slice(1);
         },
 
-        inject: function() {
-            // TODO: Inject YAML location into the composer
-        },
-
         save: function(callback) {
             var that = this;
 
-            var view = this.steps[this.step].view;
-            if (view instanceof LocationProvisioning) {
-                view.setProvisioningProperties();
+            if (this.currentView instanceof LocationProvisioning) {
+                this.currentView.setProvisioningProperties();
             }
 
             this.location.save()
@@ -188,6 +181,8 @@ define([
             var that = this;
             this.save(function() {
                 that.step = 0;
+                that.type = '';
+                that.location = new Location.Model;
                 that.renderStep();
             });
         },
@@ -279,8 +274,9 @@ define([
                     type: 'select',
                     values: {
                         'jclouds:aws-ec2': 'Amazon',
-                        'jclouds:softlayer': 'Softlayer',
+                        'jclouds:google-compute-engine': 'Google',
                         'jclouds:openstack': 'Openstack',
+                        'jclouds:softlayer': 'Softlayer',
                         other: 'Other'
                     }
                 },
@@ -290,7 +286,7 @@ define([
                     type: 'text',
                     require: {
                         spec: [
-                            'jclouds:aws-ec2', 'jclouds:softlayer'
+                            'jclouds:aws-ec2', 'jclouds:google-compute-engine', 'jclouds:softlayer'
                         ]
                     },
                     disable: {
@@ -351,12 +347,12 @@ define([
                     type: 'password'
                 },
                 {
-                    id: 'publicKeyFile',
+                    id: 'privateKeyFile',
                     label: 'Private key',
                     type: 'textarea'
                 },
                 {
-                    id: 'publicKeyPassphrase',
+                    id: 'privateKeyPassphrase',
                     label: 'Private key passphrase',
                     type: 'test'
                 }
@@ -385,12 +381,12 @@ define([
                     type: 'password'
                 },
                 {
-                    id: 'publicKeyFile',
+                    id: 'privateKeyFile',
                     label: 'Private key',
                     type: 'textarea'
                 },
                 {
-                    id: 'publicKeyPassphrase',
+                    id: 'privateKeyPassphrase',
                     label: 'Private key passphrase',
                     type: 'test'
                 },
@@ -440,6 +436,7 @@ define([
                 _.each(field.values, function(value, key) {
                     input.append($('<option>').attr('value', key).html(value));
                 });
+                $('<input>').attr('name', field.id + '-other').insertAfter(input);
             }
 
             var value = '';
@@ -449,7 +446,7 @@ define([
                 value = this.wizard.location.get('config')[field.id];
             }
 
-            return $('<div>').addClass('control-group')
+            var $div =  $('<div>').addClass('control-group')
                 .append($('<label>')
                     .addClass('control-label deploy-label')
                     .attr('for', field.id)
@@ -464,6 +461,15 @@ define([
                         id: field.id,
                         name: field.id
                     }));
+
+            if (field.type === 'select' && _.has(field.values, 'other')) {
+                $div.append($('<input>')
+                    .attr('name', field.id + '-other')
+                    .addClass('location-other')
+                    .hide());
+            }
+
+            return $div;
         },
 
         onChange: function(event) {
@@ -471,13 +477,25 @@ define([
             var enable = true;
             var $elm = this.$(event.currentTarget);
 
+            if ($elm.attr('name') === 'spec') {
+                if ($elm.val() === 'other') {
+                    this.$('input[name=spec-other]').show();
+                } else {
+                    this.$('input[name=spec-other]').hide();
+                }
+            }
+
             // Update the location object based on the field values
-            if (_.contains(['name', 'spec'], $elm.attr('name'))) {
-                this.wizard.location.set($elm.attr('name'), $elm.val());
-            } else {
-                var config = {};
-                config[$elm.attr('name')] = $elm.data('list') ? $elm.val().split("\n") : $elm.val();
-                this.wizard.location.set('config', _.extend(this.wizard.location.get('config'), config));
+            if ($elm.val() !== '') {
+                if (_.contains(['name', 'spec'], $elm.attr('name'))) {
+                    this.wizard.location.set($elm.attr('name'), $elm.val());
+                } else if ($elm.attr('name') === 'spec-other') {
+                    this.wizard.location.set('spec', $elm.val());
+                } else {
+                    var config = {};
+                    config[$elm.attr('name')] = $elm.data('list') ? $elm.val().split("\n") : $elm.val();
+                    this.wizard.location.set('config', _.extend(this.wizard.location.get('config'), config));
+                }
             }
 
             this.$('input, select, textarea').each(function() {
@@ -517,10 +535,44 @@ define([
         className: 'location-wizard-body',
         template: _.template(LocationProvisioningHtml),
         events: {
-            'click #remove-config': 'removeProvisioningProperty',
-            'click #add-config': 'addProvisioningProperty'
+            'click .remove-entry': 'removeEntry',
+            'click .add-entry': 'addEntry'
         },
         wizard: null,
+
+        vmOptions: [
+            'minCore',
+            'minRam',
+            'osFamily',
+            'osVersionRegex',
+            'os64Bit',
+            'imageId',
+            'imageNameRegex',
+            'hardwareId',
+            'inboundPorts',
+            'securityGroups',
+            'domainName',
+            'userMetadata',
+            'machineCreateAttempts',
+            'destroyOnFailure'
+        ],
+        osOptions: [
+            'user',
+            'password',
+            'loginUser',
+            'privateKeyFile',
+            'privateKeyPassphrase',
+            'publicKeyFile',
+            'openIptables',
+            'installDevUrandom',
+            'useJcloudsSshInit'
+
+        ],
+        templateOptions: [
+            'subnetId',
+            'mapNewVolumeToDeviceName',
+            'securityGroupIds'
+        ],
 
         initialize: function() {
             this.wizard = this.options.wizard;
@@ -534,19 +586,51 @@ define([
 
         setProvisioningProperties: function() {
             var config = {};
-            this.$('.app-add-wizard-config-entry').each(function() {
-                config[$(this).find('input[name=key]').val()] = $(this).find('input[name=value]').val();
+            this.$('.control-group').each(function() {
+                if ($(this).find('input.entry-key').val() !== '' && $(this).find('input.entry-value').val() !== '') {
+                    config[$(this).find('input.entry-key').val()] = $(this).find('input.entry-value').val();
+                }
             });
             this.wizard.location.set('config', _.extend(this.wizard.location.get('config'), config));
         },
 
-        addProvisioningProperty:function (event) {
-            var $row = _.template(EditConfigEntryHtml, {});
-            $(event.currentTarget).parent().prev().append($row);
+        addEntry:function (event) {
+            var that = this;
+            var $entry = $(_.template(LocationProvisioningEntry, {}));
+            $(event.currentTarget).prev().append($entry);
+
+            setTimeout(function() {
+                $entry.find('input.entry-key').easyAutocomplete({
+                    list: {
+                        match: {
+                            enabled: true
+                        }
+                    },
+                    categories: [
+                        {
+                            listLocation: 'vmOptions',
+                            header: 'VM Creation'
+                        },
+                        {
+                            listLocation: 'osOptions',
+                            header: 'OS Setup'
+                        },
+                        {
+                            listLocation: 'templateOptions',
+                            header: 'Template Options'
+                        }
+                    ],
+                    data: {
+                        vmOptions: that.vmOptions,
+                        osOptions: that.osOptions,
+                        templateOptions: that.templateOptions
+                    }
+                });
+            }, 100);
         },
 
-        removeProvisioningProperty:function (event) {
-            $(event.currentTarget).parent().parent().remove();
+        removeEntry:function (event) {
+            $(event.currentTarget).parent().remove();
         }
     });
 

@@ -30,10 +30,13 @@ under the License.
     templates available
   </div></div>
    -->
+  <% if (locations.size() > 0) { %>
   <div class="roundedSummary"><div class="roundedSummaryText">
     <span class="big"><%- locations.size() %></span> location<%- locations.size()==1 ? "" : "s" %> configured<br/>
     <!-- with <span class="big">14</span> active machines  -->
-    <button class="addLocation" type="button">add location</button>
   </div></div>
+  <% } else { %>
+  <button class="addSummary addLocation roundedSummary" type="button">add location</button>
+  <% } %>
 
-  <button class="roundedSummary addApplication addApplication" type="button">add application</button>
+  <button class="addSummary addApplication roundedSummary" type="button">add application</button>
