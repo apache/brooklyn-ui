@@ -97,6 +97,10 @@ define([
                 });
             }
 
+            if (this.currentView) {
+                this.currentView.close();
+            }
+
             if (_.isObject(step.view)) {
                 this.currentView = new step.view({wizard: this});
                 this.$('.modal-body').html(this.currentView.render().el);
@@ -123,9 +127,6 @@ define([
 
         previousStep: function() {
             if (this.step > 0) {
-                if (this.currentView) {
-                    this.currentView.close();
-                }
                 this.step--;
                 this.renderStep();
             }
@@ -133,9 +134,6 @@ define([
 
         nextStep: function() {
             if (this.step < this.steps.length - 1) {
-                if (this.currentView) {
-                    this.currentView.close();
-                }
                 this.step++;
                 this.renderStep();
             }
