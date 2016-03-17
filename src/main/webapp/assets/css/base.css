@@ -1490,6 +1490,10 @@ textarea.param-value {
 .location-type-container {
     overflow: hidden;
 }
+.help-text {
+    padding-top: 10px;
+    font-style: italic;
+}
 .location-type {
     width: 160px;
     height: 200px;

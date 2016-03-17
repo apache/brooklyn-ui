@@ -60,12 +60,11 @@ define([
                 },
                 {
                     title: '<%= type %> Location - Configuration',
-                    subtitle: 'Required information about your location',
                     view: LocationConfiguration
                 },
                 {
                     title: '<%= type %> Location - Provisioning',
-                    subtitle: 'Provisioning information about your location',
+                    subtitle: 'In many target locations, additional configuration may be supported. Enter any such options here. For information on available options consult the <a href="https://brooklyn.apache.org/v/latest/ops/locations/">Brooklyn documentation</a>. Alternatively you can skip this step.',
                     view: LocationProvisioning
                 }
             ];
@@ -98,7 +97,11 @@ define([
             var step = this.steps[this.step];
 
             this.$('.location-wizard-title').html(_.template(step.title)({type: this.capitalize(this.type)}));
-            this.$('.location-wizard-subtitle').html(_.template(step.subtitle)({type: this.type}));
+            if (_.has(step, 'subtitle')) {
+                this.$('.location-wizard-subtitle').html(_.template(step.subtitle)({type: this.type})).show();
+            } else {
+                this.$('.location-wizard-subtitle').hide();
+            }
 
             // Render actions buttons
             var actionContainer = this.$('.location-wizard-actions').empty();
@@ -247,6 +250,8 @@ define([
         className: 'location-wizard-body',
         template: _.template(LocationTypeHtml),
         events: {
+            'mouseenter .location-type': 'onDisplayHelp',
+            'mouseleave .location-type': 'onHideHelp',
             'click .location-type': 'onSelectType'
         },
 
@@ -270,6 +275,15 @@ define([
             });
 
             return this;
+        },
+
+        onDisplayHelp: function(event) {
+            var $elm = this.$(event.currentTarget);
+            this.$('.help-text').html($elm.data('help')).show();
+        },
+
+        onHideHelp: function(event) {
+            this.$('.help-text').html('').hide();
         },
 
         onSelectType: function(event) {
@@ -306,19 +320,20 @@ define([
             cloud: [
                 {
                     id: 'name',
-                    label: 'location ID',
+                    label: 'Location ID',
                     type: 'text',
+                    help: 'Label to identify this location. Typically this is lower case using hyphens and no spaces',
                     require: true
                 },
                 {
                     id: 'displayName',
-                    label: 'location name',
+                    label: 'Location Name',
                     type: 'text',
-                    require: true
+                    help: 'Display name used throughout the web console'
                 },
                 {
                     id: 'spec',
-                    label: 'Cloud type',
+                    label: 'Cloud Provider',
                     type: 'select',
                     values: {
                         'jclouds:aws-ec2': 'Amazon',
@@ -330,13 +345,9 @@ define([
                 },
                 {
                     id: 'region',
-                    label: 'Cloud region',
+                    label: 'Cloud Region',
                     type: 'text',
-                    require: {
-                        spec: [
-                            'jclouds:aws-ec2', 'jclouds:google-compute-engine', 'jclouds:softlayer'
-                        ]
-                    },
+                    help: 'Some cloud providers have different regions for you to use. You can enter here this information',
                     disable: {
                         spec: [
                             'jclouds:openstack'
@@ -345,8 +356,9 @@ define([
                 },
                 {
                     id: 'endpoint',
-                    label: 'Cloud endpoint',
+                    label: 'Cloud Endpoint',
                     type: 'text',
+                    help: 'Cloud endpoint used by Brooklyn to communicate with their API',
                     require: {
                         spec: [
                             'jclouds:openstack'
@@ -360,13 +372,15 @@ define([
                 },
                 {
                     id: 'identity',
-                    label: 'Identity',
+                    label: 'Cloud Identity',
                     type: 'text',
+                    help: 'Alphanumerical string given by your cloud provider. It acts as a login',
                     require: true
                 },
                 {
                     id: 'credential',
-                    label: 'Credential',
+                    label: 'Cloud Credential',
+                    help: 'Alphanumerical string given by your cloud provider. It acts as a password',
                     type: 'text',
                     require: true
                 }
@@ -374,74 +388,87 @@ define([
             localhost: [
                 {
                     id: 'name',
-                    label: 'location ID',
+                    label: 'Location ID',
                     type: 'text',
+                    help: 'Label to identify this location. Typically this is lower case using hyphens and no spaces',
                     require: true
                 },
                 {
                     id: 'displayName',
-                    label: 'location name',
+                    label: 'Location Name',
                     type: 'text',
+                    help: 'Display name used throughout the web console',
                     require: true
                 },
                 {
                     id: 'user',
                     label: 'User',
-                    type: 'text'
+                    type: 'text',
+                    help: 'The user to use to connect to localhost'
                 },
                 {
                     id: 'password',
                     label: 'Password',
-                    type: 'password'
+                    type: 'password',
+                    help: 'The password to use to connect to localhost'
                 },
                 {
                     id: 'privateKeyFile',
-                    label: 'Private key',
-                    type: 'textarea'
+                    label: 'Private Key',
+                    type: 'textarea',
+                    help: 'Content of a private key file use to connect to localhost (the corresponding public key needs to be add into your <code>.authorized_key</code>code> file)'
                 },
                 {
                     id: 'privateKeyPassphrase',
-                    label: 'Private key passphrase',
-                    type: 'test'
+                    label: 'Private Key Passphrase',
+                    type: 'text',
+                    help: 'The passphrase to unlock the private key specified abve (if applicable)'
                 }
             ],
             byon: [
                 {
                     id: 'name',
-                    label: 'location ID',
+                    label: 'Location ID',
                     type: 'text',
+                    help: 'Label to identify this location. Typically this is lower case using hyphens and no spaces',
                     require: true
                 },
                 {
                     id: 'displayName',
-                    label: 'location name',
+                    label: 'Location Name',
                     type: 'text',
+                    help: 'Display name used throughout the web console',
                     require: true
                 },
                 {
                     id: 'user',
                     label: 'User',
-                    type: 'text'
+                    type: 'text',
+                    help: 'The user to use to connect to localhost'
                 },
                 {
                     id: 'password',
                     label: 'Password',
-                    type: 'password'
+                    type: 'password',
+                    help: 'The password to use to connect to localhost'
                 },
                 {
                     id: 'privateKeyFile',
-                    label: 'Private key',
-                    type: 'textarea'
+                    label: 'Private Key',
+                    type: 'textarea',
+                    help: 'Content of a private key file use to connect to localhost (the corresponding public key needs to be add into your <code>.authorized_key</code>code> file)'
                 },
                 {
                     id: 'privateKeyPassphrase',
-                    label: 'Private key passphrase',
-                    type: 'test'
+                    label: 'Private Key Passphrase',
+                    type: 'text',
+                    help: 'The passphrase to unlock the private key specified abve (if applicable)'
                 },
                 {
                     id: 'hosts',
                     label: 'Hosts',
                     type: 'textarea',
+                    help: 'List of host IP addresses, one per line',
                     list: true,
                     require: true
                 }
@@ -515,6 +542,10 @@ define([
                     .attr('name', field.id + '-other')
                     .addClass('location-other')
                     .hide());
+            }
+
+            if (_.has(field, 'help')) {
+                $div.append($('<p>').addClass('help-block').html($('<small>').html(field.help)));
             }
 
             return $div;
