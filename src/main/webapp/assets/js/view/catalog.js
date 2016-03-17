@@ -111,10 +111,50 @@ define([
         },
 
         composeItem: function(event) {
-            // TODO could make this a catalog item
+            // TODO we should store `catalogYaml` in the catalog so these can be edited
+            // for now locations are edited, but other items are deployed (ugly and inconsistent)
+            if (this.options.name == "locations") {
+              // old ui has planYaml inside a catalog block
+              this.composerEditItem(event, this.options.model.get("catalog"));
+            } else {
+              // deploy the item
+              this.composerDeployItem(event);
+            }
+        },
+        composerDeployItem: function(event) {
+            Backbone.history.navigate("/v1/editor/app/"+ encodeURIComponent($(event.currentTarget).data("name")),
+                {trigger: true});
+        },        
+        composerEditItem: function(event, catalog) {
+            // TODO ideally we get a catalogYaml from the object instead of recreating
+            var planYaml = catalog.planYaml;
+            
+            // remove a brooklyn.locations: - ... prefix which brooklyn may insert for legacy reasons,
+            // replace with single blank line
+            if (planYaml.trim().startsWith("brooklyn.locations:")) {
+              planYaml = planYaml.replace(/^ *brooklyn.locations:( *\n)+/, "")
+              planYaml = "\n"+planYaml.replace(/^( *)(-)( *)/, "$1 $3")
+            }
+            var yaml = "brooklyn.catalog:\n"+
+              "  items:\n"+
+              "  - id: " + catalog.symbolicName + "\n"+
+              "    # NB: the version may need to be increased\n"+
+              "    version: " + catalog.version + "\n"+
+              (catalog.description ? "    description: " + catalog.description + "\n" : "") +
+              (catalog.iconUrl ? "    iconUrl: " + catalog.iconUrl + "\n" : "") +
+              // any other fields?  
+              "    itemType: location\n"+
+              "    item:\n"+
+              this.prefixAllLines("      ", planYaml);
+            Backbone.history.navigate("/v1/editor/catalog/_/"+ encodeURIComponent(yaml), 
+                {trigger: true});
+        },
+        prefixAllLines: function(prefix, lines) {
+            return prefix+lines.split("\n").join("\n"+prefix);
             Backbone.history.navigate("/v1/editor/app/"+ encodeURIComponent($(event.currentTarget).data("name")),
                 {trigger: true});
         },
+        
         deleteItem: function(event) {
             // Could use wait flag to block removal of model from collection
             // until server confirms deletion and success handler to perform
