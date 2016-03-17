@@ -30,6 +30,7 @@
         "jquery-slideto":"js/util/jquery.slideto",
         "jquery-wiggle":"js/libs/jquery.wiggle.min",
         "jquery-ba-bbq":"js/libs/jquery.ba-bbq.min",
+        "jquery-easy-autocomplete": "js/libs/jquery.easy-autocomplete",
         "moment":"js/libs/moment",
         "handlebars":"js/libs/handlebars-1.0.rc.1",
         "brooklyn":"js/util/brooklyn",
@@ -76,6 +77,7 @@
         "jquery-slideto": { deps: [ "jquery" ] },
         "jquery-wiggle": { deps: [ "jquery" ] },
         "jquery-ba-bbq": { deps: [ "jquery" ] },
+        "jquery-easy-autocomplete": { deps: [ "jquery" ] },
         "handlebars": { deps: [ "jquery" ] },
         "bootstrap": { deps: [ "jquery" ] /* http://stackoverflow.com/questions/9227406/bootstrap-typeerror-undefined-is-not-a-function-has-no-method-tab-when-us */ }
     },
