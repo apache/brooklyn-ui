@@ -28,11 +28,18 @@ define([
 
     'jquery-easy-autocomplete'
 ], function(_, Backbone, $, Util, Location, ModalHtml, LocationTypeHtml, LocationConfigurationHtml, LocationProvisioningHtml, LocationProvisioningEntry) {
+    var _YAML_HEADER = [
+        'brooklyn.catalog:',
+        '  version: 0.0.1',
+        '  items:'
+    ];
+
     var Wizard = Backbone.View.extend({
         template: _.template(ModalHtml),
         events: {
             'click .location-wizard-previous': 'previousStep',
             'click .location-wizard-next': 'nextStep',
+            'click .location-wizard-edit': 'edit',
             'click .location-wizard-save': 'save',
             'click .location-wizard-save-and-reset': 'saveAndReset'
         },
@@ -64,6 +71,10 @@ define([
             ];
 
             this.actions = [
+                {
+                    label: 'Edit in YAML',
+                    class: 'location-wizard-edit'
+                },
                 {
                     label: 'Save and add another',
                     class: 'location-wizard-save-and-reset'
@@ -149,6 +160,45 @@ define([
 
         capitalize: function(text) {
             return text && text.charAt(0).toUpperCase() + text.slice(1);
+        },
+
+        edit: function() {
+            var baseSpacing = '  ';
+
+            var content = [].concat(_YAML_HEADER);
+
+            content.push(baseSpacing + '- id: ' + this.location.get('name'));
+
+            baseSpacing += '  ';
+            content.push(baseSpacing + 'itemType: location');
+            content.push(baseSpacing + 'item:');
+
+            baseSpacing += '  ';
+            content.push(baseSpacing + 'type: ' + this.location.get('spec'));
+
+            var config = this.location.get('config');
+            if (_.keys(config).length > 0) {
+                content.push(baseSpacing + 'brooklyn.config:');
+                baseSpacing += '  ';
+
+                _.each(config, function(value, key) {
+                    if (_.isArray(value)) {
+                        content.push(baseSpacing + key + ':');
+                        _.each(value, function(valueValue) {
+                            content.push(baseSpacing + '- ' + valueValue);
+                        });
+                    } else if (_.isObject(value)) {
+                        content.push(baseSpacing + key + ':');
+                        _.each(value, function(valueValue, valueKey) {
+                            content.push(baseSpacing + '  ' + valueKey + ': ' + valueValue);
+                        });
+                    } else {
+                        content.push(baseSpacing + key + ': ' + value);
+                    }
+                });
+            }
+
+            Backbone.history.navigate("/v1/editor/catalog/_/"+ encodeURIComponent(content.join("\n")), {trigger: true});
         },
 
         save: function(callback) {

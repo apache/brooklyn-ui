@@ -80,7 +80,7 @@ define([
             } else if (this.options.type === MODE_CATALOG) {
                 this.setMode(MODE_CATALOG);
             } else {
-                console.log("unknown mode '"+this.option.type+"'; using '"+MODE_APP+"'");
+                console.log("unknown mode '"+this.options.type+"'; using '"+MODE_APP+"'");
                 this.setMode(MODE_APP);
             }
             this.options.catalog = new CatalogApplication.Collection();
