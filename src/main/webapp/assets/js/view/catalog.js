@@ -191,6 +191,7 @@ define([
                 addViewParent.loadAccordionItem("locations", data.id, true);
             },
             onFinish: function(wizard, data) {
+                addViewParent.loadAccordionItem("locations", data.id);
                 addView.clearWithHtml( "Added: "+data.id+". Loading..." );
             }
         }).render();

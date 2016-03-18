@@ -105,7 +105,7 @@ define([
 
             // Render actions buttons
             var actionContainer = this.$('.location-wizard-actions').empty();
-            if ((this.type === 'cloud' && this.step === 2) || (this.type !== 'cloud' && this.step === 1)) {
+            if (this.step === 2 || (this.type === 'byon' && this.step === 1)) {
                 _.each(this.actions, function(element, index, list) {
                     actionContainer.append($('<button>').addClass('btn btn-mini btn-info location-wizard-action ' + element.class).html(element.label));
                 });
@@ -130,7 +130,7 @@ define([
             }
             if (this.step == this.steps.length - 1) {
                 next.hide();
-            } else if (this.step == this.steps.length - 2 && this.type !== 'cloud') {
+            } else if (this.step == this.steps.length - 2 && this.type === 'byon') {
                 next.hide();
             } else {
                 next.show();
@@ -385,46 +385,6 @@ define([
                     require: true
                 }
             ],
-            localhost: [
-                {
-                    id: 'name',
-                    label: 'Location ID',
-                    type: 'text',
-                    help: 'Label to identify this location. Typically this is lower case using hyphens and no spaces',
-                    require: true
-                },
-                {
-                    id: 'displayName',
-                    label: 'Location Name',
-                    type: 'text',
-                    help: 'Display name used throughout the web console',
-                    require: true
-                },
-                {
-                    id: 'user',
-                    label: 'User',
-                    type: 'text',
-                    help: 'The user to use to connect to localhost'
-                },
-                {
-                    id: 'password',
-                    label: 'Password',
-                    type: 'password',
-                    help: 'The password to use to connect to localhost'
-                },
-                {
-                    id: 'privateKeyFile',
-                    label: 'Private Key',
-                    type: 'textarea',
-                    help: 'Content of a private key file use to connect to localhost (the corresponding public key needs to be add into your <code>.authorized_key</code>code> file)'
-                },
-                {
-                    id: 'privateKeyPassphrase',
-                    label: 'Private Key Passphrase',
-                    type: 'text',
-                    help: 'The passphrase to unlock the private key specified abve (if applicable)'
-                }
-            ],
             byon: [
                 {
                     id: 'name',
@@ -444,19 +404,19 @@ define([
                     id: 'user',
                     label: 'User',
                     type: 'text',
-                    help: 'The user to use to connect to localhost'
+                    help: 'The user to use to connect to the machines'
                 },
                 {
                     id: 'password',
                     label: 'Password',
                     type: 'password',
-                    help: 'The password to use to connect to localhost'
+                    help: 'The password to use to connect to the machines'
                 },
                 {
                     id: 'privateKeyFile',
                     label: 'Private Key',
                     type: 'textarea',
-                    help: 'Content of a private key file use to connect to localhost (the corresponding public key needs to be add into your <code>.authorized_key</code>code> file)'
+                    help: 'Content of a private key file use to connect to the machines (the corresponding public key needs to be add into your <code>.authorized_key</code>code> file)'
                 },
                 {
                     id: 'privateKeyPassphrase',
@@ -472,6 +432,27 @@ define([
                     list: true,
                     require: true
                 }
+            ],
+            advanced: [
+                {
+                    id: 'name',
+                    label: 'Location ID',
+                    type: 'text',
+                    help: 'Label to identify this location. Typically this is lower case using hyphens and no spaces',
+                    require: true
+                },
+                {
+                    id: 'displayName',
+                    label: 'Location Name',
+                    type: 'text',
+                    help: 'Display name used throughout the web console',
+                },
+                {
+                    id: 'spec',
+                    label: 'Parent Location',
+                    type: 'text',
+                    require: true
+                }
             ]
         },
         wizard: null,
@@ -479,7 +460,7 @@ define([
         initialize: function() {
             this.wizard = this.options.wizard;
 
-            if (_.contains(['localhost', 'byon'], this.wizard.type)) {
+            if (this.wizard.type === 'byon') {
                 this.wizard.location.set('spec', this.wizard.type);
             }
         },
@@ -503,15 +484,15 @@ define([
         },
 
         generateField: function(field) {
-            var input = $('<input>').attr('type', field.type);
+            var $input = $('<input>').attr('type', field.type);
             if (field.type === 'textarea') {
-                input = $('<textarea>');
+                $input = $('<textarea>');
             } else if (field.type === 'select') {
-                input = $('<select>');
+                $input = $('<select>');
                 _.each(field.values, function(value, key) {
-                    input.append($('<option>').attr('value', key).html(value));
+                    $input.append($('<option>').attr('value', key).html(value));
                 });
-                $('<input>').attr('name', field.id + '-other').insertAfter(input);
+                $('<input>').attr('name', field.id + '-other').insertAfter($input);
             }
 
             var value = '';
@@ -526,7 +507,7 @@ define([
                     .addClass('control-label deploy-label')
                     .attr('for', field.id)
                     .html(field.label))
-                .append(input
+                .append($input
                     .val(value)
                     .data('list', _.isBoolean(field.list) ? field.list : false)
                     .data('require', _.isBoolean(field.require) ? field.require : false)
@@ -546,6 +527,37 @@ define([
 
             if (_.has(field, 'help')) {
                 $div.append($('<p>').addClass('help-block').html($('<small>').html(field.help)));
+            }
+
+            if (field.type === 'text' && field.id === 'spec') {
+                var locations = new Location.Collection;
+                locations.fetch({
+                    success: function (model) {
+                        $input.easyAutocomplete({
+                            list: {
+                                match: {
+                                    enabled: true
+                                }
+                            },
+                            categories: [
+                                {
+                                    listLocation: 'catalog',
+                                    header: 'Catalog Locations'
+                                },
+                                {
+                                    listLocation: 'spec',
+                                    header: 'Spec'
+                                }
+                            ],
+                            data: {
+                                catalog: _.map(model.models, function(item) {
+                                    return item.getIdentifierName();
+                                }),
+                                spec: ['localhost']
+                            }
+                        });
+                    }
+                });
             }
 
             return $div;
