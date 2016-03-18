@@ -54,8 +54,8 @@ define([
 
             this.steps = [
                 {
-                    title: 'Location type',
-                    subtitle: 'Select the location type you want to add',
+                    title: 'Location Type',
+                    subtitle: 'Select the location type to make available for deployments',
                     view: LocationType
                 },
                 {
@@ -75,7 +75,7 @@ define([
                     class: 'location-wizard-edit'
                 },
                 {
-                    label: 'Save and add another',
+                    label: 'Save and Add Another',
                     class: 'location-wizard-save-and-reset'
                 },
                 {
@@ -312,6 +312,22 @@ define([
         }
     });
 
+    var common_fields = {
+        location_id: {
+            id: 'name',
+            label: 'Location ID',
+            type: 'text',
+            help: 'A label to identify this location in YAML. Typically this is lower case using hyphens and no spaces',
+            require: true
+        },
+        location_name: {
+            id: 'displayName',
+            label: 'Location Name',
+            type: 'text',
+            help: 'A display name to present this location to a user (optional)'
+        },
+    };
+    
     var LocationConfiguration = Backbone.View.extend({
         className: 'location-wizard-body',
         template: _.template(LocationConfigurationHtml),
@@ -322,19 +338,8 @@ define([
 
         fields: {
             cloud: [
-                {
-                    id: 'name',
-                    label: 'Location ID',
-                    type: 'text',
-                    help: 'Label to identify this location. Typically this is lower case using hyphens and no spaces',
-                    require: true
-                },
-                {
-                    id: 'displayName',
-                    label: 'Location Name',
-                    type: 'text',
-                    help: 'Display name used throughout the web console'
-                },
+                common_fields.location_id,
+                common_fields.location_name,
                 {
                     id: 'spec',
                     label: 'Cloud Provider',
@@ -344,14 +349,14 @@ define([
                         'jclouds:google-compute-engine': 'Google',
                         'jclouds:openstack': 'Openstack',
                         'jclouds:softlayer': 'Softlayer',
-                        other: 'Other'
+                        other: 'Other (supply location spec string)'
                     }
                 },
                 {
                     id: 'region',
                     label: 'Cloud Region',
                     type: 'text',
-                    help: 'Some cloud providers have different regions for you to use. You can enter here this information',
+                    help: 'Public cloud providers often have multiple regions available. Enter the region to use if applicable (optional)',
                     disable: {
                         spec: [
                             'jclouds:openstack'
@@ -362,7 +367,7 @@ define([
                     id: 'endpoint',
                     label: 'Cloud Endpoint',
                     type: 'text',
-                    help: 'Cloud endpoint used by Brooklyn to communicate with their API',
+                    help: 'If using a private cloud, the URL to connect to it is required',
                     require: {
                         spec: [
                             'jclouds:openstack'
@@ -378,83 +383,61 @@ define([
                     id: 'identity',
                     label: 'Cloud Identity',
                     type: 'text',
-                    help: 'Alphanumerical string given by your cloud provider. It acts as a login',
+                    help: 'The account name or access key to log in to this cloud',
                     require: true
                 },
                 {
                     id: 'credential',
                     label: 'Cloud Credential',
-                    help: 'Alphanumerical string given by your cloud provider. It acts as a password',
+                    help: 'The password or secret key for the Cloud Identity to log in to this cloud',
                     type: 'text',
                     require: true
                 }
             ],
             byon: [
-                {
-                    id: 'name',
-                    label: 'Location ID',
-                    type: 'text',
-                    help: 'Label to identify this location. Typically this is lower case using hyphens and no spaces',
-                    require: true
-                },
-                {
-                    id: 'displayName',
-                    label: 'Location Name',
-                    type: 'text',
-                    help: 'Display name used throughout the web console',
-                    require: true
-                },
+                common_fields.location_id,
+                common_fields.location_name,
                 {
                     id: 'user',
                     label: 'User',
                     type: 'text',
-                    help: 'The user to use to connect to the machines'
+                    help: 'The user to use to connect to the machines. One of the following two fields must also be supplied to connect'
                 },
                 {
                     id: 'password',
                     label: 'Password',
                     type: 'password',
-                    help: 'The password to use to connect to the machines'
+                    help: 'The password to use to connect to the machines (if using password access)'
                 },
                 {
                     id: 'privateKeyFile',
-                    label: 'Private Key',
+                    label: 'Private Key Data',
                     type: 'textarea',
-                    help: 'Content of a private key file use to connect to the machines (the corresponding public key needs to be add into your <code>.authorized_key</code>code> file)'
+                    help: 'The contents of the private key file to use to connect to the machines (if using key access, where the corresponding public key is in the <code>.authorized_keys</code> file on the servers)'
                 },
                 {
                     id: 'privateKeyPassphrase',
                     label: 'Private Key Passphrase',
                     type: 'text',
-                    help: 'The passphrase to unlock the private key specified abve (if applicable)'
+                    help: 'The passphrase to unlock the private key specified above (if applicable)'
                 },
                 {
                     id: 'hosts',
                     label: 'Hosts',
                     type: 'textarea',
-                    help: 'List of host IP addresses, one per line',
+                    help: 'The IP addresses of the machines to include in this location definition, one per line',
                     list: true,
                     require: true
                 }
             ],
             advanced: [
-                {
-                    id: 'name',
-                    label: 'Location ID',
-                    type: 'text',
-                    help: 'Label to identify this location. Typically this is lower case using hyphens and no spaces',
-                    require: true
-                },
-                {
-                    id: 'displayName',
-                    label: 'Location Name',
-                    type: 'text',
-                    help: 'Display name used throughout the web console',
-                },
+                common_fields.location_id,
+                common_fields.location_name,
                 {
                     id: 'spec',
                     label: 'Parent Location',
                     type: 'text',
+                    help: 'The identity or spec of the location which this location should extend',
                     require: true
                 }
             ]
