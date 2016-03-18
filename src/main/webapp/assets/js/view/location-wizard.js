@@ -166,6 +166,10 @@ define([
         },
 
         edit: function() {
+§            if (this.currentView instanceof LocationProvisioning) {
+                this.currentView.setProvisioningProperties();
+            }
+
             var baseSpacing = '  ';
 
             var content = [].concat(_YAML_HEADER);
@@ -606,7 +610,7 @@ define([
                         disable = disable && _.contains(values, that.$('[name=' + key + ']').val());
                     });
                     if (disable) {
-                        $(this).attr('disabled', 'disabled');
+                        $(this).attr('disabled', 'disabled').val('');
                     } else {
                         $(this).removeAttr('disabled');
                     }
