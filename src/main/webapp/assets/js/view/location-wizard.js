@@ -166,7 +166,7 @@ define([
         },
 
         edit: function() {
-§            if (this.currentView instanceof LocationProvisioning) {
+            if (this.currentView instanceof LocationProvisioning) {
                 this.currentView.setProvisioningProperties();
             }
 
