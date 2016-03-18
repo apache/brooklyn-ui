@@ -19,25 +19,47 @@ under the License.
 
 <div class="catalog-details">
 
-    <h3><%- model.getIdentifierName() %></h3>
-
     <div class="float-right">
+      <% if (model.get("catalog") && model.get("catalog").planYaml) { %>
+        <button data-name="<%= model.getIdentifierName() %>" class="btn composer"
+            title="Open this blueprint in the Composer where the YAML can be edited and deployed.">YAML Composer</button>
         <button data-name="<%= model.getIdentifierName() %>" class="btn btn-danger delete">Delete</button>
+      <% } else { %>
+        <button class="btn composer" disabled
+            title="This item is defined in properties and cannot be edited.">YAML Composer</button>
+        <button class="btn btn-danger delete" disabled
+            title="This item is defined in properties and cannot be deleted.">Delete</button>
+      <% } %>
     </div>
 
+    <% if (model.get("name") != model.getPrettyName()) { %>
+        <h2><%- model.getPrettyName() %></h2>
+        <p><%- model.get("name") %></p>
+    <% } else { %>
+        <h2><%- model.get("name") %></h2>
+    <% } %>
+    <% if (model.get("description")) { %>
+        <p><%- model.get("description") %></p>
+    <% } %>
+
     <br/>
+    
     <table>
-        <tr><td><strong>Display Name:</strong>&nbsp;&nbsp;</td><td><%- model.getPrettyName() || "" %></td></tr>
-        <tr><td><strong>Reference Name:</strong>&nbsp;&nbsp;</td><td><%- model.get("name") || "" %></td></tr>
-        <tr><td><strong>Internal ID:</strong>&nbsp;&nbsp;</td><td><%- model.get("id") || "" %></td></tr>
         <tr><td><strong>Implementation Spec:</strong>&nbsp;&nbsp;</td><td><%- model.get("spec") || "" %></td></tr>
+        <tr><td><strong>Internal ID:</strong>&nbsp;&nbsp;</td><td><%- model.get("id") || "" %></td></tr>
     </table>
     
     <br/>
     
-<% if (!model.get("config") || _.isEmpty(model.get("config"))) { %>
-    <!-- either no config or it comes from a yaml plan and config not yet available;
-         TODO need to use the /v1/catalog/location API not the /v1/locations/ API -->
+<% if (model.get("catalog") && model.get("catalog").planYaml) { %>
+
+    <textarea rows="15" readonly><%- model.get("catalog").planYaml %></textarea>
+      
+<% } else if (!model.get("config") || _.isEmpty(model.get("config"))) { %>
+    <p>
+    <i>No configuration is defined explicitly on this item. All config is inherited or defined in properties.</i>
+    <p>
+    <i>This item is not editable.</i>
 <% } else { %>
 
     <table class="table table-striped table-condensed nonDatatables">
@@ -54,6 +76,11 @@ under the License.
         <% }); %>
         </tbody>
     </table>
+    
+    <p>
+    <i>Additional configuration may be inherited or defined in properties.</i>
+    <p>
+    <i>This item is not editable.</i>
 <% } %>
 
 </div>
