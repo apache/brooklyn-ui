@@ -361,17 +361,16 @@ input[type="color"]:focus,.uneditable-input:focus {
     vertical-align: middle;
 }
 
-.addApplication {
+.addSummary {
     border: 1px solid #a1cb8c !important;
     color: #505050 !important;
     background: url(../images/addApplication-plus.png) no-repeat !important;
     padding: 10px 0px 0px 74px !important;
     width: 298px !important;
     height: 201px !important;
-    margin-right: 0;
 }
 
-.addApplication:hover {
+.addSummary:hover {
     border: 1px solid #58a82e !important;
     color: #58a82e !important;
     background: url(../images/addApplication-plus-hover.png) no-repeat
@@ -1485,4 +1484,85 @@ textarea.param-value {
     /* blur */
     color: transparent;
     text-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+/* Location wizard */
+.location-type-container {
+    overflow: hidden;
+}
+.help-text {
+    padding-top: 10px;
+    font-style: italic;
+}
+.location-type {
+    width: 160px;
+    height: 200px;
+    float: left;
+    text-align: center;
+    border: 3px solid #EEE;
+    position: relative;
+    margin: 4px;
+}
+.location-type:hover {
+    border-color: #CCC;
+}
+.location-type.selected {
+    border-color: #793;
+}
+.location-type div {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 150px;
+    padding: 5px;
+}
+.location-type .fa {
+    font-size: 60px;
+    margin-bottom: 20px;
+}
+.location-type .location-type-title {
+    font-size: 30px;
+}
+input.location-other {
+    margin-top: -10px;
+    margin-left: 10px;
+}
+#catalog-add-form .modal-header .close {
+    display: none;
+}
+#catalog-add-form .modal-body {
+    max-height: none;
+    overflow: visible;
+}
+#catalog-add-form .modal-body .tab-content {
+    min-height: 0;
+    background-color: transparent !important;
+    padding: 0;
+    overflow: visible;
+}
+#catalog-add-form .location-type {
+    border-color: #ddd;
+}
+
+#catalog-add-form .location-type:hover {
+    border-color: #CCC;
+}
+#catalog-add-form .location-type.selected {
+    border-color: #793;
+}
+#catalog-add-form .modal-footer {
+    background-color: transparent;
+}
+.easy-autocomplete {
+    display: inline;
+}
+.easy-autocomplete-container ul {
+    margin: 0
+}
+.easy-autocomplete-container ul .eac-category {
+    color: #fff;
+    background-color: rgba(120, 180, 70, 0.8);
+}
+button.remove-entry {
+    margin-top: -10px;
 }

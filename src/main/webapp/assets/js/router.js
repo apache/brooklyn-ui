@@ -183,6 +183,7 @@ define([
             var editorView = new EditorView({
                 collection: this.applications,
                 appRouter: this,
+                locations: this.locations,
                 type: type,
                 typeId: typeId,
                 content: content

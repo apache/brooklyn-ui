@@ -24,6 +24,7 @@ define([
     "jquery", "underscore", "backbone",
     "view/viewutils", 
     "view/application-add-wizard",
+    "view/location-wizard",
     "view/ha-summary",
     "model/location",
     "text!tpl/home/applications.html",
@@ -31,7 +32,7 @@ define([
     "text!tpl/home/app-entry.html",
     "bootstrap", "brooklyn-utils"
 ], function ($, _, Backbone, ViewUtils,
-        AppAddWizard, HASummary, Location,
+        AppAddWizard, LocationWizard , HASummary, Location,
         ApplicationsHtml, HomeSummariesHtml, AppEntryHtml) {
 
     var HomeView = Backbone.View.extend({
@@ -40,7 +41,8 @@ define([
             'click #add-new-application':'createApplication',
             'click #reload-brooklyn-properties': 'reloadBrooklynProperties',
             'click #clear-ha-node-records': 'clearHaNodeRecords',
-            'click .addApplication':'createApplication'
+            'click .addApplication': 'createApplication',
+            'click .addLocation': 'createLocation'
         },
         
         initialize:function () {
@@ -150,6 +152,32 @@ define([
                         wizard.close()
                         that.collection.fetch({reset:true});
                     }).modal('show')
+            }
+        },
+
+        createLocation:function () {
+            if (this._modal) {
+                this._modal.close()
+            }
+            var that = this;
+            if (this.options.offline || (this.options.cautionOverlay && this.options.cautionOverlay.warningActive)) {
+                // don't show wizard
+            } else {
+                this._modal = new LocationWizard({
+                    onLocationCreated: function(wizard, data) {
+                        that.options.locations.fetch({reset:true});
+                    },
+                    onFinish: function(wizard) {
+                        that.$(".add-app #modal-container .modal").modal('hide');
+                    },
+                    isModal: true
+                });
+                this.$(".add-app #modal-container").html(this._modal.render().el);
+                this.$(".add-app #modal-container .modal")
+                    .on("hidden",function () {
+                        that._modal.close();
+                        that.options.locations.fetch({reset:true});
+                    }).modal('show');
             }
         },
 

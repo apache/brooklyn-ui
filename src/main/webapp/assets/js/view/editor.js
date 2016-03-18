@@ -17,8 +17,11 @@
  * under the License.
 */
 define([
-    "underscore", "jquery", "backbone", "model/catalog-application", "js-yaml", "brooklyn-yaml-completion-proposals", "codemirror",
+    "underscore", "jquery", "backbone", "model/catalog-application",
+    "model/location", "view/location-wizard", "view/viewutils",
+    "js-yaml", "brooklyn-yaml-completion-proposals", "codemirror",
     "text!tpl/editor/page.html",
+    "text!tpl/editor/location-alert.html",
 
     // no constructor
     "jquery-slideto",
@@ -26,7 +29,7 @@ define([
     "jquery-ba-bbq",
     "handlebars",
     "bootstrap"
-], function (_, $, Backbone, CatalogApplication, jsYaml, BrooklynCompletion, CodeMirror, EditorHtml) {
+], function (_, $, Backbone, CatalogApplication, Location, LocationWizard, ViewUtils, jsYaml, BrooklynCompletion, CodeMirror, EditorHtml, LocationAlertHtml) {
     var _DEFAULT_BLUEPRINT = 
         'name: Sample Blueprint\n'+
         'description: runs `sleep` for sixty seconds then stops triggering ON_FIRE in Brooklyn\n'+
@@ -64,6 +67,7 @@ define([
             'click #button-switch-catalog':'switchModeCatalog',
             'click #button-example':'populateExampleBlueprint',
             'click #button-docs':'openDocumentation',
+            'click .add-location':'createLocation'
         },
         editorTemplate:_.template(EditorHtml),
 
@@ -76,7 +80,7 @@ define([
             } else if (this.options.type === MODE_CATALOG) {
                 this.setMode(MODE_CATALOG);
             } else {
-                console.log("unknown mode '"+this.option.type+"'; using '"+MODE_APP+"'");
+                console.log("unknown mode '"+this.options.type+"'; using '"+MODE_APP+"'");
                 this.setMode(MODE_APP);
             }
             this.options.catalog = new CatalogApplication.Collection();
@@ -86,17 +90,35 @@ define([
                     vm.initializeEditor();
                 }
             });
+            this.options.locations.on('reset', this.renderLocationAlert, this);
+
+            ViewUtils.fetchRepeatedlyWithDelay(this, this.options.locations, { fetchOptions: { reset: true }, doitnow: true });
         },
         setMode: function(mode) {
             if (this.mode === mode) return;
             this.mode = mode;
             this.refresh();
         },
+        beforeClose:function () {
+            this.options.locations.off('reset', this.renderLocationAlert);
+        },
         render:function (eventName) {
-            this.$el.html(_.template(EditorHtml, {}));
+            this.$el
+                .append(_.template(LocationAlertHtml, {
+                    locations: this.options.locations
+                }))
+                .append(_.template(EditorHtml))
+                .find('#location-alert').hide();
             this.loadEditor();
             this.refresh();
             return this;
+        },
+        renderLocationAlert: function(event) {
+            if (event.size() === 0) {
+                this.$('#location-alert').show();
+            } else {
+                this.$('#location-alert').hide();
+            }
         },
         refresh: function() {
             $("#button-run", this.$el).html(this.mode==MODE_CATALOG ? "Add to Catalog" : "Deploy");
@@ -358,6 +380,27 @@ define([
             this.$('div.error-message .error-message-text').html(_.escape(_text));
             // flash the error, but make sure it goes away (we do not currently have any other logic for hiding this error message)
             this.$('div.error-message').slideDown(250).delay(10000).slideUp(500);
+        },
+        createLocation: function () {
+            if (this._modal) {
+                this._modal.close()
+            }
+            var that = this;
+            this._modal = new LocationWizard({
+                onLocationCreated: function(wizard, data) {
+                    that.options.locations.fetch({reset:true});
+                },
+                onFinish: function(wizard) {
+                    that.$(".add-app #modal-container .modal").modal('hide');
+                },
+                isModal: true
+            });
+            this.$(".modal-location #modal-container").html(this._modal.render().el);
+            this.$(".modal-location #modal-container .modal")
+                .on("hidden",function () {
+                    that._modal.close();
+                    that.options.locations.fetch({reset:true});
+                }).modal('show');
         }
     });
 

@@ -43,4 +43,5 @@
 - id: codemirror.js
 - id: font-awesome-fonts
 - id: font-awesome-code
+- id: jquery.easy-autocomplete.js
 

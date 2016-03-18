@@ -36,6 +36,7 @@ require.config({
         "jquery-slideto":"util/jquery.slideto",
         "jquery-wiggle":"libs/jquery.wiggle.min",
         "jquery-ba-bbq":"libs/jquery.ba-bbq.min",
+        "jquery-easy-autocomplete": "libs/jquery.easy-autocomplete",
         
         "moment":"libs/moment",
         "handlebars":"libs/handlebars-1.0.rc.1",
@@ -79,6 +80,7 @@ require.config({
         "jquery-slideto": { deps: [ "jquery" ] },
         "jquery-wiggle": { deps: [ "jquery" ] },
         "jquery-ba-bbq": { deps: [ "jquery" ] },
+        "jquery-easy-autocomplete": { deps: [ "jquery" ] },
         "handlebars": { deps: [ "jquery" ] },
         "codemirror":{
             exports:"CodeMirror"
