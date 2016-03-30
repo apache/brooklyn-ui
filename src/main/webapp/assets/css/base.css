@@ -502,6 +502,10 @@ input[type="color"]:focus,.uneditable-input:focus {
     white-space: nowrap;
 }
 
+.navbar_main error-message {
+    white-space: normal;
+}
+
 /* traditional tree-style (clickable + icons) tree-list */
 #tree-list {
 }
