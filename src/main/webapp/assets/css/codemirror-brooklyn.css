@@ -54,3 +54,11 @@ li.CodeMirror-hint-active {
   /* override show-hint to have roughly brooklyn colors instead of blue */
   background: #549e2b;
 }
+#composer .error-message {
+  background-color: #e2e2e2;
+  margin: 0;
+  padding: 15px 10px 15px 10px;
+  border-left: 1px solid #d3d3d3;
+  border-right: 1px solid #d3d3d3;
+  border-radius: 0;
+}
