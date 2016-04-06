@@ -54,11 +54,32 @@ li.CodeMirror-hint-active {
   /* override show-hint to have roughly brooklyn colors instead of blue */
   background: #549e2b;
 }
-#composer .error-message {
+
+.composer .error-message {
   background-color: #e2e2e2;
   margin: 0;
   padding: 15px 10px 15px 10px;
   border-left: 1px solid #d3d3d3;
   border-right: 1px solid #d3d3d3;
   border-radius: 0;
+}
+
+.composer .navbar_main {
+  position: relative;
+}
+.composer .composer-editor-loading {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  background-color: #fff;
+  text-align: center;
+  opacity: 0.8;
+}
+.composer .composer-editor-loading span {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 40px;
 }

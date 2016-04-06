@@ -74,7 +74,6 @@ define([
         editor: null,
 
         initialize:function () {
-            var vm = this;
             if (!this.options.type || this.options.type === MODE_APP) {
                 this.setMode(MODE_APP);
             } else if (this.options.type === MODE_CATALOG) {
@@ -84,12 +83,6 @@ define([
                 this.setMode(MODE_APP);
             }
             this.options.catalog = new CatalogApplication.Collection();
-            this.options.catalog.fetch({
-                data: $.param({allVersions: true}),
-                success: function () {
-                    vm.initializeEditor();
-                }
-            });
             this.options.locations.on('reset', this.renderLocationAlert, this);
 
             ViewUtils.fetchRepeatedlyWithDelay(this, this.options.locations, { fetchOptions: { reset: true }, doitnow: true });
@@ -111,6 +104,14 @@ define([
                 .find('#location-alert').hide();
             this.loadEditor();
             this.refresh();
+
+            // Codemirror need to have the DOM loaded to be able to display the editor correctly (line numbers for example)
+            // The timeout is there for this particular purpose.
+            var vm = this;
+            setTimeout(function() {
+                vm.initializeEditor();
+            }, 10);
+
             return this;
         },
         renderLocationAlert: function(event) {
@@ -158,7 +159,9 @@ define([
             }
         },
         initializeEditor: function() {
+            var vm = this;
             var cm = this.editor;
+            var loading = this.$('.composer-editor-loading');
             if (typeof(cm) !== "undefined") {
                 var itemText = "";
                 if (this.options.typeId === '_') {
@@ -169,13 +172,28 @@ define([
                         console.log('ignoring content when typeId is not _; given:', this.options.type, this.options.typeId, this.options.content);
                     } 
                     if (this.options.typeId) {
-                        var item = this.options.catalog.getId(this.options.typeId);
-                        if (item) itemText = item['attributes']['planYaml'];
-                        if (!itemText) {
-                            itemText = '# unknown type - this is an example blueprint that would reference it\n'+
-                                'services:\n- type: '+this.options.typeId+'\n';
-                            
-                        }
+                        cm.setOption('readOnly', 'nocursor');
+                        loading.show();
+                        this.options.catalog.fetch({
+                            data: $.param({allVersions: true}),
+                            success: function () {
+                                var item = vm.options.catalog.getId(vm.options.typeId);
+                                var itemText = '# unknown type - this is an example blueprint that would reference it\n'+
+                                    'services:\n- type: ' + vm.options.typeId + '\n';
+                                if (item) {
+                                    itemText = item['attributes']['planYaml'];
+                                }
+
+                                cm.getDoc().setValue(itemText);
+                            },
+                            error: function() {
+                                vm.showFailure('Could not load the item: ' + vm.options.typeId);
+                            }
+                        }).done(function() {
+                            cm.setOption('readOnly', false);
+                            cm.refresh();
+                            loading.fadeOut();
+                        });
                     }
                 }
                 cm.getDoc().setValue(itemText);
@@ -226,8 +244,6 @@ define([
                     that.refreshOnMinorChange();
                 });
             }
-
-            this.initializeEditor();
         },
         parse: function(forceRefresh) {
             if (!forceRefresh && this.lastParse && this.lastParse.input === this.editor.getValue()) {
