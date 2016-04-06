@@ -222,7 +222,8 @@ define([
                     hintOptions: {
                         completeSingle: false,
 //                        closeOnUnfocus: false,   // handy for debugging
-                    }
+                    },
+                    placeholder: "How to use it?\n- Enter blueprint yaml here\n- Drag & drop text files here\n\nPress Ctrl+Space for completion."
                 });
                 var oldYamlHint = CodeMirror.hint.yaml;
                 var that = this;
