@@ -185,11 +185,14 @@ define([
                                 }
 
                                 cm.getDoc().setValue(itemText);
-                                cm.setOption('readOnly', false);
-                                cm.refresh();
-
-                                loading.fadeOut();
+                            },
+                            error: function() {
+                                vm.showFailure('Could not load the item: ' + vm.options.typeId);
                             }
+                        }).done(function() {
+                            cm.setOption('readOnly', false);
+                            cm.refresh();
+                            loading.fadeOut();
                         });
                     }
                 }
