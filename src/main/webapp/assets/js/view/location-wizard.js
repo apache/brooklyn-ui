@@ -541,7 +541,8 @@ define([
                                     return item.getIdentifierName();
                                 }),
                                 spec: ['localhost']
-                            }
+                            },
+                            loggerEnabled: false
                         });
                     }
                 });
@@ -702,7 +703,8 @@ define([
                         vmOptions: that.vmOptions,
                         osOptions: that.osOptions,
                         templateOptions: that.templateOptions
-                    }
+                    },
+                    loggerEnabled: false
                 });
             }, 100);
         },
