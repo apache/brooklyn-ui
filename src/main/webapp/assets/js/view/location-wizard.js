@@ -345,10 +345,10 @@ define([
                     label: 'Cloud Provider',
                     type: 'select',
                     values: {
-                        'jclouds:aws-ec2': 'Amazon',
-                        'jclouds:google-compute-engine': 'Google',
-                        'jclouds:openstack': 'Openstack',
-                        'jclouds:softlayer': 'Softlayer',
+                        'jclouds:aws-ec2': 'Amazon EC2',
+                        'jclouds:google-compute-engine': 'Google Compute Engine',
+                        'jclouds:openstack-nova': 'Openstack Nova',
+                        'jclouds:softlayer': 'SoftLayer',
                         other: 'Other (supply location spec string)'
                     }
                 },
@@ -359,7 +359,7 @@ define([
                     help: 'Public cloud providers often have multiple regions available. Enter the region to use if applicable (optional)',
                     disable: {
                         spec: [
-                            'jclouds:openstack'
+                            'jclouds:openstack-nova'
                         ]
                     }
                 },
@@ -370,7 +370,7 @@ define([
                     help: 'If using a private cloud, the URL to connect to it is required',
                     require: {
                         spec: [
-                            'jclouds:openstack'
+                            'jclouds:openstack-nova'
                         ]
                     },
                     disable: {
