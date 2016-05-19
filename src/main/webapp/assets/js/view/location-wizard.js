@@ -345,10 +345,10 @@ define([
                     label: 'Cloud Provider',
                     type: 'select',
                     values: {
-                        'jclouds:aws-ec2': 'Amazon',
-                        'jclouds:google-compute-engine': 'Google',
-                        'jclouds:softlayer': 'Softlayer',
+                        'jclouds:aws-ec2': 'Amazon EC2',
+                        'jclouds:google-compute-engine': 'Google Compute Engine',
                         'jclouds:openstack-nova': 'Openstack Nova',
+                        'jclouds:softlayer': 'SoftLayer',
                         other: 'Other (supply location spec string)'
                     }
                 },
