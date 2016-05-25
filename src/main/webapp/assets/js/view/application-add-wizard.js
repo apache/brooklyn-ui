@@ -303,6 +303,10 @@ define([
         },
         previewStep:function () {
             // no need for validation if going to composer
+
+            // When user jump to the YAML editor he also must have the config values that he set through the UI.
+            // The config is set implicitly when user clicks deploy and StepDeploy.validate is called.
+            this.currentView.model.spec.set("config", this.currentView.getConfigMap());
             if (this.currentStep==0) {
                 // from first step, composer should load yaml from the catalog item
                 if (this.currentView.selectedTemplate && this.currentView.selectedTemplate.id) {
