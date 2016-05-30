@@ -170,6 +170,7 @@ define([
                 this.currentView.setProvisioningProperties();
             }
 
+            var linebreak = /\n/g;
             var baseSpacing = '  ';
 
             var content = [].concat(_YAML_HEADER);
@@ -200,7 +201,12 @@ define([
                             content.push(baseSpacing + '  ' + valueKey + ': ' + valueValue);
                         });
                     } else {
-                        content.push(baseSpacing + key + ': ' + value);
+                        var isMultiline = linebreak.test(value);
+                        content.push(baseSpacing + key + ': ' + (isMultiline ? '|' : value));
+                        if (isMultiline) {
+                            var subBaseSpacing = baseSpacing + '  ';
+                            content.push(subBaseSpacing + value.replace(linebreak, "\n" + subBaseSpacing));
+                        }
                     }
                 });
             }
@@ -410,7 +416,7 @@ define([
                     help: 'The password to use to connect to the machines (if using password access)'
                 },
                 {
-                    id: 'privateKeyFile',
+                    id: 'privateKeyData',
                     label: 'Private Key Data',
                     type: 'textarea',
                     help: 'The contents of the private key file to use to connect to the machines (if using key access, where the corresponding public key is in the <code>.authorized_keys</code> file on the servers)'
