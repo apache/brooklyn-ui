@@ -78,7 +78,8 @@ define([
                         name:param.name,
                         type:param.type,
                         description:param.description?param.description:"",
-                        defaultValue:param.defaultValue
+                        defaultValue:param.defaultValue,
+                        shouldSanitize: param.shouldSanitize
                     }))
                 })
                 var container = this.$("#selector-container")
