@@ -34,6 +34,10 @@ under the License.
         <input type="checkbox" class="param-value">
         <% } %>
     </td>
+    <% } else if (shouldSanitize == true) { %>
+    <td>
+        <input type="password" class="input-medium param-value" value="<%- defaultValue %>">
+    </td>
     <% } else { %>
     <td><!--  use 1 line textarea so it can be resized -->
       <textarea class="input-medium param-value"><%- defaultValue %></textarea>
