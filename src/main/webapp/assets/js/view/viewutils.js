@@ -550,7 +550,7 @@ define([
                 // no status info at all
                 result.url = null;
             } else {
-                result.url = "/assets/img/"+"icon-status-"+mode+"."+imgext;
+                result.url = "./assets/img/"+"icon-status-"+mode+"."+imgext;
             }
             
             return result;
