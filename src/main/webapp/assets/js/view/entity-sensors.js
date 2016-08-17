@@ -28,7 +28,7 @@ define([
 ], function (_, $, Backbone, Util, ZeroClipboard, ViewUtils, SensorSummary, SensorsHtml, SensorNameHtml) {
 
     // TODO consider extracting all such usages to a shared ZeroClipboard wrapper?
-    ZeroClipboard.config({ moviePath: '/assets/img/zeroclipboard/ZeroClipboard.swf' });
+    ZeroClipboard.config({ moviePath: './assets/img/zeroclipboard/ZeroClipboard.swf' });
     
     var sensorHtml = _.template(SensorsHtml),
         sensorNameHtml = _.template(SensorNameHtml);
