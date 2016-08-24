@@ -175,17 +175,16 @@ define([
     };
 
     Util.logout = function logout() {
-        $.ajax({
-            type: "POST",
-            dataType: "text",
-            url: "/v1/logout",
-            success: function() {
-                window.location.replace("/");
-            },
-            failure: function() {
-                window.location.replace("/");
-            }
-        });
+        var ua = window.navigator.userAgent;
+        if (ua.indexOf("MSIE ") >= 0 || ua.indexOf(" Edge/") >= 0 || ua.indexOf(" Trident/") >= 0) {
+            document.execCommand('ClearAuthenticationCache', 'false');
+            window.location.replace('/');
+        } else {
+            $('<form action="' + '/logout_redirect.html' + '" method="POST" id="redirectForm">' +
+                '<input type="hidden" name="acme" value="acme"/>' +
+                '</form>').appendTo($(document.body))
+                .submit();
+        }
     }
 
     Util.setSelectionRange = function (input, selectionStart, selectionEnd) {
@@ -216,7 +215,7 @@ define([
 
     $("#logout-link").on("click", function (e) {
         e.preventDefault();
-        Util.logout()
+        Util.logout();
         return false;
     });
 
