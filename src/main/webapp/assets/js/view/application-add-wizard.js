@@ -680,10 +680,12 @@ define([
                 this.$('.required-config-loading').hide()
                 if (catalogEntryItem!=null && catalogEntryItem.config!=null) {
                     var that = this
-                    _.each(catalogEntryItem.config, function (cfg) {
-                        if (cfg.priority !== undefined) {
+                    _.chain(catalogEntryItem.config).sortBy(function (cfg){
+                        return !isNaN(cfg.priority) ? cfg.priority : 99999;
+                    }).each(function (cfg) {
+                        if (cfg.pinned === true || (cfg.contraints.indexOf('required') > -1 && (cfg.defaultValue === undefined || cfg.defaultValue === ''))) {
                             var html = _.template(RequiredConfigEntryHtml, {data:cfg});
-                            that.$('.config-table').append(html)
+                            that.$('.config-table').append(html);
                         }
                     })
                 }
