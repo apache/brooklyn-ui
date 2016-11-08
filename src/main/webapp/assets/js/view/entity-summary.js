@@ -118,7 +118,7 @@ define([
         updateStatusIcon: function() {
             var statusIconInfo = ViewUtils.computeStatusIconInfo(this.$(".serviceUp .value").html(), this.$(".status .value").html());
             if (statusIconInfo.url) {
-                this.$('#status-icon').html('<img src="'+statusIconInfo.url+'" '+
+                this.$('#status-icon').html('<img src="'+encodeURI(statusIconInfo.url)+'" '+
                         'style="max-width: 64px; max-height: 64px;"/>');
             } else {
                 this.$('#status-icon').html('');
@@ -160,15 +160,15 @@ define([
                 }
             }
             if (lastFailedTask) {
-                var path = "activities/subtask/"+lastFailedTask.id;
+                var path = "activities/subtask/"+encodeURIComponent(lastFailedTask.id);
                 var base = this.model.getLinkByName("self");
                 if (problemDetails)
                     problemDetails = problemDetails + "<br style='line-height: 24px;'>";
                 problemDetails = problemDetails + "<b>"+_.escape("Failure running task ")
                     +"<a class='open-tab' tab-target='"+path+"'" +
-                    		"href='#"+base+"/"+path+"'>" +
+                    		"href='#"+encodeURI(base)+"/"+path+"'>" +
             				"<i>"+_.escape(lastFailedTask.attributes.displayName)+"</i> "
-                    +"("+lastFailedTask.id+")</a>: </b>"+
+                    +"("+_.escape(lastFailedTask.id)+")</a>: </b>"+
                     _.escape(lastFailedTask.attributes.result);
             }
             if (!that.problemTasksLoaded && this.options.tasks) {
@@ -191,9 +191,9 @@ define([
                         "<br style='line-height: 24px;'>" +
                         "No Brooklyn-managed task failures reported. " +
                         "For more information, investigate " +
-                            "<a class='open-tab' tab-target='sensors' href='#"+base+"/sensors'>sensors</a> and " +
+                            "<a class='open-tab' tab-target='sensors' href='#"+encodeURI(base)+"/sensors'>sensors</a> and " +
                             "streams on recent " +
-                            "<a class='open-tab' tab-target='activities' href='#"+base+"/activities'>activity</a>, " +
+                            "<a class='open-tab' tab-target='activities' href='#"+encodeURI(base)+"/activities'>activity</a>, " +
                             "as well as external systems and logs where necessary.").show();
             }
         },

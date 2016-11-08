@@ -21,7 +21,7 @@ under the License.
 <div class="template-lozenge frame" id="<%- id %>" data-type="<%- type %>" data-name="<%- name %>" data-yaml="<%- planYaml %>">
     <% if (iconUrl) { %>
     <div class="icon">
-        <img src="<%- iconUrl %>" alt="(icon)" />
+        <img src="<%= encodeURI(iconUrl) %>" alt="(icon)" />
     </div>
     <% } %>
     <div class="blurb">

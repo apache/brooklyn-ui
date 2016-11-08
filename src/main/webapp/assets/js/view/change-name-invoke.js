@@ -26,7 +26,7 @@ define([
     return Backbone.View.extend({
         template: _.template(ChangeNameModalHtml),
         initialize: function() {
-            this.title = "Change Name of "+this.options.entity.get('name');
+            this.title = "Change Name of "+_.escape(this.options.entity.get('name'));
         },
         render: function() {
             this.$el.html(this.template({ name: this.options.entity.get('name') }));
@@ -51,7 +51,7 @@ define([
         },
         showError: function (message) {
             this.$(".change-name-error-container").removeClass("hide");
-            this.$(".change-name-error-message").html(message);
+            this.$(".change-name-error-message").html(_.escape(message));
         }
     });
 });

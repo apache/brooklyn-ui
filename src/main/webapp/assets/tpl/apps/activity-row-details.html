@@ -24,11 +24,11 @@ under the License.
     <div class="expansion-header">
       <div style="float: right;" class="toolbar-row">
         <!--  <a class="handy icon-book toggleLog"></a> -->
-        <a href="<%= link %>"><i class="handy icon-file showJson" rel="tooltip" title="JSON direct link"></i></a>
+        <a href="<%= encodeURI(link) %>"><i class="handy icon-file showJson" rel="tooltip" title="JSON direct link"></i></a>
         <i class="handy icon-inbox toggleFullDetail" rel="tooltip" title="Show even more detail"></i>
         <i class="handy icon-chevron-right showDrillDown" rel="tooltip" title="Drill into sub-tasks"></i>
       </div>
-      <b><i><span class="task-description"><%= task.description %></span></i></b>
+      <b><i><span class="task-description"><%- task.description %></span></i></b>
     </div>
     <div class="expansion-main">
     </div>

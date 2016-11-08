@@ -98,7 +98,7 @@ define([
                                              actions = that.getConfigActions(configName);
                                          
                                          // NB: the row might not yet exist
-                                         var $row = $('tr[id="'+configName+'"]');
+                                         var $row = $('tr[id="'+_.escape(configName)+'"]');
                                          
                                          // datatables doesn't seem to expose any way to modify the html in place for a cell,
                                          // so we rebuild
@@ -111,7 +111,7 @@ define([
                                          }
                                          
                                          if (actions.open)
-                                             result = "<a href='"+actions.open+"'>" + result + "</a>";
+                                             result = "<a href='"+encodeURI(actions.open)+"'>" + result + "</a>";
                                          if (escapedValue==null || escapedValue.length < 3)
                                              // include whitespace so we can click on it, if it's really small
                                              result += "&nbsp;&nbsp;&nbsp;&nbsp;";

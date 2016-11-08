@@ -21,9 +21,9 @@ under the License.
 
     <div class="float-right">
       <% if (model.get("catalog") && model.get("catalog").planYaml) { %>
-        <button data-name="<%= model.getIdentifierName() %>" class="btn composer"
+        <button data-name="<%- model.getIdentifierName() %>" class="btn composer"
             title="Open this blueprint in the Composer where the YAML can be edited and deployed.">YAML Composer</button>
-        <button data-name="<%= model.getIdentifierName() %>" class="btn btn-danger delete">Delete</button>
+        <button data-name="<%- model.getIdentifierName() %>" class="btn btn-danger delete">Delete</button>
       <% } else { %>
         <button class="btn composer" disabled
             title="This item is defined in properties and cannot be edited.">YAML Composer</button>

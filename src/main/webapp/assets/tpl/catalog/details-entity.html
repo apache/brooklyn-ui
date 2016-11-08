@@ -20,9 +20,9 @@ under the License.
 <div class="catalog-details">
 
     <div class="float-right">
-        <button data-name="<%= model.id %>" class="btn composer"
+        <button data-name="<%- model.id %>" class="btn composer"
             title="Open this blueprint in the Composer where the YAML can be edited and deployed.">YAML Composer</button>
-        <button data-name="<%= model.id %>" class="btn btn-danger delete">Delete</button>
+        <button data-name="<%- model.id %>" class="btn btn-danger delete">Delete</button>
     </div>
 
     <% if (model.get("name") != model.get("symbolicName")) { %>
@@ -105,7 +105,7 @@ under the License.
                 <div class="accordion-inner">
                     <% if (model.error) { %>
                     <p><i class="icon-exclamation-sign"></i> Could not load sensors</p>
-                    <% } else if (!model.get("sensors")) { %>
+                    <% } else if (!model.get("sensors") && !model.get("config")) { %>
                         <p>Loading...</p>
                     <% } else if (_.isEmpty(model.get("sensors"))) { %>
                         <p>No sensors</p>
@@ -142,7 +142,7 @@ under the License.
                 <div class="accordion-inner">
                 <% if (model.error) { %>
                     <p><i class="icon-exclamation-sign"></i> Could not load effectors</p>
-                <% } else if (!model.get("effectors")) { %>
+                <% } else if (!model.get("effectors") && !model.get("config")) { %>
                     <p>Loading...</p>
                 <% } else if (_.isEmpty(model.get("effectors"))) { %>
                     <p>No effectors</p>

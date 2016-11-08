@@ -30,19 +30,19 @@ define([
     var treeItemTemplate = _.template(TreeItemHtml);
 
     var findAllTreeboxes = function(id, $scope) {
-        return $('.tree-box[data-entity-id="' + id + '"]', $scope);
+        return $('.tree-box[data-entity-id="' + _.escape(id) + '"]', $scope);
     };
 
     var findRootTreebox = function(id, $scope) {
-        return $('.lozenge-app-tree-wrapper', $scope).children('.tree-box[data-entity-id="' + id + '"]', this.$el);
+        return $('.lozenge-app-tree-wrapper', $scope).children('.tree-box[data-entity-id="' + _.escape(id) + '"]', this.$el);
     };
 
     var findChildTreebox = function(id, $parentTreebox) {
-        return $parentTreebox.children('.node-children').children('.tree-box[data-entity-id="' + id + '"]');
+        return $parentTreebox.children('.node-children').children('.tree-box[data-entity-id="' + _.escape(id) + '"]');
     };
 
     var findMasterTreebox = function(id, $scope) {
-        return $('.tree-box[data-entity-id="' + id + '"]:not(.indirect)', $scope);
+        return $('.tree-box[data-entity-id="' + _.escape(id) + '"]:not(.indirect)', $scope);
     };
 
     var sortKeyOfIdName = function(id, name) {
@@ -75,7 +75,7 @@ define([
         var sortKey = sortKeyOfIdName(id, name);
         // Create the wrapper.
         var $treebox = $(
-                '<div data-entity-id="'+id+'" data-sort-key="'+sortKey+'" data-depth="'+depth+'" ' +
+                '<div data-entity-id="'+_.escape(id)+'" data-sort-key="'+_.escape(sortKey)+'" data-depth="'+_.escape(depth)+'" ' +
                 'class="tree-box toggler-group' +
                     (indirect ? " indirect" : "") +
                     (depth == 0 ? " outer" : " inner " + (depth % 2 ? " depth-odd" : " depth-even")+

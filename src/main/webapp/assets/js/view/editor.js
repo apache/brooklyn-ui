@@ -122,7 +122,7 @@ define([
             }
         },
         refresh: function() {
-            $("#button-run", this.$el).html(this.mode==MODE_CATALOG ? "Add to Catalog" : "Deploy");
+            $("#button-run", this.$el).html(_.escape(this.mode==MODE_CATALOG ? "Add to Catalog" : "Deploy"));
             if (this.mode==MODE_CATALOG) {
                 $("#button-switch-catalog", this.$el).addClass('active')
                 $("#button-switch-app", this.$el).removeClass('active')

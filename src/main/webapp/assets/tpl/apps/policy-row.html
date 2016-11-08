@@ -18,15 +18,15 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<tr class="policy-row" id="<%= cid %>">
-    <td class="policy-name"><%= name %></td>
-    <td><%= state %></td>
+<tr class="policy-row" id="<%- cid %>">
+    <td class="policy-name"><%- name %></td>
+    <td><%- state %></td>
     <td class="policy-action">
         <% if (state == "RUNNING") { %>
-        <button class="btn btn-info btn-mini policy-stop" link="<%= summary.getLinkByName('stop') %>">Suspend</button>
+        <button class="btn btn-info btn-mini policy-stop" link="<%- summary.getLinkByName('stop') %>">Suspend</button>
         <% } else if (state == "STOPPED") { %>
-        <button class="btn btn-info btn-mini policy-start" link="<%= summary.getLinkByName('start') %>">Resume</button>
-        <button class="btn btn-info btn-mini policy-destroy" link="<%= summary.getLinkByName('destroy') %>">Destroy</button>
+        <button class="btn btn-info btn-mini policy-start" link="<%- summary.getLinkByName('start') %>">Resume</button>
+        <button class="btn btn-info btn-mini policy-destroy" link="<%- summary.getLinkByName('destroy') %>">Destroy</button>
         <% } %> 
     </td>
 </tr>

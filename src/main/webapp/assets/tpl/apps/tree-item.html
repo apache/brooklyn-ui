@@ -27,7 +27,7 @@ under the License.
 
     if (!isLoaded) {
 %>
-        <i>Loading... (<%= id %>)</i>
+        <i>Loading... (<%- id %>)</i>
 <%  } else {
         var hasChildren = model.hasChildren() || model.hasMembers();
         var iconUrl = model.get('iconUrl');
@@ -40,19 +40,19 @@ under the License.
         var statusColumnWidth = hasChildren || statusIconUrl || (!isApp && !iconUrl /* for children, insert space so things line up */) ? statusIconSize : 0;
 %>
 
-  <span class="entity_tree_node name entity" id="span-<%= id %>" 
-        data-entity-id="<%= id %>" data-entity-type="<%= model.get('type') %>" data-parent-id="<%= parentId %>" data-app-id="<%= model.get('applicationId') %>">
-    <a href="#v1/applications/<%= model.get('applicationId') %>/entities/<%= id %>">
+  <span class="entity_tree_node name entity" id="span-<%- id %>" 
+        data-entity-id="<%- id %>" data-entity-type="<%- model.get('type') %>" data-parent-id="<%- parentId %>" data-app-id="<%- model.get('applicationId') %>">
+    <a href="#v1/applications/<%= encodeURIComponent(model.get('applicationId')) %>/entities/<%= encodeURIComponent(id) %>">
 
-      <div style="min-width: <%= statusColumnWidth + (iconUrl ? entityIconSize : 6)%>px; min-height: <%= minHeight %>px; max-height: 40px; display: inline-block; margin-right: 4px; vertical-align: middle;">
+      <div style="min-width: <%- statusColumnWidth + (iconUrl ? entityIconSize : 6)%>px; min-height: <%= minHeight %>px; max-height: 40px; display: inline-block; margin-right: 4px; vertical-align: middle;">
         <% if (statusIconUrl) { %>
         <div style="position: absolute; left: 0px; margin: auto; top: <%= isApp && hasChildren ? 3 : 2 %>px;<% if (!hasChildren) { %> bottom: 0px;<% } %>">
-            <img src="<%= statusIconUrl %>" style="max-width: <%= statusIconSize %>px; max-height: <%= statusIconSize %>px; margin: auto; position: absolute; top: -1px;<% if (!hasChildren) { %> bottom: 0px;<% } %>">
+            <img src="<%= encodeURI(statusIconUrl) %>" style="max-width: <%- statusIconSize %>px; max-height: <%- statusIconSize %>px; margin: auto; position: absolute; top: -1px;<% if (!hasChildren) { %> bottom: 0px;<% } %>">
         </div>
         <% } %>
 
         <% if (hasChildren) { %>
-        <div style="position: absolute; left: <%= chevronLeft %>px; margin: auto; <%= statusIconUrl ? "bottom: -1px;" : isApp ? "top: 6px;" : "top: 6px;" %>">
+        <div style="position: absolute; left: <%- chevronLeft %>px; margin: auto; <%= encodeURI(statusIconUrl) ? "bottom: -1px;" : isApp ? "top: 6px;" : "top: 6px;" %>">
             <div class="toggler-icon icon-chevron-right tree-node-state tree-change">
                 <div class="light-popup">
                     <div class="light-popup-body">
@@ -68,14 +68,14 @@ under the License.
         <% } %>
 
         <% if (iconUrl) { %>
-            <img src="<%= iconUrl %>" style="max-width: <%= entityIconSize %>px; max-height: <%= entityIconSize %>px; position: absolute; padding-left: 5px; left: <%= statusColumnWidth %>px; top: 0; bottom: 0; margin: auto;">
+            <img src="<%= encodeURI(iconUrl) %>" style="max-width: <%- entityIconSize %>px; max-height: <%- entityIconSize %>px; position: absolute; padding-left: 5px; left: <%- statusColumnWidth %>px; top: 0; bottom: 0; margin: auto;">
         <% } %>
       </div>
 
       <% if (indirect) { %>
         <i class="indirection-icon icon-share-alt"></i>
       <% } %>
-      <span style="max-height: 18px; padding-right: 6px; position: relative; margin: auto; top: 2px; bottom: 0;"><%= model.get('name') %></span>
+      <span style="max-height: 18px; padding-right: 6px; position: relative; margin: auto; top: 2px; bottom: 0;"><%- model.get('name') %></span>
 
     </a>
   </span>

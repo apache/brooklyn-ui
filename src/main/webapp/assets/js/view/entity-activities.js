@@ -200,11 +200,11 @@ define([
                     link: that.model.getLinkByName("activities")+"/"+id,
                     updateOnly: updateOnly
                 })
-                $('tr#'+id).next().find('td.row-expansion').html(html)
-                $('tr#'+id).next().find('td.row-expansion').attr('id', id)
+                $('tr#'+_.escape(id)).next().find('td.row-expansion').html(html)
+                $('tr#'+_.escape(id)).next().find('td.row-expansion').attr('id', id)
             } else {
                 // just update
-                $('tr#'+id).next().find('.task-description').html(Util.escape(task.attributes.description))
+                $('tr#'+_.escape(id)).next().find('.task-description').html(Util.escape(task.attributes.description))
             }
             
             var html = _.template(ActivityRowDetailsMainHtml, { 
@@ -212,12 +212,12 @@ define([
                 link: that.model.getLinkByName("activities")+"/"+id,
                 updateOnly: updateOnly 
             })
-            $('tr#'+id).next().find('.expansion-main').html(html)
+            $('tr#'+_.escape(id)).next().find('.expansion-main').html(html)
             
             
             if (!updateOnly) {
-                $('tr#'+id).next().find('.row-expansion .opened-row-details').hide()
-                $('tr#'+id).next().find('.row-expansion .opened-row-details').slideDown(300)
+                $('tr#'+_.escape(id)).next().find('.row-expansion .opened-row-details').hide()
+                $('tr#'+_.escape(id)).next().find('.row-expansion .opened-row-details').slideDown(300)
             }
         },
         toggleFullDetail: function(evt) {
@@ -231,7 +231,7 @@ define([
         },
         showFullActivity: function(id) {
             id = this.selectedId
-            var $details = $("td.row-expansion#"+id+" .expansion-footer");
+            var $details = $("td.row-expansion#"+_.escape(id)+" .expansion-footer");
             var task = this.collection.get(id);
             var html = _.template(ActivityFullDetailsHtml, { task: task });
             $details.html(html);
@@ -240,7 +240,7 @@ define([
         },
         hideFullActivity: function(id) {
             id = this.selectedId
-            var $details = $("td.row-expansion#"+id+" .expansion-footer");
+            var $details = $("td.row-expansion#"+_.escape(id)+" .expansion-footer");
             $details.slideUp(100);
         }
     });

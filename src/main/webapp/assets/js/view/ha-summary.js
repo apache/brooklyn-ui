@@ -123,7 +123,7 @@ define([
             this.$(".timestamp").each(function(index, t) {
                 t = $(t);
                 var timestamp = t.data("timestamp");
-                t.html(moment(timestamp).fromNow());
+                t.html(_.escape(moment(timestamp).fromNow()));
             });
         }
     });

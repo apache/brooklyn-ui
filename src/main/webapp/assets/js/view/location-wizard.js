@@ -107,7 +107,7 @@ define([
             var actionContainer = this.$('.location-wizard-actions').empty();
             if (this.step === 2 || (this.type === 'byon' && this.step === 1)) {
                 _.each(this.actions, function(element, index, list) {
-                    actionContainer.append($('<button>').addClass('btn btn-mini btn-info location-wizard-action ' + element.class).html(element.label));
+                    actionContainer.append($('<button>').addClass('btn btn-mini btn-info location-wizard-action ' + element.class).html(_.escape(element.label)));
                 });
             }
 
@@ -289,7 +289,7 @@ define([
 
         onDisplayHelp: function(event) {
             var $elm = this.$(event.currentTarget);
-            this.$('.help-text').html($elm.data('help')).show();
+            this.$('.help-text').html(_.escape($elm.data('help'))).show();
         },
 
         onHideHelp: function(event) {
@@ -483,7 +483,7 @@ define([
             } else if (field.type === 'select') {
                 $input = $('<select>');
                 _.each(field.values, function(value, key) {
-                    $input.append($('<option>').attr('value', key).html(value));
+                    $input.append($('<option>').attr('value', key).html(_.escape(value)));
                 });
                 $('<input>').attr('name', field.id + '-other').insertAfter($input);
             }
@@ -499,7 +499,7 @@ define([
                 .append($('<label>')
                     .addClass('control-label deploy-label')
                     .attr('for', field.id)
-                    .html(field.label))
+                    .html(_.escape(field.label)))
                 .append($input
                     .val(value)
                     .data('list', _.isBoolean(field.list) ? field.list : false)
@@ -519,7 +519,7 @@ define([
             }
 
             if (_.has(field, 'help')) {
-                $div.append($('<p>').addClass('help-block').html($('<small>').html(field.help)));
+                $div.append($('<p>').addClass('help-block').html($('<small>').html(_.escape(field.help))));
             }
 
             if (field.type === 'text' && field.id === 'spec') {
@@ -588,7 +588,7 @@ define([
                 if (_.isObject($(this).data('require-deps'))) {
                     var require = true;
                     _.each($(this).data('require-deps'), function(values, key) {
-                        require = require && _.contains(values, that.$('[name=' + key + ']').val());
+                        require = require && _.contains(values, that.$('[name=' + _.escape(key) + ']').val());
                     });
                     $(this).data('require', require);
                 }
@@ -597,7 +597,7 @@ define([
                 if (_.isObject($(this).data('disable-deps'))) {
                     var disable = true;
                     _.each($(this).data('disable-deps'), function(values, key) {
-                        disable = disable && _.contains(values, that.$('[name=' + key + ']').val());
+                        disable = disable && _.contains(values, that.$('[name=' + _.escape(key) + ']').val());
                     });
                     if (disable) {
                         $(this).attr('disabled', 'disabled').val('');

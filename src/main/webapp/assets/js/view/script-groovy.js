@@ -51,7 +51,7 @@ define([
         },
         loadExample: function() {
             $(".input textarea").val(
-                    'import static org.apache.brooklyn.entity.software.base.Entities.*\n'+
+                    'import static org.apache.brooklyn.core.entity.Entities.*\n'+
                     '\n'+
                     'println "Last result: "+last\n'+
                     'data.exampleRunCount = (data.exampleRunCount ?: 0) + 1\n'+
