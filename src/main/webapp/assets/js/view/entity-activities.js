@@ -57,9 +57,7 @@ define([
                 "aaSorting": [[ 2, "desc" ]],
                 "aoColumnDefs": [
                                  {
-                                     "mRender": function ( data, type, row ) {
-                                         return Util.escape(data)
-                                     },
+                                     "mRender": function ( data, type, row ) { return Util.escape(data) },
                                      "aTargets": [ 1, 3 ]
                                  },
                                  {
@@ -71,7 +69,10 @@ define([
                                      },
                                      "aTargets": [ 2 ]
                                  },
-                                 { "bVisible": false,  "aTargets": [ 0 ] }
+                                 { "bVisible": false,  
+                                   "mRender": function ( data, type, row ) { return Util.escape(data) },
+                                   "aTargets": [ 0 ]
+                                 }
                              ]            
             });
             

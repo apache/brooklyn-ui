@@ -46,6 +46,7 @@ define([
                     "mRender": function ( data, type, row ) { return Util.escape(data) },
                     "aTargets": [ 1, 2, 3 ]
                  }, {
+                    "mRender": function ( data, type, row ) { return Util.escape(data) },
                     "bVisible": false,
                     "aTargets": [ 0 ]
                  } ],

@@ -178,7 +178,8 @@ define([
                                      "aTargets": [ 2 ]
                                  },
                                  // ID in column 0 is standard (assumed in ViewUtils)
-                                 { "bVisible": false,  "aTargets": [ 0 ] }
+                                 { bVisible: false,  aTargets: [ 0 ],
+                                   mRender: function(data) { return _.escape(data); } }
                              ]            
             });
             
