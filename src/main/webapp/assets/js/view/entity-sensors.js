@@ -106,7 +106,7 @@ define([
                                              actions = that.getSensorActions(sensorName);
                                          
                                          // NB: the row might not yet exist
-                                         var $row = $('tr[id="'+sensorName+'"]');
+                                         var $row = $('tr[id="'+_.escape(sensorName)+'"]');
                                          
                                          // datatables doesn't seem to expose any way to modify the html in place for a cell,
                                          // so we rebuild
@@ -119,7 +119,7 @@ define([
                                          }
                                          
                                          if (actions.open)
-                                             result = "<a href='"+actions.open+"'>" + result + "</a>";
+                                             result = "<a href='"+encodeURI(actions.open)+"'>" + result + "</a>";
                                          if (escapedValue==null || escapedValue.length < 3)
                                              // include whitespace so we can click on it, if it's really small
                                              result += "&nbsp;&nbsp;&nbsp;&nbsp;";
@@ -178,7 +178,8 @@ define([
                                      "aTargets": [ 2 ]
                                  },
                                  // ID in column 0 is standard (assumed in ViewUtils)
-                                 { "bVisible": false,  "aTargets": [ 0 ] }
+                                 { bVisible: false,  aTargets: [ 0 ],
+                                   mRender: function(data) { return _.escape(data); } }
                              ]            
             });
             

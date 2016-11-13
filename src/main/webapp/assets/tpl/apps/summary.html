@@ -23,7 +23,7 @@ under the License.
  <div id="title-and-info-row" style="white-space: nowrap;">
   <% if (entity.getLinkByName('iconUrl')) { %>
   <div style="display: inline-block; vertical-align: bottom; padding-top: 12px; padding-bottom: 18px;">
-    <img src="<%= entity.getLinkByName('iconUrl') %>"
+    <img src="<%= encodeURI(entity.getLinkByName('iconUrl')) %>"
         style="max-width: 128px; max-height: 128px;"/>
   </div>
   <% } %>
@@ -31,7 +31,7 @@ under the License.
   <div style="display: inline-block; vertical-align: bottom;">
   
    <div class="name" style="margin-bottom: 12px; padding-right: 12px;">
-     <h2><%= entity.get('name') %></h2>
+     <h2><%- entity.get('name') %></h2>
    </div>
 
   </div>
@@ -60,15 +60,15 @@ under the License.
         
         <div class="info-name-value type" style="margin-top: 12px;">
             <div class="name">Type</div>
-            <div class="value"><%= entity.get('type') %></div>
+            <div class="value"><%- entity.get('type') %></div>
         </div>
         <div class="info-name-value id">
             <div class="name">ID</div>
-            <div class="value"><%= entity.get('id') %></div>
+            <div class="value"><%- entity.get('id') %></div>
         </div>
         <div class="info-name-value catalogItemId hide">
             <div class="name">Catalog Item</div>
-            <div class="value"><a href="#v1/catalog/<%= (isApp ? "applications" : "entities") %>/<%= entity.get('catalogItemId') %>"><%= entity.get('catalogItemId') %></a></div>
+            <div class="value"><a href="#v1/catalog/<%= (isApp ? "applications" : "entities") %>/<%= encodeURIComponent(entity.get('catalogItemId')) %>"><%- entity.get('catalogItemId') %></a></div>
         </div>
 
         <div class="additional-info-on-problem hide" style="margin-top: 12px;">

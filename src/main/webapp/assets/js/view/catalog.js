@@ -65,7 +65,7 @@ define([
         renderEmpty: function(extraMessage) {
             this.$el.html("<div class='catalog-details'>" +
                 "<h3>Select an entry on the left</h3>" +
-                (extraMessage ? extraMessage : "") +
+                _.escape(extraMessage ? extraMessage : "") +
                 "</div>");
             return this;
         },
@@ -124,6 +124,7 @@ define([
             }
         },
         composerDeployItem: function(event) {
+            console.log("composer deploy", event.currentTarget);
             Backbone.history.navigate("/v1/editor/app/"+ encodeURIComponent($(event.currentTarget).data("name")),
                 {trigger: true});
         },        
@@ -187,7 +188,7 @@ define([
             if (initialView) {
                 if (initialView == "entity") initialView = "yaml";
                 
-                this.$("[data-context='"+initialView+"']").addClass("active");
+                this.$("[data-context='"+_.escape(initialView)+"']").addClass("active");
                 this.showFormForType(initialView)
             }
             return this;
@@ -215,7 +216,7 @@ define([
             this.context = type;
             if (type == "location") {
                 this.contextView = newLocationForm(this, this.options.parent);
-                Backbone.history.navigate("/v1/catalog/new/" + type);
+                Backbone.history.navigate("/v1/catalog/new/" + encodeURIComponent(type));
                 this.$("#catalog-add-form").html(this.contextView.$el);
             }else{
                 // go to composer
@@ -232,7 +233,7 @@ define([
             },
             onFinish: function(wizard, data) {
                 addViewParent.loadAccordionItem("locations", data.id);
-                addView.clearWithHtml( "Added: "+data.id+". Loading..." );
+                addView.clearWithHtml( "Added: "+_.escape(data.id)+". Loading..." );
             }
         }).render();
     }
@@ -240,7 +241,7 @@ define([
     var Catalog = Backbone.Collection.extend({
         modelX: Backbone.Model.extend({
           url: function() {
-            return "/v1/catalog/" + this.name + "/" + this.id + "?allVersions=true";
+            return "/v1/catalog/" + encodeURIComponent(this.name) + "/" + encodeURIComponent(this.id) + "?allVersions=true";
           }
         }),
         initialize: function(models, options) {
@@ -254,14 +255,14 @@ define([
             var that = this; 
             var model = this.model.extend({
               url: function() {
-                return "/v1/catalog/" + that.name + "/" + this.id.split(":").join("/");
+                return "/v1/catalog/" + encodeURIComponent(that.name) + "/" + encodeURIComponent(this.id).split(encodeURIComponent(":")).join("/");
               }
             });
             _.bindAll(this);
             this.model = model;
         },
         url: function() {
-            return "/v1/catalog/" + this.name+"?allVersions=true";
+            return "/v1/catalog/" + encodeURIComponent(this.name) + "?allVersions=true";
         }
     });
 
@@ -274,8 +275,8 @@ define([
             'click .accordion-nav-row': 'showDetails'
         },
         bodyTemplate: _.template(
-            "<div class='accordion-head capitalized'><%= name %></div>" +
-            "<div class='accordion-body' style='display: <%= display %>'></div>"),
+            "<div class='accordion-head capitalized'><%- name %></div>" +
+            "<div class='accordion-body' style='display: <%- display %>'></div>"),
 
         initialize: function() {
             _.bindAll(this);
@@ -353,7 +354,7 @@ define([
                 activeDetailsView = this.name;
                 this.activeCid = cid;
                 var model = this.collection.get(cid);
-                Backbone.history.navigate("v1/catalog/" + this.name + "/" + model.id);
+                Backbone.history.navigate("v1/catalog/" + encodeURIComponent(this.name) + "/" + encodeURIComponent(model.id));
                 this.options.onItemSelected(activeDetailsView, model, $event);
             }
         },
@@ -540,7 +541,7 @@ define([
                         }
                         // TODO could look in collection for any starting with ID
                         if (model && !noRedirect) {
-                            Backbone.history.navigate("/v1/catalog/" + kind + "/" + id);
+                            Backbone.history.navigate("/v1/catalog/" + encodeURIComponent(kind) + "/" + encodeURIComponent(id));
                             activeDetailsView = kind;
                             accordion.activeCid = model.cid;
                             accordion.options.onItemSelected(kind, model);
@@ -557,7 +558,7 @@ define([
             if ($target) {
                 $target.addClass("active");
             } else {
-                this.$("[data-cid=" + model.cid + "]").addClass("active");
+                this.$("[data-cid='" + _.escape(model.cid) + "']").addClass("active");
             }
             var newView = new CatalogItemDetailsView({
                 model: model,

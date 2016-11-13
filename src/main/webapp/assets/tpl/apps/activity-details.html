@@ -27,7 +27,7 @@ under the License.
      </div>
      <% for (crumb in breadcrumbs) { %>
      <div style="margin-right: 20px; font-weight: 400; font-size: 80%; text-align: right; line-height: 14px;">
-        <%= breadcrumbs[crumb] %></span>
+        <%- breadcrumbs[crumb] %></span>
      </div>
      <% } %>
     </div>
@@ -52,7 +52,7 @@ under the License.
 
 <div class="activity-details-section activity-name-and-id">
     <span class="activity-label">Name:</span> <span class="updateField-displayName">Loading...</span> <br/>
-    <span class="activity-label">ID:</span> <span class="updateField-id"><%= taskId %></span>
+    <span class="activity-label">ID:</span> <span class="updateField-id"><%- taskId %></span>
 </div>
 <div class="activity-details-section activity-time">
     <!-- these are dynamic -->

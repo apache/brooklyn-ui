@@ -18,6 +18,6 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<option value="<%= typeof id !== 'undefined' ? id : url /* both add app wizard and effector (eg addRegion) should now use id, but url left just in case */ %>">
-    <span class="provider"><%= name %></span>
+<option value="<%= typeof id !== 'undefined' ? _.escape(id) : encodeURI(url) /* both add app wizard and effector (eg addRegion) should now use id, but url left just in case */ %>">
+    <span class="provider"><%- name %></span>
 </option>

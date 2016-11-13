@@ -111,7 +111,7 @@ define([
 //                log("could not find entity href for tab");
             }
             if (this.options.preselectTab) {
-                var tabLink = this.$('a[data-target="#'+this.options.preselectTab+'"]');
+                var tabLink = this.$('a[data-target="#'+_.escape(this.options.preselectTab)+'"]');
                 var showFn = function() { tabLink.tab('show', { duration: 0 }); };
                 if (optionalParent) showFn();
                 else _.defer(showFn);

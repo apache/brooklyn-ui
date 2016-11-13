@@ -46,6 +46,7 @@ define([
                     "mRender": function ( data, type, row ) { return Util.escape(data) },
                     "aTargets": [ 1, 2, 3 ]
                  }, {
+                    "mRender": function ( data, type, row ) { return Util.escape(data) },
                     "bVisible": false,
                     "aTargets": [ 0 ]
                  } ],
@@ -84,7 +85,7 @@ define([
             else if (this.options.tabView)
                 this.task = this.options.tabView.collection.get(this.taskId);
             if (!this.taskLink && this.task) this.taskLink = this.task.get('links').self;
-            if (!this.taskLink && this.taskId) this.taskLink = "v1/activities/"+this.taskId;;
+            if (!this.taskLink && this.taskId) this.taskLink = "v1/activities/"+encodeURIComponent(this.taskId);
             
             this.tabView = this.options.tabView || null;
             
@@ -142,7 +143,7 @@ define([
             this.updateFields('displayName', 'entityDisplayName', 'id', 'description', 'currentStatus', 'blockingDetails');
             this.updateFieldWith('blockingTask',
                 function(v) { 
-                    return "<a class='showDrillDownBlockerOfAnchor handy' link='"+_.escape(v.link)+"' id='"+v.metadata.id+"'>"+
+                    return "<a class='showDrillDownBlockerOfAnchor handy' link='"+encodeURI(v.link)+"' id='"+_.escape(v.metadata.id)+"'>"+
                         that.displayTextForLinkedTask(v)+"</a>" })
             this.updateFieldWith('result',
                 function(v) {
@@ -190,7 +191,7 @@ define([
                                 "<span class='activity-label'>" +
                                 _.escape(name) +
                                 "</span><span>" +
-                                "<a href='" + stream.link + "'>download</a>" +
+                                "<a href='" + encodeURI(stream.link) + "'>download</a>" +
                                 (stream.metadata["sizeText"] ? " (" + _.escape(stream.metadata["sizeText"]) + ")" : "") +
                                 "</span></div>";
                     }
@@ -198,7 +199,7 @@ define([
                 });
 
             this.updateFieldWith('submittedByTask',
-                function(v) { return "<a class='showDrillDownSubmittedByAnchor handy' link='"+_.escape(v.link)+"' id='"+v.metadata.id+"'>"+
+                function(v) { return "<a class='showDrillDownSubmittedByAnchor handy' link='"+encodeURI(v.link)+"' id='"+_.escape(v.metadata.id)+"'>"+
                     that.displayTextForLinkedTask(v)+"</a>" })
 
             if (this.task.get("children").length==0)
@@ -315,12 +316,12 @@ define([
             var v = this.task.get(field)
             if (v !== undefined && v != null && 
                     (typeof v !== "object" || _.size(v) > 0)) {
-                this.$('.updateField-'+field, this.$el).html( f(v) );
-                this.$('.ifField-'+field, this.$el).show();
+                this.$('.updateField-'+_.escape(field), this.$el).html( f(v) );
+                this.$('.ifField-'+_.escape(field), this.$el).show();
             } else {
                 // blank if there is no value
-                this.$('.updateField-'+field).empty();
-                this.$('.ifField-'+field).hide();
+                this.$('.updateField-'+_.escape(field)).empty();
+                this.$('.ifField-'+_.escape(field)).hide();
             }
             return v
         },
@@ -345,7 +346,6 @@ define([
             this.showDrillDownTask("blocker of", $a.attr("link"), $a.attr("id"))
         },
         showDrillDownTask: function(relation, newTaskLink, newTaskId, newTask) {
-//            log("activities deeper drill down - "+newTaskId +" / "+newTaskLink)
             var that = this;
             
             var newBreadcrumbs = [ relation + ' ' +
@@ -369,7 +369,7 @@ define([
             }
             
             if (Backbone.history && (!this.tabView || !this.tabView.openingQueuedTasks)) {
-                Backbone.history.navigate(Backbone.history.fragment+"/"+"subtask"+"/"+this.taskId);
+                Backbone.history.navigate(Backbone.history.fragment+"/"+"subtask"+"/"+encodeURIComponent(this.taskId));
             }
 
             var $t = parent.closest('.slide-panel');
@@ -401,7 +401,7 @@ define([
 
             if (Backbone.history) {
                 var fragment = Backbone.history.fragment
-                var thisLoc = fragment.indexOf("/subtask/"+this.taskId);
+                var thisLoc = fragment.indexOf("/subtask/"+encodeURIComponent(this.taskId));
                 if (thisLoc>=0)
                     Backbone.history.navigate( fragment.substring(0, thisLoc) );
             }

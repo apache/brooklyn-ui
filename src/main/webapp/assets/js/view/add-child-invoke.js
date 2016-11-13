@@ -54,7 +54,7 @@ define([
         },
         showError: function (message) {
             this.$(".child-add-error-container").removeClass("hide");
-            this.$(".child-add-error-message").html(message);
+            this.$(".child-add-error-message").html(_.escape(message));
         }
 
     });

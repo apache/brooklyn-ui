@@ -73,7 +73,7 @@ under the License.
             It is recommended not to use this server directly.</p>
             
     <% if (masterUri) { %>
-        <p>Redirecting to the master server at <a href="<%= masterUri %>"><%= masterUri %></a> shortly.</p>
+        <p>Redirecting to the master server at <a href="<%= encodeURI(masterUri) %>"><%- masterUri %></a> shortly.</p>
     <% } else { %>
         <p>The address of the master Brooklyn server is not currently known.</p>
     <% } %>

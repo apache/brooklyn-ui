@@ -165,7 +165,7 @@ define([
 
             var currentStepObj = this.steps[this.currentStep]
             this.title.html(_.template(currentStepObj.title)({appName: name}));
-            this.instructions.html(currentStepObj.instructions)
+            this.instructions.html(_.escape(currentStepObj.instructions))
             this.currentView = currentStepObj.view
             
             // delegate to sub-views !!
@@ -641,8 +641,9 @@ define([
             if (this.model.catalogEntityData==null) {
                 this.renderStaticConfig(null)
             } else if (this.model.catalogEntityData=="LOAD") {
+                console.log("loading", this.model.spec.get("type"));
                 this.renderStaticConfig("LOADING")
-                $.get('/v1/catalog/entities/'+this.model.spec.get("type"), {}, function (result) {
+                $.get('/v1/catalog/entities/'+encodeURIComponent(this.model.spec.get("type")), {}, function (result) {
                     that.model.catalogEntityData = result
                     that.renderStaticConfig(that.model.catalogEntityData)
                 })

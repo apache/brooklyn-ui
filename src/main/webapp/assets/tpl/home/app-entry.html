@@ -19,5 +19,5 @@ under the License.
 -->
 
 <!-- Application entry template inside the main application page -->
-<td><a href="#<%= link && link[0]=='/' ? link.substring(1) : link %>"><%= name %></a></td>
-<td><%= status %></td>
+<td><a href="#<%= encodeURI(link && link[0]=='/' ? link.substring(1) : link) %>"><%- name %></a></td>
+<td><%- status %></td>

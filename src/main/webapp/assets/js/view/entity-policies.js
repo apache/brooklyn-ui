@@ -88,7 +88,7 @@ define([
                         summary:policy
                     }));
                     if (that.activePolicy) {
-                        that.$("#policies-table tr[id='"+that.activePolicy+"']").addClass("selected");
+                        that.$("#policies-table tr[id='"+_.escape(that.activePolicy)+"']").addClass("selected");
                         that.showPolicyConfig(that.activePolicy);
                         that.refreshPolicyConfig();
                     } else {

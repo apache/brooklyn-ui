@@ -75,7 +75,7 @@ define([
 
         showError: function (message) {
             this.$(".policy-add-error-container").removeClass("hide");
-            this.$(".policy-add-error-message").html(message);
+            this.$(".policy-add-error-message").html(_.escape(message));
         }
     });
 
