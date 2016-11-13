@@ -254,7 +254,7 @@ define([
     });
 
     /*
-     * Prepend a base URL to REST API calls
+     * Prepend a base URL to REST API calls, and add the CSRF token if present.
      */
     $.ajaxSetup({
         beforeSend: function(jqXHR, settings) {
@@ -263,6 +263,17 @@ define([
 
             if (baseURL && settings.url.startsWith("/v1")) {
                 settings.url = (baseURL + settings.url).replace("//", "/");
+            }
+            
+            // add CSRF token as header
+            var ca = document.cookie.split(';');
+            for (var i=0; i<ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1);
+                if (c.toLowerCase().indexOf('csrf-token') != -1) {
+                    var parts = c.split('=');
+                    jqXHR.setRequestHeader('X-'+parts[0], parts[1]);
+                }
             }
         }
     });

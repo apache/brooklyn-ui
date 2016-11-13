@@ -22,6 +22,13 @@ define(["backbone", "brooklyn", "view/viewutils"], function (Backbone, Brooklyn,
         callbacks: [],
         loaded: false,
         url: "/v1/server/up/extended",
+        sync: function(method, collection, options){
+            options = options || {};
+            options.beforeSend = function (xhr) {
+                xhr.setRequestHeader('X-Csrf-Token-Required-For-Requests', 'write');
+            };
+            return Backbone.Model.prototype.sync.apply(this, arguments);
+        },
         onError: function(thiz,xhr,modelish) {
             log("ServerExtendedStatus: error contacting Brooklyn server");
             log(xhr);
