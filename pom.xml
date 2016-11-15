@@ -238,28 +238,74 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <executions>
+                  <execution>
+                    <phase>verify</phase>
+                    <goals>
+                      <goal>check</goal>
+                    </goals>
+                  </execution>
+                </executions>
+                <configuration>
+                    <excludes combine.children="append">
+                        <!-- Exclude sandbox because not part of distribution: not in tgz, and not uploaded to maven-central -->
+                        <exclude>sandbox/**</exclude>
+                        <!-- Exclude release because not part of distribution: not in tgz, and not uploaded to maven-central -->
+                        <exclude>release/**</exclude>
+                        <exclude>README.md</exclude>
+                        <exclude>.mvn/jvm.config</exclude>
+                        <!-- git and IDE project files -->
+                        <!-- see https://issues.apache.org/jira/browse/RAT-107 -->
+                        <exclude>**/.git/**</exclude>
+                        <exclude>**/.gitignore</exclude>
+                        <exclude>**/.repository/**</exclude>
+                        <exclude>**/.idea/**</exclude>
+                        <exclude>**/*.iml</exclude>
+                        <exclude>**/.classpath/**</exclude>
+                        <exclude>**/.project</exclude>
+                        <exclude>**/.settings/**</exclude>
+                        <exclude>**/*.log</exclude>
+                        <exclude>**/brooklyn*.log.*</exclude>
+                        <exclude>**/target/**</exclude>
+                        <!-- Exclude netbeans config files (not part of the project, but often on users' drives -->
+                        <exclude>**/nbactions.xml</exclude>
+                        <exclude>**/nb-configuration.xml</exclude>
+                        <!-- files not requiring licence -->
+                        <exclude>ignored/**</exclude>
+                        <exclude>LICENSE.md</exclude>
+                        <exclude>**/src/main/license/**</exclude>
+                        <exclude>**/src/test/license/**</exclude>
+                        <exclude>**/MANIFEST.MF</exclude>
+                        <exclude>**/test-output/**</exclude>
+
+                        <!-- JavaScript & CSS code that is not copyright of Apache Foundation. It is included in NOTICE. -->
+                        <exclude>**/src/main/webapp/assets/js/libs/**</exclude>
+                        <exclude>**/src/build/requirejs-maven-plugin/r.js</exclude>
+                        <exclude>src/main/webapp/assets/js/util/code-complete/brooklyn-yaml-completion-proposals.js</exclude>
+                        <exclude>src/main/webapp/assets/js/util/code-complete/js-yaml-parser.js</exclude>
+                        <exclude>src/main/webapp/assets/css/codemirror.css</exclude>
+                        <exclude>src/main/webapp/assets/css/easy-autocomplete.css</exclude>
+                        <exclude>src/main/webapp/assets/css/show-hint.css</exclude>
+                        <exclude>src/main/webapp/assets/images/Sorting icons.psd</exclude>
+                        <!-- Downloaded if missing, binary - not included in the repo -->
+                        <exclude>src/main/webapp/assets/img/zeroclipboard/ZeroClipboard.swf</exclude>
+
+                        <exclude>src/test/resources/fixtures/*</exclude>
+
+                        <!--
+                            Copy of swagger-ui from https://github.com/swagger-api/swagger-ui tag::v2.1.3
+                        -->
+                        <exclude>**/src/main/webapp/assets/swagger-ui/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
 
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <groupId>org.apache.rat</groupId>
-                    <artifactId>apache-rat-plugin</artifactId>
-                    <configuration>
-                        <excludes combine.children="append">
-                            <!--
-                                JavaScript code that is not copyright of Apache Foundation. It is included in NOTICE.
-                            -->
-                            <exclude>**/src/main/webapp/assets/js/libs/*</exclude>
-                            <exclude>**/src/build/requirejs-maven-plugin/r.js</exclude>
-
-                            <!--
-                                Copy of swagger-ui from https://github.com/swagger-api/swagger-ui tag::v2.1.3
-                            -->
-                            <exclude>**/src/main/webapp/assets/swagger-ui/**</exclude>
-                        </excludes>
-                    </configuration>
-                </plugin>
                 <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
