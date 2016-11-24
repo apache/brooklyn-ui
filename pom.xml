@@ -241,6 +241,8 @@
             <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
+                <!-- Overrides 0.11 from parent. Remove when parent catches up. -->
+                <version>0.12</version>
                 <executions>
                   <execution>
                     <phase>verify</phase>
@@ -250,6 +252,7 @@
                   </execution>
                 </executions>
                 <configuration>
+                    <consoleOutput>true</consoleOutput>
                     <excludes combine.children="append">
                         <!-- Exclude sandbox because not part of distribution: not in tgz, and not uploaded to maven-central -->
                         <exclude>sandbox/**</exclude>
