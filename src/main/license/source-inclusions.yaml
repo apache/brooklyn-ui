@@ -33,6 +33,7 @@
 - id: async.js
 - id: handlebars.js
 - id: jquery.ba-bbq.js
+- id: jquery.ba-bbq.js-hashchange
 - id: moment.js
 - id: ZeroClipboard
 - id: jquery.dataTables
