@@ -335,7 +335,30 @@ define([
             if(succeeded){
                 log("Submit [succeeded] ... redirecting back to " + type);
                 if(type && type === 'catalog'){
-                    Backbone.history.navigate('v1/catalog', {trigger: true});
+                    var firstItem;
+                    var keys = _.keys(data);
+                    if (keys.length > 0) {
+                        firstItem = data[keys[0]];
+                    }
+                    var url = 'v1/catalog';
+                    if (firstItem) {
+                        switch (firstItem.itemType) {
+                            case 'template':
+                                url += '/applications';
+                                break;
+                            case 'entity':
+                                url += '/entities';
+                                break;
+                            case 'policy':
+                                url += '/policies';
+                                break;
+                            case 'location':
+                                url += '/locations';
+                                break;
+                        }
+                        url += '/' + firstItem.id;
+                    }
+                    Backbone.history.navigate(url, {trigger: true});
                 }else{
                     // no need to refresh apps (this.collection) because homePage route does that
                     Backbone.history.navigate('v1/home', {trigger: true});
