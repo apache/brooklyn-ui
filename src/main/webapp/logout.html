@@ -17,17 +17,39 @@
   specific language governing permissions and limitations
   under the License.
   -->
-<!-- Brooklyn SHA-1: GIT_SHA_1 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Apache Brooklyn</title>
+    <script type="application/javascript" src="assets/js/logout.js"></script>
+    <style type="text/css">
+        body {
+            background-color: #f5f6fa;
+        }
+
+        .login-container {
+            font-family: sans-serif;
+            font-size: 10vw;
+            width: 10vw;
+            height: 10vh;
+            position: absolute;
+            left: 40vw;
+            top: 40vh;
+        }
+
+        a {
+            color: black;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
-<script>
-    var a=new window.XMLHttpRequest;
-    a.open('POST','/logout',0,'user','wrong'+(new Date).getTime().toString());a.send('');
-    window.location.href='/';
-</script>
+<nav class="navbar-placeholder"></nav>
+<main class="page-main-area-placeholder">
+    <div class="login-container">
+        <a href="/">Login</a>
+    </div>
+</main>
+<footer class="footer-placeholder"></footer>
 </body>
 </html>

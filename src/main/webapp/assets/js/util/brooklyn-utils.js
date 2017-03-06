@@ -175,17 +175,8 @@ define([
     };
 
     Util.logout = function logout() {
-        var ua = window.navigator.userAgent;
-        if (ua.indexOf("MSIE ") >= 0 || ua.indexOf(" Edge/") >= 0 || ua.indexOf(" Trident/") >= 0) {
-            document.execCommand('ClearAuthenticationCache', 'false');
-            window.location.replace('/');
-        } else {
-            $('<form action="' + '/logout_redirect.html' + '" method="POST" id="redirectForm">' +
-                '<input type="hidden" name="acme" value="acme"/>' +
-                '</form>').appendTo($(document.body))
-                .submit();
-        }
-    }
+        window.location.href = 'logout.html';
+    };
 
     Util.setSelectionRange = function (input, selectionStart, selectionEnd) {
       if (input.setSelectionRange) {

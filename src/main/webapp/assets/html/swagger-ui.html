@@ -40,6 +40,8 @@
     <script src='../swagger-ui/lib/backbone-min.js' type='text/javascript'></script>
     <script src='../swagger-ui/lib/swagger-ui.min.js' type='text/javascript'></script>
     <script src='../swagger-ui/lib/marked.js' type='text/javascript'></script>
+    <script src='../js/libs/require.js' type='text/javascript'></script>
+    <script src='../js/libs/bootstrap.js' type='text/javascript'></script>
 
     <script type="text/javascript">
         $(function () {
@@ -86,20 +88,20 @@
 <body>
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
-        <div class="userName-top"><span id="user"></span> | <a href="/logout" id="logout-link">Log out</a></div>
+        <div class="userName-top"><span id="user"></span> | <a href="../../logout.html" id="logout-link">Log out</a></div>
         <div class="container">
             <a class="logo" href="#" title="Brooklyn, Version 0.11.0-SNAPSHOT"><!-- Logo added via CSS --></a> <!-- BROOKLYN_VERSION -->
             <div class="menubar-top">
                 <ul class="nav">
-                    <li><a href="/#v1/home" class="nav1 nav1_home">Home</a></li>
-                    <li><a href="/#v1/editor/" class="nav1 nav1_editor">Composer</a></li>
-                    <li><a href="/#v1/applications" class="nav1 nav1_apps">Applications</a></li>
-                    <li><a href="/#v1/catalog" class="nav1 nav1_catalog">Catalog</a></li>
+                    <li><a href="../../#v1/home" class="nav1 nav1_home">Home</a></li>
+                    <li><a href="../../#v1/editor/" class="nav1 nav1_editor">Composer</a></li>
+                    <li><a href="../../#v1/applications" class="nav1 nav1_apps">Applications</a></li>
+                    <li><a href="../../#v1/catalog" class="nav1 nav1_catalog">Catalog</a></li>
                     <li class="dropdown">
-                        <a href="#" class="nav1 nav1_script dropdown-toggle" data-toggle="dropdown">Script</a>
+                        <a href="#" class="nav1 nav1_script dropdown-toggle active" data-toggle="dropdown">Script</a>
                         <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-                            <li><a href="./assets/html/swagger-ui.html" target="_blank" class="nav1 nav1_apidoc">REST API</a></li>
-                            <li><a href="/#v1/script/groovy" class="nav1 nav1_groovy">Groovy</a></li>
+                            <li><a href="swagger-ui.html" class="nav1 nav1_apidoc">REST API</a></li>
+                            <li><a href="../../#v1/script/groovy" class="nav1 nav1_groovy">Groovy</a></li>
                         </ul>
                     </li>
                     <li><a href="/#v1/help" class="nav1 nav1_help"><b>?</b></a></li>
