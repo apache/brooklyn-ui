@@ -30,7 +30,7 @@
 
     <groupId>org.apache.brooklyn</groupId>
     <artifactId>brooklyn-jsgui</artifactId>
-    <version>0.11.0-SNAPSHOT</version>  <!-- BROOKLYN_VERSION -->
+    <version>0.12.0-SNAPSHOT</version>  <!-- BROOKLYN_VERSION -->
     <packaging>war</packaging>
 
     <name>Brooklyn REST JavaScript Web GUI</name>
