@@ -448,6 +448,16 @@ define([
                     model: Entity.Model,
                     autoOpen: this.options.kind == "policies"
                 }),
+                "enrichers": new AccordionEntityView({
+                    // TODO needs parsing, and probably its own model
+                    // but cribbing "entity" works for now
+                    // (and not setting a model can cause errors intermittently)
+                    onItemSelected: _.partial(this.showCatalogItem, DetailsEntityHtml),
+                    name: "enrichers",
+                    singular: "enricher",
+                    model: Entity.Model,
+                    autoOpen: this.options.kind == "enrichers"
+                }),
                 "locations": new AccordionItemView({
                     name: "locations",
                     singular: "location",
@@ -511,6 +521,7 @@ define([
             this.loadAccordionItem("entities", id);
             this.loadAccordionItem("applications", id);
             this.loadAccordionItem("policies", id);
+            this.loadAccordionItem("enrichers", id);
             this.loadAccordionItem("locations", id);
         },
 

@@ -352,6 +352,9 @@ define([
                             case 'policy':
                                 url += '/policies';
                                 break;
+                            case 'enricher':
+                                url += '/enrichers';
+                                break;
                             case 'location':
                                 url += '/locations';
                                 break;
