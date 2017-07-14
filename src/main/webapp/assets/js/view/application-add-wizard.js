@@ -643,7 +643,7 @@ define([
             } else if (this.model.catalogEntityData=="LOAD") {
                 console.log("loading", this.model.spec.get("type"));
                 this.renderStaticConfig("LOADING")
-                $.get('/v1/catalog/entities/'+encodeURIComponent(this.model.spec.get("type")), {}, function (result) {
+                $.get('/v1/catalog/entities/'+encodeURIComponent(this.model.spec.get("type")) + '/latest', {}, function (result) {
                     that.model.catalogEntityData = result
                     that.renderStaticConfig(that.model.catalogEntityData)
                 })
