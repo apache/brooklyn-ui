@@ -38,6 +38,9 @@ under the License.
     <% } else { %>
         <h2><%- model.get("name") %></h2>
     <% } %>
+    <% if (model.get("containingBundle")) { %>
+        <p> Bundle: <%- model.get("containingBundle") %> </p>
+    <% } %>
     <% if (model.get("description")) { %>
         <p><%- model.get("description") %></p>
     <% } %>

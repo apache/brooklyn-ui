@@ -28,6 +28,9 @@ under the License.
     <% } else if (model.get("type") !== undefined) { %>
         <h2><%- model.get("type") %></h2>
     <% } %>
+    <% if (model.get("containingBundle")) { %>
+        <p> Bundle: <%- model.get("containingBundle") %> </p>
+    <% } %>
 
     <dl>
         <% _.each(model.attributes, function(value, key) { %>
