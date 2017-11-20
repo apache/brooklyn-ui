@@ -245,8 +245,7 @@ define([
 
     $.ajax({
         type: "GET",
-        url: "/v1/server/user",
-        dataType: "text"
+        url: "/v1/server/user"
     }).done(function (data) {
         if (data != null) {
             $("#user").html(_.escape(data));
