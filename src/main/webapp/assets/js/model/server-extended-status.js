@@ -75,6 +75,7 @@ define(["backbone", "brooklyn", "view/viewutils"], function (Backbone, Brooklyn,
             ha = this.get("ha") || {};
             ownId = ha.ownId;
             if (!ownId) return null;
+            if (!ha.planeId) return true;
             return ha.masterId == ownId;
         },
         getMasterUri: function() {
