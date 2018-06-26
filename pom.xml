@@ -89,17 +89,15 @@
                 <directory>${project.basedir}/src/test/resources/fixtures</directory>
                 <targetPath>${project.build.directory}/jasmine/fixtures</targetPath>
             </resource>
-        </resources>
-        <!-- Insert special LICENSE/NOTICE into the <test-jar>/META-INF folder -->
-        <testResources>
-            <testResource>
-                <directory>${project.basedir}/src/test/resources</directory>
-            </testResource>
-            <testResource>
+            <resource>
                 <targetPath>META-INF</targetPath>
-                <directory>${basedir}/src/test/license/files</directory>
-            </testResource>
-        </testResources>
+                <directory>${project.basedir}</directory>
+                <includes>
+                  <include>NOTICE</include>
+                  <include>LICENSE</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <!-- require maven 3.1. jasmine will fail with cryptic error otherwise,
                  so let's make it print a nicer message if running with the wrong maven. -->
@@ -178,33 +176,10 @@
                 <version>${maven-war-plugin.version}</version>
                 <configuration>
                     <useCache>true</useCache> <!-- to prevent replaced files being overwritten -->
-                    <!-- Insert special LICENSE/NOTICE into the <war>/META-INF folder -->
-                    <webResources>
-                        <webResource>
-                            <targetPath>META-INF</targetPath>
-                            <directory>${basedir}/src/main/license/files</directory>
-                        </webResource>
-                    </webResources>
                     <archive>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
                     </archive>
                 </configuration>
-            </plugin>
-            <!-- Disable the automatic LICENSE/NOTICE placement from the upstream pom, because we need to include
-                 bundled dependencies. See "webResources" section above for where we include the new LICENSE/NOTICE -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-remote-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
