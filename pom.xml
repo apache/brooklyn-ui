@@ -278,6 +278,8 @@
                             Copy of swagger-ui from https://github.com/swagger-api/swagger-ui tag::v2.1.3
                         -->
                         <exclude>**/src/main/webapp/assets/swagger-ui/**</exclude>
+                        <!-- maven cache -->
+                        <exclude>**/.m2/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
