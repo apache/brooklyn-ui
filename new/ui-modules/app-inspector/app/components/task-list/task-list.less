@@ -1,0 +1,144 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+task-list {
+  display: block;
+  position: relative;
+
+  i.sub-task-link {
+    font-size: 40px;
+    color: @brand-primary;
+  }
+
+  brooklyn-status-icon {
+    margin-right: 15px;
+    width: 30px;
+    height: 30px;
+    display: block;
+
+  }
+  .activity-child {
+    margin-left: 0px;
+  }
+  
+  .search-bar-with-controls {
+      display: flex;
+      flex-flow: row wrap;
+
+      .activity-tag-filter {
+        flex: 0;
+      }
+      .activity-name-filter {
+        flex: 1;
+        margin-left: 0.5em;
+      }
+  }
+
+
+  .activity-tag-filter-tag {
+    -webkit-font-smoothing: antialiased;
+    padding: 5px 10px 5px 10px;
+    cursor: pointer;
+    color: #A8B2B9;
+    transition: color 0.5s;
+
+    &:hover {
+      color: #7B8C98;
+      background-color: @dropdown-link-hover-bg;
+      .badge {
+        background-color: #7B8C98;
+      }
+    }
+    &.active {
+      color: #3B558A;
+      background-color: @dropdown-link-active-bg;
+      .badge {
+        background-color: #3B558A;
+      }
+      &:hover {
+        color: #3B558A;
+      }
+    }
+    .badge {
+      color: #3b558a;
+      color: white;
+      background-color: #e6e6e6;
+      background-color: #A8B2B9;;
+    }
+  }
+}
+
+.activity-table {
+  .table > tbody > tr > td {
+    vertical-align: middle;
+  }
+
+  .status {
+    width: 80px;
+  }
+
+  .name {
+    width: auto;
+    i.pull-right {
+      margin-top: 3px;
+    }
+  }
+
+  .started {
+    width: 150px;
+    a {
+      color: black;
+    }
+  }
+
+  .duration {
+    width: 150px;
+    a {
+      color: black;
+    }
+  }
+
+  .table > tbody > tr:hover td {
+    background: fade(@primary-500, 10%);
+  }
+  .table > tbody > tr > td {
+    padding: 0;
+    a {
+      display: block;
+      padding: 8px;
+
+    }
+
+    &.status a {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+  }
+
+  tr > td > a:hover {
+    text-decoration: none;
+  }
+}
+
+.no-activities {
+  margin: 20px;
+  margin-top: 50px;
+  color: #747F86;
+  text-align: center;
+  font-size: 20px;
+}

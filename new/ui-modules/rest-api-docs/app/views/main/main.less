@@ -1,0 +1,439 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+.md-headline {
+  color: @brand-primary;
+}
+
+.swagger-section {
+  margin-top: 5rem;
+
+  .container {
+    width: inherit;
+    padding: 0;
+  }
+
+  ul {
+    list-style: none;
+    &#resources, &.options, &.operations, .signature-nav {
+      padding: 0;
+    }
+  }
+
+  .resource {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    border-top: 1px solid @gray-lighter;
+    &:first-child {
+      padding-top: 0;
+      border: none;
+    }
+
+    a {
+      color: @gray-light;
+      &:hover {
+        color: @gray;
+      }
+    }
+
+    .heading {
+      //position: relative;
+      color: @gray-light;
+      clear: both;
+      overflow: hidden;
+
+
+      h2, h3 {
+        font-weight: 100;
+        a {
+          float: left;
+        }
+      }
+
+      ul.options {
+        //position: absolute;
+        //right: 0;
+        //top: 0;
+        float: right;
+        font-size: 1rem;
+        line-height: 3rem;
+        li {
+          float: left;
+          padding: 0 1rem 0 1rem;
+          border-left: 1px solid @gray-lighter;
+          &:first-child {
+            padding-left: 0;
+            border: none;
+          }
+          &:last-child {
+            padding-right: 0;
+          }
+        }
+      }
+    }
+  }
+
+  .operation {
+    margin-top: 1.5rem;
+    padding: 0.5rem 1rem 0.5rem 1rem;
+    border: 5px solid @gray-lighter;
+    &.get {
+      .http_method:extend(.label-info) {}
+      h4:extend(.text-primary) {}
+      .propType {
+        color: @brand-info;
+      }
+    }
+    &.post {
+      .http_method:extend(.label-success) {}
+      h4:extend(.text-success) {}
+      .propType {
+        color: @brand-success;
+      }
+    }
+    &.put {
+      .http_method:extend(.label-warning) {}
+      h4:extend(.text-warning) {}
+      .propType {
+        color: @brand-warning;
+      }
+    }
+    &.delete {
+      .http_method:extend(.label-danger) {}
+      h4:extend(.text-danger) {}
+      .propType {
+        color: @brand-danger;
+      }
+    }
+
+    .heading {
+      h3 {
+        margin: 0;
+        display: inline-block;
+      }
+      .http_method:extend(.label) {
+        font-size: 1.1rem;
+        position: relative;
+        top: -2px;
+        text-transform: uppercase;
+        display: inline-block;
+        a, a:hover {
+          color: white;
+          text-decoration: none;
+        }
+      }
+      .path {
+        display: inline-block;
+        line-height: 2rem;
+        font-size: 2rem;
+      }
+      .options {
+        line-height: 1rem !important;
+        position: relative;
+        top: 5px;
+      }
+    }
+
+    .signature-nav:extend(.swagger-section .resource .heading ul.options all) {
+      float: none;
+      overflow: hidden;
+      font-size: 1.2rem;
+      line-height: 2rem;
+      li {
+        border-color: lighten(@gray-base, 60%);
+      }
+      margin-bottom: 1rem;
+    }
+
+    .model-signature {
+      .description {
+        .strong {
+          font-weight: bold;
+          color: #000;
+        }
+        div {
+          line-height: 1.5rem;
+          margin-left: 1rem;
+        }
+        .stronger {
+          font-weight: bold;
+          color: #000;
+        }
+        .propWrap {
+          .optionsWrapper {
+            border-spacing: 0;
+            position: absolute;
+            background-color: #ffffff;
+            border: 1px solid lighten(@gray-base, 60%);
+            display: none;
+            font-size: 1rem;
+            max-width: 400px;
+            line-height: 3rem;
+            color: black;
+            padding: 5px;
+            margin-left:10px;
+            th {
+              text-align: center;
+              background-color: @gray-lighter;
+              border: 1px solid lighten(@gray-base, 60%);
+              font-size: 1rem;
+              color: @gray;
+              font-weight: bold;
+              padding: 5px;
+              line-height: 1.5rem;
+            }
+            .optionName {
+              font-weight: bold;
+            }
+          }
+        }
+        .propDesc.markdown {
+          > p:first-child,
+          > p:last-child {
+            display: inline;
+          }
+          > p:not(:first-child):before {
+            display: block;
+            content: '';
+          }
+        }
+        span:last-of-type.propDesc.markdown > p:only-child {
+          margin-right: -3px; // otherwise there is a gap before the comma
+        }
+      }
+    }
+
+    .deprecated {
+      text-decoration: line-through;
+    }
+
+    input.submit:extend(.btn all, .btn-default all) {}
+    table:extend(.table all, .table-bordered all) {}
+    table, th, td {
+      border-color: lighten(@gray-base, 60%) !important;
+    }
+
+    input[type="text"], input[type="radio"], input[type="checkbox"], textarea, select {
+      &:extend(.form-control all);
+    }
+
+    .error {
+      border: 2px solid @brand-danger !important;
+    }
+  }
+
+  pre {
+    max-height: 200px;
+    resize: vertical;
+    cursor: pointer;
+    &:hover {
+      background-color: @gray-lighter;
+    }
+  }
+
+  pre code,
+  pre .subst,
+  pre .tag .title,
+  pre .lisp .title,
+  pre .clojure .built_in,
+  pre .nginx .title {
+    color: black;
+  }
+
+  pre .string,
+  pre .title,
+  pre .constant,
+  pre .parent,
+  pre .tag .value,
+  pre .rules .value,
+  pre .rules .value .number,
+  pre .preprocessor,
+  pre .ruby .symbol,
+  pre .ruby .symbol .string,
+  pre .aggregate,
+  pre .template_tag,
+  pre .django .variable,
+  pre .smalltalk .class,
+  pre .addition,
+  pre .flow,
+  pre .stream,
+  pre .bash .variable,
+  pre .apache .tag,
+  pre .apache .cbracket,
+  pre .tex .command,
+  pre .tex .special,
+  pre .erlang_repl .function_or_atom,
+  pre .markdown .header {
+    color: #800;
+  }
+
+  pre .comment,
+  pre .annotation,
+  pre .template_comment,
+  pre .diff .header,
+  pre .chunk,
+  pre .markdown .blockquote {
+    color: #888;
+  }
+
+  pre .number,
+  pre .date,
+  pre .regexp,
+  pre .literal,
+  pre .smalltalk .symbol,
+  pre .smalltalk .char,
+  pre .go .constant,
+  pre .change,
+  pre .markdown .bullet,
+  pre .markdown .link_url {
+    color: #080;
+  }
+
+  pre .label,
+  pre .javadoc,
+  pre .ruby .string,
+  pre .decorator,
+  pre .filter .argument,
+  pre .localvars,
+  pre .array,
+  pre .attr_selector,
+  pre .important,
+  pre .pseudo,
+  pre .pi,
+  pre .doctype,
+  pre .deletion,
+  pre .envvar,
+  pre .shebang,
+  pre .apache .sqbracket,
+  pre .nginx .built_in,
+  pre .tex .formula,
+  pre .erlang_repl .reserved,
+  pre .prompt,
+  pre .markdown .link_label,
+  pre .vhdl .attribute,
+  pre .clojure .attribute,
+  pre .coffeescript .property {
+    color: #88F
+  }
+
+  pre .keyword,
+  pre .id,
+  pre .phpdoc,
+  pre .title,
+  pre .built_in,
+  pre .aggregate,
+  pre .css .tag,
+  pre .javadoctag,
+  pre .phpdoc,
+  pre .yardoctag,
+  pre .smalltalk .class,
+  pre .winutils,
+  pre .bash .variable,
+  pre .apache .tag,
+  pre .go .typename,
+  pre .tex .command,
+  pre .markdown .strong,
+  pre .request,
+  pre .status {
+    font-weight: bold;
+  }
+
+  pre .markdown .emphasis {
+    font-style: italic;
+  }
+
+  pre .nginx .built_in {
+    font-weight: normal;
+  }
+
+  pre .coffeescript .javascript,
+  pre .javascript .xml,
+  pre .tex .formula,
+  pre .xml .javascript,
+  pre .xml .vbscript,
+  pre .xml .css,
+  pre .xml .cdata {
+    opacity: 0.5;
+  }
+
+  .hljs,
+  .hljs-subst {
+    color: #444
+  }
+
+  .hljs-keyword,
+  .hljs-attribute,
+  .hljs-selector-tag,
+  .hljs-meta-keyword,
+  .hljs-doctag,
+  .hljs-name {
+    font-weight: bold
+  }
+
+  .hljs-built_in,
+  .hljs-literal,
+  .hljs-bullet,
+  .hljs-code,
+  .hljs-addition {
+    color: #1F811F
+  }
+
+  .hljs-regexp,
+  .hljs-symbol,
+  .hljs-variable,
+  .hljs-template-variable,
+  .hljs-link,
+  .hljs-selector-attr,
+  .hljs-selector-pseudo {
+    color: #BC6060
+  }
+
+  .hljs-type,
+  .hljs-string,
+  .hljs-number,
+  .hljs-selector-id,
+  .hljs-selector-class,
+  .hljs-quote,
+  .hljs-template-tag,
+  .hljs-deletion {
+    color: #880000
+  }
+
+  .hljs-title,
+  .hljs-section {
+    color: #880000;
+    font-weight: bold
+  }
+
+  .hljs-comment {
+    color: #888888
+  }
+
+  .hljs-meta {
+    color: #2B6EA1
+  }
+
+  .hljs-emphasis {
+    font-style: italic
+  }
+
+  .hljs-strong {
+    font-weight: bold
+  }
+
+}

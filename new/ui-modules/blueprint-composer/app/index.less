@@ -1,0 +1,54 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+@import '~brooklyn-shared/style/first.less';
+
+@import "~brooklyn-ui-utils/bottom-sheet/bottom-sheet.less";
+@import "~brooklyn-ui-utils/yaml-editor/yaml-editor.less";
+
+// Add project less files here
+@import "views/main/main";
+@import "views/main/graphical/edit/edit";
+@import "views/main/graphical/edit/dsl/edit.dsl.less";
+@import "views/main/graphical/graphical.state.less";
+@import "views/main/yaml/yaml";
+@import "components/designer/designer";
+@import "components/spec-editor/spec-editor";
+@import "components/catalog-selector/catalog-selector";
+@import "components/breacrumbs/breadcrumbs";
+@import "components/blueprint-data-manager/blueprint-data-manager.style.less";
+@import "components/catalog-saver/catalog-saver.less";
+@import "components/dsl-editor/dsl-editor";
+
+@gray-lighter: #E1E5E7;
+@gray-light: #818899;
+
+.make-icon(@size) {
+  width: auto;
+  height: auto;
+  max-width: @size;
+  max-height: @size;
+}
+
+.navbar {
+  margin-bottom: 0;
+}
+
+// Load last so that these style rules and var values trump others
+@import "~brooklyn-shared/style/last.less";
+

@@ -1,0 +1,135 @@
+{
+  "__license__": [
+    "Licensed to the Apache Software Foundation (ASF) under one",
+    "or more contributor license agreements.  See the NOTICE file",
+    "distributed with this work for additional information",
+    "regarding copyright ownership.  The ASF licenses this file",
+    "to you under the Apache License, Version 2.0 (the",
+    "\"License\"); you may not use this file except in compliance",
+    "with the License.  You may obtain a copy of the License at",
+
+    "    http://www.apache.org/licenses/LICENSE-2.0",
+
+    "Unless required by applicable law or agreed to in writing,",
+    "software distributed under the License is distributed on an",
+    "\"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY",
+    "KIND, either express or implied.  See the License for the",
+    "specific language governing permissions and limitations",
+    "under the License."
+  ],
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "/Catalog/Item/Inline",
+  "title": "Inline catalog item",
+  "description": "Object that describes one part of a catalog item",
+  "type": "object",
+  "anyOf": [
+    {
+      "id": "item",
+      "required": ["item"]
+    },
+    {
+      "id": "items",
+      "required": ["items"]
+    }
+  ],
+  "properties": {
+    "id": {
+      "title": "Catalog item ID",
+      "description": "A human-friendly unique identifier for how this catalog item will be referenced from blueprints",
+      "type": "string"
+    },
+    "version": {
+      "title": "Catalog item version",
+      "$ref": "/Catalog/Version"
+    },
+    "itemType": {
+      "title": "Catalog item type",
+      "description": "The type of the item being defined. The supported item types are: 'template', 'entity', 'policy', 'enricher' or 'location'",
+      "type": "string",
+      "enum": [ "template", "entity", "policy", "enricher", "location" ]
+    },
+    "name": {
+      "title": "Catalog item name",
+      "description": "A nicely formatted display name for the catalog item, used when presenting it in a GUI or CLI",
+      "type": "string"
+    },
+    "description": {
+      "title": "Catalog item description",
+      "description": "Supplies an extended textual description for the catalog item",
+      "type": "string"
+    },
+    "iconUrl": {
+      "title": "Catalog item icon URL",
+      "description": "Points to an icon for the item, used when presenting it in a GUI. The URL prefix classpath is supported but these URLs may not refer to resources in any OSGi bundle",
+      "type": "string",
+      "format": "uri"
+    },
+    "brooklyn.libraries": {
+      "title": "Catalog item libraries",
+      "description": "A list of pointers to OSGi bundles required for the catalog item",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/httpLibrary"
+          },
+          {
+            "$ref": "#/definitions/bundleLibrary"
+          }
+        ]
+      }
+    },
+    "item": {
+      "title": "Catalog item specification",
+      "description": "The YAML for an entity, policy, enricher or location specification",
+      "anyOf": [
+        {
+          "$ref": "/Blueprint"
+        },
+        {
+          "$ref": "/Blueprint/Entity"
+        }
+      ]
+    },
+    "items": {
+      "title": "Catalog item specifications",
+      "description": "A list of catalog items",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "/Catalog/Item/Inline"
+          },
+          {
+            "$ref": "/Catalog/Item/Reference"
+          }
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "definitions": {
+    "httpLibrary": {
+      "name": "HTTP(S) library",
+      "description": "Library available to download overs HTTP(S)",
+      "type": "string",
+      "pattern": "^https?://[^$]*$"
+    },
+    "bundleLibrary": {
+      "name": "Bundle library",
+      "description": "Library available through maven",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Library name",
+          "type": "string"
+        },
+        "version": {
+          "title": "Library version",
+          "$ref": "/Catalog/Version"
+        }
+      }
+    }
+  }
+}

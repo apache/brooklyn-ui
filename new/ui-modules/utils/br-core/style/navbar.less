@@ -1,0 +1,164 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+@navbar-text-color: @primary-400;
+@navbar-text-color-darkened: @primary-500;
+@navbar-bg-color: white;
+
+@navbar-default-brand-color: @navbar-text-color;
+@navbar-default-brand-hover-color: @navbar-text-color-darkened;
+
+@navbar-default-link-color: @navbar-text-color;
+@navbar-default-link-hover-color: @navbar-text-color-darkened;
+@navbar-default-link-active-color: @navbar-text-color;
+@navbar-default-link-active-bg: fade(@navbar-text-color-darkened,10%);
+
+@navbar-default-border: #D9DEE2; /* based on single-pattern-bg-color */
+
+@nav-link-hover-bg:                         rgba(0,0,0,0.07); //@gray-lighter;
+
+.navbar-default .navbar-nav.secondary-links {
+	> li > a {
+		color: fade(@navbar-text-color-darkened,50%);
+		&:hover,
+	      &:focus {
+	        color: @navbar-text-color-darkened;
+	        background-color: @navbar-default-link-hover-bg;
+	      }
+	}
+}
+
+/* Navbar Inverse (old) */
+@navbar-inverse-bg: @accent-500;
+@navbar-inverse-brand-color: white;
+
+.navbar-inverse {
+	-webkit-font-smoothing: antialiased;
+}
+
+
+@navbar-inverse-link-color : white;
+@navbar-inverse-link-hover-bg : rgba(255,255,255,0.07);
+@navbar-inverse-link-active-color : white;
+@navbar-inverse-link-active-bg : rgba(255,255,255,0.17);
+
+
+.big-header .navbar {
+	position: absolute;
+	width: 100%;
+}
+
+.navbar-default {
+	background: @navbar-bg-color;
+	border: none;
+	border-radius: 0;
+	border-top: 4px solid @accent-500;
+	border-bottom: 1px solid @card-border-color;
+
+	.logo {
+		display: block;
+		float: left;
+
+		height: 20px;
+		margin-left: 15px;
+		margin-right: 10px;
+	}
+
+	.navbar-brand {
+		span { /* title */
+			padding-left: 10px;
+			display: inline-block;
+		}
+		img + span, svg + span {
+			border-left: 1px solid fade(@primary-500,50%);
+		}
+	}
+}
+
+.big-header {
+
+    .navbar-default {
+        background: none;
+        padding: 10px 20px;
+        border-bottom: none;
+    }
+
+
+    .navbar-brand {
+		color: white;
+		&:hover {
+			color: white;
+			text-decoration: underline;
+		}
+	}
+
+	.navbar-nav > li > a {
+		color: white;
+	    /*padding: 6px 12px;*/
+	    border: 2px solid rgba(0,0,0,0.0);
+	    padding: 8px 10px 9px;
+	    font-weight: 400;
+	    line-height: 1;
+	    margin: 9px;
+	    border-radius: 8px;
+
+		&:hover {
+			background: rgba(0,0,0,.1);
+    		box-shadow: inset 0 1px 2px rgba(0,0,0,.05);
+			color: white;
+		}
+	}
+
+	.navbar-nav > li > a.primary {
+		color: white;
+		border: 2px solid white;
+
+		&:hover {
+		}
+	}
+
+	.navbar-nav > .active > a {
+		color: white;
+		background: none;
+		&:hover {
+			background: rgba(0,0,0,.1);
+    		box-shadow: inset 0 1px 2px rgba(0,0,0,.05);
+			color: white;
+
+		}
+	}
+
+    .navbar-brand {
+    	
+    	padding-top: 5px;
+	    padding-bottom: 5px;
+	    margin-top: 10px;
+	    margin-bottom: 10px;
+	    height: auto;
+
+	    
+    }
+
+	.navbar-brand {
+
+		img + span, svg + span {
+			border-left: 1px solid fade(white,50%);
+		}
+	}
+}
+

@@ -1,0 +1,114 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+br-table {
+  display: block;
+  overflow: visible;
+
+  .toggle a {
+    cursor: pointer;
+    color: @primary-100;
+    transition: color 0.3s ease;
+    &:hover {
+      color: @gray-light;
+    }
+  }
+  .toggle.active a {
+    color: @brand-primary;
+    &:hover {
+      color: @brand-primary;
+    }
+  }
+
+  .table {
+    td {
+        overflow-x: scroll;
+    }
+    &.table-clickable {
+      tbody > tr {
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        &:hover {
+          background-color: @primary-20;
+        }
+      }
+    }
+  }
+
+  thead th {
+    position: relative;
+    min-width: 50px;
+    max-width: 100%;
+    
+    padding-right: 15px !important;
+
+    div {
+      display: flex;
+
+      &.column-orderable {
+        cursor: pointer;
+      }
+
+      span {
+        flex-grow: 0;
+        .text-overflow();
+      }
+      i.fa {
+        flex-shrink: 1;
+        padding-top: 3px;
+      }
+    }
+
+    .column-resizer {
+      cursor: col-resize;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: -5px;
+      width: 8px;
+      z-index: 1;
+      background: transparent;
+      &.dragging {
+        background-color: @gray-lighter;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%239C92AC' fill-opacity='0.4' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
+      }
+    }
+  }
+
+  tr td:first-child,
+  tr td:nth-child(2) {
+    width: 0;
+  }
+
+  tr.no-results {
+    font-style: italic;
+  }
+  
+  .uib-typeahead-match {
+    .dropdown-item h4.dropdown-item-heading {
+      color: @gray;
+      strong {
+        color: @brand-primary;
+      }
+      margin-top: 2px;
+      margin-bottom: 3px;
+      font-size: 10pt;
+    }
+  }
+  
+}

@@ -1,0 +1,81 @@
+[
+    {
+        "id": "com.example.TestEntityOne:0.10.0-SNAPSHOT",
+        "type": "com.example.TestEntityOne",
+        "symbolicName": "com.example.TestEntityOne",
+        "version": "0.10.0-SNAPSHOT",
+        "name": "TestEntityOne",
+        "config": [
+            {
+                "name": "test.entity.1.config1",
+                "label": "test.entity.1.config1",
+                "type": "java.lang.String",
+                "description": "Test Entity 1 Config1"
+            },
+            {
+                "name": "test.entity.1.config2",
+                "label": "test.entity.1.config2",
+                "type": "java.lang.Boolean",
+                "description": "Test Entity 1 Config2"
+            },
+            {
+                "name": "test.entity.1.config3",
+                "label": "test.entity.1.config3",
+                "type": "java.lang.Long",
+                "description": "Test Entity 1 Config3"
+            }
+        ]
+    },
+    {
+        "id": "com.example.TestEntityTwo:0.10.0-SNAPSHOT",
+        "type": "com.example.TestEntityTwo",
+        "symbolicName": "com.example.TestEntityTwo",
+        "name": "TestEntityTwo",
+        "config": [
+            {
+                "name": "test.entity.2.config1",
+                "label": "test.entity.2.config1",
+                "type": "java.lang.String",
+                "description": "Test Entity 2 Config1"
+            },
+            {
+                "name": "test.entity.2.config2",
+                "label": "test.entity.2.config2",
+                "type": "java.lang.Boolean",
+                "description": "Test Entity 2 Config2"
+            },
+            {
+                "name": "test.entity.2.config3",
+                "label": "test.entity.2.config3",
+                "type": "java.lang.Long",
+                "description": "Test Entity 2 Config3"
+            }
+        ]
+    },
+    {
+        "id": "com.example.TestEntityThree:0.10.0-SNAPSHOT",
+        "type": "com.example.TestEntityThree",
+        "symbolicName": "com.example.TestEntityThree",
+        "name": "TestEntityThree",
+        "config": [
+            {
+                "name": "test.entity.3.config1",
+                "label": "test.entity.3.config1",
+                "type": "java.lang.String",
+                "description": "Test Entity 3 Config1"
+            },
+            {
+                "name": "test.entity.3.config2",
+                "label": "test.entity.3.config2",
+                "type": "java.lang.Boolean",
+                "description": "Test Entity 1 Config2"
+            },
+            {
+                "name": "test.entity.3.config3",
+                "label": "test.entity.3.config3",
+                "type": "java.lang.Long",
+                "description": "Test Entity 3 Config3"
+            }
+        ]
+    }
+]

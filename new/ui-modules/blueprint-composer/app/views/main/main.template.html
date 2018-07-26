@@ -1,0 +1,54 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="btn-group modes" role="group" aria-label="...">
+    <div class="btn-group" uib-dropdown keyboard-nav auto-close="outsideClick">
+        <button type="button" class="btn btn-default disabled">
+            {{vm.mode.data.label}}
+        </button>
+        <button type="button" class="btn btn-success dropdown-toggle" ng-disabled="!vm.isGraphicalMode()" uib-dropdown-toggle aria-haspopup="true" aria-expanded="false">
+            <span class="caret"></span>
+            <span class="sr-only">Toggle layers selection</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu role="menu">
+            <li ng-if="vm.isGraphicalMode()" class="dropdown-header">Layers</li>
+            <li role="menuitem" class="layer"
+                ng-if="vm.isGraphicalMode()"
+                ng-repeat="layer in vm.layers track by layer.id"
+                ng-class="{'active': layer.active}">
+                <a ng-click="layer.active = !layer.active"><i class="fa fa-fw fa-circle"></i> {{layer.label}}</a>
+            </li>
+        </ul>
+    </div>
+    <a ui-sref="main.graphical" ng-if="!vm.isGraphicalMode()" class="btn btn-primary" ng-disabled="vm.parseError">
+        <i class="fa fa-fw fa-exchange"></i>
+        <span class="sr-only">Switch to Graphical Designer</span>
+    </a>
+    <a ui-sref="main.yaml" ng-if="vm.isGraphicalMode()" class="btn btn-primary">
+        <i class="fa fa-fw fa-exchange"></i>
+        <span class="sr-only">Switch to YAML Editor</span>
+    </a>
+</div>
+
+<ui-view></ui-view>
+
+
+<div class="actions">
+    <custom-action ng-repeat="(id, action) in vm.getAllActions() track by id" action="action"></custom-action>
+    <blueprint-data-manager></blueprint-data-manager>
+</div>

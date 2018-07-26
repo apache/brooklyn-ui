@@ -1,0 +1,43 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="media">
+    <a ui-sref="bundle.type({bundleId: bundle.symbolicName, bundleVersion: bundle.version, typeId: type.symbolicName, typeVersion: type.version})"></a>
+    <div class="media-left media-middle icon">
+        <img ng-src="{{type | iconGeneratorPipe:'symbolicName'}}" class="media-object" alt="{{::type.symbolicName}}'s logo" />
+    </div>
+    <div class="media-body catalog-item-body">
+        <div class="btn-group pull-right" ng-if="showBundle || showType">
+            <a ui-sref="bundle({bundleId: bundle.symbolicName, bundleVersion: bundle.version})" class="btn btn-default btn-sm" ng-if="showBundle">
+                <i class="fa fa-fw fa-file-zip-o"></i> {{::bundle.symbolicName}}
+            </a>
+            <button type="button" class="btn btn-default btn-sm" disabled ng-if="showType">
+                {{::type.supertypes[0].split('.').pop()}}
+            </button>
+        </div>
+        <h4 class="media-heading">
+            <i class="fa fa-star" ng-if="type.template" aria-label="This item is a template"></i>
+            {{::(type.displayName || type.symbolicName)}}
+            <span class="label label-default">{{::type.version}}</span>
+        </h4>
+        <span class="media-description">
+            <span ng-if="type.displayName"><i class="fa fa-fw fa-bookmark sym-name"></i> <samp class="sym-name">{{::type.symbolicName}}</samp>: </span>
+            {{::type.description}}
+        </span>
+    </div>
+</div>

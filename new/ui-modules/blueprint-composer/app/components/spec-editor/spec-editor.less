@@ -1,0 +1,814 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+@right-align-controls: false;
+@lightweight-controls-when-collapsed: true;
+@hide-info-button-when-not-hovered: false;
+@hide-unset-undefault-values: true;
+
+@label-gray: darken(@gray-light, 10%);
+@gray-lightest: #f8f8f9;
+
+spec-editor {
+  display: block;
+  margin-top: 15px;
+  color: @gray;
+
+  .toolbar-button-affordance() {
+    color: mix(@gray, @gray-lighter);
+    cursor: pointer;
+    transition: 0.1s ease all;
+    &:hover {
+      color: @brand-primary;
+    }
+  }
+  .remove-affordance() {
+    .toolbar-button-affordance();
+    &:hover {
+      color: @brand-danger;
+    }
+  }
+
+  .badge-danger {
+    background-color: @brand-danger;
+  }
+
+  .badge-warning {
+    background-color: @brand-warning;
+  }
+
+  input.editable {
+    font-size: inherit;
+    padding: 0.3rem;
+    margin: -0.3rem;
+    border-color: transparent;
+    box-shadow: none;
+    .text-overflow();
+
+    &:hover:not(:focus) {
+      border-color: @gray-lighter;
+    }
+    &::placeholder {
+      font-style: italic;
+      .text-overflow();
+    }
+  }
+
+  .overflow-visible {
+    overflow: visible !important;
+  }
+
+  .panel-header-body {
+    padding-left: 2em;
+    .panel-header-icon {
+      width: 30px;
+      margin-left: -30px;
+      text-align: center;
+    }  
+    .identifier {
+      > * {
+          display: inline-block;
+      }
+      margin-top: -3px;
+    }
+    .identifier .panel-header-icon {
+      font-size: 90%;
+      margin-right: -3px;
+    } 
+    .entity-type-header {
+      font-size: 105%;
+      margin-right: 1em;
+    }
+    .label.version {
+      vertical-align: 2px;
+      line-height: 36px;
+      font-size: 80%;
+    }
+  }
+
+  .spec-adjunct {
+    // used when adding enrichers; also used for config of type entity spec
+    
+    position: relative;
+    margin-top: 15px;
+    &:first-child {
+      margin-top: 0;
+    }
+
+    & > a {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+    ng-include  {
+      display: block;
+    }
+
+    .media {
+        height: 60px;
+        img {
+            max-width: 60px;
+            max-height: 60px;
+        }
+        .media-left {
+            padding-right: 9px;
+            padding-left: 3px;
+        }
+        .media-body {
+            vertical-align: middle;
+            border: 1px solid @gray-lighter;
+            padding-left: 12px;
+            border-radius: 4px;
+            height: 60px;
+        }
+    }
+    
+    .remove-spec-adjunct {
+      cursor: pointer;
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      display: none;
+      padding: 8px;
+      .remove-affordance();
+    }
+    .update-spec-adjunct {
+      cursor: pointer;
+      position: absolute;
+      top: 0px;
+      right: 5px;
+      display: none;
+      padding: 8px;
+      color: mix(@gray, @gray-lighter);
+      transition: color 0.1s ease;
+      &:hover {
+        color: @brand-primary;
+      }
+    }
+    
+    &:hover .media-body {
+        background-color: @gray-lighter;
+        .remove-spec-adjunct, .update-spec-adjunct {
+            display: block;  // make visible on hover
+        }
+    }
+  }
+
+  .media {
+    border-width: 0;
+    background-image: none;
+    transition: all 0.3s ease;
+    &.has-issues {
+      border-left: 5px solid @brand-danger;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='@{brand-danger}' fill-opacity='0.4' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
+    }
+  }
+
+  .spec-type {
+    .panel {
+      padding-top: 3px;
+      padding-bottom: 3px;
+    }
+
+    .spec-type-header {
+      display: flex;
+      .spec-title {
+        flex-grow: 1;
+      }
+      .spec-actions {
+        flex-grow: 0;
+      }
+    }
+
+    .spec-actions {
+      margin-top: -3px;
+      margin-right: -3px;
+
+      button {
+        color: @gray-lighter;
+        transition: color 0.3s ease;
+        &:hover {
+          color: @gray;
+        }
+      }
+    }
+    .spec-title {
+      margin-top: 0;
+    }
+  }
+
+  .spec-type,
+  .spec-configuration,
+  .spec-policies,
+  .spec-enrichers {
+    .media-left {
+      padding-right: 24px;
+    }
+    .media-object {
+      .make-icon(100px);
+    }
+    .media-body {
+      h4, p {
+        .text-overflow();
+      }
+    }
+    p.buttons {
+      margin-top: 24px;
+    }
+  }
+
+  .spec-configuration-add {
+    margin-bottom: 15px;
+  }
+  .spec-configuration {
+    & > div {
+      margin-top: 30px;
+      padding-top: 10px;
+      border-top: 1px solid @gray-lighter;
+
+      &:first-child {
+        margin-top: 0;
+        padding-top: 0;
+        border: none;
+      }
+    }
+
+    .form-group {
+      margin: 9px 0;
+      padding: 4px 8px;
+      border-radius: 3px;
+      background: lighten(@brand-primary, 55%);
+      &.used {
+        background: lighten(@brand-primary, 50%);
+      }
+      &:first-child {
+        margin-top: 6px;
+      }
+      .help-block {
+        margin-bottom: 0;
+      }
+    }    
+    
+    .remove-spec-configuration {
+      margin-left: 0.5em;
+      margin-right: 0.5em;
+      .remove-affordance();
+    }
+    .json-config i {
+        margin-top: 2px; //nudge down to make aligned
+    }
+    .dsl-open-wizard-from-toolbar, .dsl-manual-override-editor, .json-config {
+        .toolbar-button-affordance()
+    }
+    .dsl-manual-override-editor.dsl-viewer-manual-override,
+    .json-config.code-mode-active {
+        i {
+            border: 1px solid @gray-light;
+            background: @brand-primary;
+            color: @gray-lighter;
+        }
+        &:hover i {
+            color: white; //mix(@gray, @gray-lighter);
+            // background: none;
+        }
+        &.code-mode-forced {
+            // use disable cursor (and tooltip) as primary feedback
+            cursor: not-allowed;
+            i {
+                // style changes below subtle but does a bit to make it look less clickable
+                border: 1px solid @gray;
+                color: @gray-light;
+            }
+        }
+    }
+      
+    .control-label {
+      display: flex;
+      align-items: center;
+      font-weight: 100;
+      color: @label-gray;
+      padding-bottom: 1px;  // use padding not margin so hovers are picked up to focus on control
+      margin-bottom: 0;
+
+      .label-spec-configuration {
+        flex-shrink: 1;
+        .text-overflow();
+      }
+
+      .info-spec-configuration {
+        width: 2em;
+        margin-right: 1ex;
+        text-align: center;
+        .fa-info-circle {
+          color: mix(@gray-light, @gray-lighter, 50%);
+          transition: color 0.3s ease;
+          &:hover {
+            color: @brand-primary;
+          }
+        }
+      }
+    }
+    .form-group {
+        display: flex;
+        flex-flow: row wrap;
+        .control-label {
+            flex: 0 0 auto;
+            order: 10;
+            padding-top: 3px;
+        }
+        .label-rhs-buttons {
+            flex: 1 0 auto;
+            text-align: right;
+            order: 20;
+            display: none;
+            .spacer {
+                flex: 1 0 auto;
+            }
+            .remove-spec-configuration {
+                margin-top: 1px;
+            }
+            .dsl-active:not(.dsl-viewer-manual-override) button.btn {
+                color: @brand-primary;
+            }
+        }
+        .control-value {
+            flex: 1 0 auto;
+            line-height: 20px;
+            max-width: 100%;
+            order: 30;
+            &.inline-control {
+                // inline controls - eg boolean button and map button does not go to new line when form-group is focussed
+                order: 15;
+
+                & when (@right-align-controls = true) {
+                    // these should be right aligned when compressed
+                    flex: 0 0 auto;
+                    margin-left: auto;
+                    // this seems to align it with other widgets (text boxes)
+                    margin-right: 2px;
+                }
+            }
+            .btn-group-value {
+                word-break: all;
+            }
+            p.collection-toggle {
+                color: @brand-primary;
+                margin-top: 2px;
+            }
+            &.unset p.collection-toggle {
+                // if it's a default, render gray, like textbox placeholder
+                color: @gray-light;
+            }
+            
+            &.code-mode-active .input-group textarea {
+                font-family: courier;
+            }
+        }
+        .issue {
+            flex-basis: 100%;
+            order: 40;
+        }
+        .control-label .info-spec-configuration when (@hide-info-button-when-not-hovered = true) {
+            visibility: hidden;
+        }
+        .btn-group,
+        .input-group {
+            width: 100%;
+        }
+        .input-group {
+            .dsl-wizard-button {
+                max-width: 0;
+                width: 0;
+                overflow: hidden;
+            }
+        }
+        .btn-group {
+            .dsl-wizard-button {
+                width: auto;
+            }
+        }
+        &:not(:focus-within):not(:focus) {
+            input {
+                // the RHS is square if DSL button hidden; simplest fix is to make LHS square too
+                border-radius: 0;
+            }
+            textarea {
+              max-height: @input-height-base * 2;
+            }
+            .boolean .btn-group > :not(.active) {
+                display: none;
+                border-radius: 0;
+                cursor: pointer;
+            }
+        }
+    }
+    .form-group:hover, .form-group:focus, .form-group:focus-within {
+        .control-label .info-spec-configuration {
+            visibility: visible;
+        }
+    }
+    .form-group:focus, .form-group:focus-within {
+        .control-value:not(.inline-control) {
+            flex-basis: 100%;
+        }
+        .label-rhs-buttons {
+            display: flex;
+        }
+        .input-group {
+            .dsl-wizard-button {
+                max-width: none;
+                width: 1%;
+            }
+        }
+        .caret-default:before {
+            content: "\f0d8";  // fa-caret-up
+        }
+        .control-value {
+            .input-group, dsl-viewer {
+                margin-top: 3px;
+            }
+        }
+    }
+    .form-group:not(:focus):not(:focus-within) {
+        .control-value.unset:not(.has-default),
+        .control-value.unset.has-default p.collection-toggle:not(.has-default) {
+            & when (@hide-unset-undefault-values = true) {
+                display: none;
+            }
+        }
+        input, select {
+            cursor: pointer;
+            // the RHS for input is square if DSL button hidden; simplest fix is to make LHS square too
+            // would be nice if applies to select also, but it doesn't
+            border-radius: 0;
+        }
+        .boolean .btn-group {
+            > .active {
+                border-radius: 0;
+                pointer: cursor;
+            }
+            > :not(.active) {
+                display: none;
+            }
+        }
+        .default-collapse {
+            &:extend(.collapse all);
+        }
+        .caret-default:before {
+            content: "\f0d7";  // fa-caret-down
+        }
+        .collection-item.collection-add.nonempty {
+            display: none;
+        }
+
+        & when (@right-align-controls = true) {       
+            .inline-control, div.collection:not(.open-when-unfocused) {
+                margin-right: 2px;
+            }
+            div.collection:not(.open-when-unfocused) {
+                // right-align when unfocused and tree-collapsed, as for inline control above
+                flex: 0 0 auto;
+                margin-left: auto;
+                // also make min width so right-align takes effect
+                width: min-content;
+                p.collection-toggle {
+                    white-space: nowrap;
+                }
+            }
+        }
+        & when (@lightweight-controls-when-collapsed = true) {
+          input, select {
+            box-shadow: none;
+            border-top: none;
+            border-right: none;
+            border-left: none;
+            border-image: initial;
+            border-bottom: none; //or for an underline effect, 1px solid @gray-light;
+            border-radius: 0;
+            padding-bottom: 0px;
+            background: none;
+            height: auto;
+            margin-top: 2px;
+            margin-bottom: 2px;
+            color: mix(@brand-primary, @gray);
+          }
+          select {
+            padding-bottom: 1px;
+          }
+        }
+    }
+    .form-group .collection-caret {
+        width: 2ex;
+        margin-left: -0.5ex;
+        text-align: center;
+    }
+    
+    .no-spec {  // spec needs to be selected
+      border: 3px dashed @gray-lighter;
+      padding: 3px;
+      display: block;
+      color: @gray;
+      opacity: 0.5;
+      font-style: italic;
+      transition: background-color 0.1s ease;
+      &:hover {
+        background-color: @gray-lighter;
+      }
+    }
+
+    .table-responsive {
+      margin: 0;
+      border-bottom: none;
+      .table {
+        margin-bottom: 0;
+      }
+      tr > td:nth-child(2) {
+        min-width: 300px;
+      }
+    }
+    .input input,
+    .input button {
+      border-radius: 0;
+    }
+    .input-group .btn {
+      padding: 3px 6px 2px 6px;
+    }
+    .form-control {
+      padding: 3px 6px;
+      height: 27px;
+    }
+    input, select {
+        border: 1px solid @gray-lighter;
+    }
+    input {
+        height: inherit;
+        padding-top: 1px;
+        padding-bottom: 1px;
+        .placeholder(@rules) {
+            &::placeholder { @rules(); }
+            &::-webkit-input-placeholder { @rules(); }
+            &:-moz-placeholder { @rules(); }
+            &::-moz-placeholder { @rules(); }
+            &:-ms-input-placeholder { @rules(); }
+        }
+        .placeholder({ 
+            color: @gray;
+            opacity: 0.5;
+            font-style: italic;
+        });
+    }
+    textarea.auto-grow-single-row {
+        // for single-line entries (no newlines) we don't do autosize -
+        // it's not hard, see https://stackoverflow.com/questions/454202/creating-a-textarea-with-auto-resize - 
+        // and maybe we should, but for now we only autogrow with newlines (see autogrow/index.js).
+        // but wrapping at line end instead of word boundaries is a bit better.
+        word-break: break-all;
+    }
+    textarea.auto-grow-multi-row {
+        // multi-line entries shouldn't wrap
+        white-space: nowrap;
+    }
+
+    .collapsing {  transition: height 0.15s; }
+
+    .boolean {
+      .btn-group-value {
+        margin-top: 5px;
+        font-size: 0.9em;
+        color: @gray;
+        .text-overflow();
+      }
+    }
+
+    .collection {
+      margin-left: 3px;
+      
+      .collection-toggle {
+        cursor: pointer;
+        color: @gray-light;
+        font-weight: 100;
+        font-style: italic;
+        font-size: 0.85em;
+        margin-bottom: 0.1em;
+      }
+
+      .collection-list,
+      .collection-map {
+        margin-left: 0.2em;
+        margin-bottom: 0;
+        border-left: 1px dotted @gray-light;
+        padding-left: 0em;
+        list-style: none;
+
+        .collection-item {
+          margin-left: 0;
+          padding: 0.2em 0 0.2em 0.1em;
+          display: flex;
+          &.collection-add {
+            padding-top: 0.3em;
+            padding-left: 0.4em;
+          }
+
+          .collection-item-shrink {
+            flex-shrink: 0;
+          }
+          .collection-item-grow {
+            flex-grow: 1;
+            span.input-group {
+                display: flex;
+                input {
+                  width: 120px;  // overridden by flex, but allows it to compress when not focused
+                  flex-grow: 1;
+                }
+                .dsl-wizard-button {
+                  width: auto;
+                }
+            }
+          }
+
+          .input-group {
+            margin-top: -0.23em;
+          }
+
+          .remove-spec-configuration {
+            margin-left: 0.2em;
+            margin-right: -0.2em;
+          }
+        }
+      }
+      .collection-list .collection-item-shrink {
+        margin-right: 0.3em;
+      }
+      .collection-map {
+        li {
+          display: flex;
+
+          .collection-map-key {
+            font-family: monospace;
+            &:after {
+              content: ':';
+              padding-left: 0.2em;
+            }
+            margin-right: 0.2em;
+          }
+        }
+      }
+    }
+    .form-group {  
+        // apply these to true/false toggle, but not to "display all configuration" button
+        button.btn,
+        a.btn {
+            color: @label-gray;
+        }
+        .btn-success:active, .btn-success.active,
+        .btn-success:active:hover, .btn-success.active:hover, 
+        .btn-success:active:focus, .btn-success.active:focus {
+            // true/false buttons
+            color: #fff;
+            background-color: @brand-primary;
+            border-color: @gray;
+        }
+
+    }
+    
+  }
+
+  .spec-empty-state {
+    color: @gray-light;
+    text-align: center;
+
+    h4 {
+      margin-top: 0;
+      &:before {
+        display: block;
+        font-family: FontAwesome;
+        font-size: 4em;
+        margin-bottom: 0.25em;
+        color: @gray-lighter;
+      }
+    }
+  }
+  .spec-configuration .spec-empty-state h4:before {
+    // fa-sliders => http://fontawesome.io/icon/sliders/
+    content: '\f1de';
+  }
+  .spec-location .spec-empty-state h4:before {
+    // fa-map-pin => http://fontawesome.io/icon/map-pin/
+    content: '\f276';
+  }
+  .spec-policies .spec-empty-state h4:before {
+    // fa-heartbeat => http://fontawesome.io/icon/heartbeat/
+    content: '\f21e';
+  }
+  .spec-enrichers .spec-empty-state h4:before {
+    // fa-puzzle-piece => http://fontawesome.io/icon/puzzle-piece/
+    content: '\f12e';
+  }
+
+  .spec-toolbar-action, 
+  .panel-group .panel-title > a span.spec-toolbar-action {
+    // copied from log-action styling in stream.less; should refactor to share code.
+    // but because that is on darker gray it is lightened 20%; this is not
+    @base-color: @brand-primary;
+    .fa {
+      color: desaturate(@base-color, 40%);
+      transition: 0.3s color ease;
+    }
+    &:hover .fa  {
+      color: lighten(desaturate(@base-color, 40%), 10%);
+    }
+    &.active .fa {
+      color: @base-color
+    }
+    &.active:hover .fa {
+      color: desaturate(@base-color, 20%);
+    }
+  }
+  
+  .spec-configuration-filters,
+  .spec-configuration-add {
+    background: @gray-lighter;
+    border: 1px solid @gray-light;
+    transition: 0.15s ease all;
+    padding: 0.5em;
+    margin-top: -12px;
+    margin-bottom: 24px;
+
+    legend {
+      color: @gray;
+      width: inherit;
+      margin: 0;
+      font-size: 1em;
+      border: none;
+      padding: 0 0.5em 0 0.5em;
+    }
+
+    .spec-configuration-filters-categories {
+      overflow: hidden;
+      list-style: none;
+      padding: 0;
+      li {
+        cursor: pointer;
+        &:not(:first-child) {
+          margin-left: 1.5em;
+        }
+        .filter-checkbox {
+          width: 1em;
+        }
+        &.disabled {
+          color: @gray-light;
+          cursor: inherit;
+        }
+      }
+      color: @gray;
+    }
+  }
+  .spec-configuration-filters .form-group {
+    margin-bottom: 5px;
+    &:last-child {
+      margin-bottom: 0;  // get padding from parent
+    }
+    > ul {
+      margin-left: 2px;
+      margin-right: auto;
+      margin-bottom: 0;
+    }
+  }
+  a.open-entity-spec {
+    cursor: alias;
+  }
+}
+
+.popover.spec-editor-popover {
+    margin-left: -0.62em;
+    max-width: 320px;
+}
+
+.config-item-quick-info {
+     &:extend(.catalog-selector-popover .palette-item-quick-info all);
+     .config-type { margin-left: 1em; }
+     .config-required { font-style: italic; }
+}
+dsl-viewer {
+    a {
+        cursor: alias;
+    }
+}

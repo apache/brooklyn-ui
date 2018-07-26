@@ -1,0 +1,142 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+@import "~codemirror/lib/codemirror.css";
+@import "~codemirror/addon/fold/foldgutter.css";
+@import "~codemirror/addon/lint/lint.css";
+@import "~codemirror/addon/hint/show-hint.css";
+@import "~codemirror/theme/eclipse.css";
+
+.CodeMirror-lint-tooltip,
+.CodeMirror-hints {
+  z-index: 1051;
+}
+
+.CodeMirror-lint-tooltip {
+  background: @gray-lighter;
+  border-color: @gray-light;
+  border-radius: 0;
+  font-family: @font-family-base;
+  font-weight: 100;
+  color: @gray;
+}
+
+.CodeMirror-lint-message-error, .CodeMirror-lint-message-warning {
+  background-position-x: 0;
+  background-position-y: 2px;
+}
+
+.CodeMirror-hints {
+  padding: 0;
+  border-radius: 0;
+  background: #fff;
+  font-family: @font-family-base;
+  width: 400px;
+
+  .CodeMirror-hint {
+    border-radius: 0;
+    margin: 0;
+    padding: 0.2em;
+    white-space: normal;
+    color: @gray;
+
+    p {
+      margin: 0;
+    }
+
+    .CodeMirror-superhint-title {
+      display: flex;
+
+      .CodeMirror-superhint-name {
+        flex-shrink: 0;
+        font-weight: bold;
+        .text-overflow();
+      }
+
+      .CodeMirror-superhint-helper {
+        flex-grow: 1;
+        display: none;
+        margin-left: 15px;
+        font-weight: 100;
+        text-align: right;
+        color: @gray-light;
+        .text-overflow();
+      }
+    }
+    .CodeMirror-superhint-description {
+      display: none;
+      color: @gray-light;
+      .text-overflow();
+    }
+
+    &.CodeMirror-hint-active {
+      background: @gray-lighter;
+      .CodeMirror-superhint-title .CodeMirror-superhint-helper,
+      .CodeMirror-superhint-description {
+        display: block;
+      }
+    }
+  }
+}
+
+br-yaml-editor {
+  display: block;
+
+  .CodeMirror {
+    height: 50vh;
+
+    .cm-tab {
+      background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAMCAYAAAAkuj5RAAAAAXNSR0IArs4c6QAAAGFJREFUSMft1LsRQFAQheHPowAKoACx3IgEKtaEHujDjORSgWTH/ZOdnZOcM/sgk/kFFWY0qV8foQwS4MKBCS3qR6ixBJvElOobYAtivseIE120FaowJPN75GMu8j/LfMwNjh4HUpwg4LUAAAAASUVORK5CYII=);
+      background-position: right;
+      background-repeat: no-repeat;
+    }
+
+    .CodeMirror-foldmarker {
+      text-shadow: none;
+      color: @gray-light;
+      background: @gray-lighter;
+      margin: 0 0.3em 0 0.3em;
+    }
+
+    .CodeMirror-lint-markers {
+      margin: 0 0.2em 0 0.2em;
+    }
+    .CodeMirror-lint-marker-warning,
+    .CodeMirror-lint-marker-error {
+      background: none;
+      vertical-align: initial;
+      &:before {
+        content: '\f071';
+        font-family: FontAwesome;
+      }
+    }
+
+    .CodeMirror-lint-marker-warning:before {
+      color: @brand-warning;
+    }
+
+    .CodeMirror-lint-marker-error:before {
+      color: @brand-danger;
+    }
+
+    .CodeMirror-lint-marker-multiple {
+      position: absolute;
+      top: 0.2em;
+    }
+  }
+}

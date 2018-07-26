@@ -1,0 +1,213 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+catalog-selector {
+  @duration: 0.3s;
+  @duration-item: 0.1s;
+  
+  display: block;
+  margin-top: 15px;
+
+  .grid {
+    margin-bottom: 15px;
+  }
+  .pagination {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .catalog-palette {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .catalog-palette-item {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+  
+  .item {
+    margin-top: 9px;
+    padding: 3px;
+    cursor: copy;
+    transition: all @duration-item ease;
+    position: relative;
+    background: white; //useful when dragging
+    box-shadow: 0 0 rgba(0, 0, 0, 0.1), 0 1px 2px 1px rgba(0, 0, 0, 0.2);
+    &:hover {
+      box-shadow: 0 0 rgba(0, 0, 0, 0.2), 0 2px 4px 1px rgba(0, 0, 0, 0.2);
+      transform: scale(1.1);
+
+      .fa-info-circle {
+        opacity: 1;
+      }
+    }
+    .drag-frame {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        transform: scale(1.15);
+    }
+
+    .fa-info-circle {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      padding: 3px 3px 3px 4px;  // this seems to center it better than 3px all around
+      opacity: 0;
+      transition: opacity @duration ease, color @duration ease;
+      cursor: pointer;
+      color: mix(@gray-light, @gray-lighter, 50%);
+      background-color: rgba(255, 255, 255, 0.75);
+      border-radius: 10px;
+      &:hover {
+        color: @gray;
+      }
+    }
+
+    .item-logo {
+      position: relative;
+      width: 100%;
+      height: 60px;
+      overflow: hidden;
+
+      & > img {
+        -webkit-user-drag: none;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: auto;
+        max-width: 90%;
+        max-height: 100%;
+      }
+    }
+
+    .item-content {
+      &.deprecated {
+        color: @gray-light;
+      }
+      padding-left: 2px;
+      padding-right: 2px;
+      padding-top: 2px;
+      padding-bottom: 4px;
+      overflow: hidden;
+
+      h3 {
+        font-size: 0.75em;
+        text-align: center;
+        margin: 0;
+        .text-overflow();
+      }
+    }
+  }
+  .form-group {
+      margin-top: 3px;
+      margin-bottom: 3px;
+  }
+  
+  .spinner-area {
+    height: 300px;
+    position: relative;
+
+    .spinner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+
+      .svg-container {
+        width: 50px;
+        height: 50px;
+        transform-origin: 50% 50%;
+        animation: interstitial-spinner-animation 1.0s infinite linear;
+
+        circle {
+          fill: none;
+          stroke-width: 7;
+          &.foreground {
+            stroke: @brand-primary;
+            stroke-dasharray: 105 360;
+          }
+          &.background {
+            stroke: rgba(0, 0, 0, 0.05);
+          }
+        }
+
+        @keyframes interstitial-spinner-animation {
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+      }
+    }
+  }
+}
+
+.catalog-selector-popover {
+  // these numbers are extremely brittle, for instance -5px or -8px causes it to shift up 100px or so
+  // old discussion in history
+  margin-top: -6px;
+  max-width: 400px;
+    
+  .palette-item-quick-info {
+    word-wrap: break-word;
+    word-break: break-word;
+    .quick-info-metadata {
+      .text-muted();
+      .text-overflow();
+      white-space: normal;
+      word-break: break-all;
+      p {
+        margin-bottom: 0;
+        margin-left: 1.5em;
+        font-size: 90%;
+        .type-symbolic-name {
+            font-weight: bold;
+        }
+      }
+      .mini-icon {
+        width: 1.5em;
+        overflow-x: visible;
+        margin-left: -1.5em;
+        text-align: center;
+      }
+    }
+    .deprecated-marker {
+      float: right;
+      color: @brand-warning;
+    }
+    .quick-info-description {
+        border-top: 1px solid @popover-border-color;
+        border-bottom: 1px solid @popover-border-color;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    .palette-item-tag {
+        margin-right: 4px;
+    }
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+}

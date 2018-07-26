@@ -1,0 +1,103 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+@import '~brooklyn-ui-utils/table/index.less';
+
+.type:extend(.bundle all) {
+  .media-heading {
+    .label {
+      font-size: 0.4em;
+      vertical-align: middle;
+    }
+  }
+  .media-types {
+    overflow: hidden;
+  }
+  .label-supertype {
+    background: @gray-lighter;
+    color: rgba(0,0,0,0.3);
+    margin-right: 1em;
+    margin-bottom: 0.5em;
+  }
+  .dropdown-menu {
+    width: inherit;
+  }
+  .media-types .extra:extend(.bundle .media-description) {
+    font-size: 75%;
+    font-weight: bold;
+
+    .more,
+    .less {
+      font-weight: 300;
+      text-transform: uppercase;
+      margin-left: 0.5em;
+    }
+    .more {
+      cursor: zoom-in;
+    }
+    .less {
+      cursor: zoom-out;
+    }
+  }
+  
+  .paramName {
+    &:before {
+        .fa;
+        font-size: 7pt;
+        margin-right: 0.375em;
+        vertical-align: 1pt;
+        content: "\f069";  // asterisk
+    }
+  }
+  .paramDefault {
+    color: @gray;
+    &::before { content: ": "; }
+  }
+  .paramType {
+    float: right;
+    &:extend(.label-color);
+    &:extend(.one-line);
+    &:extend(.label);
+    &:extend(.label-success);
+  }
+  
+  samp {
+    font-size: 9pt;
+  }
+  .center {
+    text-align: center;
+  }
+
+  .media .media-body .media-description {
+    color: @gray-darker;
+  }
+ 
+  .sym-name-section {
+    margin-top: 9px;
+    color: @brand-primary;
+  }
+  .sym-name {
+    font-weight: 600;
+  }
+}
+.type .sym-name-in, .dropdown-menu .sym-name-in {
+    padding-left: 0.25em;
+    padding-right: 0.25em;
+    font-style: italic;
+} 

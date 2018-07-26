@@ -1,0 +1,233 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+// TODO the hover colors and active colors are inconsistent
+// in navbar modules: hover #eceef3
+// in homepage/dashboard: hover #f9fafd, active #e8ecf5
+// plenty of other places: grayish on hover, custom colour on active;
+// but some buttons sometimes just foreground change on hover
+
+@list-bgcolor-hover: mix(white, @brand-primary, 92%);
+@list-bgcolor-active: saturate(@list-bgcolor-hover, 5%);
+
+ul.card-list-view {
+    padding: 0;
+    margin: 0;
+    li {
+        list-style: none;
+        a {
+            &:hover,
+            &:focus,
+            &:active {
+                text-decoration: none;
+            }
+
+            &:hover,
+            &:focus {
+                .blueprints-list-item {
+                    background: @list-bgcolor-hover;
+                }
+            }
+
+            &:active {
+                .blueprints-list-item {
+                    background: @list-bgcolor-active;
+                }
+            }
+            
+            .blueprints-list-item {
+                transition: all .2s ease-in-out;
+            }
+        }
+
+        .blueprints-list-item {
+            padding: 20px;
+            background: white;
+            width: 100%;
+            display: block;
+
+            font-size: 14px;
+            font-weight: 500;
+
+            color: black;
+
+            .repo-name {
+                font-size: 180%;
+                color: @brand-primary;
+                margin-right: 5px;
+                margin-top: 10px;
+            }
+
+            .author-and-name {
+                color: rgba(0, 0, 0, 0.5);
+            }
+        }
+
+    }
+
+    li:not(:last-child) .blueprints-list-item {
+        border-bottom: 1px solid #E1E1E1;
+    }
+
+    .float-right {
+        float: right;
+        text-align: right;
+
+    }
+    .last-updated {
+        text-align: right;
+        color: rgba(0, 0, 0, 0.5);
+        font-weight: 300;
+        font-size: 90%;
+    }
+
+    .description {
+        display: block;
+        color: rgba(0, 0, 0, 0.5);
+        font-weight: 300;
+        font-size: 90%;
+        margin-top: 2px;
+
+    }
+
+    .stargazers-count {
+        color: rgba(0, 0, 0, 0.5);
+        font-weight: 300;
+        font-size: 90%;
+        margin-top: 10px;
+        display: block;
+
+        i {
+            margin-right: 5px;
+            color: rgba(0, 0, 0, 0.35);
+        }
+    }
+
+    .float-left {
+        float: left;
+    }
+
+    @avatar-height: 60px;
+    .avatar {
+        .square(@avatar-height);
+        margin-right: 15px;
+
+    }
+    .details {
+        min-height: @avatar-height;
+        margin-left: 80px;
+    }
+
+}
+
+// Mobile
+@media (max-width: @screen-sm-min) {
+
+    .brooklyn-home-card {
+        margin-left: -15px;
+        margin-right: -15px;
+    }
+
+    ul.card-list-view {
+
+        li .blueprints-list-item {
+            padding: 15px;
+            .repo-name {
+                font-size: 100%;
+                font-weight: bold;
+                margin-right: 5px;
+                margin-top: 10px;
+            }
+            .author-and-name {
+                display: block;
+            }
+            .stargazers-count {
+                margin-top: 0px;
+
+            }
+            .description {
+                color: rgba(0,0,0,0.7);
+                font-size: 100%;
+                margin-top: 10px;
+            }
+            @avatar-height: 40px;
+            .avatar {
+                .square(@avatar-height);
+                margin-right: 10px;
+
+            }
+            .details {
+                min-height: @avatar-height;
+                margin-left: 50px;
+                margin-left: 0px;
+            }
+        }
+    }
+}
+
+.blueprint-information ul {
+    padding: 0;
+    margin: 0;
+    li {
+        list-style: none;
+        a {
+            font-weight: bold;
+            &:hover,
+            &:focus,
+            &:active {
+                //text-decoration: none;
+            }
+
+            &:hover,
+            &:focus {
+                .blueprints-list-item {
+                    background: @list-bgcolor-hover;
+                }
+            }
+
+            &:active {
+                .blueprints-list-item {
+                    background: @list-bgcolor-active;
+                }
+            }
+            
+            .blueprints-list-item {
+                transition: all .2s ease-in-out;
+            }
+        }
+
+        padding-top: 14px;
+        padding-bottom: 14px;
+        padding-left: 0px;
+        padding-right: 0px;
+        background: white;
+        width: 100%;
+        display: block;
+
+        font-size: 14px;
+        font-weight: 500;
+
+        color: black;
+
+    }
+
+    li:not(:last-child) {
+        border-bottom: 1px solid #E1E1E1;
+    }
+}

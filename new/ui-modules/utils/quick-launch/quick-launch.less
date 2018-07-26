@@ -1,0 +1,134 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+.delete-interaction() {
+  cursor: pointer;
+  transition: 0.3s ease all;
+  color: @gray-lighter;
+  &:hover {
+    color: @brand-danger;
+  };
+}
+
+brooklyn-quick-launch {
+  display: block;
+
+  .quick-launch-type {
+    margin-top: @modal-inner-padding;
+    .media-object {
+      .make-icon(60px);
+    }
+    .media-heading {
+      color: @primary-500;
+    }
+    .media-subheading {
+      font-size: 10px;
+      color: @gray-light;
+    }
+  }
+
+  .quick-launch-section {
+    margin-top: @modal-inner-padding;
+    &:not(:first-of-type) {
+      // switch margin to padding at sides and draw a full-width line at top
+      border-top: 1px solid @gray-lighter;
+    }
+
+    .quick-launch-section-title {
+      color: @gray-lighter;
+      font-size: 15px;
+      text-transform: uppercase;
+      margin-top: 10px;
+    }
+  }
+
+  .form-group {
+    .help-block {
+      font-style: italic;
+    }
+  }
+
+  .form-delete {
+    padding-left: 10px;
+    padding-right: 10px;
+    .delete-interaction();
+  }
+
+  .spec-add-link {
+    display: block;
+    color: @gray-light;
+    text-transform: uppercase;
+    border: none;
+    background: transparent;
+    padding: 0;
+
+    &:before {
+      content: "\f067";
+      font-family: FontAwesome;
+      color: @brand-success;
+      padding-right: 10px;
+    }
+  }
+
+  .quick-launch-add-configuration {
+    margin-bottom:  @modal-inner-padding;
+  }
+
+  br-yaml-editor {
+    margin-top: @modal-inner-padding;
+    padding: 0;
+    border-top: 1px solid @gray-lighter;
+  }
+
+  .quick-launch-actions {
+    border-top: 1px solid @gray-lighter;
+  }
+}
+
+// When use the quick-launch inside a modal
+.quick-launch-modal {
+  .modal-content {
+    padding: 0;
+  }
+
+  .quick-launch-title {
+    &:extend(.modal-dialog .modal-header);
+    &:extend(.modal-dialog .modal-header h3);
+    margin: 0;
+    padding: @modal-inner-padding;
+  }
+
+  .quick-launch-type {
+    padding: 0 @modal-inner-padding 0 @modal-inner-padding;
+  }
+
+  .quick-launch-section {
+    .quick-launch-section-title,
+    .quick-launch-section-content {
+      padding: 0 @modal-inner-padding 0 @modal-inner-padding;
+    }
+  }
+
+  .dropdown-menu {
+    overflow-x: auto;
+  }
+
+  .quick-launch-actions {
+    padding: @modal-inner-padding;
+  }
+}

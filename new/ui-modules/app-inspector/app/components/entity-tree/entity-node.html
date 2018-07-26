@@ -1,0 +1,50 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="entity-node">
+    <div ng-if="isOpen" class="entity-node-item" ng-class="{'active': isSelected()}" uib-popover-template="'EntityNodeInfoTemplate.html'" popover-trigger="'mouseenter'" popover-placement="right" popover-popup-delay="1000">
+        <a ng-href="{{getHref()}}" class="entity-node-link">
+            <brooklyn-status-icon value="{{entity.serviceState}}" ng-if="entity.serviceState || entity.applicationId"></brooklyn-status-icon>
+            <i class="fa fa-2x fa-external-link" ng-if="!entity.serviceState && !entity.applicationId"></i>
+            <span>{{entity.name}}</span>
+        </a>
+        <div class="entity-node-toggle" ng-if="entity.children.length > 0 || entity.members.length > 0" ng-click="onToggle($event)" >
+            <span class="glyphicon" ng-class="isChildrenOpen ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'"></span>
+        </div>
+    </div>
+    <div class="entity-node-children" ng-show="isChildrenOpen">
+        <entity-node ng-repeat="child in entity.children track by child.id" entity="child" application-id="applicationId"></entity-node>
+        <entity-node ng-if="!entity.children || entity.children.length === 0" ng-repeat="child in entity.members track by child.id" entity="child" application-id="applicationId"></entity-node>
+    </div>
+    <script type="text/ng-template" id="EntityNodeInfoTemplate.html">
+        <table ng-if="isOpen" class="info-table">
+            <tr>
+                <td><b>Name</b></td>
+                <td>{{entity.name}}</td>
+            </tr>
+            <tr ng-if="entity.description">
+                <td><b>Description</b></td>
+                <td>{{entity.description}}</td>
+            </tr>
+            <tr>
+                <td><b>Number of children</b></td>
+                <td>{{entity.children.length || 0}}</td>
+            </tr>
+        </table>
+    </script>
+</div>

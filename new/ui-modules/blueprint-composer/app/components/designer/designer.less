@@ -1,0 +1,235 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+designer {
+    // default duration
+    @duration: 0.3s;
+    // drop zone duration
+    @duration-dropzone: 0.1s;
+    
+    @color-base: @gray-light; //#9FA5B4
+    @color-selected: @brand-primary; //#4A90E2;
+    @color-dropzone-active: @brand-primary; // (was brand-success)
+    @color-warning: @brand-warning;
+    @color-error: @brand-danger;
+    @color-relation: #ccc;
+    @size-spinner: 100px;
+
+    display: block;
+    position: relative;
+
+    svg {
+        width: 100%;
+        height: calc(~"100vh - 55px");
+        cursor: move;
+        position: absolute;
+        z-index: 1;
+
+        #fill-has-issues {
+            rect {
+                fill: #fff;
+            }
+            path {
+                fill-opacity: 0.5;
+            }
+        }
+
+        @keyframes spinner {
+            0% {
+                transform: rotate(0deg);
+                stroke-dashoffset: (0.66 * @size-spinner);
+            } 50% {
+                transform: rotate(720deg);
+                stroke-dashoffset: (3.14 * @size-spinner);
+            } 100% {
+                transform: rotate(1080deg);
+                stroke-dashoffset: (0.66 * @size-spinner);
+            }
+        }
+
+        .entity {
+            fill: #fff;
+            stroke: @color-base;
+            stroke-width: 2px;
+            cursor: pointer;
+            transition: stroke @duration ease, stroke-width @duration ease, stroke-dasharray @duration ease, fill @duration ease;
+
+            &.selected {
+                stroke: @color-selected;
+                stroke-width: 6px;
+                stroke-alignment: inner;
+            }
+            &.highlighted {
+                stroke: lighten(@color-selected, 20%);
+                stroke-width: 6px;
+                stroke-alignment: inner;
+            }
+            &.has-warnings {
+                fill: url(#fill-has-issues);
+                stroke: @color-warning;
+                stroke-dasharray: none;
+                path {
+                    fill: @color-warning;
+                }
+            }
+            &.has-errors {
+                fill: url(#fill-has-issues);
+                stroke: @color-error;
+                stroke-dasharray: none;
+                path {
+                    fill: @color-error;
+                }
+            }
+            &.loading > circle {
+                stroke-linecap: round;
+                stroke-width: 2px;
+                stroke-dasharray: (3.14 * @size-spinner);
+                animation: spinner 2.5s linear infinite;
+                transition: stroke @duration ease, stroke-width @duration ease, stroke-dasharray @duration ease, fill @duration ease;
+            }
+        }
+
+        .node-group {
+            .node {
+                .node-name {
+                    fill: @color-base;
+                    font-size : 1.2em;
+                    text-anchor : middle;
+                    alignment-baseline: central;
+                    text-overflow: clip;
+                    stroke: none;
+                }
+                .node-location {
+                    fill: #fff;
+                    stroke: @color-base;
+                    stroke-width: 2px;
+                }
+                .node-cluster {
+                    transition: cx @duration ease, cy @duration ease;
+                }
+                .node-entity.clustered {
+                    .node-cluster-0 {
+                        cx: -10;
+                        cy: -10;
+                        transform-origin: -10px -10px;
+                    }
+                    .node-cluster-2 {
+                        cx: 10;
+                        cy: 10;
+                        transform-origin: 10px 10px;
+                    }
+                    .node-icon {
+                        x: -42;
+                        y: -42;
+                    }
+                }
+            }
+        }
+
+        .ghost-node-group {
+            .ghost-node {
+                .ghost {
+                    fill: transparent;
+                }
+                .buttons {
+                    opacity: 0;
+                    transition: transform @duration, opacity @duration;
+                    transform: translateY(-70px);
+                    &.active {
+                        transform: translateY(0);
+                        opacity: 1;
+                    }
+                    .connector {
+                        fill: darken(@color-base, 10%);
+                    }
+                    .button-add {
+                        cursor: pointer;
+                        fill: @brand-success;
+                        transition: fill @duration;
+                        &:hover {
+                            fill: darken(@brand-success, 10%);
+                        }
+                    }
+                }
+            }
+        }
+
+        .dropzone-group {
+            opacity: 0;
+            transition: opacity @duration-dropzone ease;
+
+            .dropzone {
+                fill: transparent;
+                stroke: @gray-lighter;
+                stroke-width: 3px;
+                stroke-dasharray: 5;
+                transition: stroke @duration-dropzone ease, stroke-dasharray @duration-dropzone ease;
+                &.active {
+                    stroke: @color-dropzone-active;
+                    stroke-dasharray: 0;
+                }
+            }
+        }
+        &.is-dragging {
+            .dropzone-group {
+                opacity: 1;
+            }
+            .ghost-node .buttons.active {
+                transform: translateY(-70px) !important;
+            }
+        }
+
+        .spec-node-group {
+            .node-memberspec-link {
+                fill: @gray-lighter;
+            }
+        }
+
+        line.link {
+            stroke: @color-base;
+            stroke-width: 2px;
+        }
+        line.attachment {
+            stroke: @color-base;
+            stroke-width: 6px;
+            stroke-dasharray: 3 3;
+        }
+        .relation {
+            fill: transparent;
+            stroke: @color-relation;
+            stroke-width: 4px;
+            stroke-dasharray: 2 5;
+            transition: stroke 0.3s ease, marker-end 0.3s ease, opacity 0.3s ease;
+            marker-end: url(#arrowhead);
+            opacity: 1;
+            &.highlight {
+                stroke: @brand-primary;
+                marker-end: url(#arrowhead-highlight);
+            }
+            &.hidden {
+                opacity: 0;
+            }
+        }
+        .arrowhead {
+            fill: @color-relation;
+        }
+        .arrowhead-highlight {
+            fill: @brand-primary;
+        }
+    }
+}

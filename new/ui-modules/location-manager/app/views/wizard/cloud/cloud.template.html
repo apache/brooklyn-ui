@@ -1,0 +1,101 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="row">
+    <div class="col-md-12">
+        <p class="page-subheading">Enter the details of your new cloud location</p>
+        <div class="brooklyn-home-card">
+            <div class="title">
+                <form novalidate name="form">
+                    <div class="form-group" ng-class="{'has-error': form.id.$invalid && form.id.$touched}">
+                        <label class="control-label" for="id">Location ID*</label>
+                        <input ng-model="vm.id" type="text" class="form-control" id="id" name="id" required placeholder="A label to identify this location in YAML. Typically this is lower case using hyphens and no spaces">
+                        <p class="help-block" ng-show="form.$submitted || form.id.$touched">
+                            <span ng-show="form.id.$error.required">You must specify a location ID</span>
+                        </p>
+                    </div>
+                    <div class="form-group" ng-class="{'has-error': form.version.$invalid && form.version.$touched}">
+                        <label class="control-label" for="id">Location version*</label>
+                        <input ng-model="vm.version" type="text" class="form-control" id="version" name="version" required placeholder="A version number to identify this location">
+                        <p class="help-block" ng-show="form.$submitted || form.version.$touched">
+                            <span ng-show="form.id.$error.required">You must specify a location version</span>
+                        </p>
+                    </div>
+                    <div class="form-group" ng-class="{'has-error': form.name.$invalid && form.name.$touched}">
+                        <label class="control-label" for="name">Location name</label>
+                        <input ng-model="vm.name" type="text" class="form-control" id="name" name="name" placeholder="A display name to present this location to a user (optional)">
+                    </div>
+
+                    <div class="form-group" ng-class="{'has-error': (form.provider.$invalid && form.provider.$touched) || (form.spec.$invalid && form.spec.$touched)}">
+                        <label class="control-label" for="provider">Cloud provider*</label>
+                        <div class="row">
+                            <div ng-class="{'col-md-6': vm.provider === 'other', 'col-md-12': vm.provider !== 'other'}">
+                                <select ng-model="vm.provider" class="form-control" id="provider" name="provider" required>
+                                    <option ng-repeat="(key, value) in vm.providers" value="{{key}}">{{value.name}}</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6" ng-if="vm.provider === 'other'">
+                                <input ng-model="vm.spec" type="text" class="form-control" id="spec" name="spec" required placeholder="A location spec string">
+                            </div>
+                        </div>
+                        <p class="help-block" ng-show="form.$submitted || form.provider.$touched || form.spec.$touched">
+                            <span ng-show="form.provider.$error.required">You need to select one cloud provider</span>
+                            <span ng-show="form.spec.$error.required">You need to specify a location spec</span>
+                        </p>
+                    </div>
+
+                    <div class="form-group" ng-class="{'has-error': form.region.$invalid && form.region.$touched}">
+                        <label class="control-label" for="region">Cloud region</label>
+                        <input ng-model="vm.region" type="text" class="form-control" id="region" name="region" ng-disabled="vm.isRegionDisabled()" placeholder="Public cloud providers often have multiple regions available. Enter the region to use if applicable (optional)">
+                    </div>
+
+                    <div class="form-group" ng-class="{'has-error': form.endpoint.$invalid && form.endpoint.$touched}">
+                        <label class="control-label" for="endpoint">Cloud endpoint</label>
+                        <input ng-model="vm.endpoint" type="text" class="form-control" id="endpoint" name="endpoint" ng-disabled="vm.isEndpointDisabled()" placeholder="If using a private cloud, the URL to connect to it is required">
+                    </div>
+
+                    <div class="form-group" ng-class="{'has-error': form.identity.$invalid && form.identity.$touched}">
+                        <label class="control-label" for="identity">Cloud identity*</label>
+                        <input ng-model="vm.identity" type="text" class="form-control" id="identity" name="identity" required placeholder="The account name or access key to log in to this cloud">
+                        <p class="help-block" ng-show="form.$submitted || form.identity.$touched">
+                            <span ng-show="form.identity.$error.required">You must specify a cloud identity to connect to the cloud provider</span>
+                        </p>
+                    </div>
+
+                    <div class="form-group" ng-class="{'has-error': form.credential.$invalid && form.credential.$touched}">
+                        <label class="control-label" for="credential">Cloud credential*</label>
+                        <input ng-model="vm.credential" type="password" class="form-control" id="credential" name="credential" required placeholder="The password or secret key for the Cloud Identity to log in to this cloud">
+                        <p class="help-block" ng-show="form.$submitted || form.credential.$touched">
+                            <span ng-show="form.credential.$error.required">You must specify a cloud credential to connect to the cloud provider</span>
+                        </p>
+                    </div>
+                </form>
+
+                <section>
+                    <h3>Additional configuration</h3>
+                    <dynamic-config model="vm.config" type="configuration"></dynamic-config>
+                </section>
+
+                <div class="col-md-12 text-right">
+                    <button class="btn btn-primary btn-lg" ng-disabled="form.$invalid" ng-click="vm.save()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

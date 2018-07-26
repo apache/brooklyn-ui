@@ -1,0 +1,163 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<h3 class="quick-launch-title">Deploy</h3>
+
+<div uib-alert ng-if="model.deployError" class="alert-danger" close="clearError()">
+    <h4>Failed to deploy {{app.name}}</h4>
+    <p>{{model.deployError}}</p>
+</div>
+
+<div class="quick-launch-type media">
+    <div class="media-left">
+        <img ng-src="{{app | iconGeneratorPipe:'symbolicName'}}" class="media-object" alt="{{app.symbolicName}}'s icon" />
+    </div>
+    <div class="media-body">
+        <h4 class="media-heading">{{app.name || app.symbolicName}}</h4>
+        <p class="media-subheading">{{app.version || "Latest"}}</p>
+    </div>
+</div>
+
+<div ng-show="!yamlViewDisplayed">
+    <form name="deploy" novalidate>
+        <section class="quick-launch-section quick-launch-name">
+            <h3 class="quick-launch-section-title">Name</h3>
+            <div class="quick-launch-section-content">
+                <div class="form-group">
+                    <input class="form-control" type="text" ng-model="model.name" ng-disabled="deploying" name="name" placeholder="Choose a name for this application (Optional)" autofocus />
+                </div>
+            </div>
+        </section>
+
+        <section class="quick-launch-section quick-launch-location">
+            <h3 class="quick-launch-section-title">Location</h3>
+            <div class="quick-launch-section-content">
+                <div class="form-group" ng-class="{'has-error': deploy.location.$invalid && deploy.location.$touched}">
+                    <input class="form-control" type="text" ng-model="model.location" ng-disabled="deploying" name="location" placeholder="Select a location where to deploy this application" autocomplete="off"
+                           uib-typeahead="location.name for location in locations | filter:$viewValue"
+                           typeahead-popup-template-url="DropdownTemplate.html"
+                           typeahead-template-url="LocationTemplate.html" typeahead-min-length="0"
+                           required />
+                    <small class="help-block">
+                        <span ng-if="deploy.location.$error.required && (deploy.$submitted || deploy.location.$touched)">You must select a location.</span>
+                        <span>Alternatively, you can <a href="/brooklyn-ui-location-manager/#!/wizard">create a new location</a></span>
+                    </small>
+                </div>
+            </div>
+        </section>
+
+        <section class="quick-launch-section quick-launch-configuration">
+            <h3 class="quick-launch-section-title">Configuration</h3>
+            <div class="quick-launch-section-content">
+                <div ng-repeat="(key,value) in entityToDeploy['brooklyn.config'] track by key" ng-switch="configMap[key].type">
+                    <div class="checkbox" ng-class="{'has-error': deploy[key].$invalid && deploy[key].$touched}" ng-switch-when="java.lang.Boolean">
+                        <label>
+                            <input type="checkbox" ng-model="entityToDeploy['brooklyn.config'][key]" ng-disabled="deploying" auto-focus="focus === key" />
+                            {{key}} <i ng-click="deleteConfigField(key)" class="fa fa-trash form-delete"></i>
+                        </label>
+                        <small class="help-block" ng-show="deploy.$submitted || deploy[key].$touched">
+                            <span ng-if="deploy[key].$error.required">You must enter a value</span>
+                        </small>
+                    </div>
+                    <div class="form-group" ng-class="{'has-error': deploy[key].$invalid && deploy[key].$touched}" ng-switch-when="java.lang.Enum">
+                        <label for="{{key}}">{{key}} <i ng-click="deleteConfigField(key)" class="fa fa-trash form-delete"></i></label>
+                        <select class="form-control" id="{{key}}" name="{{key}}"
+                                ng-options="s.value as s.description for s in configMap[key].possibleValues"
+                                ng-model="entityToDeploy['brooklyn.config'][key]"
+                                ng-required="configMap[key].priority > 0"
+                                ng-disabled="deploying"
+                                auto-focus="focus === key"></select>
+                        <small class="help-block" ng-show="deploy.$submitted || deploy[key].$touched">
+                            <span ng-if="deploy[key].$error.required">You must enter a value</span>
+                        </small>
+                    </div>
+                    <div class="form-group" ng-class="{'has-error': deploy[key].$invalid && deploy[key].$touched}" ng-switch-when="java.lang.Integer">
+                        <label for="{{key}}">{{key}} <i ng-click="deleteConfigField(key)" class="fa fa-trash form-delete"></i></label>
+                        <input type="number" id="{{key}}" name="{{key}}" class="form-control" ng-model="entityToDeploy['brooklyn.config'][key]" ng-required="configMap[key].priority > 0" ng-disabled="deploying" auto-focus="focus === key" />
+                        <small class="help-block" ng-show="deploy.$submitted || deploy[key].$touched">
+                            <span ng-if="deploy[key].$error.required">You must enter a value</span>
+                        </small>
+                    </div>
+                    <div class="form-group" ng-class="{'has-error': deploy[key].$invalid && deploy[key].$touched}" ng-switch-default>
+                        <label for="{{key}}">{{key}} <i ng-click="deleteConfigField(key)" class="fa fa-trash form-delete"></i></label>
+                        <input type="text" id="{{key}}" name="{{key}}" class="form-control" ng-model="entityToDeploy['brooklyn.config'][key]" ng-required="configMap[key].priority > 0" ng-disabled="deploying" auto-focus="focus === key" />
+                        <small class="help-block" ng-show="deploy.$submitted || deploy[key].$touched">
+                            <span ng-if="deploy[key].$error.required">You must enter a value</span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </form>
+
+    <section class="quick-launch-section quick-launch-add-configuration">
+        <div class="quick-launch-section-content">
+            <button ng-click="toggleNewConfigForm()" class="spec-add-link">Add Config</button>
+
+            <form ng-submit="addNewConfigKey()" ng-if="model.newConfigFormOpen" name="newKeyForm" novalidate>
+                <div class="form-group">
+                    <label for="newKey">Enter new config key</label>
+                    <input class="form-control" id="newKey" name="newKey" ng-model="model.newKey"
+                           autocomplete="off"
+                           uib-typeahead="config.name for config in app.config | filter:$viewValue"
+                           typeahead-popup-template-url="DropdownTemplate.html"
+                           typeahead-template-url="ConfigTemplate.html"
+                           typeahead-show-hint="true"
+                           typeahead-min-length="0"
+                           typeahead-focus-on-select="false"
+                           typeahead-on-select="addNewConfigKey($item, $model, $label, $event)"
+                           auto-focus="model.newConfigFormOpen"
+                           required />
+                </div>
+                <input type="submit" value="submit" class="hidden"/>
+            </form>
+        </div>
+    </section>
+</div>
+
+<div ng-show="yamlViewDisplayed">
+    <br-yaml-editor value="editorYaml" enable-auto-complete></br-yaml-editor>
+</div>
+
+<div class="quick-launch-actions">
+    <button class="btn btn-lg btn-default" ng-if="yamlViewDisplayed && appHasWizard" ng-disabled="deploying" ng-click="hideEditor()">Back</button>
+    <button class="btn btn-lg btn-default" ng-if="!yamlViewDisplayed" ng-disabled="deploying" ng-click="showEditor()">Open in Editor</button>
+    <button class="btn btn-lg btn-success pull-right" ng-disabled="(deploy.$invalid || deploying) && !yamlViewDisplayed" ng-click="deployApp()">{{deploying ? 'Deploying&hellip;' : 'Deploy'}}</button>
+</div>
+
+<!--TYPEAHEAD TEMPLATES :: START-->
+<script type="text/ng-template" id="DropdownTemplate.html">
+    <ul class="dropdown-menu" ng-show="isOpen() && !moveInProgress" ng-style="{top: position().top+'px', left: position().left+'px', width: position().width+'px'}" role="listbox" aria-hidden="{{!isOpen()}}">
+        <li class="uib-typeahead-match" ng-repeat="match in matches track by $index" ng-class="{active: isActive($index) }" ng-mouseenter="selectActive($index)" ng-click="selectMatch($index, $event)" role="option" id="{{::match.id}}">
+            <div uib-typeahead-match index="$index" match="match" query="query" template-url="templateUrl"></div>
+        </li>
+    </ul>
+</script>
+<script type="text/ng-template" id="ConfigTemplate.html">
+    <div class="dropdown-item">
+        <h4 class="dropdown-item-heading" ng-bind-html="match.model.name | uibTypeaheadHighlight:query"></h4>
+        <p class="dropdown-item-subheading">{{match.model.description}}</p>
+    </div>
+</script>
+<script type="text/ng-template" id="LocationTemplate.html">
+    <div class="dropdown-item">
+        <h4 class="dropdown-item-heading" ng-bind-html="match.model.config.name ? match.model.config.name : match.model.name | uibTypeaheadHighlight:query"></h4>
+        <p class="dropdown-item-subheading">{{match.model.spec}}</p>
+    </div>
+</script>
+<!--TYPEAHEAD TEMPLATES :: END-->

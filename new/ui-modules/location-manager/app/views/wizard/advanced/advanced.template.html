@@ -1,0 +1,63 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="row">
+    <div class="col-md-12">
+        <p class="page-subheading">Enter the details of your new advanced location</p>
+        <div class="brooklyn-home-card">
+            <div class="title">
+                <form novalidate name="form">
+                    <div class="form-group" ng-class="{'has-error': form.id.$invalid && form.id.$touched}">
+                        <label class="control-label" for="id">Location ID*</label>
+                        <input ng-model="vm.id" type="text" class="form-control" id="id" name="id" required placeholder="A label to identify this location in YAML. Typically this is lower case using hyphens and no spaces">
+                        <p class="help-block" ng-show="form.$submitted || form.id.$touched">
+                            <span ng-show="form.id.$error.required">You must specify a location ID</span>
+                        </p>
+                    </div>
+                    <div class="form-group" ng-class="{'has-error': form.version.$invalid && form.version.$touched}">
+                        <label class="control-label" for="id">Location version*</label>
+                        <input ng-model="vm.version" type="text" class="form-control" id="version" name="version" required placeholder="A version number to identify this location">
+                        <p class="help-block" ng-show="form.$submitted || form.version.$touched">
+                            <span ng-show="form.id.$error.required">You must specify a location version</span>
+                        </p>
+                    </div>
+                    <div class="form-group" ng-class="{'has-error': form.name.$invalid && form.name.$touched}">
+                        <label class="control-label" for="name">Location name</label>
+                        <input ng-model="vm.name" type="text" class="form-control" id="name" name="name" placeholder="A display name to present this location to a user (optional)">
+                    </div>
+                    <div class="form-group" ng-class="{'has-error': form.parent.$invalid && form.parent.$touched}">
+                        <label class="control-label" for="parent">Parent location*</label>
+                        <input ng-model="vm.parent" type="text" class="form-control" id="parent" name="parent" placeholder="The identity or spec of the location which this location should extend" required />
+                        <p class="help-block" ng-show="form.$submitted || form.id.$touched">
+                            <span ng-show="form.parent.$error.required">You must specify a parent location</span>
+                        </p>
+                    </div>
+                </form>
+
+                <section>
+                    <h3>Additional configuration</h3>
+                    <dynamic-config model="vm.config" type="configuration"></dynamic-config>
+                </section>
+
+                <div class="col-md-12 text-right">
+                    <button class="btn btn-primary btn-lg" ng-disabled="form.$invalid" ng-click="vm.save()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

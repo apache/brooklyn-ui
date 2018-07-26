@@ -1,0 +1,186 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<ui-view class="activity-any">
+    <div>
+        <loading-state error="vm.error" ng-if="!vm.model.activity || !vm.model.activityChildren"></loading-state>
+        <div ng-if="vm.model.activity && vm.model.activityChildren">
+            <ol class="breadcrumb" ng-show="showParents">
+                <li breadcrumb-navigation parent-id="{{vm.model.activity.submittedByTask.metadata.id}}"
+                    entity-id="{{vm.model.entityId}}"></li>
+                <li class="breadcrumb-item active">{{vm.model.activity.displayName}}</li>
+            </ol>
+            <ol class="breadcrumb" ng-show="!showParents && vm.model.activity.submittedByTask">
+                <li ng-click="showParents=true" class="revealParentsEllipse"> ...</li>
+                <li class="breadcrumb-item">
+                    <a class="breadcrumb-item ready"
+                       ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.activity.submittedByTask.metadata.id})">{{vm.model.activity.submittedByTask.metadata.taskName}}</a>
+                </li>
+                <li class="breadcrumb-item active">{{vm.model.activity.displayName}}</li>
+            </ol>
+
+            <div ng-if="vm.model.activity" class="activity-detail">
+                <div class="alert alert-info" ng-if="vm.model.activity.blockingTask">
+                    <strong>Blocked on:</strong>
+                    <span ng-if="vm.model.activity.blockingDetails">{{vm.model.activity.blockingDetails}}:</span>
+                    <code><a ui-sref="main.inspect.activities.detail({entityId: vm.model.activity.blockingTask.metadata.entityId, activityId: vm.model.activity.blockingTask.metadata.id})">{{vm.model.activity.blockingTask.metadata.taskName}}</a></code> for <strong><a ui-sref="main.inspect.summary({entityId: vm.model.activity.blockingTask.metadata.entityId})">{{vm.model.activity.blockingTask.metadata.entityDisplayName}} entity</a></strong>
+                </div>
+
+                <div class="activity-header">
+                    <div class="activity-title">{{vm.model.activity.displayName}}</div>
+                    <div class="activity-entity">{{vm.model.activity.entityDisplayName}}</div>
+                    <div class="activity-description" ng-if="vm.model.activity.description">{{vm.model.activity.description}}</div>
+                </div>
+
+                <div class="activity-body">
+                    <div class="summary-body">
+                        <div class="summary-block">
+                            <div class="row">
+                                <div class="col-md-3 summary-item">
+                                    <div class="summary-item-icon">
+                                        <brooklyn-status-icon value="{{vm.model.activity.currentStatus}}"></brooklyn-status-icon>
+                                    </div>
+                                    <div class="summary-item-label">Status</div>
+                                    <div class="summary-item-value">
+                                        <brooklyn-status-text value="{{vm.model.activity.currentStatus}}"></brooklyn-status-text>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 summary-item">
+                                    <div class="summary-item-label">ID</div>
+                                    <div class="summary-item-value monospace">{{::vm.model.activity.id}}</div>
+                                </div>
+                                <div class="col-md-6 summary-item" ng-if="vm.model.activity.result!=undefined">
+                                    <div class="summary-item-label">Result</div>
+                                    <div class="summary-item-value result-parent" ng-class="{ 'big-result': (''+vm.model.activity.result).length > 10 }"><div class="result-body">{{::vm.model.activity.result}}</div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="summary-block" ng-mouseenter="showUTC=true" ng-mouseleave="showUTC=false">
+                            <div class="row">
+                                <div ng-if="vm.model.activity.endTimeUtc" class="col-md-3 summary-item summary-item-timestamp">
+                                    <div class="summary-item-icon">
+                                        <div class="icon-stopwatch"></div>
+                                    </div>
+                                    <div class="summary-item-label">Duration</div>
+                                    <div class="summary-item-value">
+                                        <div class="humanized fade" ng-show="!showUTC">
+                                            took {{vm.model.activity.endTimeUtc- vm.model.activity.startTimeUtc | durationFilter}}
+                                        </div>
+                                        <div class="utcTime fade" ng-show="showUTC">
+                                            {{vm.model.activity.endTimeUtc- vm.model.activity.startTimeUtc }} ms
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 summary-item summary-item-timestamp">
+                                    <div class="summary-item-label">Submitted</div>
+                                    <div class="summary-item-value">
+                                        <div class="humanized fade" ng-show="!showUTC">
+                                            {{vm.model.activity.submitTimeUtc | timeAgoFilter}}
+                                        </div>
+                                        <div class="utcTime fade" ng-show="showUTC">
+                                            {{vm.model.activity.submitTimeUtc | date : 'MMM dd, yyyy @ H:mm:ss.sss'}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 summary-item summary-item-timestamp">
+                                    <div class="summary-item-label">Started</div>
+                                    <div class="summary-item-value">
+                                        <div class="humanized fade" ng-show="!showUTC">
+                                            {{vm.model.activity.startTimeUtc | timeAgoFilter}}
+                                        </div>
+                                        <div class="utcTime fade" ng-show="showUTC">
+                                            {{vm.model.activity.startTimeUtc | date : 'MMM dd, yyyy @ H:mm:ss.sss'}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-if="vm.model.activity.endTimeUtc" class="col-md-3 summary-item summary-item-timestamp">
+                                    <div class="summary-item-label">Finished</div>
+                                    <div class="summary-item-value">
+                                        <div class="humanized fade" ng-show="!showUTC">
+                                            {{vm.model.activity.endTimeUtc | timeAgoFilter}}
+                                        </div>
+                                        <div class="utcTime fade" ng-show="showUTC">
+                                            {{vm.model.activity.endTimeUtc | date : 'MMM dd, yyyy @ H:mm:ss.sss'}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <br-collapsible class="activity-streams"
+                                    ng-if="vm.isNonEmpty(vm.model.activity.streams)"
+                                    state="vm.model.accordion.streamsOpen">
+                        <heading> Streams</heading>
+
+                        <div ng-repeat="streamId in vm.getStreamIdsInOrder()" ng-init="thisState = { isOpen: false, tail: ['env', 'stdin'].indexOf(streamId) === -1 };">
+                            <br-collapsible state="thisState.isOpen">
+                                <heading class="flex-container">
+                                    <div class="flex-grow">
+                                        {{ streamId }}
+                                        <small>{{streamsById[streamId].metadata.sizeText}}</small>
+                                    </div>
+                                    <div class="flex-no-grow accordion-title-toolbar">
+                                        <a class="accordion-title-toolbar-item" ui-sref="main.inspect.activities.detail.stream({streamId: streamId})" ng-click="$event.stopPropagation()"
+                                                uib-tooltip="Open in new view" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
+                                            <i class="fa fa-eye"></i>
+                                        </a>
+                                        <a class="accordion-title-toolbar-item" ng-href="{{streamsById[streamId].link}}" ng-click="$event.stopPropagation()"
+                                                uib-tooltip="Download" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
+                                            <i class="fa fa-download"></i>
+                                        </a>
+                                    </div>
+                                </heading>
+                                <stream ng-if="thisState.isOpen" activity-id="{{vm.model.activityId}}" stream-type="{{streamId}}" tail="thisState.tail"></stream>
+                            </br-collapsible>
+                        </div>
+                    </br-collapsible>
+
+                    <br-collapsible state="vm.model.accordion.subTaskOpen"
+                                    ng-if="vm.model.activityChildren && vm.model.activityChildren.length > 0">
+                        <heading> Sub-tasks</heading>
+                        
+                        <div class="row">
+                            <div ng-class="{ 'col-md-12': true, 'col-lg-8': !vm.wideKilt && vm.isNonEmpty(vm.model.activitiesDeep), 'col-lg-12': vm.wideKilt || !vm.isNonEmpty(vm.model.activitiesDeep)}">
+                                <task-list tasks="vm.model.activityChildren" task-type="activityChildren"></task-list>
+                            </div>
+                            <div ng-class="{ 'col-md-12': true, 'col-lg-4': !vm.wideKilt, 'col-lg-12': vm.wideKilt }" ng-if="vm.isNonEmpty(vm.model.activitiesDeep)">
+                                <expandable-panel expandable-template="vm.modalTemplate" class="panel-table">
+                                    <heading>Kilt Diagram</heading>
+                                    <extra-buttons>
+                                        <button class="visible-lg-inline-block btn btn-link title-toolbar-item" ng-click="vm.setWideKilt(!vm.wideKilt)"
+                                                uib-tooltip="{{ vm.wideKilt ? 'Side-by-side' : 'Full-width' }}" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
+                                            <i class="fa" ng-class="{ 'fa-indent': vm.wideKilt, 'fa-outdent': !vm.wideKilt }"></i></button>
+                                    </extra-buttons>
+                                    <h4 class="text-center" ng-if="!vm.isNonEmpty(vm.model.activitiesDeep)">No tasks</h4>
+                                    <task-sunburst task-type="activity" tasks="vm.model.activitiesDeep" ng-if="vm.isNonEmpty(vm.model.activitiesDeep)"></task-sunburst>
+                                </expandable-panel>
+                            </div>
+                        </div>
+                    </br-collapsible>
+
+                    <br-collapsible ng-if="vm.model.activity.detailedStatus" state="vm.model.accordion.detailsOpen">
+                        <heading> Details</heading>
+                        <pre>{{vm.model.activity.detailedStatus}}</pre>
+                    </br-collapsible>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</ui-view>

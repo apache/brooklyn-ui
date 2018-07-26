@@ -1,0 +1,126 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<section class="container type">
+    <header class="row">
+        <div class="col-md-12">
+            <div class="media">
+                <div class="media-left">
+                    <img ng-src="{{type | iconGeneratorPipe:'symbolicName'}}" class="media-object" alt="{{::type.symbolicName}}'s logo" />
+                </div>
+                <div class="media-body">
+                    <h4 class="media-heading">
+                        <i class="fa fa-star" ng-if="type.template" aria-label="This item is a template"></i>
+                        {{::(type.displayName || type.symbolicName)}}
+                        <div class="btn-group version-dropdown" uib-dropdown dropdown-append-to-body="true">
+                            <button uib-dropdown-toggle id="versions-dropdown" type="button" class="btn btn-sm btn-default"><span><i class="fa fa-code-fork"></i> {{::type.version}}</span> 
+                                <span class="caret" ng-if="versions && versions.length > 1"></span></button>
+                            <ul class="dropdown-menu dropdown-menu-right versions-dropdown-list" uib-dropdown-menu role="menu" aria-labelledby="versions-dropdown">
+                                <li role="menuitem" ng-repeat="version in versions track by (version.bundleSymbolicName + version.bundleVersion + version.typeVersion)" ng-class="{'active': version.bundleSymbolicName + ':' + version.bundleVersion === type.containingBundle && version.typeVersion === type.version}">
+                                    <a ui-sref="{bundleSymbolicName: version.bundleSymbolicName, bundleVersion: version.bundleVersion, typeVersion: version.typeVersion}">
+                                        <span class="itemVersion"><i class="fa fa-code-fork"></i> {{::version.typeVersion}}</span>
+                                        <span class="sym-name-in">in</span>
+                                        <span class="bundle"><i class="fa fa-fw fa-file-zip-o"></i> {{::version.bundleSymbolicName}}:{{::version.bundleVersion}}</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <span ng-if="type.deprecated" class="label label-warning">deprecated</span>
+                        <span ng-if="type.disabled" class="label label-default">disabled</span>
+                    </h4>
+                    <p class="media-bundle sym-name-section">
+                        <span class="sym-name"><i class="fa fa-fw fa-bookmark sym-name"></i> <samp>{{::type.symbolicName}}</samp></span>
+                        <span class="sym-name-in">in</span>
+                        <a ui-sref="bundle" class="text-muted">
+                            <i class="fa fa-fw fa-file-zip-o"></i> {{::type.containingBundle}}
+                        </a>
+                    </p>
+                    <p class="media-aliases text-muted" ng-if="type.aliases.length > 0"><small>
+                        <i class="fa fa-fw fa-exclamation-circle"></i> This type has the following aliases:
+                        <code ng-repeat="alias in type.aliases track by alias">{{::alias}}</code>
+                    </small></p>
+                    <p class="media-description type-description">{{::type.description}}</p>
+                    <p class="media-types">
+                        <span ng-repeat="supertype in type.supertypes | limitTo:state.limit track by supertype" class="label label-supertype pull-left">
+                            <i class="fa fa-fw fa-puzzle-piece "></i>
+                            {{::supertype}}
+                        </span>
+                        <span class="extra pull-left">
+                            <span ng-if="type.supertypes.length > state.limit">+ {{type.supertypes.length - state.limit}}</span>
+                            <span ng-class="{'more': type.supertypes.length > state.limit, 'less': type.supertypes.length === state.limit}" ng-click="toggleSupertypes()">(See {{type.supertypes.length > state.limit ? 'more' : 'less'}})</span>
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="pull-right">
+                <div class="btn-group" uib-dropdown ng-if="isEditable()">
+                    <button uib-dropdown-toggle type="button" class="btn btn-primary"><i class="fa fa-fw fa-edit"></i> Edit <span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu role="menu" aria-labelledby="edit-dropdown">
+                        <li role="menuitem" ng-if="type.supertypes.includes('org.apache.brooklyn.api.entity.Entity')">
+                            <a ng-href="/brooklyn-ui-blueprint-composer/#!/graphical?bundleSymbolicName={{type.containingBundle.split(':')[0]}}&bundleVersion={{type.containingBundle.split(':')[1]}}&typeSymbolicName={{type.symbolicName}}&typeVersion={{type.version}}">Using graphical designer</a>
+                        </li>
+                        <li role="menuitem" ng-if="type.supertypes.includes('org.apache.brooklyn.api.entity.Entity')">
+                            <a ng-href="/brooklyn-ui-blueprint-composer/#!/yaml?bundleSymbolicName={{type.containingBundle.split(':')[0]}}&bundleVersion={{type.containingBundle.split(':')[1]}}&typeSymbolicName={{type.symbolicName}}&typeVersion={{type.version}}">Using YAML editor</a>
+                        </li>
+                        <li role="menuitem" ng-if="type.supertypes.includes('org.apache.brooklyn.api.location.Location')">
+                            <a ng-href="brooklyn-ui-location-manager/#!/location?symbolicName={{type.symbolicName}}&version={{type.version}}">Using location manager</a>
+                        </li>
+                    </ul>
+                </div>
+                <button ng-if="isDeployable()" ng-click="deploy($event)" class="btn btn-success">
+                    <i class="fa fa-fw fa-rocket"></i> Deploy
+                </button>
+            </div>
+            <uib-tabset active="tab">
+                <uib-tab heading="Config" ng-if="isNonEmpty(type.config)">
+                    <br-table ng-model="type.config" columns="tables.config.columns" col-width="20"></br-table>
+                </uib-tab>
+                
+                <uib-tab heading="Sensors" ng-if="isNonEmpty(type.sensors)">
+                    <br-table ng-model="type.sensors" columns="tables.sensors.columns" col-width="20"></br-table>
+                </uib-tab>
+                
+                <!-- DASHBOARD STATUS TEMPLATE :: START -->
+                <script type="text/ng-template" id="catalog/type/effector/parameters.html">
+                    <div ng-repeat="param in item.parameters track by $index"
+                            uib-tooltip="{{param.description}}"
+                            tooltip-enable="param.description"
+                            tooltip-placement="left">
+                        <span class="paramName">{{ param.name }}</span>
+                        <span class="paramDefaultValue" ng-if="param.defaultValue">{{ param.defaultValue }}</span>
+                        <span class="paramType">{{ param.type }}</span>
+                    </div>
+                </script>
+                
+                <uib-tab heading="Effectors" ng-if="isNonEmpty(type.effectors)">
+                    <br-table ng-model="type.effectors" columns="tables.effectors.columns" col-width="20"></br-table>
+                </uib-tab>
+
+                <uib-tab heading="Blueprint" ng-if="isNonEmpty(type.plan.data)">
+                    <pre>{{type.plan.data}}</pre>
+                </uib-tab>
+                
+            </uib-tabset>
+        </div>
+    </div>
+</section>

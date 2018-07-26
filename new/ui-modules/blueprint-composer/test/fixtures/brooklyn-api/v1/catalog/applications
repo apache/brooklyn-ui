@@ -1,0 +1,26 @@
+[
+    {
+        "symbolicName": "catalog-app1",
+        "version": "0.10.0-SNAPSHOT",
+        "name": "Catalog APP 1",
+        "description": "Catalog APP Description 1",
+        "id": "catalog-app1:0.10.0-SNAPSHOT",
+        "type": "catalog-app1"
+    },
+    {
+        "symbolicName": "catalog-app2",
+        "version": "0.10.0-SNAPSHOT",
+        "name": "Catalog APP 2",
+        "description": "Catalog APP Description 2",
+        "id": "catalog-app2:0.10.0-SNAPSHOT",
+        "type": "catalog-app2"
+    },
+    {
+        "symbolicName": "catalog-app3",
+        "version": "0.10.0-SNAPSHOT",
+        "name": "Catalog APP 3",
+        "description": "Catalog APP Description 3",
+        "id": "catalog-app3:0.10.0-SNAPSHOT",
+        "type": "catalog-app3"
+    }
+]

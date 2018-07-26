@@ -1,0 +1,118 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="content">
+    <div class="row options">
+        <div class="form-group col-xs-6">
+            <label for="kinds">Kind</label>
+            <select ng-model="state.kind" ng-options="kind.label for kind in kinds track by kind.id" id="kinds" class="form-control"></select>
+        </div>
+        <div class="form-group col-xs-6" ng-if="state.kind.id !== DSL_KINDS.FORMAT_STRING.id">
+            <label for="filters">Scope</label>
+            <select ng-model="state.filter" ng-options="filter.label group by filter.scope for filter in filters track by filter.id" id="filters" class="form-control"></select>
+        </div>
+    </div>
+
+    <div ng-show="state.kind.id !== DSL_KINDS.FORMAT_STRING.id">
+        <div class="input-group">
+            <div class="input-group-btn">
+                <div class="btn-group" uib-dropdown keyboard-nav="true">
+                    <button id="dsl-order" type="button" class="btn btn-default" uib-dropdown-toggle>
+                        <i class="fa fa-sort"></i>
+                        <span class="sr-only">Change order by</span>
+                    </button>
+                    <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="dsl-order">
+                        <li role="menuitem" class="dropdown-header">Order by</li>
+                        <li role="menuitem" ng-repeat="order in orders track by $index" ng-class="{'active': order === state.orderBy}" class="layer">
+                            <a ng-click="state.orderBy = order"><i class="fa fa-fw" ng-class="{'fa-circle': state.orderBy === order, 'fa-circle-thin': state.orderBy !== order}"></i> {{order.label | lowercase}}</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <input ng-model="state.search" class="form-control" placeholder="Search (e.g. port, webserver)" auto-focus />
+        </div>
+        <small class="help-block">
+            <strong><ng-pluralize count="results.length" when="{'one': '{} result', 'other': '{} results'}"></ng-pluralize></strong>
+            matching kind <code>{{state.kind.label | lowercase}}</code>,
+            <span ng-if="state.search">containing <code>{{state.search}}</code>,</span>
+            in scope <code>{{state.filter.label | lowercase}}</code>,
+            ordered by <code>{{state.orderBy.label | lowercase}}</code>
+        </small>
+
+        <div class="list-group">
+            <a href="#" class="list-group-item" ng-repeat="item in items | filter:predicate | orderBy:state.orderBy.property as results track by $index" ng-click="selectItem(item, $event)" ng-class="{'active': item === state.item}"
+               uib-tooltip="{{item.description}}" tooltip-placement="right" tooltip-append-to-body="true">
+                <h4 class="list-group-item-heading">
+                    <i class="fa" ng-class="{'fa-cog': item.type === DSL_KINDS.CONFIG, 'fa-rss': item.type === DSL_KINDS.SENSOR, 'fa-crosshairs': item.type === DSL_KINDS.ENTITY}"></i>
+                    {{item.name}}
+                    <span ng-if="item.type === DSL_KINDS.ENTITY && item.entity.id">(ID: {{item.entity.id}})</span>
+                </h4>
+                <p class="list-group-item-entity text-right text-muted">
+                    <img ng-src="{{item.entity.icon}}" alt="{{item.entity.miscData.get('typeName') || (item.entity | entityName) || 'New application'}} logo" class="list-group-item-entity-icon" />
+                    {{item.entity.miscData.get('typeName') || (item.entity | entityName) || 'New application'}}
+                </p>
+            </a>
+
+            <h4 class="dsl-editor-empty" ng-show="items.length === 0">
+                There are no items matching config key's type: <code>{{definition.type}}</code>
+            </h4>
+
+            <h4 class="dsl-editor-no-results" ng-show="items.length > 0 && results.length === 0">
+                There are no results matching current filters
+            </h4>
+        </div>
+    </div>
+
+    <div ng-show="state.kind.id === DSL_KINDS.FORMAT_STRING.id">
+        <div class="form-group">
+            <label for="pattern" class="control-label">Pattern</label>
+            <input ng-model="state.pattern" id="pattern" type="text" class="form-control" placeholder="Regex pattern (e.g. http://%s:%s)" auto-focus />
+        </div>
+        <div ng-repeat="argument in state.arguments track by $index" class="form-group">
+            <label for="argument-{{$index}}" class="control-label">
+                argument {{$index + 1}}
+                <span ng-if="isDsl($index)"><button class="btn btn-link btn-xs" ng-click="state.toggles[$index] = !state.toggles[$index]"><i class="fa fa-bolt"></i> DSL</button></span>
+                <i class="fa fa-fw fa-eraser remove-argument" ng-click="state.arguments.splice($index, 1)" aria-hidden="true" title="Clear configuration [{{argument}}]"></i>
+            </label>
+
+            <div ng-if="!isDsl($index) || (isDsl($index) && state.toggles[$index])" class="input-group">
+                <input ng-model="state.arguments[$index]" id="argument-{{$index}}" type="text" class="form-control" placeholder="(empty)" auto-focus />
+                <span class="input-group-btn">
+                    <button ng-click="nestDsl($index)" class="btn btn-default">DSL</button>
+                </span>
+            </div>
+
+            <dsl-viewer dsl="dsl.params[$index + 1]" ng-if="isDsl($index) && !state.toggles[$index]"></dsl-viewer>
+        </div>
+        <button ng-click="state.arguments.push('')" class="btn btn-success">Add argument</button>
+    </div>
+</div>
+
+<footer class="done text-right">
+    <div class="checkbox" ng-if="state.kind.id === DSL_KINDS.SENSOR.id || (state.kind.id !== DSL_KINDS.FORMAT_STRING.id && state.item.type === DSL_KINDS.SENSOR)">
+        <label>
+            <input ng-model="state.sensor" type="checkbox"> Return sensor object, not value
+        </label>
+    </div>
+    <div class="form-group" ng-if="state.item.type === DSL_KINDS.ENTITY && !state.item.entity.id">
+        <input class="form-control" type="text" ng-model="state.entityId" placeholder="Entity ID" />
+        <p class="help-block">The referenced item must have a unique ID defined.<br/>
+           Specify one here, or leave blank to have one auto-generated.</p>
+    </div>
+    <button class="btn btn-primary pull-right" ng-click="selectDsl()" ng-disabled="!isDone()">Done</button>
+</footer>

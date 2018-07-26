@@ -1,0 +1,113 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+.modal-body {
+  .effector-name {
+    font-size: 18px;
+    color: @brand-primary;
+    display: block;
+    margin-top: -5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .effector-description {
+    font-size: 12px;
+    color: #7F7F7F;
+    display: block;
+    margin-bottom: 20px;
+    margin-top: 3px;
+  }
+
+  section {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    &:not(:first-of-type) {
+      // switch margin to padding at sides and draw a full-width line at top
+      border-top: 1px solid @gray-lighter;
+      margin-left: -@modal-inner-padding;
+      margin-right: -@modal-inner-padding;
+      padding-left: @modal-inner-padding;
+      padding-right: @modal-inner-padding;
+    }
+  }
+
+  h3 {
+    color: @gray-lighter;
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: bold;
+    -webkit-font-smoothing: antialiased;
+    margin-top: 0;
+    margin-bottom: 8px;
+  }
+
+  .parameter-name {
+    color: #818899;
+  }
+
+  .tooltip {
+    width: 500px;
+  }
+
+  .dropdown-location {
+    .btn-select-dropdown {
+      background: white;
+      color: #808798;
+      border-color: #A3A9B8;
+      &:hover {
+        background: mix(#808798, white, 30%);
+      }
+      .caret {
+        margin-left: 6px;
+      }
+    }
+
+    .btn-group.open .btn-select-dropdown.dropdown-toggle,
+    .btn-select-dropdown:active {
+      box-shadow: none;
+    }
+
+    .dropdown-menu {
+      max-width: 320px;
+    }
+    .dropdown-menu li {
+      padding: 0;
+      position: relative;
+      a {
+        padding: 8px 20px;
+        padding-left: 32px;
+        &.selected {
+          background: mix(#808798, white, 20%);
+          &:before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 12px;
+            top: 12px;
+            left: 8px;
+            background-image: url('../../../img/checkmark@2x.png');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+          }
+        }
+      }
+    }
+  }
+}

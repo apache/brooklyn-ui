@@ -1,0 +1,73 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="dynamic-config-fields">
+    <div class="form-group" ng-class="locationConfig[key].type" ng-repeat="(key, value) in model track by key" ng-switch="locationConfig[key].type">
+        <div ng-switch-when="select">
+            <label class="control-label">{{key}} <i ng-click="onDeleteDynamicConfig(key)" class="fa fa-trash control-delete"></i></label>
+            <select class="form-control" ng-model="model[key]" auto-focus>
+                <option ng-repeat="(optionKey, optionLabel) in locationConfig[key].options" ng-value="optionKey">{{optionLabel}}</option>
+            </select>
+        </div>
+        <div ng-switch-when="textarea">
+            <label class="control-label">{{key}} <i ng-click="onDeleteDynamicConfig(key)" class="fa fa-trash control-delete"></i></label>
+            <textarea ng-model="model[key]" class="form-control" auto-focus>{{value}}</textarea>
+        </div>
+        <div ng-switch-when="checkbox">
+            <label class="control-label">
+                <input ng-model="model[key]" type="checkbox" class="checkbox" auto-focus />
+                {{key}} <i ng-click="onDeleteDynamicConfig(key)" class="fa fa-trash control-delete"></i>
+            </label>
+        </div>
+        <div ng-switch-default>
+            <label class="control-label">{{key}} <i ng-click="onDeleteDynamicConfig(key)" class="fa fa-trash control-delete"></i></label>
+            <div ng-class="{'input-group': locationConfig[key].unit}">
+                <input ng-model="model[key]" type="{{locationConfig[key].type || 'text'}}" placeholder="{{locationConfig[key].description}}" class="form-control" auto-focus />
+                <span class="input-group-addon" ng-if="locationConfig[key].unit">Unit: <code>{{locationConfig[key].unit}}</code></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form name="dynamicConfigForm" ng-submit="onSubmitDynamicConfigForm()" ng-show="showDynamicConfigForm" novalidate>
+    <div class="form-group" ng-class="{'has-error': dynamicConfigForm.newDynamicKey.$invalid && dynamicConfigForm.newDynamicKey.$touched}">
+        <label class="control-label">Enter new {{type}} key</label>
+        <input ng-model="newDynamicKey" type="text" class="form-control" name="newDynamicKey" required
+               autocomplete="off"
+               uib-typeahead="suggestion.name for suggestion in suggestions | filter:$viewValue"
+               typeahead-template-url="SuggestionItemTemplate.html"
+               typeahead-show-hint="true"
+               typeahead-min-length="0"
+               auto-focus="showDynamicConfigForm" />
+        <p class="help-block" ng-show="dynamicConfigForm.$submitted || dynamicConfigForm.newDynamicKey.$touched">
+            <small ng-show="dynamicConfigForm.newDynamicKey.$error.required">You need to specify a {{type}} key first.</small>
+            <small ng-show="dynamicConfigForm.newDynamicKey.$error.used">This key is already used, please choose another one.</small>
+        </p>
+    </div>
+
+    <input type="submit" value="submit" class="hidden" />
+</form>
+
+<p ng-click="toggleDynamicConfigForm()" class="toggle-link" ng-class="{'add': !showDynamicConfigForm, 'remove': showDynamicConfigForm}">{{showDynamicConfigForm ? 'Remove ' : 'Add'}} new {{type}}</p>
+
+<script type="text/ng-template" id="SuggestionItemTemplate.html">
+    <div class="dropdown-item">
+        <h4 class="dropdown-item-heading" ng-bind-html="match.model.name | uibTypeaheadHighlight:query"></h4>
+        <p class="dropdown-item-subheading">{{match.model.description}}</p>
+    </div>
+</script>

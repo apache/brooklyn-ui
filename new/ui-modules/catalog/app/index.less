@@ -1,0 +1,166 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+@import '~brooklyn-shared/style/first.less';
+
+@import '~brooklyn-ui-utils/quick-launch/quick-launch.less';
+@import '~brooklyn-ui-utils/yaml-editor/yaml-editor.less';
+@import '~brooklyn-ui-utils/catalog-uploader/catalog-uploader.less';
+
+// Add project less files here
+@import "components/type-item/index";
+@import "views/catalog/catalog";
+@import "views/bundle/bundle";
+@import "views/bundle/type/type";
+@import "views/bundle/type/modal";
+
+.make-icon(@size) {
+  // this won't _increase_ size, that's more complicated.  but it will cap both sizes while
+  // keeping aspect ratio.  if width or height are set they can interfere with the maxes to screw up aspect ratio.
+  // https://stackoverflow.com/questions/12912048/how-to-maintain-aspect-ratio-using-html-img-tag
+  width: auto;
+  height: auto;
+  max-width: @size;
+  max-height: @size;
+  // and center
+  margin: auto;
+}
+
+.snackbar {
+  z-index: 200;
+}
+
+.list-group {
+  &.list-group-types {
+    .list-group-item {
+      transition: 0.3s ease background;
+      &:hover {
+        background: @list-bgcolor-hover;
+      }
+    }
+  }
+
+  .list-group-item {
+    &.deprecated {
+      display: table;
+      border-right: 5px solid @brand-warning;
+      overflow: hidden;
+      &:after {
+        content: 'DEPRECATED';
+        position: relative;
+        display: table-cell;
+        transform: rotate(-90deg);
+        right: -3.5em;
+        color: @brand-warning;
+        text-align: center;
+        font-weight: 100;
+        vertical-align: middle;
+        padding: 0;
+        margin: 0;
+        font-size: 0.8em;
+      }
+      .media {
+        margin-right: -4.5em;
+        .media-heading,
+        .media-description {
+          color: @state-warning-text;
+        }
+      }
+    }
+    &.empty,
+    &.no-results,
+    &.loading {
+      background: #fff !important;
+      color: @gray-light;
+      text-align: center;
+      &:before {
+        content: '\ff00d';
+        display: block;
+        font-family: FontAwesome;
+        font-size: 4em;
+        margin-bottom: 0.25em;
+        color: @gray-lighter;
+      }
+      &.ng-hide-add,
+      &.ng-hide-remove {
+        display: none;
+      }
+    }
+    &.empty:before {
+      content: '\f128';
+    }
+    &.no-results:before {
+      content: '\f00d';
+    }
+    &.loading:before {
+      content: '\f021';
+      animation: fa-spin 2s infinite linear;
+    }
+  }
+}
+
+.filters {
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+
+  .btn-primary {
+    border: 1px solid transparent;
+  }
+}
+
+.media {
+  .media-object {
+    .make-icon(80px);
+  }
+  .media-body {
+    .media-heading {
+      font-size: 2em;
+      color: @brand-primary;
+
+      .label {
+        font-size: 0.4em;
+        vertical-align: middle;
+      }
+    }
+    .media-description {
+      color: rgba(0, 0, 0, 0.5);
+      font-weight: 300;
+      font-size: 0.9em;
+    }
+    .highlights {
+      font-weight: 100;
+      font-size: 1.2em;
+      color: rgba(0,0,0,.3);
+      text-transform: uppercase;
+
+      .highlight-count {
+        font-weight: bold;
+
+        &:not(:first-child) {
+          margin-left: 0.3em;
+          padding-left: 0.4em;
+          border-left: 1px solid rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
+  }
+}
+
+// Load last so that these style rules and var values trump others
+@import "~brooklyn-shared/style/last.less";
+

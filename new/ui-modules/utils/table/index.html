@@ -1,0 +1,82 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="form-group">
+    <div class="input-group">
+        <input ng-model="ctrl.state.search" type="text" placeholder="Search for anything" placeholder="Custom popup template" class="form-control"
+               uib-typeahead="column.idForTypeahead for column in ctrl.state.columns | filter:{idForTypeahead:$viewValue, hidden: false}"
+               typeahead-input-formatter="ctrl.suggestionFormatter($model)"
+               typeahead-focus-first="false"
+               typeahead-show-hint="true"
+               typeahead-min-length="0"
+               typeahead-template-url="SuggestionTemplate.html" />
+        <span class="input-group-btn" uib-dropdown auto-close="outsideClick">
+            <button class="btn btn-default" uib-dropdown-toggle><i class="fa fa-fw fa-cog"></i></button>
+            <ul class="dropdown-menu dropdown-menu-right" role="menu" uib-dropdown-menu>
+                <li role="menuitem" class="dropdown-header">Columns to display</li>
+                <li ng-repeat="column in ctrl.state.columns track by $index" ng-class="{'active': !column.hidden}" class="toggle" role="menuitem">
+                    <a ng-click="hideColumn(column)">
+                        <i class="fa fa-fw " ng-class="{'fa-circle': !column.hidden, 'fa-circle-thin': column.hidden}"></i>
+                        {{column.header}}
+                    </a>
+                </li>
+            </ul>
+        </span>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-bordered" ng-class="{'table-clickable': ctrl.rowUiState}" style="table-layout: {{ ctrl.tableLayoutFixed ? 'fixed' : 'auto' }};"
+            ng-style="{ minWidth: ctrl.minWidth }">
+        <colgroup>
+            <col ng-repeat-start="column in ctrl.state.columns track by $index" ng-if="false"></col>
+                <col ng-hide="column.hidden" ng-if="column.colspan" ng-repeat="i in (column.colspan ? [].constructor(column.colspan-1) : []) track by $index"></col>
+                <col ng-hide="column.hidden" style="{{ column.width ? 'width: '+column.width+'px; ' : ''}}"></col>
+            <col ng-repeat-end ng-if="false"></col>
+        </colgroup>
+        <thead>
+            <tr>
+                <th ng-repeat="column in ctrl.state.columns track by $index" ng-hide="column.hidden" colspan="{{ column.colspan || 1 }}">
+                    <div ng-click="ctrl.sortBy(column.orderBy)" ng-class="{'column-orderable': column.orderBy}">
+                        <span>{{column.header}}</span>
+                        <i class="fa fa-fw" ng-class="{'fa-angle-up': ctrl.getSortByDirectionFrom(column.orderBy) === '+', 'fa-angle-down': ctrl.getSortByDirectionFrom(column.orderBy) === '-'}" ng-if="ctrl.getSortByFrom(column.orderBy)"></i>
+                    </div>
+                    <span class="column-resizer"></span>
+                </th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr ng-repeat="item in ctrl.items | deepFilter:ctrl.state.filters | orderBy:ctrl.state.sorts as results track by $index" ui-state="ctrl.rowUiState || '.'" ui-state-params="ctrl.rowUiStateParams.call(ctrl, item)">
+                <td ng-repeat="column in ctrl.state.columns | filter:{hidden: false} track by column.id" ng-class="column.tdClass" bind-html-compile="ctrl.getColumnTemplate(column.id)" colspan="{{ column.colspan || 1 }}"></td>
+            </tr>
+            <tr class="no-results" ng-show="ctrl.items.length > 0 && results.length === 0">
+                <td colspan="{{ ctrl.state.columnSpanCount }}">No results for <code>{{ctrl.state.search}}</code></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script type="text/ng-template" id="SuggestionTemplate.html">
+    <div class="dropdown-item">
+        <h4 class="dropdown-item-heading">
+            <strong><samp><span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>:&lt;search&gt;</samp></strong>
+            to search in the <strong><q>{{match.model.header}}</q></strong> column
+        </h4>
+    </div>
+</script>

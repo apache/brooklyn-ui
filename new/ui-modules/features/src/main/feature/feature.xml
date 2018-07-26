@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.3.0" name="org.apache.brooklyn.ui.modules.brooklyn-ui-modules-${project.version}">
+
+    <!-- do NOT set the repo; it forces other items to come from this version, which we don't want 
+         if are installing a custom KAR for the UI Modules (wars) on top of a release version of Brooklyn;
+         instead rely on `brooklyn-ui-features/` to load the dependent features from here so they can be installed
+    <repository>mvn:${project.groupId}/brooklyn-ui-modularity-features/${project.version}/xml/features</repository>
+     -->
+
+    <feature name="brooklyn-ui-modules" version="${project.version}">
+        <feature>brooklyn-ui-home</feature>
+        <feature>brooklyn-ui-logout</feature>
+        
+        <feature>brooklyn-ui-app-inspector</feature>
+        <feature>brooklyn-ui-blueprint-composer</feature>
+        <feature>brooklyn-ui-blueprint-importer</feature>
+        <feature>brooklyn-ui-catalog</feature>
+        <feature>brooklyn-ui-groovy-console</feature>
+        <feature>brooklyn-ui-location-manager</feature>
+        <feature>brooklyn-ui-rest-api-docs</feature>
+    </feature>
+
+    <feature name="brooklyn-ui-home" version="${project.version}">
+        <feature dependency="true">brooklyn-ui-moularity</feature>
+        <bundle>mvn:${project.groupId}/brooklyn-ui-home/${project.version}/war</bundle>
+    </feature>
+    
+    <feature name="brooklyn-ui-logout" version="${project.version}">
+        <bundle>mvn:${project.groupId}/brooklyn-ui-logout/${project.version}/war</bundle>
+    </feature>
+
+    <feature name="brooklyn-ui-app-inspector" version="${project.version}">
+        <bundle>mvn:${project.groupId}/brooklyn-ui-app-inspector/${project.version}/war</bundle>
+    </feature>
+    <feature name="brooklyn-ui-blueprint-composer" version="${project.version}">
+        <bundle>mvn:${project.groupId}/brooklyn-ui-blueprint-composer/${project.version}/war</bundle>
+    </feature>
+    <feature name="brooklyn-ui-blueprint-importer" version="${project.version}">
+        <bundle>mvn:${project.groupId}/brooklyn-ui-blueprint-importer/${project.version}/war</bundle>
+    </feature>
+    <feature name="brooklyn-ui-catalog" version="${project.version}">
+        <bundle>mvn:${project.groupId}/brooklyn-ui-catalog/${project.version}/war</bundle>
+    </feature>
+    <feature name="brooklyn-ui-groovy-console" version="${project.version}">
+        <bundle>mvn:${project.groupId}/brooklyn-ui-groovy-console/${project.version}/war</bundle>
+    </feature>
+    <feature name="brooklyn-ui-location-manager" version="${project.version}">
+        <feature dependency="true">brooklyn-ui-location-metadata</feature>
+        <bundle>mvn:${project.groupId}/brooklyn-ui-location-manager/${project.version}/war</bundle>
+    </feature>
+    <feature name="brooklyn-ui-rest-api-docs" version="${project.version}">
+        <bundle>mvn:${project.groupId}/brooklyn-ui-rest-api-docs/${project.version}/war</bundle>
+    </feature>
+
+</features>

@@ -1,0 +1,51 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<span ng-if="isTargetDsl(dsl)">
+    <span ng-if="dsl.getRoot().relationships.length === 0" class="label label-primary">{{dsl.params[0].name}}</span>
+    <a ng-if="dsl.getRoot().relationships.length > 0" ui-sref="main.graphical.edit.entity({entityId: getRelatedEntity()._id})"><span class="label label-primary">{{(getRelatedEntity() | entityName) || 'New application'}}</span></a>
+    <span ng-if="dsl.next">
+        ⇒
+        <dsl-viewer dsl="dsl.next"></dsl-viewer>
+    </span>
+</span>
+
+<span ng-if="isMethodDsl(dsl) && !isFormatStringDsl(dsl)">
+    <span class="label label-default">
+        <i class="fa" ng-class="{'fa-cog': dsl.name === 'config', 'fa-rss': dsl.name === 'sensor', 'fa-pause': dsl.name === 'attributeWhenReady'}"></i>
+        {{dsl.name}}
+    </span>
+    →
+    <dsl-viewer dsl="dsl.params[0]"></dsl-viewer>
+</span>
+
+<span ng-if="isFormatStringDsl(dsl)">
+    <span class="label label-info">
+        <i class="fa fa-qrcode"></i>
+        pattern
+    </span>
+    →
+    {{dsl.params[0].name}}
+    <ol ng-if="dsl.params.length > 0">
+        <li ng-repeat="argument in dsl.params | limitTo:dsl.params.length:1">
+            <dsl-viewer dsl="argument"></dsl-viewer>
+        </li>
+    </ol>
+</span>
+
+<span ng-if="isLiteralDsl(dsl)">{{dsl.name}}</span>

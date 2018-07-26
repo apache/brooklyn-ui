@@ -1,0 +1,189 @@
+{
+  "__license__": [
+    "Licensed to the Apache Software Foundation (ASF) under one",
+    "or more contributor license agreements.  See the NOTICE file",
+    "distributed with this work for additional information",
+    "regarding copyright ownership.  The ASF licenses this file",
+    "to you under the Apache License, Version 2.0 (the",
+    "\"License\"); you may not use this file except in compliance",
+    "with the License.  You may obtain a copy of the License at",
+
+    "    http://www.apache.org/licenses/LICENSE-2.0",
+
+    "Unless required by applicable law or agreed to in writing,",
+    "software distributed under the License is distributed on an",
+    "\"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY",
+    "KIND, either express or implied.  See the License for the",
+    "specific language governing permissions and limitations",
+    "under the License."
+  ],
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "/Blueprint/Entity",
+  "title": "Entity",
+  "description": "An object that describes a piece of software for the current blueprint",
+  "type": "object",
+  "required": [ "type" ],
+  "properties": {
+    "id": {
+      "title": "Entity ID",
+      "description": "An ID string, used to refer to this service",
+      "type": "string"
+    },
+    "name": {
+      "title": "Entity name",
+      "description": "A human readable name, to be displayed in the GUI or CLI at runtime",
+      "type": "string"
+    },
+    "type": {
+      "title": "Entity type",
+      "description": "A reference to the the of this entity. Can be either another entity ID or a full java class name",
+      "type": "string"
+    },
+    "location": {
+      "$ref": "/Blueprint/Location"
+    },
+    "brooklyn.config": {
+      "title": "Entity configuration",
+      "description": "Configuration key-value pairs passed to the service entity being created",
+      "type": "object"
+    },
+    "brooklyn.children": {
+      "title": "Entity children",
+      "description": "A list of entities which will be configured as children of this entity",
+      "type": "array",
+      "items": {
+        "$ref": "/Blueprint/Entity"
+      },
+      "minItems": 1
+    },
+    "brooklyn.policies": {
+      "title": "Policies",
+      "description": "A list of policies, each as a map described with their type and their brooklyn.config as keys",
+      "type": "array",
+      "items": {
+        "title": "Policy",
+        "$ref": "/Blueprint/Entity"
+      },
+      "minItems": 1
+    },
+    "brooklyn.enrichers": {
+      "title": "Enrichers",
+      "description": "A list of enrichers, each as a map described with their type and their brooklyn.config as keys",
+      "type": "array",
+      "items": {
+        "title": "Enricher",
+        "$ref": "/Blueprint/Entity"
+      },
+      "minItems": 1
+    },
+    "brooklyn.initializers": {
+      "title": "Initializers",
+      "description": "A list of initializers instances to be constructed and run against the entity, each as a map described with their type and their brooklyn.config as keys",
+      "type": "array",
+      "items": {
+        "title": "Initializer",
+        "$ref": "/Blueprint/Entity"
+      },
+      "minItems": 1
+    },
+    "brooklyn.parameters": {
+      "title": "Parameters",
+      "description": "A list of typed parameters the entity accepts",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/brooklynParameter"
+      },
+      "minItems": 1
+    }
+  },
+  "definitions": {
+    "brooklynParameter": {
+      "title": "Parameter",
+      "type": "object",
+      "required": [ "name" ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Parameter name",
+          "description": "Identifier by which to reference the parameter when setting or retrieving its value",
+          "type": "string"
+        },
+        "label": {
+          "title": "Parameter label",
+          "description": "A value to present to the user, same as name if empty",
+          "type": "string"
+        },
+        "description": {
+          "title": "Parameter description",
+          "description": "Short text describing the parameter behaviour/usage, presented to the user",
+          "type": "string"
+        },
+        "type": {
+          "title": "Parameter type",
+          "description": "The type of the parameter, one of string, boolean, integer, long, float, double, timestamp, duration, port, or a fully qualified Java type name; the default is string",
+          "type": "string",
+          "pattern": "^(string|boolean|integer|long|float|double|timestamp|duration|port|[a-z]+(\\.[a-zA-Z]+)+)$"
+        },
+        "default": {
+          "title": "Parameter default value",
+          "description": "A default value; this will be coerced to the declared type"
+        },
+        "pinned": {
+          "title": "Parameter is pinned?",
+          "description": "Mark the parameter as pinned (always displayed) for the UI. The default is true",
+          "type": "boolean"
+        },
+        "constraints": {
+          "title": "Parameter constraints",
+          "description": "A list of constraints the parameter should meet",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/constraintRequired"
+              },
+              {
+                "$ref": "#/definitions/constraintRegex"
+              },
+              {
+                "$ref": "#/definitions/constraintPredicate"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "constraintRequired": {
+      "title": "Constraint required",
+      "description": "Deployment will fail if no value is supplied for this config key",
+      "type": "string",
+      "enum": [ "required" ]
+    },
+    "constraintRegex": {
+      "title": "Constraint regex",
+      "description": "Deployment will fail if no value is supplied for this config key",
+      "type": "object",
+      "required": [ "regex" ],
+      "additionalProperties": false,
+      "properties": {
+        "regex": {
+          "title": "Constraint regex pattern",
+          "type": "string"
+        }
+      }
+    },
+    "constraintPredicate": {
+      "title": "Constraint predicate",
+      "description": "A predicate, declared using the DSL $brooklyn:object",
+      "type": "object",
+      "required": [ "$brooklyn:object" ],
+      "additionalProperties": false,
+      "properties": {
+        "$brooklyn:object": {
+          "title": "Constraint predicate object",
+          "type": "object"
+        }
+      }
+    }
+  }
+}

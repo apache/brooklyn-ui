@@ -1,0 +1,75 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+// Shared styles and libraries which we load _first_ go here
+
+@import '~brooklyn-ui-utils/module-links/module-links.less';
+@import '~brooklyn-ui-utils/user-management/user-management.less';
+@import '~angular/angular-csp.css';
+@import '~angular-ui-bootstrap/dist/ui-bootstrap-csp.css';
+@import '~bootstrap/less/bootstrap';
+@import '~brooklyn-ui-utils/br-core/br-core.less';
+@import '~font-awesome/less/font-awesome';
+
+@navbar-divider-color: rgba(60, 85, 136, .5);
+
+.navbar-text {
+  float: left;
+  margin-left: -15px;
+  padding-left: 15px;
+  border-left: 2px solid @navbar-divider-color;
+}
+
+@media (min-width: @screen-sm) {
+  .big-header .modules-icon .modules-icon-obj1 {
+    fill: #fff;
+  }
+  .big-header .navbar-nav > .open > a:focus {
+    border-color: #fff;
+    background: rgba(0, 0, 0, 0.1);
+  }
+}
+
+@media (max-width: @screen-sm) {
+  .big-header .navbar-nav > a,
+  .big-header .navbar-nav > a:focus,
+  .big-header .navbar-nav > .open a:not(.active),
+  .big-header .navbar-nav > .open a:not(.active):hover,
+  .big-header .navbar-nav > .open a:not(.active):focus {
+    color: @brand-primary !important;
+  }
+  .big-header .navbar-nav > li > a {
+    color: @brand-primary !important;
+  }
+  .big-header .dropdown-menu {
+    max-height: none;
+  }
+  .big-header .navbar-collapse {
+    background: #fff;
+    border: 1px solid @navbar-divider-color;
+  }
+  .navbar {
+    z-index: 10;
+  }
+}
+
+img {
+    // if an image is missing, don't let its text go crazy over everything else
+    overflow: hidden;
+}

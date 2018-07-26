@@ -1,0 +1,135 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+@navbar-modules-icon-color: @brand-primary;
+@navbar-modules-icon-color-hover: @brand-primary;
+
+.modules-icon {
+  width: 20px;
+  height: 20px;
+  margin-bottom: -5px;
+
+  .modules-icon-obj1 {
+    fill: @navbar-modules-icon-color;
+    transition: 0.3s ease fill;
+  }
+  &:hover .modules-icon-obj1 {
+    fill: @navbar-modules-icon-color-hover;
+  }
+}
+
+.big-header {
+  .modules-icon {
+    width: 15px;
+    height: 15px;
+    margin-bottom: 0;
+  }
+  .primary .modules-icon {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+@media (max-width: @screen-sm) {
+  .ui-modules {
+    max-height: none !important;
+
+    & > li > a {
+      padding: 10px 15px 10px 35px !important;
+
+      &:hover {
+        background: @dropdown-link-hover-bg !important;
+      }
+
+      &.active,
+      &.active:hover {
+        background: @primary-300 !important;
+        color: #fff !important;
+        border-left: 5px solid @brand-primary !important;
+      }
+    }
+  }
+}
+
+@media (min-width: @screen-sm) {
+  .dropdown-menu.ui-modules {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    padding: 0;
+    background-color: @list-bgcolor-hover;
+    width: 450px;
+    height: auto;
+    max-width: none;
+    max-height: 90vh;
+    overflow-y: auto;
+
+    li:not(.about) {
+      list-style: none;
+      width: 33.333%;
+
+      a  {
+        display: block;
+        width: 100%;
+        height: 120px;
+        padding-top: 20px;
+        padding-bottom: 20px;
+        vertical-align: center;
+        text-align: center;
+        transition: background-color 0.3s;
+        i.ui-module-icon {
+          display: inline-block;
+          font-size: 40px;
+          color: @brand-primary;
+          transition: color 0.3s;
+        }
+        span.ui-module-name {
+          display: block;
+          margin-top: 5px;
+          color: @brand-primary;
+          transition: color 0.3s;
+        }
+
+        &:hover {
+          background-color: darken(@list-bgcolor-hover, 5%);
+        }
+      }
+
+      a.active {
+        background-color: lighten(@list-bgcolor-hover, 5%);
+      }
+    }
+    li.about {
+      width: 100%;
+      text-align: center;
+      border-top: 1px solid @dropdown-divider-bg;
+
+      a {
+        color: @brand-primary;
+        background: #fff;
+        transition: background-color 0.3s;
+
+        &:hover {
+          background-color: darken(@list-bgcolor-hover, 5%);
+        }
+      }
+    }
+  }
+  .open .dropdown-menu.ui-modules {
+    display: flex;
+  }
+}

@@ -1,0 +1,94 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+#loading-bar .bar, #loading-bar-spinner { display: none; }
+
+br-interstitial-spinner {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #f5f6fa;
+  z-index: 1039;
+  opacity: 1;
+  transition: opacity .5s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  &.interstitial-hidden {
+    opacity: 0;
+  }
+
+  .spinner-area {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top:0;
+  }
+
+  .spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+  }
+
+  .svg-container {
+    width: 50px;
+    height: 50px;
+    transform-origin: 50% 50%;
+    animation: interstitial-spinner-animation 1.0s infinite linear;
+
+    circle {
+      fill: none;
+      stroke-width: 7;
+      &.foreground {
+        stroke: @brand-primary;
+        stroke-dasharray: 105 360;
+      }
+      &.background {
+        stroke: rgba(0, 0, 0, 0.05);
+      }
+    }
+
+    @keyframes interstitial-spinner-animation {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  }
+
+  .page-main-area-placeholder {
+    flex-grow: 2;
+    min-height: 800px;
+  }
+  .navbar-placeholder {
+    height: 55px;
+    background: white;
+    border-top: 4px solid @brand-accent;
+    border-bottom: 1px solid #e4e5e8;
+    flex-shrink: 0;
+  }
+  .footer-placeholder {
+    height: 69px;
+    background: @brand-primary;
+    border-bottom: 4px solid @brand-accent;
+    flex-shrink: 0;
+  }
+}
+
+

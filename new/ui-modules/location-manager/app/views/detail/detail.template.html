@@ -1,0 +1,83 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <br-card class="location-detail {{vm.location.readOnly ? 'read-only' : ''}}" nf-if="vm.location !== null">
+                <br-card-content>
+                    <div class="media">
+                        <div class="media-left">
+                            <a ng-href="{{vm.location | locationProviderUrl}}">
+                                <img class="media-object" ng-src="{{vm.location | locationIcon}}"
+                                     alt="{{vm.location | locationName}}'s icon">
+                            </a>
+                        </div>
+                        <div class="media-body">
+                            <h4 class="media-heading location-name">
+                                {{vm.location | locationName}}
+                                <div class="btn-group" uib-dropdown ng-if="vm.location.version">
+                                    <button uib-dropdown-toggle ng-disabled="vm.location.versions.length === 0" id="versions-dropdown" type="button" class="btn btn-sm btn-default"><i class="fa fa-code-fork"></i> {{vm.location.version}} <span class="caret"></span></button>
+                                    <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="versions-dropdown">
+                                        <li role="menuitem" ng-repeat="version in vm.location.versions track by version">
+                                            <a ui-sref="detail({symbolicName: vm.location.symbolicName, version: version})"><i class="fa fa-code-fork"></i> {{version}}</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </h4>
+                            <p class="location-detail-description">
+                                {{vm.location.spec}} &bull;
+                                <i class="fa fa-hdd-o"></i> {{vm.location.symbolicName}}
+                            </p>
+                        </div>
+                        <div class="media-right">
+                            <br-button type="btn-primary" on-click="vm.editLocation()" ng-if="!vm.location.readOnly">Edit location</br-button>
+                        </div>
+
+                        <div ng-if="vm.hasLocationConfig()" class="location-config">
+                            <h4>Current configuration</h4>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr ng-repeat="(key,value) in vm.location.config track by key">
+                                        <td>{{key}}</td>
+                                        <td sensitive-field field-name="{{key}}">{{value}}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </br-card-content>
+                <br-card-actions>
+                    <br-button type="btn-danger" on-click="vm.deleteLocation()" ng-if="!vm.location.readOnly">Delete</br-button>
+                    <div class="message-read-only" ng-if="vm.location.readOnly">This location can not be edited or deleted.</div>
+                </br-card-actions>
+            </br-card>
+            <br-card ng-if="vm.location === null">
+                <br-card-content><i class="fa fa-spin fa-spinner"></i></br-card-content>
+            </br-card>
+        </div>
+    </div>
+</div>

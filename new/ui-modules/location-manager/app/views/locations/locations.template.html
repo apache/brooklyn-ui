@@ -1,0 +1,77 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="container">
+    <header class="row">
+        <div class="col-sm-9">
+            <h2 class="page-heading">Registered locations <a
+                    ng-if="results.length > 0"
+                    class="btn btn-md btn-primary"
+                    ui-sref="wizard">
+                <i class="fa fa-plus" aria-hidden="true"></i> Add new
+                </a></h2>
+            <p class="page-subheading">All registered target locations</p>
+        </div>
+        <div class="col-sm-3">
+            <div class="action-area">
+                <fieldset>
+                    <div class="form-group has-feedback">
+                        <input ng-model="search" type="text" class="form-control" id="inputSuccess2" aria-describedby="inputSuccess2Status" placeholder="Filter locations">
+                        <span class="form-control-feedback" aria-hidden="true">
+                            <i class="fa fa-search"></i>
+                        </span>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </header>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="brooklyn-home-card">
+                <ul class="card-list-view">
+                    <li ng-repeat="location in locations | filter:search as results">
+                        <a ui-sref="detail({symbolicName: location.readOnly ? location.id : location.symbolicName, version: location.version})">
+                            <div class="blueprints-list-item" ng-class="{'read-only': location.readOnly}">
+                                <div class="id float-right">
+                                    <i class="fa fa-hdd-o"></i> {{location.symbolicName}}
+                                </div>
+                                <div class="float-left">
+                                    <img ng-src="{{location | locationIcon}}" alt="{{location | locationName}}'s icon" class="location-icon" />
+                                </div>
+                                <div class="details">
+                                    <span class="repo-name location-name">{{location | locationName}}</span>
+                                    <span class="description">{{location.spec}}</span>
+                                </div>
+                            </div>
+                            <div class="version" ng-if="location.version">
+                                <i class="fa fa-code-fork"></i> {{location.version}} <span class="label label-default" ng-if="location.versions.length > 0">+ {{location.versions.length}}</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li ng-if="results.length === 0">
+                        <div class="no-location">
+                            <h4>No locations defined yet.</h4>
+                            <a type="btn-primary" class="btn btn-md btn-primary" ui-sref="wizard">Add location</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

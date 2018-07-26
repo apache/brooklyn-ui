@@ -1,0 +1,246 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+@brooklyn-home-button-color: @brand-primary;
+@brooklyn-home-button-color-hover: @primary-700;
+
+.module-icon {
+  font-size: 30px;
+  @media (min-width: @screen-sm-min) {
+    font-size: 60px;
+  }
+  @media (min-width: @screen-md-min) {
+    font-size: 80px;
+  }
+  @media (min-width: @screen-lg-min) {
+    font-size: 100px;
+  }
+}
+
+.quick-launch-container {
+  margin-top: 15px;
+
+  .quick-launch-item {
+    height: 120px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-align: center;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    transition: none;
+
+    &.ng-enter {
+      transition: opacity 0.6s ease;
+      opacity: 0;
+      &.ng-enter-active {
+        opacity: 1;
+      }
+    }
+
+    .quick-launch-icon-container {
+      width: 120px;
+      height: 50px;
+      text-align: center;
+      display: inline-block;
+      position: relative;
+    }
+    .quick-launch-icon {
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 100%;
+      vertical-align: bottom;
+      max-height: 100%;
+      max-width: 100%;
+      width: auto;
+      height: auto;
+      position: absolute;
+      top: auto; // so that it aligns to the bottom
+      bottom: 0;
+      left: 0;
+      right: 0;
+      margin: auto;
+    }
+
+    .thumbnail {
+      border: none;
+      margin: inherit;
+      background-color: inherit;
+      padding: 0px;
+      outline: none;
+      text-decoration: none;
+    }
+
+    .caption {
+      font-size: 14px;
+      line-height: 20px;
+      max-height: 50px;
+      text-align: center;
+      text-overflow: ellipsis;
+      word-wrap: break-word;
+      overflow: hidden;
+    }
+  }
+  .quick-launch-item:hover,
+  .quick-launch-item:focus {
+    background-color: @primary-10;
+    cursor: pointer;
+    background: none;
+    border: 2px solid @brand-primary;
+    box-shadow: inset 0px 0px 36px @primary-10;
+    //plan b
+    border: 2px solid @primary-100;
+    box-shadow: 0px 0px 36px @primary-10;
+    transition: all 0.6s;
+
+    a {
+      text-decoration: none;
+    }
+  }
+
+  .quick-launch-item:active {
+    border: 2px solid @primary-300;
+    box-shadow: 0px 0px 36px @primary-20;
+    transition: none;
+  }
+
+  .quick-launch-actions {
+    position: relative;
+    height: 0;
+    display: block;
+    .pagination-page {
+      display: none;
+    }
+
+    .pagination-prev,
+    .pagination-next {
+
+      a {
+        position: absolute;
+        left: -17px;
+        top: 0;
+        height: 120px;
+        width: 42px;
+        text-indent: -999px;
+        overflow: hidden;
+        background: none;
+        border: none;
+
+        &:before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 26px;
+          height: 44px;
+          margin-left: -13px;
+          margin-top: -22px;
+          background: url('../../img/pagination-arrows@2x.png');
+          background-repeat: no-repeat;
+
+          background-position: -4px -8px;
+          background-size: 70px 112px;
+        }
+        &:hover {
+          :before {
+            background-position: -4px -60px;
+          }
+          box-shadow: 0 0 5px fade(@primary-20, 50%);
+          background: fade(@primary-20, 50%);
+        }
+      }
+
+      &.disabled {
+        display: none;
+      }
+    }
+
+    .pagination-next a {
+      right: -17px;
+      left: auto;
+      &:before {
+        background-position: -44px -8px;
+
+      }
+      &:hover:before {
+        background-position: -44px -60px;
+      }
+
+    }
+  }
+
+  .quick-launch-nothing-found {
+    text-align: center;
+    .nothing-found-title {
+      font-size: 23px;
+      color: #747F86;
+    }
+    .nothing-found-description {
+      font-size: 16px;
+      color: #A8B2B9;
+
+      margin-top: 20px;
+      margin-bottom: 46px;
+    }
+  }
+}
+
+.brooklyn-home-card {
+  h2.md-headline {
+    color: #A8B2B9;
+    font-size: 20px;
+  }
+}
+
+.brooklyn-modules {
+  a {
+    .brooklyn-home-card {
+      h2.md-headline {
+        color: #CCCCCC;
+        transition: color 0.3s;
+      }
+      h3 {
+        color: @brooklyn-home-button-color;
+        transition: color 0.3s;
+        margin-top: 0;
+
+        @media (min-width: @screen-sm-min) {
+          font-size: 16px;
+        }
+        @media (min-width: @screen-md-min) {
+          font-size: 18px;
+        }
+        @media (min-width: @screen-lg-min) {
+          font-size: 20px;
+        }
+      }
+    }
+
+    &:hover {
+      .brooklyn-home-card {
+        h2.md-headline {
+          color: @brooklyn-home-button-color-hover;
+        }
+        h3 {
+          color: @brooklyn-home-button-color-hover;
+        }
+      }
+    }
+  }
+}

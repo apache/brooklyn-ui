@@ -1,0 +1,51 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="form-group">
+    <input type="text" class="form-control" placeholder="Filter by name or value" ng-model="filterValue">
+</div>
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th ng-click="sortReverse = !sortReverse">
+                Name <span class="fa" ng-class="{'fa-caret-down': sortReverse, 'fa-caret-up': !sortReverse}"></span>
+            </th>
+            <th>Value</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="item in items | orderBy:'key':sortReverse | filter:filterValue as filterResult track by item.key">
+            <td>
+                <span>{{item.key}}</span>
+                <i ng-if="mapInfo[item.key].description" class="fa fa-info-circle pull-right" uib-popover="{{mapInfo[item.key].description}}" popover-trigger="'mouseenter'" popover-title="Description" popover-animation="true"></i>
+
+            </td>
+            <td sensitive-field field-name="{{item.key}}" class="copyable-value">
+                <span ng-bind-html="item.value | brLinky:mapInfo[item.key]"></span>
+                <button class="btn btn-default btn-sm pull-right" ngclipboard ngclipboard-success="onClipboardSuccess(e)" ngclipboard-error="onClipboardError(e)" data-clipboard-text="{{item.value}}" uib-tooltip="Copied!" tooltip-trigger="{'copied': 'mouseleave'}" tooltip-placement="left">
+                    <i class="fa fa-clipboard"></i>
+                </button>
+            </td>
+        </tr>
+        <tr ng-if="filterResult === null">
+            <td colspan="2" class="text-center"><h4>No config found matching <code>{{filterValue}}</code></h4></td>
+        </tr>
+        </tbody>
+    </table>
+</div>

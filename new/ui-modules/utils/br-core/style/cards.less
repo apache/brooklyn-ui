@@ -1,0 +1,133 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+/* Cards */
+
+@cards-bgcolor: white;
+@cards-bgcolor-hover: @list-bgcolor-hover;
+@cards-bgcolor-hover-border: mix(black, @list-bgcolor-hover, 20%);
+
+.brooklyn-home-card, .tab-content, .card {
+    box-sizing: border-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+
+    margin: 0px;
+    margin-bottom: 20px;
+
+    background-color: @cards-bgcolor;
+    border-radius: 4px;
+    border: 1px solid @card-border-color;
+    box-shadow: 0px 1px fade(@cards-bgcolor, 20%);
+
+    .title {
+        padding: 24px 16px 16px;
+        padding-bottom: 30px;
+    }
+
+    h2 {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    .md-subhead {
+        color: fade(@cards-bgcolor, 60%);
+        padding-top: 12px; /* this one was in : md-card md-card-title md-card-title-text:only-child .md-subhead */
+    }
+
+    .card-actions {
+        margin-left: auto;
+        margin-right: 20px;
+        margin-bottom: 20px;
+
+        .btn + .btn { /* Add spacing when there is more than one button */
+            margin-left: 15px;
+        }
+    }
+
+
+    .card-title-bar {
+
+        padding: 14px;
+        background: @brand-primary;
+        
+
+        h2 {
+                padding: 0;
+                margin: 0;
+                color: white;
+                float: left;
+                -webkit-font-smoothing: antialiased;
+        }
+
+        border-bottom: 1px solid #E1E1E1;
+        
+    }
+
+
+    .tab-pane {
+        padding: 20px;
+    }
+
+    /* Centered version */
+    &.center {
+        .title {
+            text-align: center;
+            padding-bottom: 20px;
+        }
+        .card-actions {
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 30px;
+        }
+
+    }
+}
+
+a {
+  .brooklyn-home-card {
+    transition: background 0.3s, border 0.3s;
+  }
+  &:hover {
+    text-decoration: none;
+    .brooklyn-home-card {
+      background-color: @cards-bgcolor-hover;
+      border: 1px solid @cards-bgcolor-hover-border;
+    }
+  }
+}
+
+.card-with-list {
+    overflow: hidden; /* So that list items don't ruin the rounded corners. (For example Blueprints repository: Browse) */
+}
+
+
+/* Make sure that cards that are side-by-side are the same height */
+.col-md-6 .brooklyn-home-card p.md-subhead {
+    min-height: 52px;
+}
+
+
+.card.blueprint-information {
+    padding: 15px;
+    margin-top: 40px;
+}

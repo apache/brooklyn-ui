@@ -1,0 +1,56 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+@brand-primary: #3C5588;
+@brand-accent: #bf3727;
+
+
+// Create path variables for fonts and images
+@br-core-path-font: '../fonts';
+@br-core-path-img: '../img';
+// Override the font-awesome path to use our custom one
+@fa-font-path: @br-core-path-font;
+
+
+@body-bg: hsl(223,30%,97%);
+@card-border-color: mix(black, @body-bg, 7%);
+
+@font-family-sans-serif: "myriad-pro-1", Helvetica, Arial, sans-serif;
+
+/* Colors in pattern lab */
+.brand-primary {
+  background-color: @brand-primary;
+}
+
+.brand-accent {
+  background-color: @brand-accent;
+}
+
+
+@btn-accent-color:              #fff;
+@btn-accent-bg:                 @accent-500;
+@btn-accent-border:             darken(@btn-accent-bg, 5%);
+
+//== Form states and alerts
+//
+//## Define colors for form feedback states and, by default, alerts.
+
+@state-accent-text:             @accent-500;
+@state-accent-bg:               @accent-30;
+@state-accent-border:           darken(spin(@state-accent-bg, -10), 5%);

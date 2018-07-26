@@ -1,0 +1,67 @@
+{
+  "__license__": [
+    "Licensed to the Apache Software Foundation (ASF) under one",
+    "or more contributor license agreements.  See the NOTICE file",
+    "distributed with this work for additional information",
+    "regarding copyright ownership.  The ASF licenses this file",
+    "to you under the Apache License, Version 2.0 (the",
+    "\"License\"); you may not use this file except in compliance",
+    "with the License.  You may obtain a copy of the License at",
+    "    http://www.apache.org/licenses/LICENSE-2.0",
+    "Unless required by applicable law or agreed to in writing,",
+    "software distributed under the License is distributed on an",
+    "\"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY",
+    "KIND, either express or implied.  See the License for the",
+    "specific language governing permissions and limitations",
+    "under the License."
+  ],
+  "name": "brooklyn-ui-utils",
+  "versionBuildNote": "BROOKLYN_VERSION_BELOW this exists so scripts update this automatically",
+  "version": "1.0.0-SNAPSHOT",
+  "description": "Brooklyn UI :: Modules - UI Utils",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apache/brooklyn-ui.git"
+  },
+  "author": "Apache Software Foundation",
+  "license": "Apache-2.0",
+  "scripts": {
+    "test": "karma start ./karma.config.js"
+  },
+  "engines": {
+    "node": ">=8.0.0",
+    "npm": ">=5.0.0"
+  },
+  "dependencies": {
+    "angular": "^1.6.1",
+    "angular-animate": "^1.6.1",
+    "angular-multiple-transclusion": "^1.0.0",
+    "angular-ui-bootstrap": "^2.5.0",
+    "bootstrap": "^3.3.7",
+    "codemirror": "^5.27.2",
+    "identicon.js": "^1.2.1",
+    "js-yaml": "^3.6.1",
+    "jsonschema": "^1.1.1",
+    "jssha": "^2.2.0",
+    "lodash": "^4.15.0",
+    "rxjs": "^5.0.0-beta.11"
+  },
+  "devDependencies": {
+    "angular-mocks": "^1.6.1",
+    "babel-core": "^6.13.2",
+    "babel-loader": "^6.2.4",
+    "babel-polyfill": "^6.20.0",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-stage-0": "^6.16.0",
+    "html-loader": "^0.4.3",
+    "jasmine-ajax": "^3.3.1",
+    "jasmine-core": "^2.4.1",
+    "karma": "^1.1.2",
+    "karma-jasmine": "^1.0.2",
+    "karma-phantomjs-launcher": "^1.0.1",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-webpack": "^1.8.0",
+    "phantomjs-prebuilt": "^2.1.11",
+    "webpack": "^1.13.1"
+  }
+}

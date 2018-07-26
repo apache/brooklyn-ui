@@ -1,0 +1,118 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+// Mixin, defined in blueprint-composer as well, should go to utils
+.delete-interaction() {
+    cursor: pointer;
+    transition: 0.3s ease all;
+    color: @gray-lighter;
+    &:hover {
+        color: @brand-danger;
+    };
+}
+
+.list-group-search {
+    display: flex;
+
+    .filters {
+        flex-grow: 1;
+    }
+
+    .extra {
+        flex-shrink: 1;
+        & *:first-child {
+            margin-left: 1em;
+        }
+    }
+}
+
+.no-adjuncts {
+    margin: 20px;
+    margin-top: 50px;
+    color: #747F86;
+    text-align: center;
+    font-size: 20px;
+}
+
+.add-new-policy {
+    border: 1px solid fade(@brand-primary, 41%);
+    background: @primary-5;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+
+    h3 {
+        color: @brand-primary;
+        margin-top: 0;
+        margin-bottom: 20px;
+    }
+
+    label {
+        margin-top: 20px;
+    }
+
+    .config-keyvaluepair {
+        padding-top: 5px;
+        padding-bottom: 5px;
+
+        .highlighted-to-delete {
+            background: fade(black, 7%);
+        }
+    }
+
+    .field-delete {
+        padding: 10px;
+
+        .delete-interaction();
+        color: fade(black, 28%); //overwriting the color, since the background is non-white
+    }
+
+    .add-config-key {
+        display: inline-block;
+        padding: 10px;
+        padding-right: 15px;
+        margin-left: -10px;
+        color: rgba(70,77,95,0.63);
+        cursor: pointer;
+        .icon-add-plus {
+            width: 12px;
+            height: 12px;
+            .icon-add-plus-obj-1 {
+                fill: none;
+                stroke: #5ab959;
+                stroke-miterlimit: 10;
+                stroke-width: 2px;
+            }
+        }
+
+        &:hover {
+            color: rgba(70,77,95,1);
+
+            .icon-add-plus .icon-add-plus-obj-1 {
+                stroke: darken(#5ab959, 15%);
+            }
+        }
+    }
+}
+
+.dropdown-menu {
+    overflow-x: auto;
+}
+

@@ -1,0 +1,126 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+#loading-bar .bar, #loading-bar-spinner {
+  display: none;
+}
+
+br-interstitial-spinner {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #f5f6fa;
+  z-index: 1039;
+  opacity: 1;
+  transition: opacity .5s ease-in-out;
+  &.interstitial-hidden {
+    opacity: 0;
+  }
+
+  .spinner-area {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+  }
+
+  .spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .svg-container {
+    width: 50px;
+    height: 50px;
+    transform-origin: 50% 50%;
+    animation: interstitial-spinner-animation 1.0s infinite linear;
+
+    circle {
+      fill: none;
+      stroke-width: 7;
+      &.foreground {
+        stroke: @brand-primary;
+        stroke-dasharray: 105 360;
+      }
+      &.background {
+        stroke: rgba(0, 0, 0, 0.05);
+      }
+    }
+    @keyframes interstitial-spinner-animation {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  }
+
+  .page-main-area {
+    min-height: 600px;
+  }
+  .brooklyn-modules .brooklyn-home-card {
+    height: 190px;
+  }
+  .quick-launch-card {
+    height: 240px;
+  }
+  .module-icon {
+    width: 96px;
+    height: 80px;
+    margin-top: 14px;
+    margin-bottom: 5px;
+    margin-left: 2px;
+    margin-right: 2px;
+    display: inline-block;
+    background-color: #F4F4F4;
+  }
+  .brooklyn-modules .md-subhead {
+    width: 136px;
+    height: 12px;
+    margin-top: 8px;
+    display: inline-block;
+    background-color: #F4F4F4;
+  }
+  .quick-launch-container .quick-launch-item .quick-launch-icon-container {
+    width: 55px;
+    height: 46px;
+    margin-top: 30px;
+    margin-bottom: 5px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    background-color: #F4F4F4;
+  }
+  .quick-launch-container .quick-launch-item .thumbnail .caption {
+    width: 75px;
+    height: 10px;
+    margin-top: 21px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0;
+    display: block;
+    background-color: #F4F4F4;
+  }
+  .quick-launch-title {
+    width: 115px;
+    height: 11px;
+    margin-top: 10px;
+    display: block;
+    background-color: #F4F4F4;
+  }
+}

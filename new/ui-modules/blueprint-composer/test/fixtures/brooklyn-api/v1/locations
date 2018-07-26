@@ -1,0 +1,14 @@
+[
+  {
+    "id": "tl1",
+    "name": "test-location-1"
+  },
+  {
+      "id": "tl2",
+      "name": "test-location-2"
+  },
+  {
+      "id": "tl3",
+      "name": "test-location-3"
+   }
+]

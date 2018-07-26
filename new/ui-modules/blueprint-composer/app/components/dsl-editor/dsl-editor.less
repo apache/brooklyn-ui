@@ -1,0 +1,93 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+dsl-editor {
+  display: flex;
+  position: absolute;
+  top: 100px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  flex-direction: column;
+
+  .content {
+    flex-grow: 1;
+    overflow: scroll;
+    padding: 15px 15px 0 15px;
+  }
+
+  .list-group {
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+    .list-group-item-heading {
+      .text-overflow();
+    }
+
+    .list-group-item-entity {
+      font-size: 0.7em;
+      font-weight: 100;
+      text-transform: uppercase;
+      margin-top: 1em;
+      margin-bottom: 0;
+
+      .list-group-item-entity-icon {
+        .make-icon(25px);
+      }
+    }
+  }
+
+  .dsl-editor-empty,
+  .dsl-editor-no-results {
+    color: @gray-light;
+    text-align: center;
+    margin-top: 4em;
+
+    &:before {
+      content: '\ff00d';
+      display: block;
+      font-family: FontAwesome;
+      font-size: 4em;
+      margin-bottom: 0.25em;
+      color: @gray-lighter;
+    }
+  }
+  .dsl-editor-empty:before {
+    content: '\f128';
+  }
+  .dsl-editor-no-results:before {
+    content: '\f00d';
+  }
+
+  .form-group .control-label:extend(spec-editor .spec-configuration .control-label) {
+    .remove-argument:extend(spec-editor .spec-configuration .remove-spec-configuration all) {}
+    .remove-argument:extend(spec-editor .spec-configuration .control-label .remove-spec-configuration) {}
+  }
+
+  .done {
+    flex-shrink: 1;
+    padding: 1em;
+    background: #fff;
+    border-top: 1px solid @gray-lighter;
+
+    .checkbox {
+      display: inline-block;
+      margin: 5px 10px 0 0;
+    }
+  }
+}

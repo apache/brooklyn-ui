@@ -1,0 +1,62 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<uib-progressbar class="progress-striped active" type="info" ng-if="ctrl.loading"></uib-progressbar>
+
+<div class="container-padding">
+    <h4 ng-if="ctrl.loading">Importing...</h4>
+
+    <div ng-if="ctrl.imported">
+        <h4 class="text-success"><i class="fa fa-check-circle-o"></i> Blueprint imported successfully!</h4>
+        <p class="text-muted">
+            The following items have been imported successfully:
+            <ul class="fa-ul">
+                <li ng-repeat="(id, item) in ctrl.importedItems track by id" class="imported-item">
+                    <i class="fa-li fa fa-check-square"></i>
+                    <a ng-href="{{ctrl.getCatalogItemUrl(item)}}">{{item.symbolicName}}:{{item.version}}</a>
+                    <a ng-href="{{ctrl.getDeployUrl(item)}}" ng-if="ctrl.canBeDeployed(item)" class="btn btn-success btn-xs imported-item-deploy">
+                        {{item.itemType.toLowerCase() !== 'template' ? 'Compose and Deploy' : 'Deploy'}}
+                    </a>
+                </li>
+            </ul>
+        </p>
+        <div class="text-right">
+            <button ng-click="ctrl.close()" class="btn btn-default">Close</button>
+        </div>
+    </div>
+
+    <div ng-if="ctrl.error">
+        <h4 class="text-danger">{{ctrl.error.title}}</h4>
+        <p nclass="text-muted">{{ctrl.error.message}}</p>
+        <p ng-if="ctrl.error.details" class="text-muted bottom-sheet-links">
+            <a class="text-danger" ng-click="ctrl.viewStackTrace = !ctrl.viewStackTrace">
+                <i class="fa fa-list-ul"></i> {{ctrl.viewStackTrace ? 'Hide' : 'View'}} stacktrace
+            </a>
+            <a class="text-muted" ngclipboard ngclipboard-success="ctrl.onClipboardSuccess(e)" ngclipboard-error="ctrl.onClipboardError(e)" data-clipboard-text="{{ctrl.error.details}}" uib-tooltip="Copied!" tooltip-trigger="{'copied': 'mouseleave'}" tooltip-placement="top">
+                <i class="fa fa-clipboard"></i> Copy stacktrace
+            </a>
+        </p>
+        <div ng-if="ctrl.error.details" tb-stack-viewer trace="ctrl.error.details" vendors="ctrl.vendors" uib-collapse="!ctrl.viewStackTrace"></div>
+
+        <div class="text-right">
+            <button ng-click="ctrl.investigate()" class="btn btn-default" title="Investigate issue"><i class="fa fa-search-minus" aria-hidden="true" aria-label="Investigate issue"></i></button>
+            <button ng-click="ctrl.close()" class="btn btn-danger">Dismiss</button>
+        </div>
+    </div>
+
+</div>

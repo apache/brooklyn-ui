@@ -1,0 +1,113 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="modal-header">
+    <br-svg type="close" class="pull-right" ng-click="$dismiss('Close modal')"></br-svg>
+    <h3 class="modal-title">{{getTitle()}}</h3>
+</div>
+
+<div class="modal-body add-to-catalog-modal">
+    <form ng-show="state.view === VIEWS.form" name="form" novalidate>
+        <div class="form-group" ng-class="{'has-error': form.bundle.$invalid}">
+            <label class="control-label">Bundle ID</label>
+            <div class="input-group">
+                <span class="input-group-addon">catalog-bom-</span>
+                <input ng-model="config.bundle" ng-disabled="state.saving" class="form-control" placeholder="E.g my-bundle" name="bundle" required ng-pattern="state.pattern" autofocus />
+            </div>
+            <p class="help-block" ng-show="form.bundle.$invalid">
+                <span ng-if="form.bundle.$error.required">You must specify a bundle ID</span>
+                <span ng-if="form.bundle.$error.pattern">The bundle ID can contains only letters, numbers as well a the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
+            </p>
+        </div>
+        <div class="form-group" ng-class="{'has-error': form.version.$invalid}">
+            <label class="control-label">Version</label>
+            <div class="input-group">
+                <input ng-model="config.version" ng-disabled="state.saving" class="form-control" placeholder="E.g. 1.0.0-SNAPSHOT" name="version" type="text" required catalog-version="config.versions" catalog-version-force="state.force" ng-pattern="state.pattern" />
+                <span class="input-group-btn">
+                    <button class="btn btn-default" ng-class="{'btn-primary active': state.force}" ng-click="state.force = !state.force"
+                            uib-tooltip="Force override of existing bundle at this version." tooltip-placement="top-right">
+                        <i class="fa fa-fire"></i>
+                    </button>
+                </span>
+            </div>
+            <p class="help-block">
+                <span ng-if="form.version.$error.required">You must specify a version</span>
+                <span ng-if="form.version.$error.pattern">The version can contains only letters, numbers as well a the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
+                <span ng-if="form.version.$error.exist">This version has already been used</span>
+            </p>
+        </div>
+        <div class="form-group" ng-class="{'has-error': form.symbolicName.$invalid}">
+            <label class="control-label">Blueprint symbolic name</label>
+            <input ng-model="config.symbolicName" ng-disabled="state.saving" class="form-control" placeholder="E.g my-catalog-id" name="symbolicName" required ng-pattern="state.pattern" autofocus />
+            <p class="help-block" ng-show="form.symbolicName.$invalid">
+                <span ng-if="form.symbolicName.$error.required">You must specify a blueprint symbolic name</span>
+                <span ng-if="form.symbolicName.$error.pattern">The blueprint symbolic name can contains only letters, numbers as well a the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
+            </p>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': form.itemType.$invalid}">
+            <label class="control-label">Blueprint type</label>
+            <select class="form-control" name="itemType" ng-options="type.id as type.label for type in TYPES" ng-model="config.itemType" ng-disabled="state.saving" required >
+            </select>
+            <p class="help-block" ng-show="form.itemType.$invalid">
+                <span ng-if="form.itemType.$error.required">You must specify a blueprint type</span>
+            </p>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Blueprint display name</label>
+            <input ng-model="config.name" ng-disabled="state.saving" class="form-control" name="name" type="text" />
+        </div>
+        <div class="form-group">
+            <label class="control-label">Blueprint description</label>
+            <textarea ng-model="config.description" ng-disabled="state.saving" class="form-control" name="description" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Blueprint icon url</label>
+            <input ng-model="config.iconUrl" ng-disabled="state.saving" class="form-control" name="iconUrl" type="text" />
+        </div>
+    </form>
+
+    <div class="text-center" ng-show="state.view === VIEWS.saved">
+        <div class="fa-stack fa-3x text-success">
+            <i class="fa fa-circle-thin fa-stack-2x"></i>
+            <i class="fa fa-check fa-stack-1x"></i>
+        </div>
+
+        <h3>You're all set!</h3>
+
+        <div class="next-actions">
+            <p>What would you like to do next?</p>
+            <button class="btn btn-default btn-block" ng-click="$dismiss('Continue editing')">Continue to edit this blueprint</button>
+            <button class="btn btn-info btn-block" ng-click="$close(REASONS.new)">Create a new blueprint</button>
+            <a class="btn btn-primary btn-block" ng-href="/brooklyn-ui-catalog/#!/bundles/catalog-bom-{{config.bundle}}/{{config.version}}/types/{{config.symbolicName}}/{{config.version}}">View in catalog</a>
+            <button ng-if="['template', 'entity'].indexOf(config.itemType) > -1" class="btn btn-link btn-block" ng-click="$close(REASONS.deploy)">Or deploy</button>
+        </div>
+    </div>
+
+    <div uib-alert class="alert-danger" ng-if="state.error" dismiss-on-timeout="10000" close="state.error = undefined">
+        <h4>Failed to save</h4>
+        <p>{{state.error}}</p>
+    </div>
+</div>
+
+<div class="modal-footer" ng-if="state.view === VIEWS.form">
+    <button class="btn btn-success" ng-disabled="form.$invalid || state.saving" ng-click="save()">
+        <span ng-if="!state.saving">Save</span>
+        <i ng-if="state.saving" class="fa fa-spinner fa-spin"></i>
+    </button>
+</div>

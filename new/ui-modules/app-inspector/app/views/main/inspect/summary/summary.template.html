@@ -1,0 +1,168 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="entity-summary" ng-init="show = { status: true, mostRecentActivityInError: true, policies: true };">
+    <div class="tab-header">
+        <div class="entity-header">
+            <h2 ng-if="!vm.entity" class="entity-name"><loading-state error="vm.error.entity"></loading-state></h2>
+            <h2 ng-if="vm.entity" class="entity-name" editable-text="vm.name" blur="submit" buttons="no" blur="submit" onaftersave="vm.updateEntityName()">{{ vm.entity.name }}</h2>
+        </div>
+        <p ng-if="vm.sensors['main.uri']">
+            <a ng-href="{{vm.sensors['main.uri']}}">{{vm.sensors['main.uri']}}</a>
+        </p>
+    </div>
+
+    <br-collapsible state="show.status">
+        <heading>
+            Status
+        </heading>
+
+        <div ng-if="!vm.sensors || !vm.sensorsInfo">
+            <loading-state error="vm.error.sensors"></loading-state>
+        </div>
+
+        <div class="table-responsive" ng-if="vm.sensors && vm.sensorsInfo">
+            <table class="status table-bordered">
+                <tbody>
+                <tr ng-repeat="(key, label) in vm.sensorsToShow track by key" ng-if="vm.sensors[key] && !vm.isEmpty(vm.sensors[key])">
+                    <td><strong>{{label}}</strong></td>
+                    <td sensitive-field field-name="{{vm.sensors[key]}}">
+                        <table class="table-bordered" ng-if="vm.isObject(vm.sensors[key])">
+                            <tbody>
+                            <tr ng-repeat="(itemKey, itemValue) in vm.sensors[key] track by itemKey">
+                                <td>{{itemKey}}</td>
+                                <td sensitive-field field-name="itemValue">{{itemValue}}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <span ng-if="!vm.isObject(vm.sensors[key])">{{vm.sensors[key]}}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Entity type</strong></td>
+                    <td>
+                        <loading-state error="vm.error.entity" ng-if="!vm.entity"></loading-state>
+                        <span ng-if="vm.entity">{{vm.entity.type}}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Entity ID</strong></td>
+                    <td>
+                        <loading-state error="vm.error.entity" ng-if="!vm.entity"></loading-state>
+                        <span ng-if="vm.entity">{{vm.entity.id}}</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </br-collapsible>
+
+    <br-collapsible ng-if="vm.location.items.length !== 0 || vm.location.multi" state="show.location">
+        <heading>
+            Location
+        </heading>
+
+        <div ng-if="!vm.location.items">
+            <loading-state error="vm.error.location"></loading-state>
+        </div>
+
+        <div ng-if="vm.location.items">
+            <div ng-if="vm.location.items.length !== 0 || !vm.location.multi">
+                <p>This entity is running on <em><ng-pluralize count="vm.location.items.length" when="{'0': 'no locations', 'one': '{} location', 'other': '{} locations'}"></ng-pluralize></em></p>
+                <ul>
+                    <li ng-repeat="item in vm.location.items track by item.id">
+                        <strong>{{item.config['spec.final'] | specToLabel:vm.metadata}}</strong>
+                        <span ng-if="item.config.availabilityZone">in <code>{{item.config.availabilityZone}}</code> availability zone</span>
+                    </li>
+                </ul>
+            </div>
+            <div ng-if="vm.location.multi">
+                <p class="location-multi">This entity is part of a multi-location deployment. <a class="btn btn-link more" ng-click="vm.expandMultiLocation()" ng-if="!vm.subLocations.requested">Know more.</a></p>
+                <div ng-if="!vm.subLocations.items && vm.subLocations.requested">
+                    <loading-state error="vm.error.subLocations"></loading-state>
+                </div>
+                <table class="status table-bordered" ng-if="vm.subLocations.items">
+                    <thead>
+                        <tr>
+                            <th>Cloud</th>
+                            <th>Region</th>
+                            <th>Availability zone</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="subLocation in vm.subLocations.items track by subLocation.id">
+                            <td>{{subLocation.config['spec.final'] | specToLabel:vm.metadata}}</td>
+                            <td ng-class="{'na': !subLocation.config.region}">{{subLocation.config.region}}</td>
+                            <td ng-class="{'na': !subLocation.config.availabilityZone}">{{subLocation.config.availabilityZone}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </br-collapsible>
+
+    <br-collapsible ng-if="vm.mostRecentActivityInError" state="show.mostRecentActivityInError">
+        <heading>
+            Recent error
+        </heading>
+
+        <div>
+            <h4>Error in task: {{vm.mostRecentActivityInError.displayName}}</h4>
+
+            <span>{{vm.mostRecentActivityInError.result}}</span>
+
+            <h3>
+                <a class="btn btn-primary pull-right" ui-sref="main.inspect.activities.detail({entityId: vm.mostRecentActivityInError.entityId, activityId: vm.mostRecentActivityInError.id})">More information</a>
+            </h3>
+        </div>
+    </br-collapsible>
+
+    <br-collapsible ng-if="vm.policies && vm.policies.length > 0" state="show.policies">
+        <heading>
+            Policies
+        </heading>
+
+        <div ng-if="!vm.policies">
+            <loading-state error="vm.error.policies"></loading-state>
+        </div>
+
+        <adjuncts-list ng-if="vm.policies" adjuncts="vm.policies" summary="true"></adjuncts-list>
+    </br-collapsible>
+
+    <br-collapsible state="show.blueprint">
+        <heading>
+            Blueprint
+        </heading>
+
+        <div>
+            <loading-state error="vm.error.spec" ng-if="!vm.spec"></loading-state>
+            <pre ng-if="vm.spec">{{vm.spec}}</pre>
+        </div>
+    </br-collapsible>
+
+    <br-collapsible state="show.config">
+        <heading>
+            Config
+        </heading>
+
+        <div>
+            <loading-state error="vm.error.config" ng-if="!vm.config"></loading-state>
+            <config-sensor-table data="vm.config" info="vm.configInfo" ng-if="vm.config"></config-sensor-table>
+        </div>
+    </br-collapsible>
+</div>

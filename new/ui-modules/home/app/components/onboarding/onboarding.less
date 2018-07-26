@@ -1,0 +1,130 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+.onboarding-card {
+  margin-top: -150px;
+  margin-left: 15%;
+  margin-right: 15%;
+  margin-bottom: 35px;
+  box-shadow: 0px 1px rgba(51, 88, 119, 0.2), 0px 4px 10px rgba(51, 88, 119, 0.2);
+
+  -webkit-animation: jump 1.5s ease 0s 1 normal;
+  animation: jump 1.5s ease 0s 1 normal;
+}
+
+@-webkit-keyframes jump {
+  0% {
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+  20% {
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+  40% {
+    -webkit-transform: translateY(-30px);
+    transform: translateY(-30px);
+  }
+  50% {
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+  60% {
+    -webkit-transform: translateY(-15px);
+    transform: translateY(-15px);
+  }
+  80% {
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+  100% {
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes jump {
+  0% {
+    transform: translateY(0);
+  }
+  20% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+  80% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: @screen-sm-min) and (max-height: 960px) {
+  .jumbotron.with-background-image {
+    height: 300px;
+    min-height: 300px;
+    max-height: 300px;
+    transition: height 0.5s, min-height 0.5s, max-height 0.5s;
+  }
+
+  .onboarding-card {
+    margin-top: -110px;
+    margin-bottom: 25px;
+  }
+}
+
+@media (min-width: @screen-sm-min) and (max-height: 700px) {
+  .jumbotron.with-background-image {
+    height: 70px;
+    min-height: 70px;
+    max-height: 70px;
+    transition: height 0.5s, min-height 0.5s, max-height 0.5s;
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  .big-header.full-width .jumbotron.with-background-image h1 {
+    opacity: 0.0;
+    transition: opacity 0.3s;
+  }
+
+  .big-header.full-width .jumbotron.with-background-image p {
+    opacity: 0.0;
+    transition: opacity 0.3s;
+  }
+
+  .big-header .navbar-default {
+    padding: 6px 20px;
+    transition: opacity 0.3s;
+  }
+
+  .onboarding-card {
+    margin-top: 0px;
+    margin-bottom: 20px;
+    z-index: 2;
+    position: relative;
+  }
+}

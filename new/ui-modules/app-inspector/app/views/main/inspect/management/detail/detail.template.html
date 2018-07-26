@@ -1,0 +1,123 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<loading-state error="vm.errors.adjunct" ng-if="!vm.adjunct"></loading-state>
+
+<div ng-if="vm.adjunct" class="detail activity-detail adjunct-detail">
+    <ol class="breadcrumb">
+        <li>{{ vm.adjunct.adjunctType | capitalize }} on <a ui-sref="main.inspect.management">{{vm.entity | entityName}}</a></li>
+        <li class="active">{{vm.adjunct.name}}</li>
+    </ol>
+
+    <div class="row">
+        <div class="col-md-8 adjunct-header">
+            <div class="media">
+                <div class="media-left">
+                    <img class="media-object" ng-src="{{vm.adjunct | iconGeneratorPipe}}" alt="{{vm.adjunct.name}}'s logo">
+                </div>
+                <div class="media-body">
+                    <h4 class="media-heading">{{vm.adjunct.name}}</h4>
+                    <p>{{vm.adjunct.description}}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 adjunct-header text-right">
+            <span ng-switch="vm.adjunct.state" ng-if="vm.isStartStoppable()">
+                <button class="btn btn-primary" ng-switch-when="RUNNING" ng-click="vm.stopAdjunct()">Suspend</button>
+                <button class="btn btn-primary" ng-switch-when="STOPPED" ng-click="vm.startAdjunct()">Resume</button>
+            </span>
+            <button class="btn btn-danger" ng-click="vm.destroyAdjunct()">Destroy</button>
+        </div>
+    </div>
+
+    <div class="summary-body">
+        <div class="summary-block first-set-of-items">
+            <div class="row">
+                <div class="col-md-3 col-sm-6 summary-item">
+                    <div class="summary-item-icon">
+                        <brooklyn-status-icon value="{{vm.adjunct.state}}"></brooklyn-status-icon>
+                    </div>
+                    <div class="summary-item-label">Status</div>
+                    <div class="summary-item-value">
+                        <brooklyn-status-text value="{{vm.adjunct.state}}"></brooklyn-status-text>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 summary-item">
+                    <div class="summary-item-label">ID</div>
+                    <div class="summary-item-value monospace">{{::vm.adjunct.id}}</div>
+                </div>
+                <div class="col-md-6 col-sm-12 summary-item" ng-if="vm.adjunct.functionallyUniqueIdentifier">
+                    <div class="summary-item-label">Unique Tag</div>
+                    <div class="summary-item-value monospace">{{::vm.adjunct.functionallyUniqueIdentifier}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="summary-block" ng-mouseenter="showUTC=true" ng-mouseleave="showUTC=false">
+            <div class="row">
+                <div ng-repeat="(id, highlight) in vm.highlights track by id" class="col-md-6 summary-item summary-item-timestamp">
+                    <div class="summary-item-icon">
+                        <div ng-class="{'adjunct-last-confirmation': id === 'lastConfirmation', 'adjunct-last-action': id === 'lastAction', 'adjunct-last-violation': id === 'lastViolation', 'adjunct-trigger': id === 'triggers'}"></div>
+                    </div>
+                    <div class="summary-item-label">{{id | highlightLabel}}</div>
+                    <div class="summary-item-value">
+                        <div class="description" ng-if="!highlight.taskId">{{highlight.description}}</div>
+                        <div class="description" ng-if="highlight.taskId">
+                            <a ui-sref="main.inspect.activities.detail({applicationId: vm.applicationId, entityId: vm.entityId, activityId: highlight.taskId})">
+                                {{highlight.description}}
+                            </a>
+                        </div>
+                        <div class="timestamp">
+                            <span class="humanized fade" ng-show="!showUTC">
+                                {{highlight.time > 0 ? (highlight.time | timeAgo) : 'ongoing'}}
+                            </span>
+                            <span class="utcTime fade" ng-show="showUTC">
+                                {{highlight.time > 0 ? (highlight.time | date : 'MMM dd, yyyy @ H:mm:ss.sss') : 'ongoing'}}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br-collapsible>
+    <heading>
+        Config
+    </heading>
+
+    <loading-state error="vm.errors.adjunct" ng-if="!vm.adjunct"></loading-state>
+
+    <entity-policy ng-if="vm.adjunct" policy="vm.adjunct" entity-id="{{vm.entityId}}" application-id="{{vm.applicationId}}"></entity-policy>
+</br-collapsible>
+
+<br-collapsible class="detail">
+  <heading>
+        Activity
+  </heading>
+  
+  <div class="row">
+    <div class="col-md-12">
+        <loading-state error="vm.error" ng-if="!vm.activities"></loading-state>
+        <task-list task-type="activity" tasks="vm.activities" ng-if="vm.activities"></task-list>
+    </div>
+    <!-- kilt view not shown, as it requires to load activities deep -->
+  </div>
+  
+</br-collapsible>

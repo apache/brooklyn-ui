@@ -1,0 +1,133 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<ui-view>
+    <loading-state error="vm.error.adjuncts" ng-if="!vm.adjuncts"></loading-state>
+
+    <div ng-if="vm.adjuncts">
+    
+        <div class="add-adjuncts-wrapper">
+            <div class="add-new-policy" ng-show="vm.newPolicy.show">
+                <div class="modal-header">
+                    <h3>Attach a new policy to <b>{{vm.entity.name}}</b></h3>
+                </div>
+                <div class="modal-body">
+
+                    <div>
+                        <label>Policy Type</label>
+                        <input type="text"
+                               autocomplete="off"
+                               ng-model="vm.newPolicy.type"
+                               placeholder="Select a type"
+                               class="form-control"
+                               autocomplete="off"
+                               uib-typeahead="entitySpec.symbolicName for entitySpec in vm.getPoliciesFromCatalog($viewValue)"
+                               typeahead-popup-template-url="DropdownTemplate.html"
+                               typeahead-template-url="TypeItemTemplate.html"
+                               typeahead-loading="loadingTypes"
+                               typeahead-no-results="noResultsTypes"
+                               typeahead-show-hint="true"
+                               typeahead-min-length="0"
+                               ng-model-options="{ debounce: 500 }"
+                               typeahead-on-select="vm.onPolicySelect($item)"/>
+                    </div>
+                    <label>Config keys</label>
+                    <div>
+                        <div class="row config-keyvaluepair" ng-repeat="configKey in vm.newPolicy.configKeys">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <input class="form-control"
+                                               type="text"
+                                               autocomplete="off"
+                                               ng-model="configKey.key"
+                                               placeholder="Key"
+                                               class=""
+                                               autocomplete="off"
+                                               uib-typeahead="config.name for config in vm.newPolicy.configKeyOptions"
+                                               typeahead-popup-template-url="DropdownTemplate.html"
+                                               typeahead-template-url="TypeItemTemplate.html"
+                                               typeahead-loading="loadingConfigTypes"
+                                               typeahead-no-results="noResultsConfigTypes"
+                                               typeahead-show-hint="true"
+                                               typeahead-min-length="0"
+                                               ng-model-options="{ debounce: 500 }"
+                                               typeahead-on-select="vm.onPolicyConfigSelect(configKey, $item)"
+                                               uib-tooltip="Values will be coerced to the appropriate type automatically. Blank keys and values will cause the property to be ignored. Last key wins if any key is duplicated."/>
+
+                                    </div>
+                                    <div class="col-md-5">
+                                        <input class="form-control"
+                                               type="text"
+                                               ng-model="configKey.value"
+                                               placeholder="value"
+                                               uib-tooltip="Values will be coerced to the appropriate type automatically. Blank keys and values will cause the property to be ignored. Last key wins if any key is duplicated."/>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <i class="fa fa-trash field-delete" aria-hidden="true"
+                                           ng-click="vm.removeConfigKeyRow($index)"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="add-config-key" aria-hidden="true" ng-click="vm.addConfigKeyRow()">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" class="icon-add-plus">
+                                <line class="icon-add-plus-obj-1" x1="6" x2="6" y2="12"/>
+                                <line class="icon-add-plus-obj-1" x1="12" y1="6" y2="6"/>
+                            </svg>
+                            <span>Add config key row</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="alert alert-danger text-left" ng-if="vm.error.add">{{vm.error.add}}</div>
+                    <br-button on-click="vm.cancelNewPolicy()" type="">Cancel</br-button>
+                    <br-button on-click="vm.addNewPolicy()" type="btn-success">Save</br-button>
+                </div>
+            </div>
+        </div>
+
+        <adjuncts-list ng-if="vm.adjuncts" adjuncts="vm.adjuncts" summary="false">
+            <button class="btn btn-primary adjunct-add" ng-if="!vm.newPolicy.show" ng-click="vm.newPolicy.show = true">Add</button>
+        </adjuncts-list>
+
+        <div class="no-adjuncts" ng-if="vm.adjuncts.length === 0 && !vm.newPolicy.show">No adjuncts are attached to this entity</div>
+        
+    </div>
+
+    <!--TYPEAHEAD TEMPLATES :: START-->
+    <script type="text/ng-template" id="DropdownTemplate.html">
+        <ul class="dropdown-menu" ng-show="isOpen() && !moveInProgress" ng-style="{top: position().top+'px', left: position().left+'px', width: position().width+'px'}" role="listbox" aria-hidden="{{!isOpen()}}">
+            <li class="uib-typeahead-match" ng-repeat="match in matches track by $index" ng-class="{active: isActive($index) }" ng-mouseenter="selectActive($index)" ng-click="selectMatch($index, $event)" role="option" id="{{::match.id}}">
+                <div uib-typeahead-match index="$index" match="match" query="query" template-url="templateUrl"></div>
+            </li>
+        </ul>
+    </script>
+    <script type="text/ng-template" id="TypeItemTemplate.html">
+        <div class="dropdown-item">
+            <div class="details">
+                <h4 class="dropdown-item-heading repo-name truncate"
+                    ng-bind-html="match.model.displayName ? match.model.displayName : match.model.symbolicName | uibTypeaheadHighlight:query"></h4>
+                <p class="dropdown-item-subheading version truncate">{{ match.model.version }}</p>
+            </div>
+        </div>
+    </script>
+    <!--TYPEAHEAD TEMPLATES :: END-->
+</ui-view>

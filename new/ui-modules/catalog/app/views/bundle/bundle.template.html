@@ -1,0 +1,129 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<ui-view>
+    <section class="container bundle">
+        <header class="row">
+            <div class="col-md-12">
+                <div class="media">
+                    <div class="media-left">
+                        <img ng-src="{{bundle | iconGeneratorPipe:'symbolicName'}}" class="media-object" alt="{{::bundle.symbolicName}}'s logo" />
+                    </div>
+                    <div class="media-body">
+                        <div class="pull-right highlights" ng-bind-html="bundle | bundleHighlights"></div>
+                        <h4 class="media-heading">
+                            {{bundle | bundleName}}
+                            <div class="btn-group" uib-dropdown dropdown-append-to-body="true">
+                                <button uib-dropdown-toggle id="versions-dropdown" type="button" class="btn btn-sm btn-default"><span><i class="fa fa-code-fork"></i> {{::bundle.version}}</span> 
+                                    <span class="caret" ng-if="bundleVersions && bundleVersions.length > 1"></span></button>
+                                <ul class="dropdown-menu dropdown-menu-right versions-dropdown-list" uib-dropdown-menu role="menu" aria-labelledby="versions-dropdown">
+                                    <li role="menuitem" ng-repeat="version in bundleVersions track by version">
+                                        <a ui-sref="{bundleVersion: version}"><span><i class="fa fa-code-fork"></i> {{::version}}</span></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </h4>
+                        <p class="media-auto-wrap text-muted" ng-if="bundle.symbolicName.startsWith('brooklyn-catalog-bom')"><small>
+                            <i class="fa fa-fw fa-info-circle"></i> Bundle auto-generated from an uploaded BOM file
+                        </small></p>
+                        <p class="media-description">{{bundle | bundleDescription}}</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="row">
+            <div class="col-sm-9 col-xs-6">
+                <input ng-model="state.search.$" type="text" placeholder="Search for types" class="form-control" />
+            </div>
+            <div class="col-sm-3 col-xs-6 text-right" ng-init="isDeleteOpened = false">
+                <button class="btn btn-danger" ng-disabled="state.deleting" uib-popover-template="'deletePopoverTemplate.html'" popover-placement="bottom-right" popover-trigger="'outsideClick'" popover-append-to-body="true">
+                    <i class="fa fa-fw fa-trash"></i> Delete bundle
+                </button>
+            </div>
+        </div>
+        <div class="row" ng-if="isNonEmpty(state.search)">
+            <div class="col-md-12 clear-search" ng-click="clearSearchFilters()">
+                <i class="fa fa-fw fa-window-close"></i> Clear current search query, filters, and sorts
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <header class="row filters">
+                    <div class="col-sm-6">
+                        <button class="btn btn-default btn-sm" ng-click="state.search.disabled = state.search.disabled ? undefined : true" ng-class="{'active': state.search.disabled}">
+                            <i class="fa fa-fw fa-ban"></i> {{(bundle.types | filter:{disabled: true}).length}} Disabled
+                        </button>
+                        <button class="btn btn-default btn-sm" ng-click="state.search.deprecated = state.search.deprecated ? undefined : true" ng-class="{'active': state.search.deprecated}">
+                            <i class="fa fa-fw fa-chain-broken"></i> {{(bundle.types | filter:{deprecated: true}).length}} Deprecated
+                        </button>
+                    </div>
+                    <div class="col-sm-6 text-right">
+                        <div class="btn-group" uib-dropdown>
+                            <button type="button" class="btn btn-link" uib-dropdown-toggle>
+                                Version <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
+                                <li ng-repeat="version in typeVersions | orderBy:'-' track by version" ng-class="{'active': state.search.version === version}">
+                                    <a ng-click="state.search.version = version">{{version}}</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="btn-group" uib-dropdown>
+                            <button type="button" class="btn btn-link" uib-dropdown-toggle>
+                                Sort <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
+                                <li ng-repeat="orderBy in config.orderBy track by orderBy.id" ng-class="{'active': state.orderBy === orderBy}">
+                                    <a ng-click="state.orderBy = orderBy">{{orderBy.label}}</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </header>
+            </div>
+
+            <div class="col-md-12">
+                <ul class="list-group list-group-types">
+                    <li ng-repeat="type in bundle.types | filter:state.search | orderBy:state.orderBy.id as filteredTypes track by (type.containingBundle + type.symbolicName + type.version)"
+                        ng-class="{'deprecated': type.deprecated, 'disabled': type.disabled}"
+                        class="list-group-item">
+                        <type-item bundle="bundle" type="type" show-type="true"></type-item>
+                    </li>
+
+                    <li ng-show="!bundle.types" class="list-group-item loading">
+                        <h4>Loading types</h4>
+                    </li>
+                    <li ng-show="bundle.types.length === 0" class="list-group-item empty">
+                        <h4>There is no types associated to this bundle</h4>
+                    </li>
+                    <li ng-show="bundle.types.length > 0 && filteredTypes.length === 0" class="list-group-item no-results">
+                        <h4>No results matching current filters</h4>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <script type="text/ng-template" id="deletePopoverTemplate.html">
+        <h4>Are you sure you wish to delete this bundle?</h4>
+        <p><small>All types contained within it <strong>will be deleted</strong></small></p>
+        <button class="btn btn-danger text-right" ng-click="deleteBundle()" ng-disabled="state.deleting">{{state.deleting ? 'Deleting...' : "Yes, I'm sure"}}</button>
+    </script>
+</ui-view>
