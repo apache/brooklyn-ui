@@ -32,3 +32,7 @@ brooklyn*.log.*
 ignored
 /build/
 /target/
+
+.flattened-pom.xml
+dist/
+node_modules/
