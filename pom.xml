@@ -280,6 +280,13 @@
                         <exclude>**/src/main/webapp/assets/swagger-ui/**</exclude>
                         <!-- maven cache -->
                         <exclude>**/.m2/**</exclude>
+
+                        <!-- node JS built artifacts -->
+                        <exclude>**/node_modules/**</exclude>
+                        <exclude>**/dist/**</exclude>
+                        <!-- build files that cannot be changed (must be JSON); contents are trivial -->
+                        <exclude>**/.babelrc</exclude>
+                        <exclude>new/ui-modules/blueprint-composer/test/fixtures/brooklyn-api/v1/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
