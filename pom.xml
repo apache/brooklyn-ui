@@ -321,6 +321,8 @@
                         <!-- trivial config files, which contain comments so we can't insert the license header -->
                         <exclude>**/.babelrc</exclude>
                         <exclude>.mvn/jvm.config</exclude>
+                        <!-- maven cache -->
+                        <exclude>**/.m2/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
