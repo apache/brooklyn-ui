@@ -20,15 +20,6 @@ Runtime dependencies:
   # This artifact depends on additional third-party components at runtime.
   # These are not bundled here but may be included as part of a build.
 
-  @uirouter/core@5.0.20: 
-    Project:      @uirouter/core (NodeJS module)
-    Version:      5.0.20
-    Available at: 
-      - https://github.com/ui-router/core
-      - https://ui-router.github.io
-    License name: MIT License
-    Notice:       Copyright (c) 2013-2015 The AngularUI Team, Karsten Sperling
-  
   angular-animate@1.7.2: 
     Project:      angular-animate (NodeJS module)
     Version:      1.7.2
@@ -48,13 +39,6 @@ Runtime dependencies:
     Developed by: Angular Core Team (angular-core+npm@google.com)
     License name: MIT License
     Notice:       Copyright (c) 2016 Angular
-  
-  angular-java-stack-viewer@1.0.1: 
-    Project:      angular-java-stack-viewer (NodeJS module)
-    Version:      1.0.1
-    Available at: https://github.com/tbouron/angular-java-stack-viewer
-    Developed by: Thomas Bouron
-    License name: Apache License, version 2.0
   
   angular-multiple-transclusion@1.0.0: 
     Project:      angular-multiple-transclusion (NodeJS module)
@@ -101,15 +85,6 @@ Runtime dependencies:
       - https://github.com/angular-ui/ui-router
     License name: MIT License
     Notice:       Copyright (c) 2013-2015 The AngularUI Team, Karsten Sperling
-  
-  angular-ui-router@1.0.19: 
-    Project:      angular-ui-router (NodeJS module)
-    Version:      1.0.19
-    Available at: 
-      - https://github.com/angular-ui/ui-router
-      - https://ui-router.github.io
-    License name: MIT License
-    Notice:       Copyright (c) 2013-2018 The AngularUI Team, Karsten Sperling
   
   angular-xeditable@0.4.0: 
     Project:      angular-xeditable (NodeJS module)
@@ -513,14 +488,6 @@ Runtime dependencies:
     License name: BSD 2-Clause (Simplified or FreeBSD) License
     Notice:       Copyright JS Foundation and other contributors, https://js.foundation/
   
-  file-saver@1.3.8: 
-    Project:      file-saver (NodeJS module)
-    Version:      1.3.8
-    Available at: https://github.com/eligrey/FileSaver.js
-    Developed by: Eli Grey (me@eligrey.com)
-    License name: MIT License
-    Notice:       Copyright © 2016 [Eli Grey][1].
-  
   font-awesome@4.7.0: 
     Project:      font-awesome (NodeJS module)
     Version:      4.7.0
@@ -569,13 +536,6 @@ Runtime dependencies:
     Developed by: Matt Andrews (matt@mattandre.ws)
     License name: MIT License
     Notice:       Copyright (c) 2015 Matt Andrews
-  
-  java-stack-parser@1.0.0: 
-    Project:      java-stack-parser (NodeJS module)
-    Version:      1.0.0
-    Available at: https://github.com/tbouron/java-stack-parser
-    Developed by: Thomas Bouron
-    License name: Apache License, version 2.0
   
   jquery@1.12.4: 
     Project:      jquery (NodeJS module)
@@ -707,16 +667,6 @@ Runtime dependencies:
     Developed by: Scott Corgan
     License name: MIT License
     Notice:       Copyright (c) 2016 Scott Corgan
-  
-  underscore@1.9.1: 
-    Project:      underscore (NodeJS module)
-    Version:      1.9.1
-    Available at: 
-      - http://underscorejs.org
-      - https://github.com/jashkenas/underscore
-    Developed by: Jeremy Ashkenas (jeremy@documentcloud.org)
-    License name: MIT License
-    Notice:       Copyright (c) 2009-2018 Jeremy Ashkenas, DocumentCloud and Investigative. Reporters & Editors
   
   whatwg-fetch@2.0.4: 
     Project:      whatwg-fetch (NodeJS module)
