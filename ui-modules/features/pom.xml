@@ -105,7 +105,7 @@
                                 <descriptor>mvn:org.apache.karaf.features/framework/${karaf.version}/xml/features</descriptor>
                                 <descriptor>mvn:org.apache.karaf.features/standard/${karaf.version}/xml/features</descriptor>
                                 <descriptor>mvn:org.apache.brooklyn/brooklyn-features/${brooklyn.version}/xml/features</descriptor>
-                                <descriptor>file:${project.basedir}/../../modularity-server/features/target/feature/feature.xml</descriptor>
+                                <descriptor>mvn:org.apache.brooklyn.ui.modularity/brooklyn-ui-modularity-features/${brooklyn.version}/xml/features</descriptor>
                                 <descriptor>file:${project.build.directory}/feature/feature.xml</descriptor>
                             </descriptors>
                         </configuration>
