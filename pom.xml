@@ -105,9 +105,6 @@
         <node.version>v8.4.0</node.version>
         <npm.version>5.4.1</npm.version>
 
-        <!-- deps from brooklyn-server deliberately overridden here (tests, don't matter so much if at different version) -->
-        <mockito.version>1.10.19</mockito.version>
-
     </properties>
 
     <build>
