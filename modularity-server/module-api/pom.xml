@@ -35,7 +35,7 @@
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
+            <artifactId>javax.servlet-api</artifactId>
             <version>${servlet-api.version}</version>
         </dependency>
         <dependency>
@@ -83,8 +83,13 @@
             <scope>test</scope>
             <version>${testng.version}</version>
         </dependency>
-
-
+        <dependency>
+            <groupId>org.apache.brooklyn</groupId>
+            <artifactId>brooklyn-utils-test-support</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+            
     </dependencies>
 
     <build>
