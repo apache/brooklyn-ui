@@ -25,7 +25,8 @@
         <groupId>org.apache.brooklyn</groupId>
         <artifactId>brooklyn-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>  <!-- BROOKLYN_VERSION -->
-        <relativePath>../brooklyn-server/parent/</relativePath>
+        <!-- do not link to sibling directory as that breaks builds where this code is embedded, e.g. for branding;
+             we require that brooklyn-server is built first (this is needed anyway for the modularity java code) -->
     </parent>
 
     <groupId>org.apache.brooklyn.ui</groupId>
