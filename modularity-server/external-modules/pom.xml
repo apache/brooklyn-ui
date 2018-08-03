@@ -30,7 +30,7 @@
 
     <artifactId>brooklyn-ui-external-modules</artifactId>
     <name>Brooklyn UI :: Modularity Server :: External UI Modules Registration Hooks</name>
-    <packaging>bundle</packaging>
+    <packaging>jar</packaging>
     
     <dependencies>
         <dependency>

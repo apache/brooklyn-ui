@@ -30,7 +30,7 @@
 
     <artifactId>brooklyn-ui-metadata-registry</artifactId>
     <name>Brooklyn UI :: Modularity Server :: UI Metadata Registry</name>
-    <packaging>bundle</packaging>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>

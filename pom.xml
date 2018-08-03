@@ -93,7 +93,6 @@
         <servlet-api.version>${javax-servlet.version}</servlet-api.version>
 
         <!-- build tools, versions not declared in brooklyn-server but they are here -->
-        <maven-bundle-plugin.version>3.0.1</maven-bundle-plugin.version>
         <build-helper-maven-plugin.version>1.10</build-helper-maven-plugin.version>
         <maven-clean-plugin.version>3.0.0</maven-clean-plugin.version>
         <maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
@@ -111,11 +110,6 @@
     <build>
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-bundle-plugin</artifactId>
-                    <version>${maven-bundle-plugin.version}</version>
-                </plugin>
                 <plugin>
                     <groupId>org.apache.karaf.tooling</groupId>
                     <artifactId>karaf-maven-plugin</artifactId>

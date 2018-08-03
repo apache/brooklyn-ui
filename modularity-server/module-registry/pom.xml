@@ -30,7 +30,7 @@
 
     <artifactId>brooklyn-ui-module-registry</artifactId>
     <name>Brooklyn UI :: Modularity Server :: UI Module Registry</name>
-    <packaging>bundle</packaging>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>

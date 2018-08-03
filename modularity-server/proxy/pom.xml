@@ -30,7 +30,7 @@
 
     <artifactId>brooklyn-ui-proxy</artifactId>
     <name>Brooklyn UI :: Modularity Server :: UI Proxy</name>
-    <packaging>bundle</packaging>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
