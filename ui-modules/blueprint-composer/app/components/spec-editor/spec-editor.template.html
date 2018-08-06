@@ -131,12 +131,20 @@
 
         <form name="formSpecConfig" novalidate class="lightweight">
             <div ng-repeat="item in (filteredItems = (model.miscData.get('config') | specEditorConfig:state.config.filter.values:model.config | filter:{name:state.config.search} | orderBy:+priority)) track by item.name ">
-                <div class="form-group" ng-class="{'has-error': (model.issues | filter:{ref: item.name}:true).length > 0, 'used': config[item.name] !== undefined}" ng-switch="getConfigWidgetMode(item)" tabindex="1"
+                <div class="form-group" ng-class="{'has-error': (model.issues | filter:{ref: item.name}:true).length > 0, 'used': config[item.name] !== undefined}" 
+                        ng-switch="getConfigWidgetMode(item)" 
+                        tabindex="1"
                         auto-focus="state.config.focus === item.name"
                         auto-focus-listen-to-window="true"
                         auto-focus-not-if-within="true"
                         ng-focus="recordFocus(item)"
                         on-enter="advanceControlInFormGroup">
+                  <div ng-if="getCustomConfigWidgetMode(item) === 'full'" class="custom-widget-full">
+                    <ng-include src="getCustomConfigWidgetTemplate(item)" class="custom-widget-full"/>
+                  </div>
+                  
+                  <!-- have to hide it; excluding it conditionally via if doesn't play nice with switch -->
+                  <div ng-show="getCustomConfigWidgetMode(item) !== 'full'" class="config-flex-row">
                     <label class="control-label" for="{{item.name}}">
                         <span class="label-spec-configuration">{{item.label || item.name}}</span>
                         <span class="info-spec-configuration">
@@ -149,11 +157,15 @@
                     
                     <span class="label-rhs-buttons">
                         <span class="spacer"> </span>
-                        <span class="json-config" ng-class="{'code-mode-active': state.config.codeModeActive[item.name], 'code-mode-forced': state.config.codeModeForced[item.name]}" ng-if="isCodeModeAvailable(item)">
-                            <i class="fa fa-fw fa-code" ng-click="codeModeClick(item)" aria-hidden="true" title="{{getJsonModeTitle(item.name)}}"></i>
-                            <span class="sr-only">{{getJsonModeTitle(item.name)}}</span>
+                        <span class="custom-widget-enable-button" ng-if="getCustomConfigWidgetMode(item) !== null">
+                            <i class="fa fa-fw fa-sun-o" ng-click="toggleCustomConfigWidgetMode(item)" aria-hidden="true" title="{{getCustomConfigWidgetModeTitle(item)}} [{{item.name}}]"></i>
+                            <span class="sr-only">{{getCustomConfigWidgetModeTitle(item)}} [{{item.name}}]</span>
                         </span>
-                        <span ng-if="isDsl(item.name)">
+                        <span class="json-config" ng-class="{'code-mode-active': state.config.codeModeActive[item.name], 'code-mode-forced': state.config.codeModeForced[item.name]}" ng-if="isCodeModeAvailable(item)">
+                            <i class="fa fa-fw fa-code" ng-click="codeModeClick(item)" aria-hidden="true" title="{{getJsonModeTitle(item.name)}} [{{item.name}}]"></i>
+                            <span class="sr-only">{{getJsonModeTitle(item.name)}} [{{item.name}}]</span>
+                        </span>
+                        <span ng-if="isDsl(item.name)" class="rhs-buttons-subspan">
                             <span class="dsl-open-wizard-from-toolbar" ng-if="!state.config.dslViewerManualOverride[item.name]">
                                 <i class="fa fa-fw fa-bolt" ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" aria-hidden="true" title="Open in DSL editor [{{item.name}}]"></i>
                                 <span class="sr-only">Open in DSL editor [{{item.name}}]</span>
@@ -309,6 +321,8 @@
                     </div>
                     
                     <small ng-repeat="issue in model.issues | filter:{ref: item.name}:true" class="help-block issue" ng-bind-html="issue.message"></small>
+                  </div>
+
                 </div>
             </div>
         </form>

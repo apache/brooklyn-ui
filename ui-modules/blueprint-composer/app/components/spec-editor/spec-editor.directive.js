@@ -33,7 +33,7 @@ const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
 const REPLACED_DSL_ENTITYSPEC = '___brooklyn:entitySpec';
 
 angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer])
-    .directive('specEditor', ['$rootScope', '$filter', '$log', '$sce', '$timeout', '$document', 'blueprintService', specEditorDirective])
+    .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', 'blueprintService', specEditorDirective])
     .filter('specEditorConfig', specEditorConfigFilter)
     .filter('specEditorType', specEditorTypeFilter);
 
@@ -70,7 +70,7 @@ export const CONFIG_FILTERS = [
     }
 ];
 
-export function specEditorDirective($rootScope, $filter, $log, $sce, $timeout, $document, blueprintService) {
+export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, blueprintService) {
     return {
         restrict: 'E',
         scope: {
@@ -106,6 +106,10 @@ export function specEditorDirective($rootScope, $filter, $log, $sce, $timeout, $
                 codeModeActive: {},
                 codeModeForced: {},
                 codeModeError: {},
+                customWidget: { 
+                    "defaultDisplayName": { mode: "full", widget: "known-widget-missing" }, 
+                    "download.url": { mode: "full", widget: "suggestion-dropdown" }, 
+                },
             },
             location: {
                 open: false
@@ -514,7 +518,7 @@ export function specEditorDirective($rootScope, $filter, $log, $sce, $timeout, $
                 // local config changed, make sure model is updated too
                 setModelFromLocalConfig();
             }
-        }
+        };
         scope.getJsonModeTitle = (itemName) => {
             if (!scope.state.config.codeModeActive[itemName]) {
                 return "Treat this value as a JSON-encoded object ["+itemName+"]";
@@ -525,6 +529,60 @@ export function specEditorDirective($rootScope, $filter, $log, $sce, $timeout, $
                 return "Edit in simple mode, unwrapping JSON if possible ["+itemName+"]";
             }
         }
+        scope.getCustomConfigWidgetMode = (item) => {
+            var mode = (scope.state.config.customWidget[item.name] || {})["mode"] || null;
+            if (mode) {
+                if ((scope.state.config.customWidget[item.name] || {})["error"]) return null;
+            }
+            return mode;
+        } ;
+        scope.toggleCustomConfigWidgetMode = (item, newval) => {
+            if (!scope.state.config.customWidget[item.name]) {
+                $log.error('Custom widget mode should not be toggled when not available: '+item.name);
+                return null;
+            }
+            if (newval) scope.state.config.customWidget[item.name].mode = newval;
+            else {
+                if (scope.state.config.customWidget[item.name].mode === "disabled") {
+                    // TODO not always full
+                    scope.state.config.customWidget[item.name].mode = "full"
+                } else {
+                    scope.state.config.customWidget[item.name].mode = "full"
+                }
+            }
+        }
+        scope.getCustomConfigWidgetModeTitle = (item) => {
+            if (!scope.state.config.customWidget[item.name]) {
+                // shouldn't be visible
+                return "(custom widget not available)";
+            }
+            if (scope.state.config.customWidget[item.name].mode === "disabled") return "Enable custom widget";
+            else return "Disable custom widget";
+        };
+        scope.copyScopeForCustomConfigWidget = (descendantScope) => {
+            descendantScope.toggleCustomConfigWidgetMode = scope.toggleCustomConfigWidgetMode;
+            descendantScope.getCustomConfigWidgetModeTitle = scope.getCustomConfigWidgetModeTitle;
+            descendantScope.defined = scope.defined;
+            descendantScope.config = scope.config;
+            descendantScope.state = scope.state;
+            descendantScope.copyScopeForCustomConfigWidget = scope.copyScopeForCustomConfigWidget;
+        };
+        scope.getCustomConfigWidgetTemplate = (item) => {
+            var widgetName = $sanitize(scope.state.config.customWidget[item.name].widget);
+            var templateName = 'custom-config-widget-'+widgetName;
+            if (!$templateCache.get(templateName)) {
+                var widgetDirective = widgetName.replace(/(-[a-z])/g, function($1){return $1[1].toUpperCase();})+'Directive';
+                if ($injector.has(widgetDirective)) {
+                    $templateCache.put(templateName, '<'+widgetName+' item="item">foo</'+widgetName+'>');
+                } else {
+                    $log.error('Missing directive '+widgetDirective+' for custom widget for '+item.name+'; falling back to default widget');
+                    scope.state.config.customWidget[item.name].error = "Missing directive";
+                    templateName = "error-" + templateName;
+                    $templateCache.put(templateName, '<i>Widget '+widgetName+' missing</i>');
+                }
+            }
+            return templateName;
+        };
         
         scope.isDsl = (key, index) => {
             let val = scope.model.config.get(key);

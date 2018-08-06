@@ -48,6 +48,7 @@ import {
     catalogSelectorSortFilter
 } from "components/catalog-selector/catalog-selector.directive";
 import customActionDirective from "./components/custom-action/custom-action.directive";
+import customConfigSuggestionDropdown from "components/custom-config-widget/suggestion-dropdown";
 import {onErrorDirective} from "components/catalog-selector/on-error.directive";
 import {breadcrumbsDirective} from "components/breacrumbs/breadcrumbs.directive";
 import {recursionHelperFactory} from "components/factories/recursion-helper.factory";
@@ -71,7 +72,10 @@ import {graphicalEditDslState, dslParamLabelFilter} from "views/main/graphical/e
 import bottomSheet from "brooklyn-ui-utils/bottom-sheet/bottom-sheet";
 import stackViewer from 'angular-java-stack-viewer';
 
-angular.module('app', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 'ui.router.state.events', brCore, brServerStatus, brAutoFocus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, brYamlEditor, brUtils, brSpecEditor, brooklynCatalogSaver, brooklynApi, bottomSheet, stackViewer, brDragndrop, customActionDirective, paletteApiProvider])
+angular.module('app', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 'ui.router.state.events', brCore, 
+        brServerStatus, brAutoFocus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, 
+        brYamlEditor, brUtils, brSpecEditor, brooklynCatalogSaver, brooklynApi, bottomSheet, stackViewer, brDragndrop, 
+        customActionDirective, customConfigSuggestionDropdown, paletteApiProvider])
     .directive('designer', ['$log', '$state', '$q', 'iconGenerator', 'catalogApi', 'blueprintService', 'brSnackbar', 'paletteDragAndDropService', designerDirective])
     .directive('onError', onErrorDirective)
     .directive('catalogSelector', catalogSelectorDirective)
