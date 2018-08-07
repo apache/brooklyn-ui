@@ -40,7 +40,20 @@ export function suggestionDropdownDirective($rootScope) {
 
     function link(scope) {
         scope.$parent.copyScopeForCustomConfigWidget(scope);
-        console.log("params for widget for "+scope.item.name, scope.params);
+        
+        scope.getSuggestions = () => {
+            var result = [];
+            if (scope.params['suggestion-values']) {
+                scope.params['suggestion-values'].forEach( (v) => {
+                    if (v["value"]) {
+                        result.push(v);
+                    } else {
+                        result.push({value: v});
+                    }
+                });
+                return result;
+            }
+        };
     }
     
 }

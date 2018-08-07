@@ -36,13 +36,32 @@
     </span>
 
     <div class="control-value" ng-class="{ 'inline-control': item.widgetMode==='boolean', 'unset': !defined(config[item.name]), 'has-default': defined(item.defaultValue) && item.defaultValue!=null }">
-        <div class="hide-when-collapsed">
+        <div class="hide-when-collapsed extra-label" ng-if="params['label-expanded']">
             {{ params['label-expanded'] || "" }}
         </div>
-        <div>
-            <span class="hide-when-expanded">{{ params['label-collapsed'] || "" }}</span>
-            {{ config[item.name] }}
+        <div class="config-flex-row">
+            <span class="hide-when-expanded inline-label extra-label" ng-if="params['label-collapsed']">{{ params['label-collapsed'] || "" }}</span>
+            <div class="input-group">
+                <textarea ng-model="config[item.name]" class="form-control" name="{{item.name}}" id="{{item.name}}" auto-grow
+                          placeholder="{{defined(config[item.name]) ? null : item.defaultValue=='' || item.defaultValue==null ? '(empty)' : item.defaultValue}}"
+                          ng-focus="recordFocus(item)" on-enter="advanceOutToFormGroupInPanel"
+                          uib-typeahead="suggestion.value for suggestion in getSuggestions() | filter:{value:$viewValue}"
+                          typeahead-min-length=0
+                          typeahead-template-url="SuggestionTemplate.html"></textarea>
+                <span class="input-group-btn dsl-wizard-button" ng-if="isDslWizardButtonAllowed(item.name)">
+                    <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
+                </span>
+            </div>
         </div>
     </div>
 
 </div>
+
+<!--TYPEAHEAD TEMPLATE :: START-->
+<script type="text/ng-template" id="SuggestionTemplate.html">
+    <div class="dropdown-item">
+        <span class="dropdown-item-value" ng-bind-html="match.model.value | uibTypeaheadHighlight:query"></span>
+        <p class="dropdown-item-description" ng-if="match.model.description">{{ match.model.description }}</p>
+    </div>
+</script>
+<!--TYPEAHEAD TEMPLATE :: END-->

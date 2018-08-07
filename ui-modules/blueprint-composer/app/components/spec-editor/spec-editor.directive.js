@@ -106,10 +106,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 codeModeActive: {},
                 codeModeForced: {},
                 codeModeError: {},
-                customConfigWidgetMetadata: { 
-                    "defaultDisplayName": { enabled: true, widget: "known-widget-missing" }, 
-                    "download.url": { enabled: true, widget: "suggestion-dropdown" }, 
-                },
+                customConfigWidgetMetadata: {},
             },
             location: {
                 open: false
@@ -612,18 +609,13 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         }
 
         function loadCustomConfigWidgetMetadata(model) {
-            console.log("misc data", model.miscData, scope.model.miscData.get('ui-composer-hints'));
             var customConfigWidgets = (scope.model.miscData.get('ui-composer-hints') || {})['config-widgets'] || [];
-            console.log("customs", customConfigWidgets);
             customConfigWidgets.forEach( (wd) => {
-                console.log("looking at", wd);
                 var keys = wd.keys || [ wd.key ];
                 keys.forEach( (k) => {
-                    console.log("setting key", k);
                     scope.state.config.customConfigWidgetMetadata[k] = angular.extend({ enabled: true }, scope.state.config.customConfigWidgetMetadata[k], wd);
                 });
             });
-            console.log("custom config", scope.state.config.customConfigWidgetMetadata);
         }
         
         /* config state for each item is stored in multiple places:

@@ -24,7 +24,41 @@ suggestion-dropdown {
     .control-value {
         // for widgets that are text, this aligns it with the label when collapsed and gives nice spacing when expanded.
         // (for widgets that are dropdowns etc this should be omitted)
-        padding-top: 2px;
+//        padding-top: 2px;
     }
-
+    .extra-label {
+        // this seems to work best here (instead of padding above) when combining a label with a textarea control 
+        padding-top: 4px;
+    }
+    .inline-label {
+        margin-right: 5px;
+        white-space: nowrap;
+    }
+    spec-editor .spec-configuration .form-group & .control-value .config-flex-row {
+        flex-flow: nowrap;
+    }
+    .form-group:not(:focus-within):not(:focus) & .control-value .dropdown-menu {
+        // hide the dropdown menu when collapsed
+        display: none;
+    }
+    .dropdown-menu li a {
+        // quite a lot of padding in normal dropdown, in the ul and in the a
+        padding: 0;
+    }
+    
+    .dropdown-item {
+        display: flex;
+        flex-flow: row wrap;
+    }
+    .dropdown-item-value {
+    }
+    .dropdown-item-description {
+        flex: 1 1 auto;
+        text-align: right;
+        font-style: italic;
+        font-size: 80%;
+        flex: 1 1 auto;
+        margin-bottom: 0;
+        margin-left: 6px;
+    }
 }
