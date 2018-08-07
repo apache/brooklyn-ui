@@ -303,7 +303,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             scope.state.config.add.open = false;
             scope.state.config.focus = $item.name;
             if ($item.isHidden) {
-                scope.state.config.filter.values[ CONFIG_FILTERS[CONFIG_FILTERS.length - 1] ].id = true;
+                scope.state.config.filter.values.all = true;
             }
         };
         scope.recordFocus = ($item)=> {

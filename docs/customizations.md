@@ -12,10 +12,12 @@ There are a number of points where UI default choices can be overridden:
   can extend existing Brooklyn items
 
 * Composer - Custom Config Widgets: special widgets to use for config keys can be specified in a registered type's
-  definition as a map tag, for example for the demo widget `suggestion-dropout` included we might have:
-      '{ ui-composer-hints: { config-widgets: [ { key: start.timeout, suggestion-values: [ 30s, 2m, 5m, 30m, 2h ],
-         widget: suggestion-dropdown, label-collapsed: fail after, label-expanded: Fail if not successful within } ] } }`;
-  widgets should be registered as angular directives using the standard naming conventions (e.g. suggestionDropdownDirective),
-  as done for that directive in app/index.js and app/index.less.
+  definition as a map tag, for example for the demo widget `suggestion-dropout` included we might have 
+      '{ ui-composer-hints: { config-widgets: [ { 
+         key: start.timeout, suggestion-values: [ 30s, 2m, 5m, 30m, 2h, { value: forever, description: 'No timeout' ],
+         widget: suggestion-dropdown, label-collapsed: fail after, label-expanded: Fail if not successful within } ] } }`
+  (as shown in the accompanying `vanillia-with-custom-widget.bom`);
+  widgets should be registered as angular directives using the standard Angular naming conventions 
+  (e.g. suggestionDropdownDirective), as done for that directive in app/index.js and app/index.less.
 
 

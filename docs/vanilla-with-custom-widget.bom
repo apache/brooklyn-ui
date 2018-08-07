@@ -1,0 +1,25 @@
+brooklyn.catalog:
+  id: vanilla-with-custom-widget
+  version: 1.0.0-SNAPSHOT
+  iconUrl: https://cdn.shopify.com/s/files/1/0709/1933/products/valilla_flower_1024x1024.png?v=1479432384
+  itemType: entity
+  tags:
+  - ui-composer-hints:
+      config-widgets:
+      - key: start.timeout
+        widget: suggestion-dropdown
+        suggestion-values:
+        - value: 30s
+          description: 30 seconds
+        - value: 2m
+          description: 2 minutes
+        - 5m
+        - 30m
+        - value: 2h
+          description: 2 hours
+        - value: forever
+          description: No timeout
+        label-collapsed: fail after
+        label-expanded: Fail if not successful within
+  item:
+    type: org.apache.brooklyn.entity.software.base.VanillaSoftwareProcess

@@ -79,13 +79,11 @@
     </fieldset>
 
     <fieldset uib-collapse="!state.config.add.open" class="spec-configuration-add">
-        <legend>Add config key</legend>
-
         <input auto-focus="state.config.add.open"
              type="text"
              autocomplete="off"
              ng-model="state.config.add.value"
-             placeholder="Add a new configuration key"
+             placeholder="Add a new configuration key or open existing"
              class="form-control"
              uib-typeahead="config.name for config in state.config.add.list | filter:{name:$viewValue}"
              typeahead-template-url="ConfigItemTemplate.html"
@@ -99,14 +97,12 @@
 
         <div ng-if="state.config.add.value.length > 0 && noResults" uib-dropdown uib-dropdown-toggle auto-close="disabled" is-open="true">
             <ul class="dropdown-menu">
-                <li><a ng-click="addConfigKey()">
-                    <div class="dropdown-item">
-                        <div class="details">
-                            <h4 class="dropdown-item-heading repo-name truncate">
-                                <span ng-bind-html="state.config.add.value | uibTypeaheadHighlight:state.config.add.value"></span>
-                            </h4>
-                            <p class="dropdown-item-subheading version truncate">Click to add the new config key</p>
-                        </div>
+                <!-- mimic real dropdown if nothing found -->
+                <li class="uib-typeahead-match"><a ng-click="addConfigKey()">
+                    <div class="dropdown-item" ng-init="item = match.model">
+                        <div class="dropdown-row">
+                        <span ng-bind-html="state.config.add.value | uibTypeaheadHighlight:query" class="config-name"></span>
+                        <i class="fa fa-fw fa-plus-square-o"></i>
                     </div>
                 </a></li>
             </ul>
@@ -455,14 +451,14 @@
 
 <!--TYPEAHEAD TEMPLATE :: START-->
 <script type="text/ng-template" id="ConfigItemTemplate.html">
-    <div class="dropdown-item">
-        <div class="details">
-            <h4 class="dropdown-item-heading repo-name truncate">
-                <span ng-bind-html="match.model.label | uibTypeaheadHighlight:query"></span>
-                <i class="fa fa-fw fa-asterisk" ng-if="match.model.constraints.required"></i>
-                <i class="fa fa-fw fa-eye-slash" ng-if="match.model.isHidden"></i>
-            </h4>
-            <p class="dropdown-item-subheading version truncate">{{ match.model.description }}</p>
+    <div class="dropdown-item" ng-init="item = match.model">
+        <div class="dropdown-row">
+            <span ng-bind-html="match.model.name | uibTypeaheadHighlight:query" class="config-name"></span>
+            <i class="fa fa-fw fa-asterisk" ng-if="match.model.constraints.required"></i>
+            <i class="fa fa-fw fa-eye-slash" ng-if="match.model.isHidden"></i>
+            <!-- previously showed just the label; now show just the name as that's what is inserted.
+                 ideally would show label and description as popover (reusing ConfigInfoTemplate), but due to bugs in popover 
+                 we can't easily get that to work. -->
         </div>
     </div>
 </script>

@@ -41,24 +41,28 @@ suggestion-dropdown {
         // hide the dropdown menu when collapsed
         display: none;
     }
+    
     .dropdown-menu li a {
         // quite a lot of padding in normal dropdown, in the ul and in the a
         padding: 0;
     }
-    
     .dropdown-item {
         display: flex;
         flex-flow: row wrap;
+        width: 100%;
     }
     .dropdown-item-value {
+        flex: 1 0 auto;
     }
     .dropdown-item-description {
-        flex: 1 1 auto;
+        flex: 10 1 auto;
         text-align: right;
         font-style: italic;
         font-size: 80%;
-        flex: 1 1 auto;
         margin-bottom: 0;
-        margin-left: 6px;
+        margin-left: 12px;
+        max-width: 70%;
+        margin-top: 2px;
+        line-height: 18px;
     }
 }
