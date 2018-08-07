@@ -31,7 +31,8 @@ export function suggestionDropdownDirective($rootScope) {
     return {
         restrict: 'E',
         scope: {
-            item: '='
+            item: '=',
+            params: '=',
         },
         template: template,
         link: link,
@@ -39,6 +40,7 @@ export function suggestionDropdownDirective($rootScope) {
 
     function link(scope) {
         scope.$parent.copyScopeForCustomConfigWidget(scope);
+        console.log("params for widget for "+scope.item.name, scope.params);
     }
     
 }

@@ -106,9 +106,9 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 codeModeActive: {},
                 codeModeForced: {},
                 codeModeError: {},
-                customWidget: { 
-                    "defaultDisplayName": { mode: "full", widget: "known-widget-missing" }, 
-                    "download.url": { mode: "full", widget: "suggestion-dropdown" }, 
+                customConfigWidgetMetadata: { 
+                    "defaultDisplayName": { enabled: true, widget: "known-widget-missing" }, 
+                    "download.url": { enabled: true, widget: "suggestion-dropdown" }, 
                 },
             },
             location: {
@@ -148,6 +148,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             scope.state.config.add.list = getAddListConfig();
         });
 
+        loadCustomConfigWidgetMetadata(scope);
+        
         scope.config = {};
         scope.$watch('model', (newVal, oldVal)=> {
             if (newVal && !newVal.equals(oldVal)) {
@@ -528,36 +530,29 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             } else {
                 return "Edit in simple mode, unwrapping JSON if possible ["+itemName+"]";
             }
-        }
+        };
+        /** returns 'enabled' or 'disabled' if a widget is defined, or null if no special widget is defined */ 
         scope.getCustomConfigWidgetMode = (item) => {
-            var mode = (scope.state.config.customWidget[item.name] || {})["mode"] || null;
-            if (mode) {
-                if ((scope.state.config.customWidget[item.name] || {})["error"]) return null;
-            }
-            return mode;
-        } ;
+            var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
+            if (!widgetMetadata || widgetMetadata["error"]) return null;
+            return widgetMetadata["enabled"] ? 'enabled' : 'disabled';
+        };
         scope.toggleCustomConfigWidgetMode = (item, newval) => {
-            if (!scope.state.config.customWidget[item.name]) {
+            var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
+            if (!widgetMetadata) {
                 $log.error('Custom widget mode should not be toggled when not available: '+item.name);
                 return null;
             }
-            if (newval) scope.state.config.customWidget[item.name].mode = newval;
-            else {
-                if (scope.state.config.customWidget[item.name].mode === "disabled") {
-                    // TODO not always full
-                    scope.state.config.customWidget[item.name].mode = "full"
-                } else {
-                    scope.state.config.customWidget[item.name].mode = "full"
-                }
-            }
+            if (!scope.defined(newval)) newval = !widgetMetadata.enabled;
+            widgetMetadata.enabled = newval;
         }
         scope.getCustomConfigWidgetModeTitle = (item) => {
-            if (!scope.state.config.customWidget[item.name]) {
+            var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
+            if (!widgetMetadata) {
                 // shouldn't be visible
                 return "(custom widget not available)";
             }
-            if (scope.state.config.customWidget[item.name].mode === "disabled") return "Enable custom widget";
-            else return "Disable custom widget";
+            return widgetMetadata.enabled ? "Use standard widget" : "Use custom widget";
         };
         scope.copyScopeForCustomConfigWidget = (descendantScope) => {
             descendantScope.toggleCustomConfigWidgetMode = scope.toggleCustomConfigWidgetMode;
@@ -568,15 +563,16 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             descendantScope.copyScopeForCustomConfigWidget = scope.copyScopeForCustomConfigWidget;
         };
         scope.getCustomConfigWidgetTemplate = (item) => {
-            var widgetName = $sanitize(scope.state.config.customWidget[item.name].widget);
+            var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
+            var widgetName = $sanitize(widgetMetadata.widget || '--no-widget--');
             var templateName = 'custom-config-widget-'+widgetName;
             if (!$templateCache.get(templateName)) {
                 var widgetDirective = widgetName.replace(/(-[a-z])/g, function($1){return $1[1].toUpperCase();})+'Directive';
                 if ($injector.has(widgetDirective)) {
-                    $templateCache.put(templateName, '<'+widgetName+' item="item">foo</'+widgetName+'>');
+                    $templateCache.put(templateName, '<'+widgetName+' item="item" params="state.config.customConfigWidgetMetadata[item.name]"/>');
                 } else {
                     $log.error('Missing directive '+widgetDirective+' for custom widget for '+item.name+'; falling back to default widget');
-                    scope.state.config.customWidget[item.name].error = "Missing directive";
+                    scope.state.config.customConfigWidgetMetadata[item.name].error = "Missing directive";
                     templateName = "error-" + templateName;
                     $templateCache.put(templateName, '<i>Widget '+widgetName+' missing</i>');
                 }
@@ -615,6 +611,21 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             });
         }
 
+        function loadCustomConfigWidgetMetadata(model) {
+            console.log("misc data", model.miscData, scope.model.miscData.get('ui-composer-hints'));
+            var customConfigWidgets = (scope.model.miscData.get('ui-composer-hints') || {})['config-widgets'] || [];
+            console.log("customs", customConfigWidgets);
+            customConfigWidgets.forEach( (wd) => {
+                console.log("looking at", wd);
+                var keys = wd.keys || [ wd.key ];
+                keys.forEach( (k) => {
+                    console.log("setting key", k);
+                    scope.state.config.customConfigWidgetMetadata[k] = angular.extend({ enabled: true }, scope.state.config.customConfigWidgetMetadata[k], wd);
+                });
+            });
+            console.log("custom config", scope.state.config.customConfigWidgetMetadata);
+        }
+        
         /* config state for each item is stored in multiple places:
          * * scope.config = map of values used/set by editor (strings, map of strings, json code if using code mode, etc);
          *   this should be suitable for ng-model to work with, so e.g. if using code mode we need to put JSON.stringify value in here,

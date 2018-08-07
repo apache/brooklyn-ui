@@ -139,12 +139,12 @@
                         auto-focus-not-if-within="true"
                         ng-focus="recordFocus(item)"
                         on-enter="advanceControlInFormGroup">
-                  <div ng-if="getCustomConfigWidgetMode(item) === 'full'" class="custom-widget-full">
-                    <ng-include src="getCustomConfigWidgetTemplate(item)" class="custom-widget-full"/>
+                  <div ng-if="getCustomConfigWidgetMode(item) === 'enabled'" class="custom-config-widget">
+                    <ng-include src="getCustomConfigWidgetTemplate(item)" class="custom-config-widget"/>
                   </div>
                   
                   <!-- have to hide it; excluding it conditionally via if doesn't play nice with switch -->
-                  <div ng-show="getCustomConfigWidgetMode(item) !== 'full'" class="config-flex-row">
+                  <div ng-show="getCustomConfigWidgetMode(item) !== 'enabled'" class="config-flex-row">
                     <label class="control-label" for="{{item.name}}">
                         <span class="label-spec-configuration">{{item.label || item.name}}</span>
                         <span class="info-spec-configuration">

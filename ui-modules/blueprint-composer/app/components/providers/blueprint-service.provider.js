@@ -499,9 +499,25 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         }));
         entity.miscData.set('sensors', data.sensors || []);
         entity.miscData.set('traits', data.supertypes || []);
+        entity.miscData.set('tags', data.tags || []);
+        var uiHints = {};
+        data.tags.forEach( (t) => { 
+            mergeAppendingLists(uiHints, t['ui-composer-hints']);
+        });
+        entity.miscData.set('ui-composer-hints', uiHints);
         entity.miscData.set('virtual', data.virtual || null);
         addUnlistedConfigKeysDefinitions(entity);
         return entity;
+    }
+    function mergeAppendingLists(dst, src) {
+        for (let p in src) {
+            if (Array.isArray(dst[p]) || Array.isArray(src[p])) {
+                dst[p] = [].concat(dst[p] || [], src[p]);
+            } else {
+                dst[p] = Object.assign({}, dst[p], src[p]);
+            }
+        }
+        return dst;
     }
 
     function populateEntityFromApiError(entity) {

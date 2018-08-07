@@ -30,17 +30,17 @@
     <span class="label-rhs-buttons">
         <span class="spacer"> </span>
         <span class="custom-widget-enable-button custom-widget-active">
-            <i class="fa fa-fw fa-sun-o" ng-click="toggleCustomConfigWidgetMode(item, 'disabled')" aria-hidden="true" title="{{getCustomConfigWidgetModeTitle(item)}} [{{item.name}}]"></i>
+            <i class="fa fa-fw fa-sun-o" ng-click="toggleCustomConfigWidgetMode(item, false)" aria-hidden="true" title="{{getCustomConfigWidgetModeTitle(item)}} [{{item.name}}]"></i>
             <span class="sr-only">{{getCustomConfigWidgetModeTitle(item)}} [{{item.name}}]</span>
         </span>
     </span>
 
     <div class="control-value" ng-class="{ 'inline-control': item.widgetMode==='boolean', 'unset': !defined(config[item.name]), 'has-default': defined(item.defaultValue) && item.defaultValue!=null }">
         <div class="hide-when-collapsed">
-            <a ng-click="test()">Extra information</a>
+            {{ params['label-expanded'] || "" }}
         </div>
         <div>
-            <span class="hide-when-expanded">Custom widget: </span>
+            <span class="hide-when-expanded">{{ params['label-collapsed'] || "" }}</span>
             {{ config[item.name] }}
         </div>
     </div>
