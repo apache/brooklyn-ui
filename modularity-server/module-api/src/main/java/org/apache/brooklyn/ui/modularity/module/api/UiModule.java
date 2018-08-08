@@ -48,14 +48,25 @@ public interface UiModule {
      * @return The module types eg single-page-app, external-ui
      */
     Set<String> getTypes();
+    
+    /**
+     * @return List of "bundle-regex" or "bundle-regex:version-regex" of bundles that should be stopped when this is installed.
+     * Useful if supplying a bundle to replace other bundles.
+     */
+    Set<String> getSupersedesBundles();
 
+    /**
+     * @return Whether to web-stop any bundles listening on the same endpoint. 
+     */
+    boolean getStopExisting();
+    
     /**
      * @return The module path
      */
     String getPath();
 
     /**
-     * @return Registed module actions
+     * @return Registered module actions
      */
     List<UiModuleAction> getActions();
 }

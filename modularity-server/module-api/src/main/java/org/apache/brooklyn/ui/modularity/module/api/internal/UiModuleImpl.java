@@ -19,23 +19,25 @@
 package org.apache.brooklyn.ui.modularity.module.api.internal;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.google.common.base.Optional;
-
 import org.apache.brooklyn.ui.modularity.module.api.UiModule;
 import org.apache.brooklyn.ui.modularity.module.api.UiModuleAction;
+
+import com.google.common.base.Optional;
 
 public class UiModuleImpl implements UiModule {
     private String id;
     private String name;
     private String slug;
     private String icon;
-    private Set<String> types = new HashSet<>();
+    private Set<String> types = new LinkedHashSet<>();
+    private Set<String> supersedesBundles = new LinkedHashSet<>();
+    private boolean stopExisting = true;
     private String path;
     private List<UiModuleAction> actions = new ArrayList<>();
 
@@ -49,7 +51,16 @@ public class UiModuleImpl implements UiModule {
         if (types != null && types instanceof List) {
             @SuppressWarnings("unchecked")
             List<String> typesTyped = (List<String>) types;
-            result.setTypes(new HashSet<String>(typesTyped));
+            result.setTypes(new LinkedHashSet<String>(typesTyped));
+        }
+        final Object supersedes = incomingMap.get("supersedes");
+        if (supersedes != null && supersedes instanceof List) {
+            @SuppressWarnings("unchecked")
+            List<String> supersedesTyped = (List<String>) supersedes;
+            result.setSupersedesBundles(new LinkedHashSet<String>(supersedesTyped));
+        }
+        if (incomingMap.containsKey("stopExisting")) {
+            result.setStopExisting(Boolean.getBoolean((String) incomingMap.get("stopExisting")));
         }
         final Object actions = incomingMap.get("actions");
         if (actions != null && actions instanceof List) {
@@ -88,6 +99,16 @@ public class UiModuleImpl implements UiModule {
     }
 
     @Override
+    public Set<String> getSupersedesBundles() {
+        return supersedesBundles;
+    }
+    
+    @Override
+    public boolean getStopExisting() {
+        return stopExisting;
+    }
+
+    @Override
     public String getPath() {
         return path;
     }
@@ -115,6 +136,14 @@ public class UiModuleImpl implements UiModule {
 
     public void setTypes(final Set<String> types) {
         this.types = types;
+    }
+
+    public void setSupersedesBundles(final Set<String> supersedesBundles) {
+        this.supersedesBundles = supersedesBundles;
+    }
+    
+    public void setStopExisting(final boolean stopExisting) {
+        this.stopExisting = stopExisting;
     }
 
     public void setPath(String path) {
