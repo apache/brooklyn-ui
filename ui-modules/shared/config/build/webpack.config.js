@@ -207,6 +207,10 @@ const config = {
     ]
 };
 
+if (fs.existsSync(pj(BRAND_DIR, 'build-config-tweak.js'))) {
+  eval(""+fs.readFileSync(pj(BRAND_DIR, 'build-config-tweak.js')));
+}
+
 if (ENV === 'development') {
     config.watch = true;
     config.debug = true;
