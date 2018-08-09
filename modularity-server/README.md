@@ -25,7 +25,7 @@ Optionally it can include:
 * `actions` (not used currently, see code to understand)
 * `stopExisting` (boolean, whether to stop lower-numbered bundles listening on the same
   context-path declared in `web.xml`, defaulting to `true`)
-* `supersedesBundles` (a list of `bundle-regex:version-regex` of bundles that should be stopped 
+* `supersedes` (a list of `bundle-regex:version-regex` of bundles that should be stopped 
   when this UI module is installed; this is used for downstream projects that may override UI modules 
   and wish to ensure their modules are used without relying on bundle install order (but often bundle install order is sufficient))
 

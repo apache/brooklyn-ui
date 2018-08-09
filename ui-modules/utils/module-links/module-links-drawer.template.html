@@ -17,8 +17,8 @@
   under the License.
 -->
 <div class="ui-module-nav-drawer-container">
-    <div ng-repeat="module in modules track by id" ng-if="modules">
-        <a ng-href="module.path" ng-if="module.path">
+    <div ng-repeat="module in modules track by id" ng-if="module.path && !module.type.includes('library-ui-module')">
+        <a ng-href="module.path">
             <i class="module-icon fa {{module.icon}}"></i>
             <div class="module-name">{{module.name}}</div>
         </a>
