@@ -55,7 +55,7 @@ export function saveToCatalogModalDirective($rootScope, $uibModal) {
     };
 
     function link($scope) {
-        $scope.buttonText = Object.keys($scope.config).length > 0 ? `Update ${$scope.config.name || $scope.config.symbolicName}` : 'Add to catalog';
+        $scope.buttonText = $scope.config.label || ($scope.config.itemType ? `Update ${$scope.config.name || $scope.config.symbolicName}` : 'Add to catalog');
         $scope.activateModal = () => {
             let modalInstance = $uibModal.open({
                 template: modalTemplate,
