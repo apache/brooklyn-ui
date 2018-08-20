@@ -51,7 +51,16 @@ export function dslViewerDirective() {
             return [KIND.STRING, KIND.NUMBER].includes(dsl.kind);
         };
         scope.getRelatedEntity = () => {
-            return scope.dsl.getRoot().relationships.find(entity => entity.id === scope.dsl.params[0].name);
+            if (scope.dsl.params.length > 0) {
+                // If the DSL is looking at an entity ID
+                return scope.dsl.getRoot().relationships.find(entity => entity.id === scope.dsl.params[0].name)
+            } else if (scope.dsl.getRoot().relationships.length > 0) {
+                // If the DSL is of the form $brooklyn:self() or $brooklyn:parent()
+                return scope.dsl.getRoot().relationships[0];
+            } else {
+                // Otherwise, there is no related entity
+                return null;
+            }
         }
     }
 }
