@@ -1,0 +1,68 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+ 
+suggestion-dropdown {
+
+    width: 100%;
+    
+    .control-value {
+        // for widgets that are text, this aligns it with the label when collapsed and gives nice spacing when expanded.
+        // (for widgets that are dropdowns etc this should be omitted)
+//        padding-top: 2px;
+    }
+    .extra-label {
+        // this seems to work best here (instead of padding above) when combining a label with a textarea control 
+        padding-top: 4px;
+    }
+    .inline-label {
+        margin-right: 5px;
+        white-space: nowrap;
+    }
+    spec-editor .spec-configuration .form-group & .control-value .config-flex-row {
+        flex-flow: nowrap;
+    }
+    .form-group:not(:focus-within):not(:focus) & .control-value .dropdown-menu {
+        // hide the dropdown menu when collapsed
+        display: none;
+    }
+    
+    .dropdown-menu li a {
+        // quite a lot of padding in normal dropdown, in the ul and in the a
+        padding: 0;
+    }
+    .dropdown-item {
+        display: flex;
+        flex-flow: row wrap;
+        width: 100%;
+    }
+    .dropdown-item-value {
+        flex: 1 0 auto;
+    }
+    .dropdown-item-description {
+        flex: 10 1 auto;
+        text-align: right;
+        font-style: italic;
+        font-size: 80%;
+        margin-bottom: 0;
+        margin-left: 12px;
+        max-width: 70%;
+        margin-top: 2px;
+        line-height: 18px;
+    }
+}

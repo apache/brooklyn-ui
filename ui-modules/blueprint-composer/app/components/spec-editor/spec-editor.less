@@ -235,9 +235,6 @@ spec-editor {
     }
   }
 
-  .spec-configuration-add {
-    margin-bottom: 15px;
-  }
   .spec-configuration {
     & > div {
       margin-top: 30px;
@@ -272,11 +269,22 @@ spec-editor {
       margin-right: 0.5em;
       .remove-affordance();
     }
+    span.rhs-buttons-subspan {
+      display: flex;
+    }
     .json-config i {
         margin-top: 2px; //nudge down to make aligned
     }
-    .dsl-open-wizard-from-toolbar, .dsl-manual-override-editor, .json-config {
+    .dsl-open-wizard-from-toolbar, .dsl-manual-override-editor, .json-config, .custom-widget-enable-button {
         .toolbar-button-affordance()
+    }
+    .custom-widget-enable-button.custom-widget-active {
+        i {
+            color: @brand-primary;
+        }
+        &:hover i {
+            color: @gray-light;
+        }
     }
     .dsl-manual-override-editor.dsl-viewer-manual-override,
     .json-config.code-mode-active {
@@ -327,8 +335,11 @@ spec-editor {
       }
     }
     .form-group {
-        display: flex;
-        flex-flow: row wrap;
+        &, .config-flex-row, .custom-config-widget {
+            display: flex;
+            flex-flow: row wrap;
+            width: 100%;
+        }
         .control-label {
             flex: 0 0 auto;
             order: 10;
@@ -406,6 +417,9 @@ spec-editor {
             }
         }
         &:not(:focus-within):not(:focus) {
+            .hide-when-collapsed {
+                display: none;
+            }
             input {
                 // the RHS is square if DSL button hidden; simplest fix is to make LHS square too
                 border-radius: 0;
@@ -426,6 +440,9 @@ spec-editor {
         }
     }
     .form-group:focus, .form-group:focus-within {
+        .hide-when-expanded {
+            display: none;
+        }
         .control-value:not(.inline-control) {
             flex-basis: 100%;
         }
@@ -751,6 +768,17 @@ spec-editor {
     padding: 0.5em;
     margin-top: -12px;
     margin-bottom: 24px;
+    .dropdown-menu li a {
+        // quite a lot of padding in normal dropdown, in the ul and in the a
+        padding: 0;
+    }
+    .dropdown-item {
+        .config-name {
+            font-family: courier;
+            font-size: 95%;
+            margin-right: 1ex;
+        }
+    }
 
     legend {
       color: @gray;

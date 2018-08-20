@@ -18,6 +18,7 @@
  */
 package org.apache.brooklyn.ui.modularity.enricher;
 
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
@@ -32,6 +33,8 @@ import org.apache.brooklyn.config.ConfigKey;
 import org.apache.brooklyn.core.config.ConfigKeys;
 import org.apache.brooklyn.core.enricher.AbstractEnricher;
 import org.apache.brooklyn.core.entity.Attributes;
+import org.apache.brooklyn.ui.modularity.module.api.UiModule;
+import org.apache.brooklyn.ui.modularity.module.api.UiModuleAction;
 import org.apache.brooklyn.util.collections.MutableSet;
 import org.apache.brooklyn.util.core.flags.TypeCoercions;
 import org.osgi.framework.Bundle;
@@ -41,10 +44,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.TypeToken;
-
-import org.apache.brooklyn.ui.modularity.module.api.UiModule;
-import org.apache.brooklyn.ui.modularity.module.api.UiModuleAction;
 
 public class BrooklynExternalUiModuleEnricher extends AbstractEnricher {
     private static final Logger LOG = LoggerFactory.getLogger(BrooklynExternalUiModuleEnricher.class);
@@ -57,6 +58,8 @@ public class BrooklynExternalUiModuleEnricher extends AbstractEnricher {
     public static final ConfigKey<String> MODULE_SLUG = ConfigKeys.newStringConfigKey(
             "external.ui.module.slug", "Module slug");
     public static final ConfigKey<List<String>> MODULE_TYPE = ConfigKeys.newConfigKey(new TypeToken<List<String>>() {}, "external.ui.module.types", "Module types", ImmutableList.<String>of());
+    public static final ConfigKey<List<String>> SUPERSEDES_BUNDLES = ConfigKeys.newConfigKey(new TypeToken<List<String>>() {}, "external.ui.module.supersedes", "Bundles supersedes", ImmutableList.<String>of());
+    public static final ConfigKey<Boolean> STOP_EXISTING = ConfigKeys.newConfigKey(new TypeToken<Boolean>() {}, "external.ui.module.stopExisting", "Module stops existing", true);
     public static final ConfigKey<Sensor<?>> MODULE_URL_SENSOR_TO_MONITOR =
             (ConfigKey) ConfigKeys.newConfigKey(Sensor.class, "external.ui.module.url.sensor", "Module URL Sensor", Attributes.MAIN_URI);
 
@@ -97,7 +100,7 @@ public class BrooklynExternalUiModuleEnricher extends AbstractEnricher {
                 LOG.debug("Could not register external UI module [{} :: {}] ... Could not load bundle context", getId(), getConfig(MODULE_NAME));
             } else {
                 final Set<String> types = MutableSet.<String>builder().add("external-ui-module").addAll(getConfig(MODULE_TYPE)).build();
-                final UiModule uiModule = newUiModule(getId(), getConfig(MODULE_NAME), getConfig(MODULE_SLUG), types, url, getConfig(MODULE_ICON));
+                final UiModule uiModule = newUiModule(getId(), getConfig(MODULE_NAME), getConfig(MODULE_SLUG), types, url, getConfig(MODULE_ICON), getConfig(SUPERSEDES_BUNDLES), getConfig(STOP_EXISTING));
                 registration = bundle.getBundleContext().registerService(
                         UiModule.class, uiModule, EMPTY_DICTIONARY);
                 LOG.debug("Registered external UI module [{} :: {}]", getId(), getConfig(MODULE_NAME));
@@ -119,7 +122,7 @@ public class BrooklynExternalUiModuleEnricher extends AbstractEnricher {
         }
     }
 
-    private UiModule newUiModule(final String id, final String name, final String slug, final Set<String> types, final String url, final String icon) {
+    private UiModule newUiModule(final String id, final String name, final String slug, final Set<String> types, final String url, final String icon, final Collection<String> supersedes, final boolean stopExisting) {
         return new UiModule() {
             @Override
             public String getId() {
@@ -154,6 +157,16 @@ public class BrooklynExternalUiModuleEnricher extends AbstractEnricher {
             @Override
             public List<UiModuleAction> getActions() {
                 return ImmutableList.of();
+            }
+
+            @Override
+            public Set<String> getSupersedesBundles() {
+                return ImmutableSet.copyOf(supersedes);
+            }
+
+            @Override
+            public boolean getStopExisting() {
+                return stopExisting;
             }
         };
     }

@@ -28,6 +28,10 @@
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>
 
+    <listener>
+        <listener-class>org.apache.brooklyn.ui.modularity.module.api.UiModuleListener</listener-class>
+    </listener>
+
     <!--FILTERS :: START-->
     <filter>
         <filter-name>ui-module-filter</filter-name>

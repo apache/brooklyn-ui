@@ -53,8 +53,8 @@ export function moduleLinksMenuDirective($compile) {
     function controller(brBrandInfo, brooklynUiModulesApi) {
         this.modules = null;
         this.isModuleActive = (path) => {
-            if (path === '/') {
-                return window.location.pathname === path;
+            if (path === '/' || path === '') {
+                return window.location.pathname === '/';
             } else {
                 return window.location.pathname.startsWith(path);
             }
