@@ -159,7 +159,7 @@ export const graphicalEditDslState = {
             if (!view) {
                 view = {
                     name: $state.current.name,
-                    params: $state.params
+                    params: angular.copy($state.params)
                 };
                 objectCache.put(`${definition.name}.view`, view);
             }
