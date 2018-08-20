@@ -56,7 +56,7 @@ const layers = [
 ];
 const layerCacheKey = 'blueprint-composer.layers';
 
-export function MainController($scope, $log, $state, $stateParams, brBrandInfo, blueprintService, actionService, catalogApi, applicationApi, brSnackbar, brBottomSheet, edit, yaml) {
+export function MainController($scope, $element, $log, $state, $stateParams, brBrandInfo, blueprintService, actionService, catalogApi, applicationApi, brSnackbar, brBottomSheet, edit, yaml, composerOverrides) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
     let vm = this;
 
@@ -126,7 +126,7 @@ export function MainController($scope, $log, $state, $stateParams, brBrandInfo, 
 
     vm.deployApplication = function () {
         if (blueprintService.hasIssues()) {
-            displayIssues();
+            vm.displayIssues();
             return;
         }
 
@@ -141,7 +141,7 @@ export function MainController($scope, $log, $state, $stateParams, brBrandInfo, 
         return actionService.getActions();
     }
 
-    function displayIssues() {
+    vm.displayIssues = () => {
         let isOnlyWarnings = blueprintService.getIssues().length === blueprintService.getIssues().filter(issue => issue.level === ISSUE_LEVEL.WARN).length;
         let message = '';
         let options = {};
@@ -238,6 +238,9 @@ export function MainController($scope, $log, $state, $stateParams, brBrandInfo, 
             });
         }
     }
+
+    // allow downstream to configure controller and scope here
+    (composerOverrides.configureMainController || function() {})(vm, $scope, $element);
 }
 
 export const mainState = {
@@ -245,7 +248,7 @@ export const mainState = {
     url: '/?bundleSymbolicName&bundleVersion&typeSymbolicName&typeVersion&yaml',
     abstract: true,
     template: template,
-    controller: ['$scope', '$log', '$state', '$stateParams', 'brBrandInfo', 'blueprintService', 'actionService', 'catalogApi', 'applicationApi', 'brSnackbar', 'brBottomSheet', 'edit', 'yaml', MainController],
+    controller: ['$scope', '$element', '$log', '$state', '$stateParams', 'brBrandInfo', 'blueprintService', 'actionService', 'catalogApi', 'applicationApi', 'brSnackbar', 'brBottomSheet', 'edit', 'yaml', 'composerOverrides', MainController],
     controllerAs: 'vm',
     resolve: {
         edit: ['$stateParams', '$q', 'paletteApi', ($stateParams, $q, paletteApi) => {

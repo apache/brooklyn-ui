@@ -36,39 +36,39 @@ import brooklynUserManagement from 'brooklyn-ui-utils/user-management/user-manag
 import brYamlEditor from 'brooklyn-ui-utils/yaml-editor/yaml-editor';
 import brUtils from 'brooklyn-ui-utils/utils/general';
 
-import brSpecEditor from 'components/spec-editor/spec-editor.directive';
-import brooklynCatalogSaver from 'components/catalog-saver/catalog-saver.directive';
+import brSpecEditor from './components/spec-editor/spec-editor.directive';
+import brooklynCatalogSaver from './components/catalog-saver/catalog-saver.directive';
 import paletteApiProvider from "./components/providers/palette-api.provider"
 
 import brooklynApi from "brooklyn-ui-utils/brooklyn.api/brooklyn.api";
-import {designerDirective} from "components/designer/designer.directive";
+import {designerDirective} from "./components/designer/designer.directive";
 import {
     catalogSelectorDirective,
     catalogSelectorSearchFilter,
     catalogSelectorSortFilter
-} from "components/catalog-selector/catalog-selector.directive";
+} from "./components/catalog-selector/catalog-selector.directive";
 import customActionDirective from "./components/custom-action/custom-action.directive";
-import customConfigSuggestionDropdown from "components/custom-config-widget/suggestion-dropdown";
-import {onErrorDirective} from "components/catalog-selector/on-error.directive";
-import {breadcrumbsDirective} from "components/breacrumbs/breadcrumbs.directive";
-import {recursionHelperFactory} from "components/factories/recursion-helper.factory";
-import {objectCacheFactory} from 'components/factories/object-cache.factory';
-import {entityNameFilter, entityVersionFilter, entityTypesFilter} from "components/filters/entity.filter";
-import {locationsFilter} from "components/filters/locations.filter";
-import {blueprintServiceProvider} from "components/providers/blueprint-service.provider";
-import {dslServiceProvider} from "components/providers/dsl-service.provider";
-import {paletteDragAndDropServiceProvider} from "components/providers/palette-dragndrop.provider";
+import customConfigSuggestionDropdown from "./components/custom-config-widget/suggestion-dropdown";
+import {onErrorDirective} from "./components/catalog-selector/on-error.directive";
+import {breadcrumbsDirective} from "./components/breacrumbs/breadcrumbs.directive";
+import {recursionHelperFactory} from "./components/factories/recursion-helper.factory";
+import {objectCacheFactory} from './components/factories/object-cache.factory';
+import {entityNameFilter, entityVersionFilter, entityTypesFilter} from "./components/filters/entity.filter";
+import {locationsFilter} from "./components/filters/locations.filter";
+import {blueprintServiceProvider} from "./components/providers/blueprint-service.provider";
+import {dslServiceProvider} from "./components/providers/dsl-service.provider";
+import {paletteDragAndDropServiceProvider} from "./components/providers/palette-dragndrop.provider";
 import {actionServiceProvider} from "./components/providers/action-service.provider";
-import {mainState} from "views/main/main.controller";
-import {yamlState} from "views/main/yaml/yaml.state";
-import {graphicalState} from "views/main/graphical/graphical.state";
-import {graphicalEditState} from "views/main/graphical/edit/edit.controller";
-import {graphicalEditAddState} from "views/main/graphical/edit/add/add";
-import {graphicalEditEntityState} from "views/main/graphical/edit/entity/edit.entity.controller";
-import {graphicalEditPolicyState} from "views/main/graphical/edit/policy/edit.policy.controller";
-import {graphicalEditEnricherState} from "views/main/graphical/edit/enricher/edit.enricher.controller";
-import {graphicalEditSpecState} from "views/main/graphical/edit/spec/edit.spec.controller";
-import {graphicalEditDslState, dslParamLabelFilter} from "views/main/graphical/edit/dsl/edit.dsl.controller";
+import {mainState} from "./views/main/main.controller";
+import {yamlState} from "./views/main/yaml/yaml.state";
+import {graphicalState} from "./views/main/graphical/graphical.state";
+import {graphicalEditState} from "./views/main/graphical/edit/edit.controller";
+import {graphicalEditAddState} from "./views/main/graphical/edit/add/add";
+import {graphicalEditEntityState} from "./views/main/graphical/edit/entity/edit.entity.controller";
+import {graphicalEditPolicyState} from "./views/main/graphical/edit/policy/edit.policy.controller";
+import {graphicalEditEnricherState} from "./views/main/graphical/edit/enricher/edit.enricher.controller";
+import {graphicalEditSpecState} from "./views/main/graphical/edit/spec/edit.spec.controller";
+import {graphicalEditDslState, dslParamLabelFilter} from "./views/main/graphical/edit/dsl/edit.dsl.controller";
 import bottomSheet from "brooklyn-ui-utils/bottom-sheet/bottom-sheet";
 import stackViewer from 'angular-java-stack-viewer';
 
@@ -84,6 +84,7 @@ angular.module('app', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 
     .provider('dslService', dslServiceProvider)
     .provider('paletteDragAndDropService', paletteDragAndDropServiceProvider)
     .provider('actionService', actionServiceProvider)
+    .provider('composerOverrides', composerOverridesProvider)
     .factory('recursionHelper', ['$compile', recursionHelperFactory])
     .factory('objectCache', ['$cacheFactory', objectCacheFactory])
     .filter('entityName', entityNameFilter)
@@ -113,6 +114,16 @@ function applicationConfig($urlRouterProvider, $stateProvider, $logProvider) {
         .state(graphicalEditEnricherState)
         .state(graphicalEditSpecState)
         .state(graphicalEditDslState);
+}
+
+function composerOverridesProvider() {
+    // callers can do angular.config(['composerOverridesProvider', function (provider) { provider.add({ ... }) })
+    // to set various configuration. to see what configuration is supported, grep for composerOverrides in this project.
+    var result = {};
+    return {
+        $get: () => result,
+        add: (props) => angular.extend(result, props),
+    };
 }
 
 function actionConfig(actionServiceProvider) {

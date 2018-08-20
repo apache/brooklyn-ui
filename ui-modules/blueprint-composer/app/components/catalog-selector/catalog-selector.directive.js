@@ -31,10 +31,11 @@ export function catalogSelectorDirective() {
             family: '<',
             onSelect: '&',
             itemsPerPage: '<',
-            reservedKeys: '<?'
+            reservedKeys: '<?',
+            mode: '@?',  // for use by downstream projects to pass in special modes
         },
         template: template,
-        controller: ['$scope', '$q', '$uibModal', '$log', 'paletteApi', 'paletteDragAndDropService', 'iconGenerator', controller]
+        controller: ['$scope', '$element', '$q', '$uibModal', '$log', '$templateCache', 'paletteApi', 'paletteDragAndDropService', 'iconGenerator', 'composerOverrides', controller]
     };
 }
 
@@ -107,7 +108,7 @@ export function catalogSelectorSortFilter($filter) {
     }
 }
 
-function controller($scope, $q, $uibModal, $log, paletteApi, paletteDragAndDropService, iconGenerator) {
+function controller($scope, $element, $q, $uibModal, $log, $templateCache, paletteApi, paletteDragAndDropService, iconGenerator, composerOverrides) {
     $scope.pagination = {
         page: 1,
         itemsPerPage: $scope.itemsPerPage || ITEMS_PER_PAGE
@@ -116,6 +117,12 @@ function controller($scope, $q, $uibModal, $log, paletteApi, paletteDragAndDropS
         orders: ['name', 'type', 'id'],
         currentOrder: 'name'
     };
+    $scope.getEntityNameForPalette = function(item, entityName) {
+        return (composerOverrides.getEntityNameForPalette || 
+            // above can be overridden with function of signature below to customize display name in palette
+            function(item, entityName, scope) { return entityName; }
+        )(item, entityName, $scope);
+    }
 
     $scope.getPlaceHolder = function () {
         return 'Search';
@@ -223,4 +230,12 @@ function controller($scope, $q, $uibModal, $log, paletteApi, paletteDragAndDropS
         });
         $scope.items = items;
     });
+    $scope.filterPaletteItems = (items) => items;
+
+    // downstream can override this to insert lines below the header
+    $scope.customSubHeadTemplateName = 'composer-palette-empty-sub-head';
+    $templateCache.put($scope.customSubHeadTemplateName, 'xxx');
+
+    // allow downstream to configure this controller and/or scope
+    (composerOverrides.configurePaletteController || function() {})(this, $scope, $element);
 }

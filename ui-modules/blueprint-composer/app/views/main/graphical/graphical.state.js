@@ -25,7 +25,9 @@ import template from './graphical.state.html';
 export const graphicalState = {
     name: 'main.graphical',
     url: 'graphical',
-    template: template,
+    templateProvider: function(composerOverrides) {
+        return composerOverrides.paletteGraphicalStateTemplate || template;
+    },
     controller: ['$scope', '$state', 'blueprintService', graphicalController],
     data: {
         label: 'Graphical Designer'
