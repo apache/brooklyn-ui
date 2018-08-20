@@ -53,9 +53,9 @@ is to run `make` in the relevant module directory, with a Brooklyn REST server o
 For developers, the following links may be useful:
 
 * [Overview and architecture of the project](docs/overview.md)
-* [Creating a new UI module](tools/module-generator/README.md)
 * [Building individual module / Dev environment](ui-modules/home/README.md)
 * [Skinning the UI with custom themes](docs/skinning.md)
+* [Customizing and embedding the UI](docs/customizations.md)
 
 
 ## Troubleshooting

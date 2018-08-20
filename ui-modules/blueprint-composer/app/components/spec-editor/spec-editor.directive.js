@@ -33,7 +33,7 @@ const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
 const REPLACED_DSL_ENTITYSPEC = '___brooklyn:entitySpec';
 
 angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer])
-    .directive('specEditor', ['$rootScope', '$filter', '$log', '$sce', '$timeout', '$document', 'blueprintService', specEditorDirective])
+    .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', 'blueprintService', specEditorDirective])
     .filter('specEditorConfig', specEditorConfigFilter)
     .filter('specEditorType', specEditorTypeFilter);
 
@@ -70,7 +70,7 @@ export const CONFIG_FILTERS = [
     }
 ];
 
-export function specEditorDirective($rootScope, $filter, $log, $sce, $timeout, $document, blueprintService) {
+export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, blueprintService) {
     return {
         restrict: 'E',
         scope: {
@@ -106,6 +106,7 @@ export function specEditorDirective($rootScope, $filter, $log, $sce, $timeout, $
                 codeModeActive: {},
                 codeModeForced: {},
                 codeModeError: {},
+                customConfigWidgetMetadata: {},
             },
             location: {
                 open: false
@@ -144,6 +145,8 @@ export function specEditorDirective($rootScope, $filter, $log, $sce, $timeout, $
             scope.state.config.add.list = getAddListConfig();
         });
 
+        loadCustomConfigWidgetMetadata(scope);
+        
         scope.config = {};
         scope.$watch('model', (newVal, oldVal)=> {
             if (newVal && !newVal.equals(oldVal)) {
@@ -300,7 +303,7 @@ export function specEditorDirective($rootScope, $filter, $log, $sce, $timeout, $
             scope.state.config.add.open = false;
             scope.state.config.focus = $item.name;
             if ($item.isHidden) {
-                scope.state.config.filter.values[ CONFIG_FILTERS[CONFIG_FILTERS.length - 1] ].id = true;
+                scope.state.config.filter.values.all = true;
             }
         };
         scope.recordFocus = ($item)=> {
@@ -514,7 +517,7 @@ export function specEditorDirective($rootScope, $filter, $log, $sce, $timeout, $
                 // local config changed, make sure model is updated too
                 setModelFromLocalConfig();
             }
-        }
+        };
         scope.getJsonModeTitle = (itemName) => {
             if (!scope.state.config.codeModeActive[itemName]) {
                 return "Treat this value as a JSON-encoded object ["+itemName+"]";
@@ -524,7 +527,55 @@ export function specEditorDirective($rootScope, $filter, $log, $sce, $timeout, $
             } else {
                 return "Edit in simple mode, unwrapping JSON if possible ["+itemName+"]";
             }
+        };
+        /** returns 'enabled' or 'disabled' if a widget is defined, or null if no special widget is defined */ 
+        scope.getCustomConfigWidgetMode = (item) => {
+            var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
+            if (!widgetMetadata || widgetMetadata["error"]) return null;
+            return widgetMetadata["enabled"] ? 'enabled' : 'disabled';
+        };
+        scope.toggleCustomConfigWidgetMode = (item, newval) => {
+            var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
+            if (!widgetMetadata) {
+                $log.error('Custom widget mode should not be toggled when not available: '+item.name);
+                return null;
+            }
+            if (!scope.defined(newval)) newval = !widgetMetadata.enabled;
+            widgetMetadata.enabled = newval;
         }
+        scope.getCustomConfigWidgetModeTitle = (item) => {
+            var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
+            if (!widgetMetadata) {
+                // shouldn't be visible
+                return "(custom widget not available)";
+            }
+            return widgetMetadata.enabled ? "Use standard widget" : "Use custom widget";
+        };
+        scope.copyScopeForCustomConfigWidget = (descendantScope) => {
+            descendantScope.toggleCustomConfigWidgetMode = scope.toggleCustomConfigWidgetMode;
+            descendantScope.getCustomConfigWidgetModeTitle = scope.getCustomConfigWidgetModeTitle;
+            descendantScope.defined = scope.defined;
+            descendantScope.config = scope.config;
+            descendantScope.state = scope.state;
+            descendantScope.copyScopeForCustomConfigWidget = scope.copyScopeForCustomConfigWidget;
+        };
+        scope.getCustomConfigWidgetTemplate = (item) => {
+            var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
+            var widgetName = $sanitize(widgetMetadata.widget || '--no-widget--');
+            var templateName = 'custom-config-widget-'+widgetName;
+            if (!$templateCache.get(templateName)) {
+                var widgetDirective = widgetName.replace(/(-[a-z])/g, function($1){return $1[1].toUpperCase();})+'Directive';
+                if ($injector.has(widgetDirective)) {
+                    $templateCache.put(templateName, '<'+widgetName+' item="item" params="state.config.customConfigWidgetMetadata[item.name]"/>');
+                } else {
+                    $log.error('Missing directive '+widgetDirective+' for custom widget for '+item.name+'; falling back to default widget');
+                    scope.state.config.customConfigWidgetMetadata[item.name].error = "Missing directive";
+                    templateName = "error-" + templateName;
+                    $templateCache.put(templateName, '<i>Widget '+widgetName+' missing</i>');
+                }
+            }
+            return templateName;
+        };
         
         scope.isDsl = (key, index) => {
             let val = scope.model.config.get(key);
@@ -557,6 +608,16 @@ export function specEditorDirective($rootScope, $filter, $log, $sce, $timeout, $
             });
         }
 
+        function loadCustomConfigWidgetMetadata(model) {
+            var customConfigWidgets = (scope.model.miscData.get('ui-composer-hints') || {})['config-widgets'] || [];
+            customConfigWidgets.forEach( (wd) => {
+                var keys = wd.keys || [ wd.key ];
+                keys.forEach( (k) => {
+                    scope.state.config.customConfigWidgetMetadata[k] = angular.extend({ enabled: true }, scope.state.config.customConfigWidgetMetadata[k], wd);
+                });
+            });
+        }
+        
         /* config state for each item is stored in multiple places:
          * * scope.config = map of values used/set by editor (strings, map of strings, json code if using code mode, etc);
          *   this should be suitable for ng-model to work with, so e.g. if using code mode we need to put JSON.stringify value in here,
