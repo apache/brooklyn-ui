@@ -63,6 +63,18 @@
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.karaf.web</groupId>
+            <artifactId>org.apache.karaf.web.core</artifactId>
+            <version>${karaf.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.ops4j.pax.web</groupId>
+            <artifactId>pax-web-spi</artifactId>
+            <version>6.0.6</version>  <!-- as it's provided we just need compile support; runtime is pulled in by karaf -->
+            <scope>provided</scope>
+        </dependency>
 
         <!--TEST SCOPE-->
         <dependency>

@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.brooklyn.ui.modularity.module.api.UiModule;
+import org.apache.brooklyn.ui.modularity.module.api.UiModuleAction;
 import org.apache.brooklyn.util.collections.MutableList;
 import org.apache.brooklyn.util.collections.MutableSet;
 import org.osgi.service.component.annotations.Activate;
@@ -35,9 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
-
-import org.apache.brooklyn.ui.modularity.module.api.UiModule;
-import org.apache.brooklyn.ui.modularity.module.api.UiModuleAction;
 
 @Component(
         name = ExternalUiModule.PID,
@@ -59,12 +58,16 @@ public class ExternalUiModule implements UiModule {
     private final String KEY_ICON = "icon";
     private final String KEY_TYPES = "types";
     private final String[] REQUIRED_KEYS = new String[] {KEY_ID, KEY_NAME, KEY_URL, KEY_ICON};
+    private final String KEY_SUPERSEDES = "supersedes";
+    private final String KEY_STOP_EXISTING = "stopExisting";
 
     private String id;
     private String name;
     private String icon;
     private String url;
     private Set<String> types;
+    private Set<String> supersedes;
+    private boolean stopExisting;
 
     @Activate
     public void activate(final Map<String, String> properties) {
@@ -94,12 +97,20 @@ public class ExternalUiModule implements UiModule {
         this.name = properties.get(KEY_NAME);
         this.icon = properties.get(KEY_ICON);
         this.url = properties.get(KEY_URL);
+        
         this.types = MutableSet.of(MODULE_TYPE);
-
         final String userTypes = properties.get(KEY_TYPES);
         if (userTypes != null) {
             this.types.addAll(Arrays.asList(userTypes.split(",")));
         }
+        
+        this.supersedes = MutableSet.of(MODULE_TYPE);
+        final String userSupersedes = properties.get(KEY_SUPERSEDES);
+        if (userSupersedes != null) {
+            this.supersedes.addAll(Arrays.asList(userSupersedes.split(",")));
+        }
+
+        this.stopExisting = properties.get(KEY_STOP_EXISTING)!=null ? Boolean.parseBoolean(properties.get(KEY_STOP_EXISTING)) : true;
     }
 
     @Override
@@ -127,6 +138,16 @@ public class ExternalUiModule implements UiModule {
         return this.types;
     }
 
+    @Override
+    public Set<String> getSupersedesBundles() {
+        return supersedes;
+    }
+    
+    @Override
+    public boolean getStopExisting() {
+        return stopExisting;
+    }
+    
     @Override
     public String getPath() {
         return this.url;
