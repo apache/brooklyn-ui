@@ -46,6 +46,7 @@ function yamlStateController($scope, $rootScope, $timeout, blueprintService, brS
 
             try {
                 blueprintService.setFromYaml(cm.getValue(), true);
+                blueprintService.refreshBlueprintMetadata();
             } catch (err) {
                 if (!(err instanceof YAMLException)) {
                     issues.push({
