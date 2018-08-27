@@ -323,19 +323,16 @@ export function D3Blueprint(container) {
         d3.event.stopPropagation();
         if (d3.event.target.nodeName == 'BODY') {
             if (d3.event.key === "Delete" || d3.event.key === "Backspace") {
-                console.log('-- DELETE/BACKSPACE key outside of text field --');
                 // the selected entity:
                 var selected = _svg.selectAll('.entity.selected');
                 var nItemsSelected = selected._groups[0].length;
                 if (nItemsSelected > 0) {
-                    console.log('Dispatch event to remove node(s)');
-                    // entity = ...
-                    // let event = new CustomEvent("delete-entity", {
-                    //      detail: {
-                    //          entity: entity,
-                    //      }
-                    //  });
-                    //  container.dispatchEvent(event);
+                    let event = new CustomEvent("delete-entity", {
+                          detail: {
+                              entity: selected.data()[0].data,
+                          }
+                      });
+                      container.dispatchEvent(event);
                 }
             }
         }
