@@ -323,7 +323,6 @@ export function D3Blueprint(container) {
         d3.event.stopPropagation();
         if (d3.event.target.nodeName == 'BODY') {
             if (d3.event.key === "Delete" || d3.event.key === "Backspace") {
-                // the selected entity:
                 var selected = _svg.selectAll('.entity.selected');
                 var nItemsSelected = selected._groups[0].length;
                 if (nItemsSelected > 0) {
@@ -332,7 +331,7 @@ export function D3Blueprint(container) {
                               entity: selected.data()[0].data,
                           }
                       });
-                      container.dispatchEvent(event);
+                    container.dispatchEvent(event);
                 }
             }
         }
