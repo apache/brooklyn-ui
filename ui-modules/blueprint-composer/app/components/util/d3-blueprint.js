@@ -314,6 +314,34 @@ export function D3Blueprint(container) {
     }
 
     /**
+     * Triggered when a key is release on the page.
+     *
+     * * Ignores where key press did not originate from the page body (i.e. ignores input to text fields)
+     * * Fires a custom event "delete-entity" when the delete key is pressed.
+     */
+    function onKeyUp() {
+        d3.event.stopPropagation();
+        if (d3.event.target.nodeName == 'BODY') {
+            if (d3.event.key === "Delete" || d3.event.key === "Backspace") {
+                console.log('-- DELETE/BACKSPACE key outside of text field --');
+                // the selected entity:
+                var selected = _svg.selectAll('.entity.selected');
+                var nItemsSelected = selected._groups[0].length;
+                if (nItemsSelected > 0) {
+                    console.log('Dispatch event to remove node(s)');
+                    // entity = ...
+                    // let event = new CustomEvent("delete-entity", {
+                    //      detail: {
+                    //          entity: entity,
+                    //      }
+                    //  });
+                    //  container.dispatchEvent(event);
+                }
+            }
+        }
+    }
+
+    /**
      * Handles the start of a drag operation. Note that this callback is to be used with the internal D3 drag feature.
      *
      * @param node The node for the dragged entity
@@ -1010,6 +1038,9 @@ export function D3Blueprint(container) {
     function showDropzones() {
         _dropZoneGroup.selectAll('.dropzone').classed('hidden', false);
     }
+
+    // register global key events
+    d3.select('body').on('keyup.body', onKeyUp);
 
     return {
         draw: draw,
