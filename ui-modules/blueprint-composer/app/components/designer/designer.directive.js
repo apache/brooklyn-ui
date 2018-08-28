@@ -173,6 +173,11 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
             });
         });
 
+        $element.bind('delete-entity', function (event) {
+            $log.debug('delete-entity');
+            $scope.$broadcast('d3.remove', event.detail.entity);
+        });
+
         $element.bind('drop-external-node', event => {
             let draggedItem = paletteDragAndDropService.draggedItem();
             let target = blueprintService.find(event.detail.parentId);
