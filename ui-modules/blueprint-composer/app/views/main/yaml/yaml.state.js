@@ -46,7 +46,12 @@ function yamlStateController($scope, $rootScope, $timeout, blueprintService, brS
 
             try {
                 blueprintService.setFromYaml(cm.getValue(), true);
-                blueprintService.refreshBlueprintMetadata();
+                //// the model of types etc is not updated in the YAML view; the line below will fix this
+                //// but it makes 1 request per type (even if duplicated) on _every_ keypress (modulo a minor debounce)
+                //// so it isn't worth it for now.  we should have a cache at which point the below could be supported again.
+                //// also it might make sense to do it in the `setFromYaml` method above instead of explicitly below.  
+                // blueprintService.refreshBlueprintMetadata();
+                
             } catch (err) {
                 if (!(err instanceof YAMLException)) {
                     issues.push({

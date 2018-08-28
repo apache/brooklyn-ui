@@ -116,8 +116,9 @@ export class Entity {
      *
      */
     touch() {
-        // include a summary to aid with debugging (otherwise log just shows the property lastUpdated)
-        this.summary = (this.type || "unset") + (this.id ? " "+this.id : "");
+        //// uncomment the line below to include a summary to aid with debugging 
+        //// (otherwise log just shows the property lastUpdated, until you expand)
+        // this.summary = (this.type || "unset") + (this.id ? " "+this.id : "");
         this.lastUpdated = new Date().getTime();
         if (this.hasParent()) {
             this.parent.touch();

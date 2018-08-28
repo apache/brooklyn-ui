@@ -79,6 +79,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         }
         setBlueprintFromJson(newBlueprint);
         $log.debug(TAG + 'Blueprint set from YAML', blueprint);
+        // TODO refresh the blueprint now?  see comments in yaml.state.js and on refreshBlueprint
     }
 
     function getBlueprint() {
@@ -195,6 +196,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
     }
 
     function refreshBlueprintMetadata(entity = blueprint, family = 'ENTITY') {
+        // TODO ideally we'd have a cache for all types
         return refreshEntityMetadata(entity, family).then(()=> {
             return $q.all(entity.children.reduce((result, child) => {
                 result.push(refreshBlueprintMetadata(child));
