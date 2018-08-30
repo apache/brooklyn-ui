@@ -19,9 +19,10 @@
 import {Issue} from './issue.model';
 import {Dsl, DslParser} from './dsl.model';
 
-const MEMBERSPEC_REGEX = /^(\w+\.)+[mM]ember[sS]pec$/;
-const FIRST_MEMBERSPEC_REGEX = /^(\w+\.)+first[mM]ember[sS]pec$/;
-const ANY_MEMBERSPEC_REGEX = /^(\w+\.)+(first)?[mM]ember[sS]pec$/;
+const MEMBERSPEC_REGEX = /^(\w+\.)*[mM]ember[sS]pec$/;
+const FIRST_MEMBERSPEC_REGEX = /^(\w+\.)*first[mM]ember[sS]pec$/;
+// TODO ideally we'd just look at type EntitySpec, not key name, but for now look at keyname, anything ending memberSpec
+const ANY_MEMBERSPEC_REGEX = /^(\w+\.?)*[mM]ember[sS]pec$/;
 const RESERVED_KEY_REGEX = /(^children$|^services$|^locations?$|^brooklyn\.config$|^brooklyn\.enrichers$|^brooklyn\.policies$)/;
 const FIELD = {
     SERVICES: 'services', CHILDREN: 'brooklyn.children', CONFIG: 'brooklyn.config', LOCATION: 'location',
@@ -115,6 +116,9 @@ export class Entity {
      *
      */
     touch() {
+        //// uncomment the line below to include a summary to aid with debugging 
+        //// (otherwise log just shows the property lastUpdated, until you expand)
+        // this.summary = (this.type || "unset") + (this.id ? " "+this.id : "");
         this.lastUpdated = new Date().getTime();
         if (this.hasParent()) {
             this.parent.touch();
@@ -633,7 +637,6 @@ function isCluster() {
         return false;
     }
     let traits = MISC_DATA.get(this).get('traits');
-
     return traits && traits.filter((trait)=> {
         return ['org.apache.brooklyn.entity.group.Cluster',
                 'org.apache.brooklyn.entity.group.Fabric']
