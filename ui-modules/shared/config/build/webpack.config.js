@@ -170,7 +170,7 @@ const config = {
         new ExtractTextPlugin('[name].[chunkhash].css'),
         new webpack.optimize.OccurenceOrderPlugin(),
         new webpack.DefinePlugin({
-            __BROOKLYN_VERSION__: JSON.stringify(process.env.BROOKLYN_VERSION || '1.0.0-SNAPSHOT'),
+            __BROOKLYN_VERSION__: JSON.stringify(process.env.BROOKLYN_VERSION || '1.0.0-M1'),
             __BUILD_NAME__: JSON.stringify(process.env.BUILD_NAME),
             __BUILD_VERSION__: JSON.stringify(process.env.BUILD_VERSION),
             __BUILD_BRANCH__: JSON.stringify(process.env.BUILD_BRANCH),
