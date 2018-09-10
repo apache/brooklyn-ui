@@ -234,7 +234,7 @@ function controller($scope, $element, $q, $uibModal, $log, $templateCache, palet
 
     // downstream can override this to insert lines below the header
     $scope.customSubHeadTemplateName = 'composer-palette-empty-sub-head';
-    $templateCache.put($scope.customSubHeadTemplateName, 'xxx');
+    $templateCache.put($scope.customSubHeadTemplateName, '');
 
     // allow downstream to configure this controller and/or scope
     (composerOverrides.configurePaletteController || function() {})(this, $scope, $element);
