@@ -52,7 +52,7 @@
 </section>
 
 <!-- ENTITY CONFIGURATION -->
-<br-collapsible state="state.config.open">
+<br-collapsible ng-if="true" state="state.config.open">  <!-- the ng-if is needed to make state update?! -->
     <heading>
         Configuration
         <span ng-if="getConfigIssues().length> 0" class="badge" ng-class="getBadgeClass(getConfigIssues())">{{getConfigIssues().length}}</span>

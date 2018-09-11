@@ -372,6 +372,9 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             
             if (!scope.defined(val)) val = scope.config[item.name];
             let type = item.type;
+            if (type && type.indexOf("<")>=0) {
+                type = type.substring(0, type.indexOf("<")); 
+            }
             
             // if actual value's type does not match declared type,
             // e.g. object is a map when declared type is object or string or something else,
