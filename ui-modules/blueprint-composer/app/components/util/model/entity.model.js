@@ -644,6 +644,13 @@ function isCluster() {
     }).length > 0;
 }
 
+export function baseType(s) {
+    if (s && s.indexOf("<")>=0) {
+        s = s.substring(0, s.indexOf("<")); 
+    }
+    return s;
+}
+
 /**
  * Returns a map of <configkey> => Entity of all spec {Entity} defined in the configuration
  * @returns {*}
@@ -653,7 +660,7 @@ function getClusterMemberspecEntities() {
         return {};
     }
     return MISC_DATA.get(this).get('config')
-        .filter((config)=>(config.type === 'org.apache.brooklyn.api.entity.EntitySpec'))
+        .filter((config)=>(baseType(config.type) === EntityFamily.SPEC.superType))
         .reduce((acc, config)=> {
             if (CONFIG.get(this).has(config.name)) {
                 acc[config.name] = CONFIG.get(this).get(config.name)[DSL.ENTITY_SPEC];
@@ -661,7 +668,7 @@ function getClusterMemberspecEntities() {
             return acc;
         }, {});
 }
-
+       
 /**
  * Returns the first memberspec that matches the given predicate
  *
@@ -674,10 +681,13 @@ function getClusterMemberspecEntity(predicate = ()=>(true)) {
     }
 
     return MISC_DATA.get(this).get('config')
-        .filter((config)=>(config.type === 'org.apache.brooklyn.api.entity.EntitySpec'))
+        .filter((config)=>(baseType(config.type) === EntityFamily.SPEC.superType))
         .reduce((acc, config)=> {
-            if (CONFIG.get(this).has(config.name) && predicate(config, CONFIG.get(this).get(config.name)[DSL.ENTITY_SPEC])) {
-                return CONFIG.get(this).get(config.name)[DSL.ENTITY_SPEC];
+            if (CONFIG.get(this).has(config.name)) {
+                let entityV = CONFIG.get(this).get(config.name)[DSL.ENTITY_SPEC];
+                if (entityV && predicate(config, entityV)) {
+                    return entityV;
+                }
             }
             return acc;
         }, undefined);
@@ -688,7 +698,7 @@ function setClusterMemberspecEntity(key, entity) {
         return this;
     }
     let definition = MISC_DATA.get(this).get('config')
-        .filter((config)=>(config.type === 'org.apache.brooklyn.api.entity.EntitySpec' && config.name === key));
+        .filter((config)=>(baseType(config.type) === EntityFamily.SPEC.superType && config.name === key));
     if (definition.length !== 1) {
         return this;
     }

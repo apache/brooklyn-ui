@@ -20,7 +20,7 @@ import angular from 'angular';
 import onEnter from 'brooklyn-ui-utils/on-enter/index';
 import autoGrow from 'brooklyn-ui-utils/autogrow/index';
 import blurOnEnter from 'brooklyn-ui-utils/blur-on-enter/index';
-import {EntityFamily} from '../util/model/entity.model';
+import {EntityFamily, baseType} from '../util/model/entity.model';
 import {Dsl} from '../util/model/dsl.model';
 import {Issue, ISSUE_LEVEL} from '../util/model/issue.model';
 import {RESERVED_KEYS, DSL_ENTITY_SPEC} from '../providers/blueprint-service.provider';
@@ -357,6 +357,13 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             return issues.some(issue => issue.level === ISSUE_LEVEL.ERROR) ? 'badge-danger' : 'badge-warning';
         };
 
+        function baseType(s) {
+            if (s && s.indexOf("<")>=0) {
+                s = s.substring(0, s.indexOf("<")); 
+            }
+            return s;
+        }
+        
         function getConfigWidgetModeInternal(item, val) {
             if (angular.element($document[0].activeElement).hasClass("form-control") && item.widgetMode) {
                 // don't switch mode in mid-edit, e.g. if you are manually typing $brooklyn:component("x").config("y")
@@ -371,10 +378,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             }
             
             if (!scope.defined(val)) val = scope.config[item.name];
-            let type = item.type;
-            if (type && type.indexOf("<")>=0) {
-                type = type.substring(0, type.indexOf("<")); 
-            }
+            let type = baseType(item.type);
             
             // if actual value's type does not match declared type,
             // e.g. object is a map when declared type is object or string or something else,
