@@ -365,13 +365,6 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             return issues.some(issue => issue.level === ISSUE_LEVEL.ERROR) ? 'badge-danger' : 'badge-warning';
         };
 
-        function baseType(s) {
-            if (s && s.indexOf("<")>=0) {
-                s = s.substring(0, s.indexOf("<")); 
-            }
-            return s;
-        }
-        
         function getConfigWidgetModeInternal(item, val) {
             if (angular.element($document[0].activeElement).hasClass("form-control") && item.widgetMode) {
                 // don't switch mode in mid-edit, e.g. if you are manually typing $brooklyn:component("x").config("y")
