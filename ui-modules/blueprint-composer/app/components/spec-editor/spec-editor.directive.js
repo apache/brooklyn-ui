@@ -558,14 +558,6 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             }
             return widgetMetadata.enabled ? "Use standard widget" : "Use custom widget";
         };
-        scope.copyScopeForCustomConfigWidget = (descendantScope) => {
-            descendantScope.toggleCustomConfigWidgetMode = scope.toggleCustomConfigWidgetMode;
-            descendantScope.getCustomConfigWidgetModeTitle = scope.getCustomConfigWidgetModeTitle;
-            descendantScope.defined = scope.defined;
-            descendantScope.config = scope.config;
-            descendantScope.state = scope.state;
-            descendantScope.copyScopeForCustomConfigWidget = scope.copyScopeForCustomConfigWidget;
-        };
         scope.getCustomConfigWidgetTemplate = (item) => {
             var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
             var widgetName = $sanitize(widgetMetadata.widget || '--no-widget--');

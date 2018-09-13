@@ -39,7 +39,7 @@ export function suggestionDropdownDirective($rootScope) {
     };
 
     function link(scope) {
-        scope.$parent.copyScopeForCustomConfigWidget(scope);
+        scope.specEditor = scope.$parent;
         scope.getSuggestions = () => {
             var result = [];
             if (scope.params['suggestion-values']) {
