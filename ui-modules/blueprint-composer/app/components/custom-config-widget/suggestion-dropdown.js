@@ -29,17 +29,21 @@ export default MODULE_NAME;
 
 export function suggestionDropdownDirective($rootScope) {
     return {
+        require: "^^specEditor",  // only intended for use in spec editor, and calls functions on that controller
         restrict: 'E',
         scope: {
             item: '=',
             params: '=',
+            config: '=',
+            model: '=',
         },
         template: template,
         link: link,
     };
 
-    function link(scope) {
-        scope.$parent.copyScopeForCustomConfigWidget(scope);
+    function link(scope, element, attrs, specEditor) {
+        scope.specEditor = specEditor;
+        scope.defined = specEditor.defined;
         scope.getSuggestions = () => {
             var result = [];
             if (scope.params['suggestion-values']) {

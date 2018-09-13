@@ -30,8 +30,8 @@
     <span class="label-rhs-buttons">
         <span class="spacer"> </span>
         <span class="custom-widget-enable-button custom-widget-active">
-            <i class="fa fa-fw fa-sun-o" ng-click="toggleCustomConfigWidgetMode(item, false)" aria-hidden="true" title="{{getCustomConfigWidgetModeTitle(item)}} [{{item.name}}]"></i>
-            <span class="sr-only">{{getCustomConfigWidgetModeTitle(item)}} [{{item.name}}]</span>
+            <i class="fa fa-fw fa-sun-o" ng-click="specEditor.toggleCustomConfigWidgetMode(item, false)" aria-hidden="true" title="{{specEditor.getCustomConfigWidgetModeTitle(item)}} [{{item.name}}]"></i>
+            <span class="sr-only">{{specEditor.getCustomConfigWidgetModeTitle(item)}} [{{item.name}}]</span>
         </span>
     </span>
 
@@ -44,16 +44,18 @@
             <div class="input-group">
                 <textarea ng-model="config[item.name]" class="form-control" name="{{item.name}}" id="{{item.name}}" auto-grow
                           placeholder="{{defined(config[item.name]) ? null : item.defaultValue=='' || item.defaultValue==null ? '(empty)' : item.defaultValue}}"
-                          ng-focus="recordFocus(item)" on-enter="advanceOutToFormGroupInPanel"
+                          ng-focus="specEditor.recordFocus(item)" on-enter="specEditor.advanceOutToFormGroupInPanel"
                           uib-typeahead="suggestion.value for suggestion in getSuggestions() | filter:{value:$viewValue}"
                           typeahead-min-length=0
                           typeahead-template-url="SuggestionTemplate.html"></textarea>
-                <span class="input-group-btn dsl-wizard-button" ng-if="isDslWizardButtonAllowed(item.name)">
+                <span class="input-group-btn dsl-wizard-button" ng-if="specEditor.isDslWizardButtonAllowed(item.name)">
                     <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
                 </span>
             </div>
         </div>
     </div>
+    
+    <small ng-repeat="issue in model.issues | filter:{ref: item.name}:true" class="help-block issue" ng-bind-html="issue.message"></small>
 
 </div>
 
