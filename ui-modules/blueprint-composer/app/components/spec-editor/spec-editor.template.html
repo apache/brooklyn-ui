@@ -133,14 +133,14 @@
                         auto-focus="state.config.focus === item.name"
                         auto-focus-listen-to-window="true"
                         auto-focus-not-if-within="true"
-                        ng-focus="recordFocus(item)"
-                        on-enter="advanceControlInFormGroup">
-                  <div ng-if="getCustomConfigWidgetMode(item) === 'enabled'" class="custom-config-widget">
-                    <ng-include src="getCustomConfigWidgetTemplate(item)" class="custom-config-widget"/>
+                        ng-focus="specEditor.recordFocus(item)"
+                        on-enter="specEditor.advanceControlInFormGroup">
+                  <div ng-if="specEditor.getCustomConfigWidgetMode(item) === 'enabled'" class="custom-config-widget">
+                    <ng-include src="specEditor.getCustomConfigWidgetTemplate(item)" class="custom-config-widget"/>
                   </div>
                   
                   <!-- have to hide it; excluding it conditionally via if doesn't play nice with switch -->
-                  <div ng-show="getCustomConfigWidgetMode(item) !== 'enabled'" class="config-flex-row">
+                  <div ng-show="specEditor.getCustomConfigWidgetMode(item) !== 'enabled'" class="config-flex-row">
                     <label class="control-label" for="{{item.name}}">
                         <span class="label-spec-configuration">{{item.label || item.name}}</span>
                         <span class="info-spec-configuration">
@@ -153,15 +153,15 @@
                     
                     <span class="label-rhs-buttons">
                         <span class="spacer"> </span>
-                        <span class="custom-widget-enable-button" ng-if="getCustomConfigWidgetMode(item) !== null">
-                            <i class="fa fa-fw fa-sun-o" ng-click="toggleCustomConfigWidgetMode(item)" aria-hidden="true" title="{{getCustomConfigWidgetModeTitle(item)}} [{{item.name}}]"></i>
-                            <span class="sr-only">{{getCustomConfigWidgetModeTitle(item)}} [{{item.name}}]</span>
+                        <span class="custom-widget-enable-button" ng-if="specEditor.getCustomConfigWidgetMode(item) !== null">
+                            <i class="fa fa-fw fa-sun-o" ng-click="specEditor.toggleCustomConfigWidgetMode(item)" aria-hidden="true" title="{{specEditor.getCustomConfigWidgetModeTitle(item)}} [{{item.name}}]"></i>
+                            <span class="sr-only">{{specEditor.getCustomConfigWidgetModeTitle(item)}} [{{item.name}}]</span>
                         </span>
                         <span class="json-config" ng-class="{'code-mode-active': state.config.codeModeActive[item.name], 'code-mode-forced': state.config.codeModeForced[item.name]}" ng-if="isCodeModeAvailable(item)">
                             <i class="fa fa-fw fa-code" ng-click="codeModeClick(item)" aria-hidden="true" title="{{getJsonModeTitle(item.name)}} [{{item.name}}]"></i>
                             <span class="sr-only">{{getJsonModeTitle(item.name)}} [{{item.name}}]</span>
                         </span>
-                        <span ng-if="isDsl(item.name)" class="rhs-buttons-subspan">
+                        <span ng-if="specEditor.isDsl(item.name)" class="rhs-buttons-subspan">
                             <span class="dsl-open-wizard-from-toolbar" ng-if="!state.config.dslViewerManualOverride[item.name]">
                                 <i class="fa fa-fw fa-bolt" ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" aria-hidden="true" title="Open in DSL editor [{{item.name}}]"></i>
                                 <span class="sr-only">Open in DSL editor [{{item.name}}]</span>
@@ -180,10 +180,10 @@
                     <div class="control-value" ng-class="{ 'inline-control': item.widgetMode==='boolean', 'unset': !defined(config[item.name]), 'has-default': defined(item.defaultValue) && item.defaultValue!=null, 'code-mode-active': state.config.codeModeActive[item.name] }">
                         <div ng-switch-when="boolean" class="boolean">
                             <div class="btn-group btn-block" role="group">
-                                <button type="button" class="btn btn-xs btn-default" ng-class="{'btn-success active': config[item.name] === false, 'active': config[item.name] === undefined && item.defaultValue === false}" ng-click="config[item.name] = false" ng-focus="recordFocus(item)">false</button>
-                                <button type="button" class="btn btn-xs btn-default" ng-class="{'btn-success active': config[item.name] === true, 'active': config[item.name] === undefined && item.defaultValue === true}" ng-click="config[item.name] = true" ng-focus="recordFocus(item)">true</button>
-                                <span class="input-group-btn dsl-wizard-button" ng-if="isDslWizardButtonAllowed(item.name)">
-                                    <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" class="btn btn-xs btn-default" ng-class="{'btn-success active': config[item.name].length > 0}" title="Open in DSL editor" ng-focus="recordFocus(item)"><i class="fa fa-bolt"></i></a>
+                                <button type="button" class="btn btn-xs btn-default" ng-class="{'btn-success active': config[item.name] === false, 'active': config[item.name] === undefined && item.defaultValue === false}" ng-click="config[item.name] = false" ng-focus="specEditor.recordFocus(item)">false</button>
+                                <button type="button" class="btn btn-xs btn-default" ng-class="{'btn-success active': config[item.name] === true, 'active': config[item.name] === undefined && item.defaultValue === true}" ng-click="config[item.name] = true" ng-focus="specEditor.recordFocus(item)">true</button>
+                                <span class="input-group-btn dsl-wizard-button" ng-if="specEditor.isDslWizardButtonAllowed(item.name)">
+                                    <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" class="btn btn-xs btn-default" ng-class="{'btn-success active': config[item.name].length > 0}" title="Open in DSL editor" ng-focus="specEditor.recordFocus(item)"><i class="fa fa-bolt"></i></a>
                                 </span>
                             </div>
                         </div>
@@ -191,7 +191,7 @@
                         <select ng-switch-when="java.lang.Enum"
                                 ng-model="config[item.name]"
                                 ng-options="s.value as (s.description + (item.defaultValue === s.value ? ' --- default' : '')) for s in item.possibleValues"
-                                ng-focus="recordFocus(item)"
+                                ng-focus="specEditor.recordFocus(item)"
                                 class="form-control"
                                 name="{{item.name}}"
                                 id="{{item.name}}"></select>
@@ -199,7 +199,7 @@
                         <div ng-switch-when="map" 
                                 ng-init="expandMode = 'default'" class="collection"
                                 ng-class="{ 'open-when-unfocused': expandMode=='open' }">
-                            <p class="collection-toggle" ng-click="expandMode = cycleExpandMode(expandMode, 'map', item, state)" ng-focus="recordFocus(item)"
+                            <p class="collection-toggle" ng-click="expandMode = cycleExpandMode(expandMode, 'map', item, state)" ng-focus="specEditor.recordFocus(item)"
                                     ng-class="{ 'has-default': item.defaultValue && getObjectSize(item.defaultValue) }">
                                 <i class="fa collection-caret" ng-class="{'fa-caret-square-o-down': expandMode=='closed', 'fa-caret-square-o-up': expandMode=='open', 'caret-default': expandMode=='default' }" aria-hidden="true" title="{{expandMode=='closed' ? 'Unpin' : expandMode=='open' ? 'Close (pin)' : 'Open (pin)'}} map"></i>
                                 <span class="sr-only">{{expandMode=='closed' ? 'Unpin' : expandMode=='open' ? 'Close (pin)' : 'Open (pin)'}} map</span>
@@ -225,9 +225,9 @@
                                     <div class="collection-item-grow">
                                         <span class="input-group">
                                             <input type="text" ng-model="config[item.name][mapKey]" class="form-control" placeholder="(empty)" 
-                                                    ng-focus="recordFocus(item)"
-                                                    on-enter="advanceControlInFormGroup" />
-                                            <span class="input-group-btn dsl-wizard-button" ng-if="isDslWizardButtonAllowed(item.name, mapKey)">
+                                                    ng-focus="specEditor.recordFocus(item)"
+                                                    on-enter="specEditor.advanceControlInFormGroup" />
+                                            <span class="input-group-btn dsl-wizard-button" ng-if="specEditor.isDslWizardButtonAllowed(item.name, mapKey)">
                                                 <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name, index: mapKey})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
                                             </span>
                                         </span>
@@ -235,8 +235,8 @@
                                 </li>
                                 <li class="collection-item collection-add" ng-class="{'nonempty': nonempty(config[item.name])}">
                                     <input ng-model="newKey" type="text" placeholder="Add property key" class="form-control" 
-                                        ng-focus="recordFocus(item)"
-                                        on-enter="advanceOutToFormGroupInPanel" ng-blur="onAddMapProperty(item.name, newKey, $event); newKey = '';" required />
+                                        ng-focus="specEditor.recordFocus(item)"
+                                        on-enter="specEditor.advanceOutToFormGroupInPanel" ng-blur="onAddMapProperty(item.name, newKey, $event); newKey = '';" required />
                                 </li>
                             </ul>
                         </div>
@@ -244,7 +244,7 @@
                         <div ng-switch-when="array" ng-switch-when-separator="|" 
                                 ng-init="expandMode = 'default'" class="collection"
                                 ng-class="{ 'open-when-unfocused': expandMode=='open' }">
-                            <p class="collection-toggle" ng-click="expandMode = cycleExpandMode(expandMode, 'map', item, state)" ng-focus="recordFocus(item)"
+                            <p class="collection-toggle" ng-click="expandMode = cycleExpandMode(expandMode, 'map', item, state)" ng-focus="specEditor.recordFocus(item)"
                                     ng-class="{ 'has-default': item.defaultValue && item.defaultValue.length }">
                                 <i class="fa collection-caret" ng-class="{'fa-caret-square-o-down': expandMode=='closed', 'fa-caret-square-o-up': expandMode=='open', 'caret-default': expandMode=='default' }" aria-hidden="true" title="{{expandMode=='closed' ? 'Unpin' : expandMode=='open' ? 'Close (pin)' : 'Open (pin)'}} list"></i>
                                 <span class="sr-only">{{expandMode=='closed' ? 'Unpin' : expandMode=='open' ? 'Close (pin)' : 'Open (pin)'}} list</span>
@@ -269,9 +269,9 @@
                                     <div class="collection-item-grow">
                                         <span class="input-group">
                                             <input type="text" ng-model="config[item.name][$index]" class="form-control" placeholder="(empty)" 
-                                                    ng-focus="recordFocus(item)"
-                                                    on-enter="advanceControlInFormGroup" />
-                                            <span class="input-group-btn dsl-wizard-button" ng-if="isDslWizardButtonAllowed(item.name, $index)" ng-focus="recordFocus(item)">
+                                                    ng-focus="specEditor.recordFocus(item)"
+                                                    on-enter="specEditor.advanceControlInFormGroup" />
+                                            <span class="input-group-btn dsl-wizard-button" ng-if="specEditor.isDslWizardButtonAllowed(item.name, $index)" ng-focus="specEditor.recordFocus(item)">
                                                 <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name, index: $index})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
                                             </span>
                                         </span>
@@ -280,9 +280,9 @@
                                 <li class="collection-item collection-add" ng-class="{'nonempty': config[item.name].length>0}">
                                     <span class="input-group">
                                         <input ng-model="newItem" type="text" placeholder="Add item" class="form-control" auto-focus="expandMode != 'closed'" 
-                                            ng-focus="recordFocus(item)"
-                                            on-enter="advanceOutToFormGroupInPanel" ng-blur="onAddListItem(item.name, newItem, $event, $element); newItem = '';" required />
-                                        <span class="input-group-btn dsl-wizard-button" ng-if="isDslWizardButtonAllowed(item.name, -1)">
+                                            ng-focus="specEditor.recordFocus(item)"
+                                            on-enter="specEditor.advanceOutToFormGroupInPanel" ng-blur="onAddListItem(item.name, newItem, $event, $element); newItem = '';" required />
+                                        <span class="input-group-btn dsl-wizard-button" ng-if="specEditor.isDslWizardButtonAllowed(item.name, -1)">
                                             <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name, index: config[item.name].length})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
                                         </span>
                                     </span>
@@ -295,7 +295,7 @@
                                 <a ui-sref="main.graphical.edit.spec({entityId: model._id, specId: adjunct._id})"
                                             class="open-entity-spec"
                                             title="Open in spec editor"
-                                            ng-focus="recordFocus(item)"></a>
+                                            ng-focus="specEditor.recordFocus(item)"></a>
                                 <ng-include src="'AdjunctTemplate.html'"></ng-include>
                             </div>
                             <a ng-if="!config[item.name][REPLACED_DSL_ENTITYSPEC]" ui-sref="main.graphical.edit.add({entityId: model._id, family: 'spec', configKey: item.name})" class="no-spec">
@@ -306,8 +306,8 @@
                         <div class="input-group" ng-switch-default>
                             <textarea ng-model="config[item.name]" class="form-control" name="{{item.name}}" id="{{item.name}}" auto-grow
                                       placeholder="{{defined(config[item.name]) ? null : item.defaultValue=='' || item.defaultValue==null ? '(empty)' : item.defaultValue}}"
-                                      ng-focus="recordFocus(item)" on-enter="advanceOutToFormGroupInPanel"></textarea>
-                            <span class="input-group-btn dsl-wizard-button" ng-if="isDslWizardButtonAllowed(item.name)">
+                                      ng-focus="specEditor.recordFocus(item)" on-enter="specEditor.advanceOutToFormGroupInPanel"></textarea>
+                            <span class="input-group-btn dsl-wizard-button" ng-if="specEditor.isDslWizardButtonAllowed(item.name)">
                                 <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
                             </span>
                         </div>

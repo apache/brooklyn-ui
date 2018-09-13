@@ -35,15 +35,15 @@
         </span>
     </span>
 
-    <div class="control-value" ng-class="{ 'inline-control': item.widgetMode==='boolean', 'unset': !specEditor.defined(specEditor.config[item.name]), 'has-default': specEditor.defined(item.defaultValue) && item.defaultValue!=null }">
+    <div class="control-value" ng-class="{ 'inline-control': item.widgetMode==='boolean', 'unset': !defined(config[item.name]), 'has-default': defined(item.defaultValue) && item.defaultValue!=null }">
         <div class="hide-when-collapsed extra-label" ng-if="params['label-expanded']">
             {{ params['label-expanded'] || "" }}
         </div>
         <div class="config-flex-row">
             <span class="hide-when-expanded inline-label extra-label" ng-if="params['label-collapsed']">{{ params['label-collapsed'] || "" }}</span>
             <div class="input-group">
-                <textarea ng-model="specEditor.config[item.name]" class="form-control" name="{{item.name}}" id="{{item.name}}" auto-grow
-                          placeholder="{{specEditor.defined(config[item.name]) ? null : item.defaultValue=='' || item.defaultValue==null ? '(empty)' : item.defaultValue}}"
+                <textarea ng-model="config[item.name]" class="form-control" name="{{item.name}}" id="{{item.name}}" auto-grow
+                          placeholder="{{defined(config[item.name]) ? null : item.defaultValue=='' || item.defaultValue==null ? '(empty)' : item.defaultValue}}"
                           ng-focus="specEditor.recordFocus(item)" on-enter="specEditor.advanceOutToFormGroupInPanel"
                           uib-typeahead="suggestion.value for suggestion in getSuggestions() | filter:{value:$viewValue}"
                           typeahead-min-length=0
@@ -55,7 +55,7 @@
         </div>
     </div>
     
-    <small ng-repeat="issue in specEditor.model.issues | filter:{ref: item.name}:true" class="help-block issue" ng-bind-html="issue.message"></small>
+    <small ng-repeat="issue in model.issues | filter:{ref: item.name}:true" class="help-block issue" ng-bind-html="issue.message"></small>
 
 </div>
 
