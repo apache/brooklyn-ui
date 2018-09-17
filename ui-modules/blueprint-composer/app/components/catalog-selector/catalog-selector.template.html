@@ -61,7 +61,7 @@
             <!-- here and below, col-xs-3 or -4 or -2 all work giving different densities;
                  this could be configurable ("compressed"=xs-2 w no labels, "normal"=xs-3, "big"=xs-4) -->
             <div class="col-xs-3 catalog-palette-item"
-                    ng-repeat="item in searchedItems = (filterPaletteItems(items) | catalogSelectorSearch:search | catalogSelectorSort:family) | orderBy:state.currentOrder | limitTo:pagination.itemsPerPage:(pagination.page-1)*pagination.itemsPerPage track by (item.containingBundle + ':' + item.symbolicName + ':' + item.version)"
+                    ng-repeat="item in searchedItems = (filterPaletteItems(items | catalogSelectorSearch:search) | catalogSelectorSort:family) | orderBy:state.currentOrder | limitTo:pagination.itemsPerPage:(pagination.page-1)*pagination.itemsPerPage track by (item.containingBundle + ':' + item.symbolicName + ':' + item.version)"
                     ng-click="onSelectItem(item)">
                 <div class="item" draggable="true" ng-dragstart="onDragItem(item, $event)" ng-dragend="onDragEnd(item, $event)">
                     <div class="item-logo">
@@ -95,6 +95,8 @@
         </div>
 
         <div uib-pagination total-items="searchedItems.length" items-per-page="pagination.itemsPerPage" ng-model="pagination.page" boundary-link-numbers="true" rotate="false" max-size="4" ng-show="searchedItems.length > pagination.itemsPerPage" class="pagination-sm pull-right"></div>
+        
+        <ng-include src="customFooterTemplateName"/>
     </div>
 </div>
 
