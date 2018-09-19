@@ -107,7 +107,6 @@
                         <Export-Package>
                             !*
                         </Export-Package>
-                        <Service-Component>*</Service-Component>
                     </instructions>
                 </configuration>
             </plugin>
