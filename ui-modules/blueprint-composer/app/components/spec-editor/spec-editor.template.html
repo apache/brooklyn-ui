@@ -126,7 +126,7 @@
         </div>
 
         <form name="formSpecConfig" novalidate class="lightweight">
-            <div ng-repeat="item in (filteredItems = (model.miscData.get('config') | specEditorConfig:state.config.filter.values:model.config | filter:{name:state.config.search} | orderBy:+priority)) track by item.name ">
+            <div ng-repeat="item in (filteredItems = (model.miscData.get('config') | specEditorConfig:state.config.filter.values:model | filter:{name:state.config.search} | orderBy:+priority)) track by item.name ">
                 <div class="form-group" ng-class="{'has-error': (model.issues | filter:{ref: item.name}:true).length > 0, 'used': config[item.name] !== undefined}" 
                         ng-switch="getConfigWidgetMode(item)" 
                         tabindex="1"
