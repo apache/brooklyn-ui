@@ -236,8 +236,8 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
 
             promise.then((data)=> {
                 deferred.resolve(populateEntityFromApiSuccess(entity, data));
-            }).catch(function () {
-                deferred.resolve(populateEntityFromApiError(entity));
+            }).catch(function (error) {
+                deferred.resolve(populateEntityFromApiError(entity, error));
             });
         } else if (entity.parent) {
             entity.clearIssues({group: 'type'}).addIssue(Issue.builder().group('type').message('Entity needs a type').level(ISSUE_LEVEL.WARN).build());
@@ -275,10 +275,20 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         return $q((resolve) => {
             if (entity.miscData.has('config')) {
                 entity.miscData.get('config')
-                    .filter(config => config.constraints && Object.keys(config.constraints).length > 0)
+                    .filter(config => config.constraints && config.constraints.length > 0)
                     .forEach(config => {
-                        for (let [key, constraint] of Object.entries(config.constraints) ) {
+                        for (let constraintO of config.constraints) {
                             let message = null;
+                            let key = null, args = null;
+                            if (constraintO instanceof String) {
+                                key = constraintO;
+                            } else if (Object.keys(constraintO).length==1) {
+                                key = Object.keys(constraintO)[0];
+                                args = constraintO[key];
+                            } else {
+                                $log.warn("Unknown constraint object", constraintO);
+                                key = constraintO;
+                            }
                             switch (key) {
                                 case 'Predicates.notNull()':
                                 case 'required':
@@ -287,8 +297,28 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
                                     }
                                     break;
                                 case 'regex':
-                                    if (!entity.config.has(config.name) || !angular.isDefined(entity.config.get(config.name)) || !(new RegExp(constraint).test(entity.config.get(config.name)))) {
-                                        message = `<samp>${config.name}</samp> does not match the required format: <samp>${config.constraints.regex}</samp>`;
+                                    if (entity.config.has(config.name) && angular.isDefined(entity.config.get(config.name)) && !(new RegExp(args).test(entity.config.get(config.name)))) {
+                                        message = `<samp>${config.name}</samp> does not match the required format: <samp>${args}</samp>`;
+                                    }
+                                    break;
+                                case 'forbiddenIf':
+                                    if (entity.config.get(config.name) && entity.config.get(args)) {
+                                        message = `<samp>${config.name}</samp> cannot be set when <samp>${args}</samp> is set`;
+                                    }
+                                    break;
+                                case 'forbiddenUnless':
+                                    if (entity.config.get(config.name) && !entity.config.get(args)) {
+                                        message = `<samp>${config.name}</samp> cannot be set unless <samp>${args}</samp> is set`;
+                                    }
+                                    break;
+                                case 'requiredIf':
+                                    if (!entity.config.get(config.name) && entity.config.get(args)) {
+                                        message = `<samp>${config.name}</samp> is required when <samp>${args}</samp> is set`;
+                                    }
+                                    break;
+                                case 'requiredUnless':
+                                    if (!entity.config.get(config.name) && !entity.config.get(args)) {
+                                        message = `<samp>${config.name}</samp> is required when <samp>${args}</samp> is not set`;
                                     }
                                     break;
                             }
@@ -321,8 +351,8 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
 
             paletteApi.getType(policy.type, policy.version).then((data)=> {
                 deferred.resolve(populateEntityFromApiSuccess(policy, data));
-            }).catch(function () {
-                deferred.resolve(populateEntityFromApiError(policy));
+            }).catch(function (error) {
+                deferred.resolve(populateEntityFromApiError(policy, error));
             }).finally(()=> {
                 policy.miscData.set('loading', false);
             });
@@ -340,8 +370,8 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
 
             paletteApi.getType(enricher.type, enricher.version).then((data)=> {
                 deferred.resolve(populateEntityFromApiSuccess(enricher, data));
-            }).catch(function () {
-                deferred.resolve(populateEntityFromApiError(enricher));
+            }).catch(function (error) {
+                deferred.resolve(populateEntityFromApiError(enricher, error));
             }).finally(()=> {
                 enricher.miscData.set('loading', false);
             });
@@ -482,21 +512,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
             version: data.containingBundle.split(':')[1]
         });
         entity.miscData.set('typeName', data.displayName || data.symbolicName);
-        entity.miscData.set('config', (data.config || []).map(config => {
-            if (config.constraints) {
-                config.constraints = config.constraints.reduce((map, constraint) => {
-                    if (constraint.startsWith('matchesRegex')) {
-                        map.regex = constraint.replace(/matchesRegex\(([^)]*)\)/, '$1');
-                    } else {
-                        // The constraint "required" falls back into this case. Good enough for now as we only support
-                        // 2 types of constraints.
-                        map[constraint] = true;
-                    }
-                    return map;
-                }, {});
-            }
-            return config;
-        }));
+        entity.miscData.set('config', data.config || []);
         entity.miscData.set('sensors', data.sensors || []);
         entity.miscData.set('traits', data.supertypes || []);
         entity.miscData.set('tags', data.tags || []);
@@ -520,7 +536,8 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         return dst;
     }
 
-    function populateEntityFromApiError(entity) {
+    function populateEntityFromApiError(entity, error) {
+        $log.warn("Error loading/populating type, data will be incomplete.", entity, error);
         entity.clearIssues({group: 'type'});
         entity.addIssue(Issue.builder().group('type').message($sce.trustAsHtml(`Type <samp>${entity.type + (entity.hasVersion ? ':' + entity.version : '')}</samp> does not exist`)).build());
         entity.miscData.set('typeName', entity.type || '');
