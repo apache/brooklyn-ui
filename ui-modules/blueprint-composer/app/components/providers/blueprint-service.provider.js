@@ -289,35 +289,39 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
                                 $log.warn("Unknown constraint object", constraintO);
                                 key = constraintO;
                             }
+                            let val = (k) => entity.config.get(k || config.name);
+                            let isSet = (k) => entity.config.has(k || config.name) && angular.isDefined(val(k));
+                            let hasDefault = () => angular.isDefined(config.defaultValue);
                             switch (key) {
                                 case 'Predicates.notNull()':
                                 case 'required':
-                                    if (!angular.isDefined(config.defaultValue) && (!entity.config.has(config.name) || !angular.isDefined(entity.config.get(config.name)))) {
+                                    if (!isSet() && !hasDefault() && val()!='') {
+                                        // "required" also means that it must not be the empty string
                                         message = `<samp>${config.name}</samp> is required`;
                                     }
                                     break;
                                 case 'regex':
-                                    if (entity.config.has(config.name) && angular.isDefined(entity.config.get(config.name)) && !(new RegExp(args).test(entity.config.get(config.name)))) {
+                                    if (isSet() && !(new RegExp(args).test(val))) {
                                         message = `<samp>${config.name}</samp> does not match the required format: <samp>${args}</samp>`;
                                     }
                                     break;
                                 case 'forbiddenIf':
-                                    if (entity.config.get(config.name) && entity.config.get(args)) {
+                                    if (isSet() && isSet(args)) {
                                         message = `<samp>${config.name}</samp> cannot be set when <samp>${args}</samp> is set`;
                                     }
                                     break;
                                 case 'forbiddenUnless':
-                                    if (entity.config.get(config.name) && !entity.config.get(args)) {
+                                    if (isSet() && !isSet(args)) {
                                         message = `<samp>${config.name}</samp> cannot be set unless <samp>${args}</samp> is set`;
                                     }
                                     break;
                                 case 'requiredIf':
-                                    if (!entity.config.get(config.name) && entity.config.get(args)) {
+                                    if (!isSet() && isSet(args)) {
                                         message = `<samp>${config.name}</samp> is required when <samp>${args}</samp> is set`;
                                     }
                                     break;
                                 case 'requiredUnless':
-                                    if (!entity.config.get(config.name) && !entity.config.get(args)) {
+                                    if (!isSet() && !isSet(args)) {
                                         message = `<samp>${config.name}</samp> is required when <samp>${args}</samp> is not set`;
                                     }
                                     break;
