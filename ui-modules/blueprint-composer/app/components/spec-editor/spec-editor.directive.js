@@ -50,15 +50,16 @@ export const CONFIG_FILTERS = [
     {
         id: 'required',
         label: 'Required',
-        filter: (item)=> {
-            return item.constraints && item.constraints.required;
+        filter: (item, model)=> {
+            return (item.constraints && item.constraints.required) ||
+                (model && model.issues && model.issues.some((issue)=>(issue.group === 'config' && issue.ref === item.name)) );
         }
     },
     {
         id: 'inuse',
         label: 'In Use',
-        filter: (item, currentConfig)=> {
-            return currentConfig.has(item.name);
+        filter: (item, model)=> {
+            return model && model.config && model.config.has(item.name);
         }
     },
     {
@@ -601,7 +602,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             if (!angular.isArray(scope.model.miscData.get('config'))) {
                 return [];
             }
-            let filteredConfig = $filter('specEditorConfig')(scope.model.miscData.get('config'), scope.state.config.filter.values, scope.model.config);
+            let filteredConfig = $filter('specEditorConfig')(scope.model.miscData.get('config'), scope.state.config.filter.values, scope.model);
             return scope.model.miscData.get('config').map((config)=> {
                 config.isHidden = scope.model.miscData.get('config').indexOf(config) > -1 ? filteredConfig.indexOf(config) === -1 : false;
                 return config;
@@ -827,7 +828,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
 }
 
 export function specEditorConfigFilter() {
-    return function (input, filtersMapById, currentConfig) {
+    return function (input, filtersMapById, model) {
         let filters = [];
         Object.keys(filtersMapById).forEach( (k) => { if (filtersMapById[k]) filters.push(k); } );
         
@@ -838,7 +839,7 @@ export function specEditorConfigFilter() {
             return input;
         }
         return input.filter((item)=> {
-            return filters.some(filterId => CONFIG_FILTERS.find(filter => filter.id === filterId).filter(item, currentConfig));
+            return filters.some(filterId => CONFIG_FILTERS.find(filter => filter.id === filterId).filter(item, model));
         });
     }
 }
