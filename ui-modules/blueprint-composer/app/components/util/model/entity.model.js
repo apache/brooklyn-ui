@@ -22,7 +22,7 @@ import {Dsl, DslParser} from './dsl.model';
 const MEMBERSPEC_REGEX = /^(\w+\.)*[mM]ember[sS]pec$/;
 const FIRST_MEMBERSPEC_REGEX = /^(\w+\.)*first[mM]ember[sS]pec$/;
 // TODO ideally we'd just look at type EntitySpec, not key name, but for now look at keyname, anything ending memberSpec
-const ANY_MEMBERSPEC_REGEX = /^(\w+\.?)*[mM]ember[sS]pec$/;
+const ANY_MEMBERSPEC_REGEX = /^(\w+\.)*(\w*)[mM]ember[sS]pec$/;
 const RESERVED_KEY_REGEX = /(^children$|^services$|^locations?$|^brooklyn\.config$|^brooklyn\.enrichers$|^brooklyn\.policies$)/;
 const FIELD = {
     SERVICES: 'services', CHILDREN: 'brooklyn.children', CONFIG: 'brooklyn.config', LOCATION: 'location',
