@@ -273,17 +273,17 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 }
             }
         };
-        scope.cycleExpandMode = function (expandMode, ctx, item, focus) {
+        scope.cycleExpandMode = specEditor.cycleExpandMode = function (expandMode, ctx, item, focus) {
             return expandMode == 'default' ? 'open' :
                 expandMode == 'open' ? 'closed' :
                 'default';
         }
-        scope.onDeleteMapProperty = function (model, key) {
+        scope.onDeleteMapProperty = specEditor.onDeleteMapProperty = function (model, key) {
             if (model && model.hasOwnProperty(key)) {
                 delete model[key];
             }
         };
-        scope.onAddListItem = (configKey, item, ev)=> {
+        scope.onAddListItem = specEditor.onAddListItem = (configKey, item, ev)=> {
             if (item) {
                 if (!scope.config[configKey]) {
                     scope.config[configKey] = [];
@@ -294,19 +294,19 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 ev.target.focus();
             }
         };
-        scope.onDeleteListItem = function (model, index) {
+        scope.onDeleteListItem = specEditor.onDeleteListItem = function (model, index) {
             if (model && index < model.length) {
                 model.splice(index, 1);
             }
         };
-        scope.isConfigHidden = (config)=> {
+        scope.isConfigHidden = specEditor.isConfigHidden = (config)=> {
             let allConfig = scope.model.miscData.get('config');
             if (allConfig.indexOf(config) === -1) {
                 return false;
             }
             return $filter('specEditorConfig')(allConfig, scope.state.config.filter.values).indexOf(config) === -1;
         };
-        scope.onFocusOnConfig = ($item)=> {
+        scope.onFocusOnConfig = specEditor.onFocusOnConfig = ($item)=> {
             scope.state.config.search = '';
             scope.state.config.add.value = '';
             scope.state.config.add.open = false;
@@ -336,7 +336,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             $rootScope.$broadcast('d3.remove', scope.model);
         };
 
-        scope.getConfigIssues = ()=> {
+        scope.getConfigIssues = specEditor.getConfigIssues = ()=> {
             return scope.model.issues
                 .filter((issue)=>(issue.group === 'config'))
                 .concat(Object.values(scope.model.getClusterMemberspecEntities())
