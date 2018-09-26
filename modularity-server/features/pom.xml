@@ -176,7 +176,7 @@
                       <pluginExecutionFilter>
                         <groupId>org.apache.karaf.tooling</groupId>
                         <artifactId>karaf-maven-plugin</artifactId>
-                        <versionRange>[4.1.6,)</versionRange>
+                        <versionRange>[4.2.1,)</versionRange>
                         <goals>
                           <goal>verify</goal>
                           <goal>features-generate-descriptor</goal>
