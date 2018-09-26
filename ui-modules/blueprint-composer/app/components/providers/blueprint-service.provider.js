@@ -280,13 +280,13 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
                         for (let constraintO of config.constraints) {
                             let message = null;
                             let key = null, args = null;
-                            if (constraintO instanceof String) {
+                            if (constraintO instanceof String || typeof constraintO=='string') {
                                 key = constraintO;
                             } else if (Object.keys(constraintO).length==1) {
                                 key = Object.keys(constraintO)[0];
                                 args = constraintO[key];
                             } else {
-                                $log.warn("Unknown constraint object", constraintO);
+                                $log.warn("Unknown constraint object", typeof constraintO, constraintO, config);
                                 key = constraintO;
                             }
                             let val = (k) => entity.config.get(k || config.name);
@@ -294,9 +294,13 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
                             let hasDefault = () => angular.isDefined(config.defaultValue);
                             switch (key) {
                                 case 'Predicates.notNull()':
+                                case 'Predicates.notNull':
+                                    if (!isSet() && !hasDefault()) {
+                                        message = `<samp>${config.name}</samp> is required`;
+                                    }
+                                    break;
                                 case 'required':
                                     if (!isSet() && !hasDefault() && val()!='') {
-                                        // "required" also means that it must not be the empty string
                                         message = `<samp>${config.name}</samp> is required`;
                                     }
                                     break;
@@ -325,6 +329,8 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
                                         message = `<samp>${config.name}</samp> is required when <samp>${args}</samp> is not set`;
                                     }
                                     break;
+                                default:
+                                    $log.warn("Unknown constraint predicate", constraintO, config);
                             }
                             if (message !== null) {
                                 entity.addIssue(Issue.builder().group('config').ref(config.name).message($sce.trustAsHtml(message)).build());
