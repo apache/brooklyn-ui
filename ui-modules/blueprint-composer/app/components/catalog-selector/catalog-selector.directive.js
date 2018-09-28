@@ -22,7 +22,7 @@ import template from './catalog-selector.template.html';
 
 const ITEMS_PER_PAGE = 30;
 // fields in either bundle or type record:
-const FIELDS_TO_SEARCH = ['name', 'displayName', 'symbolicName', 'version', 'type', 'supertypes', 'containingBundle', 'description', 'displayTags'];
+const FIELDS_TO_SEARCH = ['name', 'displayName', 'symbolicName', 'version', 'type', 'supertypes', 'containingBundle', 'description', 'displayTags', 'tags'];
 
 export function catalogSelectorDirective() {
     return {
