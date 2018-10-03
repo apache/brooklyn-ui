@@ -17,7 +17,7 @@
  * under the License.
  */
  
-suggestion-dropdown {
+suggestion-dropdown, .suggestion-dropdown {
 
     width: 100%;
     
@@ -50,19 +50,20 @@ suggestion-dropdown {
         display: flex;
         flex-flow: row wrap;
         width: 100%;
+        cursor: pointer;
     }
     .dropdown-item-value {
         flex: 1 0 auto;
+        .monospace();
     }
     .dropdown-item-description {
         flex: 10 1 auto;
         text-align: right;
-        font-style: italic;
         font-size: 80%;
         margin-bottom: 0;
         margin-left: 12px;
-        max-width: 70%;
         margin-top: 2px;
         line-height: 18px;
+        color: mix(@gray-light,@gray-lighter,75%);
     }
 }

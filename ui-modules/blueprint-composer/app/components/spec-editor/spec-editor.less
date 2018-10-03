@@ -339,6 +339,7 @@ spec-editor {
             display: flex;
             flex-flow: row wrap;
             width: 100%;
+            > * { flex: 1 1 auto; }
         }
         .control-label {
             flex: 0 0 auto;
@@ -347,6 +348,7 @@ spec-editor {
         }
         .label-rhs-buttons {
             flex: 1 0 auto;
+            align-items: center;
             text-align: right;
             order: 20;
             display: none;
@@ -390,7 +392,7 @@ spec-editor {
             }
             
             &.code-mode-active .input-group textarea {
-                font-family: courier;
+                .monospace();
             }
         }
         .issue {
@@ -400,29 +402,37 @@ spec-editor {
         .control-label .info-spec-configuration when (@hide-info-button-when-not-hovered = true) {
             visibility: hidden;
         }
-        .btn-group,
-        .input-group {
+        .btn-group, .input-group {
+            display: flex;
             width: 100%;
-        }
-        .input-group {
-            .dsl-wizard-button {
-                max-width: 0;
-                width: 0;
-                overflow: hidden;
+            .main-control {
+                flex: 10 1 auto;
             }
-        }
-        .btn-group {
             .dsl-wizard-button {
+                flex: 0 0 auto;
+                display: flex;
                 width: auto;
+                a {
+                    align-items: center;
+                    display: flex;
+                }
             }
+        }
+        .input-group > span.rounded-edge:first-of-type, 
+        .input-group > span.span-for-rounded-edge:first-of-type .rounded-edge {
+            border-bottom-left-radius: 4px;
+            border-top-left-radius: 4px;
+            // ensure outline on this e.g. for error appears above wizard button
+            z-index: 10;
+        }
+        .input-group span.rounded-edge:last-of-type, 
+        .input-group span.span-for-rounded-edge:last-of-type .rounded-edge {
+            border-bottom-right-radius: 4px;
+            border-top-right-radius: 4px;
         }
         &:not(:focus-within):not(:focus) {
             .hide-when-collapsed {
                 display: none;
-            }
-            input {
-                // the RHS is square if DSL button hidden; simplest fix is to make LHS square too
-                border-radius: 0;
             }
             textarea {
               max-height: @input-height-base * 2;
@@ -431,6 +441,18 @@ spec-editor {
                 display: none;
                 border-radius: 0;
                 cursor: pointer;
+            }
+            .input-group span.rounded-edge:nth-last-of-type(2), 
+            .input-group span.span-for-rounded-edge:nth-last-of-type(2) .rounded-edge {
+                border-bottom-right-radius: 4px;
+                border-top-right-radius: 4px;
+            }
+            .btn-group, .input-group {
+                .dsl-wizard-button {
+                    display: none;
+                    width: 0;
+                    max-width: 0;
+                }
             }
         }
     }
@@ -449,12 +471,6 @@ spec-editor {
         .label-rhs-buttons {
             display: flex;
         }
-        .input-group {
-            .dsl-wizard-button {
-                max-width: none;
-                width: 1%;
-            }
-        }
         .caret-default:before {
             content: "\f0d8";  // fa-caret-up
         }
@@ -471,11 +487,8 @@ spec-editor {
                 display: none;
             }
         }
-        input, select {
+        input, select, textarea {
             cursor: pointer;
-            // the RHS for input is square if DSL button hidden; simplest fix is to make LHS square too
-            // would be nice if applies to select also, but it doesn't
-            border-radius: 0;
         }
         .boolean .btn-group {
             > .active {
@@ -519,7 +532,6 @@ spec-editor {
             border-left: none;
             border-image: initial;
             border-bottom: none; //or for an underline effect, 1px solid @gray-light;
-            border-radius: 0;
             padding-bottom: 0px;
             background: none;
             height: auto;
@@ -651,9 +663,12 @@ spec-editor {
             flex-grow: 1;
             span.input-group {
                 display: flex;
-                input {
+                .main-control, input {
                   width: 120px;  // overridden by flex, but allows it to compress when not focused
                   flex-grow: 1;
+                }
+                .main-control {
+                    display: flex;
                 }
                 .dsl-wizard-button {
                   width: auto;
@@ -679,7 +694,7 @@ spec-editor {
           display: flex;
 
           .collection-map-key {
-            font-family: monospace;
+            .monospace();
             &:after {
               content: ':';
               padding-left: 0.2em;
@@ -774,8 +789,7 @@ spec-editor {
     }
     .dropdown-item {
         .config-name {
-            font-family: courier;
-            font-size: 95%;
+            .monospace();
             margin-right: 1ex;
         }
     }
@@ -834,6 +848,9 @@ spec-editor {
      &:extend(.catalog-selector-popover .palette-item-quick-info all);
      .config-type { margin-left: 1em; }
      .config-required { font-style: italic; }
+     .paragraph-spacing {
+       margin-bottom: 6px;
+     }
 }
 dsl-viewer {
     a {

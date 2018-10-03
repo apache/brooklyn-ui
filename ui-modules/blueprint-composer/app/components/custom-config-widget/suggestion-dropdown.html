@@ -42,13 +42,15 @@
         <div class="config-flex-row">
             <span class="hide-when-expanded inline-label extra-label" ng-if="params['label-collapsed']">{{ params['label-collapsed'] || "" }}</span>
             <div class="input-group">
-                <textarea ng-model="config[item.name]" class="form-control" name="{{item.name}}" id="{{item.name}}" auto-grow
+                <span class="main-control span-for-rounded-edge">
+                  <textarea ng-model="config[item.name]" class="form-control rounded-edge" name="{{item.name}}" id="{{item.name}}" auto-grow
                           placeholder="{{defined(config[item.name]) ? null : item.defaultValue=='' || item.defaultValue==null ? '(empty)' : item.defaultValue}}"
                           ng-focus="specEditor.recordFocus(item)" on-enter="specEditor.advanceOutToFormGroupInPanel"
                           uib-typeahead="suggestion.value for suggestion in getSuggestions() | filter:{value:$viewValue}"
                           typeahead-min-length=0
                           typeahead-template-url="SuggestionTemplate.html"></textarea>
-                <span class="input-group-btn dsl-wizard-button" ng-if="specEditor.isDslWizardButtonAllowed(item.name)">
+                </span>
+                <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name)">
                     <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
                 </span>
             </div>
