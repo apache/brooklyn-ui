@@ -33,7 +33,12 @@ export class PaletteApi {
         return Promise.resolve();
     }
 
-    getTypeVersion(typeSymbolicName) {
+    getTypeVersions(typeSymbolicName) {
+        // no-op
+        return Promise.resolve();
+    }
+
+    getBundle(bundleSymbolicName, bundleVersion) {
         // no-op
         return Promise.resolve();
     }
