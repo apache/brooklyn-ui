@@ -54,11 +54,15 @@ export function autoGrowDirective() {
         };
 
         element.bind('keydown keypress', e => {
-            if (e.which === 13 && (e.ctrlKey || e.metaKey)) {
+            if (e.which === 13 && (e.ctrlKey || e.shiftKey || e.metaKey)) {
                 e.preventDefault();
                 e.stopPropagation();
                 let cursorPosition = element[0].selectionStart;
-                ctrl.$setViewValue(ctrl.$modelValue.substring(0, cursorPosition) + "\n" + ctrl.$modelValue.substring(cursorPosition));
+                if (ctrl.$modelValue === undefined) {
+                    ctrl.$setViewValue("\n");
+                } else {
+                    ctrl.$setViewValue(ctrl.$modelValue.substring(0, cursorPosition) + "\n" + ctrl.$modelValue.substring(cursorPosition));
+                }
                 ctrl.$render();
                 scope.$apply(() => {
                     element[0].selectionEnd = cursorPosition + 1;

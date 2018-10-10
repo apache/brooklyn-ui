@@ -35,7 +35,26 @@ docker run -i --rm --name brooklyn-ui -v ${HOME}/.m2:/root/.m2 -v ${PWD}:/usr/bu
 
 ### Using maven
 
-This requires maven 3.5.0 or later.  With this, simply run:
+You will need the following binaries installed first:
+* `java`
+* `maven` (please note, you will need version 3.5.2 or later)
+* `git`
+* `bzip2`
+* `libpng`. This has different package names based on the distribution:
+  * `libpng-devel` for centos
+  * `libpng-dev` for debian/ubuntu (also requires `libpng12`)
+  * `libpng` for MacOS
+
+_Optional, only if the `libpng` cannot be found_
+* _`automake (opt)`_    
+* _`autoconf`_
+* _`libtool`_
+* _`dpkg`_
+* _`pkgconfig`_
+* _`nasm`_
+* _`gcc`_
+
+With this, simply run:
 
 ```bash
 mvn clean install
