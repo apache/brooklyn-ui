@@ -29,7 +29,7 @@
             <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="spec-actions">
                 <li role="menuitem"><a ng-href="/brooklyn-ui-catalog/#!/bundles/{{model.miscData.get('bundle').symbolicName}}/{{model.miscData.get('bundle').version}}/types/{{model.type}}/{{model.version || 'latest'}}" target="_blank">Open in Catalog</a></li>
                 <li role="separator" class="divider"></li>
-                <li role="menuitem"><a href ng-click="removeEntity()"><span class="text-danger">Delete</span></a></li>
+                <li role="menuitem"><a href ng-click="removeModel()"><span class="text-danger">Delete</span></a></li>
             </ul>
         </div>
     </div>

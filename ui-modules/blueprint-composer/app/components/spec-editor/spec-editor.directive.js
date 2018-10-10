@@ -27,13 +27,14 @@ import {RESERVED_KEYS, DSL_ENTITY_SPEC} from '../providers/blueprint-service.pro
 import brooklynDslEditor from '../dsl-editor/dsl-editor';
 import brooklynDslViewer from '../dsl-viewer/dsl-viewer';
 import template from './spec-editor.template.html';
+import {graphicalState} from '../../views/main/graphical/graphical.state';
 
 const MODULE_NAME = 'brooklyn.components.spec-editor';
 const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
 const REPLACED_DSL_ENTITYSPEC = '___brooklyn:entitySpec';
 
 angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer])
-    .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', 'blueprintService', specEditorDirective])
+    .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', 'blueprintService', specEditorDirective])
     .filter('specEditorConfig', specEditorConfigFilter)
     .filter('specEditorType', specEditorTypeFilter);
 
@@ -71,7 +72,7 @@ export const CONFIG_FILTERS = [
     }
 ];
 
-export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, blueprintService) {
+export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, $state, blueprintService) {
     return {
         restrict: 'E',
         scope: {
@@ -332,8 +333,19 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             }
         };
 
-        scope.removeEntity = ()=> {
-            $rootScope.$broadcast('d3.remove', scope.model);
+        scope.removeModel = ()=> {
+            switch (scope.model.family) {
+                case EntityFamily.ENRICHER:
+                    scope.model.parent.removeEnricher(scope.model._id);
+                    break;
+                case EntityFamily.POLICY:
+                    scope.model.parent.removePolicy(scope.model._id);
+                    break;
+                default:
+                    $rootScope.$broadcast('d3.remove', scope.model);
+                    break;
+            }
+            $state.go(graphicalState.name);
         };
 
         scope.getConfigIssues = specEditor.getConfigIssues = ()=> {
