@@ -879,8 +879,6 @@ export function D3Blueprint(container) {
         specNodeData.select('image')
             .transition()
             .duration(_configHolder.transition)
-            .attr('transform', (d)=>(`rotate(${d.data.hasChildren() ? 45 : 0})`))
-            .attr('transform-origin', 0)
             .attr('opacity', (d)=>(d.data.getClusterMemberspecEntity(PREDICATE_MEMBERSPEC).hasIcon() ? 1 : 0))
             .attr('xlink:href', (d)=>(d.data.getClusterMemberspecEntity(PREDICATE_MEMBERSPEC).icon));
     }
