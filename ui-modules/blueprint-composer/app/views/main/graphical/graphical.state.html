@@ -16,37 +16,35 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<designer></designer>
 
-<div class="left-panel">
-    <ui-view>
-        <br-collapsible state="true">
-            <heading>
-                Entities
-            </heading>
-            <catalog-selector family="EntityFamily.ENTITY" on-select="onTypeSelected(item)" items-per-page="catalogItemsPerPage"></catalog-selector>
-        </br-collapsible>
+<div class="layout">
+    <div class="toolbar">
+        <div class="list-group">
+            <a href class="list-group-item"
+               ng-repeat="palette in vm.palettes track by $index"
+               ng-class="{'active': vm.paletteType === palette.type}"
+               ng-click="vm.paletteType = palette.type">
+                <i class="fa fa-fw" ng-class="palette.icon"></i>
+            </a>
+        </div>
+    </div>
 
-        <br-collapsible>
-            <heading>
-                Policies
-            </heading>
-            <catalog-selector family="EntityFamily.POLICY" on-select="onTypeSelected(item)" items-per-page="catalogItemsPerPage"></catalog-selector>
-        </br-collapsible>
-
-        <br-collapsible>
-            <heading>
-                Enrichers
-            </heading>
-            <catalog-selector family="EntityFamily.ENRICHER" on-select="onTypeSelected(item)" items-per-page="catalogItemsPerPage"></catalog-selector>
-        </br-collapsible>
-
-        <br-collapsible>
-            <heading>
-                Locations
-            </heading>
-            <catalog-selector family="EntityFamily.LOCATION" on-select="onTypeSelected(item)" items-per-page="catalogItemsPerPage"></catalog-selector>
-        </br-collapsible>
-    </ui-view>
+    <designer></designer>
 </div>
 
+<div class="pane pane-palette" ng-if="vm.paletteType">
+    <div ng-repeat="palette in vm.palettes track by $index"
+         ng-if="vm.paletteType === palette.type">
+        <div class="container-fluid">
+            <h3>
+                {{palette.title}}
+                <br-svg type="close" class="pull-right" ng-click="vm.paletteType = undefined"></br-svg>
+            </h3>
+        </div>
+        <catalog-selector family="palette.type" on-select="vm.onTypeSelected(item)" items-per-page="vm.catalogItemsPerPage"></catalog-selector>
+    </div>
+</div>
+
+<div class="pane pane-configuration">
+    <ui-view></ui-view>
+</div>

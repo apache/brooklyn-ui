@@ -127,7 +127,7 @@ function composerOverridesProvider() {
 }
 
 function actionConfig(actionServiceProvider) {
-    actionServiceProvider.addAction("deploy", {html: '<button class="btn btn-success" ng-click="vm.deployApplication()" ng-disabled="vm.deploying">Deploy</button>'});
+    actionServiceProvider.addAction("deploy", {html: '<button class="btn btn-ouline btn-success" ng-click="vm.deployApplication()" ng-disabled="vm.deploying">Deploy</button>'});
     actionServiceProvider.addAction("add", {html: '<catalog-saver config="vm.saveToCatalogConfig"></catalog-saver>'});
 }
 

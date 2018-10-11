@@ -29,16 +29,41 @@ export const graphicalState = {
         return composerOverrides.paletteGraphicalStateTemplate || template;
     },
     controller: ['$scope', '$state', 'blueprintService', graphicalController],
+    controllerAs: 'vm',
     data: {
         label: 'Graphical Designer'
     }
 };
 
 function graphicalController($scope, $state, blueprintService) {
-    $scope.EntityFamily = EntityFamily;
-    $scope.catalogItemsPerPage = 24;
+    this.EntityFamily = EntityFamily;
+    this.catalogItemsPerPage = 24;
 
-    $scope.onTypeSelected = (selectedType)=> {
+    this.palettes = [
+        {
+            title: 'Entities',
+            type: EntityFamily.ENTITY,
+            icon: 'fa-square-o'
+        },
+        {
+            title: 'Policies',
+            type: EntityFamily.POLICY,
+            icon: 'fa-heartbeat'
+        },
+        {
+            title: 'Enrichers',
+            type: EntityFamily.ENRICHER,
+            icon: 'fa-puzzle-piece'
+        },
+        {
+            title: 'Locations',
+            type: EntityFamily.LOCATION,
+            icon: 'fa-map-pin'
+        }
+    ];
+    this.paletteType = EntityFamily.ENTITY;
+
+    this.onTypeSelected = (selectedType)=> {
         let rootEntity = blueprintService.get();
 
         if (selectedType.supertypes.includes(EntityFamily.ENTITY.superType)) {

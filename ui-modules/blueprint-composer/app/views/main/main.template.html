@@ -16,39 +16,46 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<div class="btn-group modes flex" role="group" aria-label="...">
-    <div class="btn-group flex" uib-dropdown keyboard-nav auto-close="outsideClick">
-        <button type="button" class="btn btn-default disabled">
-            {{vm.mode.data.label}}
-        </button>
-        <button type="button" class="btn btn-success dropdown-toggle" ng-disabled="!vm.isGraphicalMode()" uib-dropdown-toggle aria-haspopup="true" aria-expanded="false">
-            <span class="caret"></span>
-            <span class="sr-only">Toggle layers selection</span>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu role="menu">
-            <li ng-if="vm.isGraphicalMode()" class="dropdown-header">Layers</li>
-            <li role="menuitem" class="layer"
-                ng-if="vm.isGraphicalMode()"
-                ng-repeat="layer in vm.layers track by layer.id"
-                ng-class="{'active': layer.active}">
-                <a ng-click="layer.active = !layer.active"><i class="fa fa-fw fa-circle"></i> {{layer.label}}</a>
-            </li>
-        </ul>
-    </div>
-    <a ui-sref="main.graphical" ng-if="!vm.isGraphicalMode()" class="btn btn-primary" ng-disabled="vm.parseError">
-        <i class="fa fa-fw fa-exchange"></i>
-        <span class="sr-only">Switch to Graphical Designer</span>
-    </a>
-    <a ui-sref="main.yaml" ng-if="vm.isGraphicalMode()" class="btn btn-primary">
-        <i class="fa fa-fw fa-exchange"></i>
-        <span class="sr-only">Switch to YAML Editor</span>
-    </a>
-</div>
+
+<header>
+    <nav class="navbar navbar-mode">
+        <div class="container-fluid">
+            <ul class="nav navbar-nav navbar-nav-mode">
+                <li ng-class="{'active': vm.isGraphicalMode()}">
+                    <a ui-sref="main.graphical" ng-disabled="vm.parseError">
+                        <i class="fa fa-fw fa-object-group"></i> Graphical Designer
+                    </a>
+                </li>
+                <li ng-class="{'active': !vm.isGraphicalMode()}">
+                    <a ui-sref="main.yaml">
+                        <i class="fa fa-fw fa-pencil"></i> YAML Editor
+                    </a>
+                </li>
+            </ul>
+
+            <div class="nav navbar-form navbar-right navbar-nav-main-actions">
+                <custom-action ng-repeat="(id, action) in vm.getAllActions() track by id" action="action"></custom-action>
+                <blueprint-data-manager></blueprint-data-manager>
+            </div>
+
+            <ul class="nav navbar-nav navbar-right navbar-nav-secondary-actions" ng-if="vm.isGraphicalMode()" >
+                <li class="dropdown" uib-dropdown>
+                    <a href class="dropdown-toggle" uib-dropdown-toggle aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-fw fa-clone"></i> Layers <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu role="menu">
+                        <li role="menuitem" class="layer"
+                            ng-if="vm.isGraphicalMode()"
+                            ng-repeat="layer in vm.layers track by layer.id"
+                            ng-class="{'active': layer.active}">
+                            <a ng-click="layer.active = !layer.active"><i class="fa fa-fw fa-circle"></i> {{layer.label}}</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</header>
 
 <ui-view></ui-view>
 
-
-<div class="actions">
-    <custom-action ng-repeat="(id, action) in vm.getAllActions() track by id" action="action"></custom-action>
-    <blueprint-data-manager></blueprint-data-manager>
-</div>
