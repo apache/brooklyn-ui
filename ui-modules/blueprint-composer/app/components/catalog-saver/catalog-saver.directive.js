@@ -23,8 +23,11 @@ import template from './catalog-saver.template.html';
 import modalTemplate from './catalog-saver.modal.template.html';
 import jsYaml from 'js-yaml';
 import brUtils from 'brooklyn-ui-utils/utils/general';
+import {yamlState} from "../../views/main/yaml/yaml.state";
+import {graphicalState} from "../../views/main/graphical/graphical.state";
 
 const MODULE_NAME = 'brooklyn.components.catalog-saver';
+
 const REASONS = {
     new: 0,
     deploy: 1
@@ -39,12 +42,12 @@ const TYPES = [
 ];
 
 angular.module(MODULE_NAME, [angularAnimate, uibModal, brUtils])
-    .directive('catalogSaver', ['$rootScope', '$uibModal', saveToCatalogModalDirective])
+    .directive('catalogSaver', ['$rootScope', '$uibModal', '$injector', 'composerOverrides', saveToCatalogModalDirective])
     .directive('catalogVersion', ['$parse', catalogVersionDirective]);
 
 export default MODULE_NAME;
 
-export function saveToCatalogModalDirective($rootScope, $uibModal) {
+export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, composerOverrides) {
     return {
         restrict: 'E',
         template: template,
@@ -54,11 +57,17 @@ export function saveToCatalogModalDirective($rootScope, $uibModal) {
         link: link
     };
 
-    function link($scope) {
+    function link($scope, $element) {
         $scope.buttonText = $scope.config.label || ($scope.config.itemType ? `Update ${$scope.config.name || $scope.config.symbolicName}` : 'Add to catalog');
+
+        $injector.get('$templateCache').put('catalog-saver.modal.template.html', modalTemplate);
+
         $scope.activateModal = () => {
+            // Override callback to update catalog configuration data in other applications
+            $scope.config = (composerOverrides.updateCatalogConfig || (($scope, $element) => $scope.config))($scope, $element);
+
             let modalInstance = $uibModal.open({
-                template: modalTemplate,
+                templateUrl: 'catalog-saver.modal.template.html',
                 size: 'save',
                 controller: ['$scope', 'blueprintService', 'paletteApi', 'brUtilsGeneral', CatalogItemModalController],
                 scope: $scope,
