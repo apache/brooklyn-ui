@@ -36,7 +36,7 @@ export function onEnterDirective() {
 
     function link(scope, element, attrs) {
         element.bind("keydown keypress", event => {
-            if (event.which === 13 && !event.ctrlKey && !event.metaKey) {
+            if (event.which === 13 && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
                 scope.onEnter(element, event);
             }
         });
