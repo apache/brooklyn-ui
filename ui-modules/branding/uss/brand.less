@@ -1,0 +1,137 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+/* File where brands can provide JS extensions available as angular modules.
+ * If supplied, they must supply all elements declared by the stock Brooklyn implementation.
+ * It can be omitted from a brand.
+ *
+ * The entries returned by the `brBrandInfoProvider` here can be accessed in `brBrandInfo` by passing that module to an angular module.
+ */
+
+@fujitsu-red: #9c1015;
+@fujitsu-dark-brown: #2c1e1a;
+@fujitsu-brown: rgb(96, 80, 76);
+@fujitsu-pale-pinkish-brown: rgb(232, 224, 220);
+
+@brand-primary: @fujitsu-red;
+@brand-accent: @fujitsu-brown;
+
+@navbar-text-color: fadeout(white, 5%);
+@navbar-text-color-darkened: @fujitsu-dark-brown;
+@navbar-default-link-hover-color: @navbar-text-color;
+
+// picked to look good when something is hovered
+@list-bgcolor-hover: #fcf4ec;
+
+// page themes
+
+@body-bg: @fujitsu-pale-pinkish-brown;
+
+@navbar-bg-color: @brand-primary;
+
+@navbar-modules-icon-color: @navbar-text-color;
+@navbar-modules-icon-color-hover: white;
+@navbar-text-color: white;
+
+@jumbotron-background-image: none;
+
+@modal-backdrop-bg: @fujitsu-brown;
+
+.navbar-default .navbar-brand:hover, .navbar-default .navbar-brand:focus,
+.navbar-brand:hover, .navbar-brand:focus {
+  color: @navbar-text-color;
+  a:hover { color: @navbar-text-color; }
+}
+
+.navbar-brand {
+  .cloudsoft-logo, .cloudsoft-amp-logo {
+    .color-primary {
+      fill: fadeout(white, 10%);
+      transition: all .2s ease-in-out;
+    }
+    .color-accent {
+      fill: fadeout(white, 5%);
+      transition: all .2s ease-in-out;
+    }
+  }
+
+  .cloudsoft-logo:hover, .cloudsoft-amp-logo:hover {
+    .color-primary {
+      fill: white;
+      transition: all .2s ease-in-out;
+    }
+    .color-accent {
+      fill: white;
+      transition: all .2s ease-in-out;
+    }
+  }
+}
+.navbar {
+  .navbar-text {
+    &, a, a:hover { color: @navbar-text-color; }
+  }
+}
+@navbar-divider-color: @navbar-text-color;
+
+.second-footer {
+  background-color: @fujitsu-brown;
+}
+
+
+.footer li a {
+  color: fadeout(white, 5%);
+}
+
+
+// widgets
+
+tr:nth-child(even), .table-bordered > thead > tr > th, .table-bordered > thead:first-child > tr:first-child > th {
+  background-color: mix(white, @fujitsu-brown, 95%);
+}
+
+.panel-title > a, .panel-title > a:focus {
+  color: #fff;
+  background-color: @fujitsu-brown;
+  transition: all .2s ease-in-out;
+  &:hover {
+    background-color: @fujitsu-dark-brown;
+    transition: all .2s ease-in-out;
+  }
+}
+
+
+// specific apps
+
+@amp-home-button-color: mix(white, @fujitsu-brown, 15%);
+@amp-home-button-color-hover: @fujitsu-brown;
+
+.entity-node {
+  .entity-node-item {
+    background-color: #fff;
+    transition: all .2s ease-in-out;
+    &:hover {
+      background-color: @fujitsu-pale-pinkish-brown;
+      transition: all .2s ease-in-out;
+    }
+    &.active {
+      color: #fff;
+      background-color: @fujitsu-brown;
+      transition: all .1s ease-in-out;
+    }
+  }
+}

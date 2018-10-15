@@ -96,7 +96,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <revision>1.0.0-USS-1.0-SNAPSHOT</revision>
-        <brooklyn.ui.brand.dir>default</brooklyn.ui.brand.dir><!-- empty string not allowed by npm plugin -->
+        <brooklyn.ui.brand.dir>../branding/uss</brooklyn.ui.brand.dir><!-- empty string not allowed by npm plugin -->
         <brooklyn.ui.version>${brooklyn.version}</brooklyn.ui.version><!-- this is intended to be overridden by branded projects -->
         <brooklyn.ui.modules.version>${brooklyn.ui.version}</brooklyn.ui.modules.version>
         <brooklyn.ui.modularity.version>${brooklyn.ui.version}</brooklyn.ui.modularity.version><!-- this can be set different to ensure correct references if branded project is only rebuilding modules -->
