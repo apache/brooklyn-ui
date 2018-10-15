@@ -21,10 +21,10 @@
     <div class="toolbar">
         <div class="list-group">
             <a href class="list-group-item"
-               ng-repeat="palette in vm.palettes track by $index"
-               ng-class="{'active': vm.paletteType === palette.type}"
-               ng-click="vm.paletteType = palette.type">
-                <i class="fa fa-fw" ng-class="palette.icon"></i>
+               ng-repeat="section in vm.sections track by $index"
+               ng-class="{'active': vm.selectedSection === section}"
+               ng-click="vm.selectedSection = section">
+                <i class="fa fa-fw" ng-class="section.icon"></i>
             </a>
         </div>
     </div>
@@ -32,16 +32,16 @@
     <designer></designer>
 </div>
 
-<div class="pane pane-palette" ng-if="vm.paletteType">
-    <div ng-repeat="palette in vm.palettes track by $index"
-         ng-if="vm.paletteType === palette.type">
+<div class="pane pane-palette" ng-if="vm.selectedSection">
+    <div ng-repeat="section in vm.sections track by $index"
+         ng-if="vm.selectedSection === section">
         <div class="container-fluid">
             <h3>
-                {{palette.title}}
-                <br-svg type="close" class="pull-right" ng-click="vm.paletteType = undefined"></br-svg>
+                {{section.title}}
+                <br-svg type="close" class="pull-right" ng-click="vm.selectedSection = undefined"></br-svg>
             </h3>
         </div>
-        <catalog-selector family="palette.type" on-select="vm.onTypeSelected(item)" items-per-page="vm.catalogItemsPerPage"></catalog-selector>
+        <catalog-selector family="section.type" on-select="vm.onTypeSelected(item)" items-per-page="vm.catalogItemsPerPage"></catalog-selector>
     </div>
 </div>
 

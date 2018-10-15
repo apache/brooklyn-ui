@@ -28,40 +28,19 @@ export const graphicalState = {
     templateProvider: function(composerOverrides) {
         return composerOverrides.paletteGraphicalStateTemplate || template;
     },
-    controller: ['$scope', '$state', 'blueprintService', graphicalController],
+    controller: ['$scope', '$state', 'blueprintService', 'paletteService', graphicalController],
     controllerAs: 'vm',
     data: {
         label: 'Graphical Designer'
     }
 };
 
-function graphicalController($scope, $state, blueprintService) {
+function graphicalController($scope, $state, blueprintService, paletteService) {
     this.EntityFamily = EntityFamily;
     this.catalogItemsPerPage = 24;
 
-    this.palettes = [
-        {
-            title: 'Entities',
-            type: EntityFamily.ENTITY,
-            icon: 'fa-square-o'
-        },
-        {
-            title: 'Policies',
-            type: EntityFamily.POLICY,
-            icon: 'fa-heartbeat'
-        },
-        {
-            title: 'Enrichers',
-            type: EntityFamily.ENRICHER,
-            icon: 'fa-puzzle-piece'
-        },
-        {
-            title: 'Locations',
-            type: EntityFamily.LOCATION,
-            icon: 'fa-map-pin'
-        }
-    ];
-    this.paletteType = EntityFamily.ENTITY;
+    this.sections = paletteService.getSections();
+    this.selectedSection = Object.values(this.sections).find(section => section.type === EntityFamily.ENTITY);
 
     this.onTypeSelected = (selectedType)=> {
         let rootEntity = blueprintService.get();

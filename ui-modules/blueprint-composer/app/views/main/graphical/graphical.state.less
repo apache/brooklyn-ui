@@ -39,6 +39,9 @@
     }
 
     .list-group-item {
+      @active-border-width: 4px;
+      padding-top: 10px + @active-border-width;
+      padding-bottom: 9px + @active-border-width;
       border-left: none;
       border-radius: 0;
 
@@ -48,9 +51,10 @@
       &.active {
         border-right: none;
         border-color: @list-group-border;
-        border-bottom: 4px solid @brand-primary;
+        border-bottom: @active-border-width solid @brand-primary;
         background-color: #fff;
         color: @list-group-link-color;
+        padding-bottom: 10px;
       }
     }
   }
