@@ -54,7 +54,7 @@ export function autoGrowDirective() {
         };
 
         element.bind('keydown keypress', e => {
-            if (e.which === 13 && (e.ctrlKey || e.metaKey)) {
+            if (e.which === 13 && (e.ctrlKey || e.metaKey || e.shiftKey)) {
                 e.preventDefault();
                 e.stopPropagation();
                 let cursorPosition = element[0].selectionStart;
