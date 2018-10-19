@@ -365,6 +365,16 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope.getBadgeClass = (issues) => {
             return issues.some(issue => issue.level === ISSUE_LEVEL.ERROR) ? 'badge-danger' : 'badge-warning';
         };
+        
+        specEditor.descriptionHtml = (text) => {
+            let out = [];
+            for (let item of text.split(/\n\n+/)) {
+                out.push('<div class="paragraph-spacing"></div>');
+                out.push($sanitize(item));
+            }
+            out.splice(0,1);
+            return $sce.trustAsHtml(out.join("\n"));            
+        };
 
         function getConfigWidgetModeInternal(item, val) {
             if (angular.element($document[0].activeElement).hasClass("form-control") && item.widgetMode) {
@@ -587,9 +597,10 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             // don't treat constants as DSL (not helpful, and the DSL editor doesn't support it)
             return (val instanceof Dsl) && val.kind && val.kind.family != 'constant';
         };
-        specEditor.isDslWizardButtonAllowed = (key, index) => {
+        specEditor.isDslWizardButtonAllowed = (key, index, nonModelValue) => {
             let val = scope.model.config.get(key);
             if (specEditor.defined(val) && specEditor.defined(index) && index!=null) val = val[index];
+            if (!specEditor.defined(val) || val===null || val==='') val = nonModelValue;
             if (!specEditor.defined(val) || val===null || val==='') return true;
             if (specEditor.isDslVal(val)) {
                 return true;
@@ -815,12 +826,15 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         function refreshCustomValidation(model) {
             model.config.forEach((value, key) => {
                 let config = model.miscData.get('config').find(config => config.name === key);
+                // Ideally code below would escaped or use template/directive; sanitize just catches attacks.
+                // (These values are automatically sanitized in any case, so that's redundant.)
+                
                 // If we need an integer, check if the value is a number
                 if (config.type === 'java.lang.Integer' && !angular.isNumber(value) && !(value instanceof Dsl)) {
-                    model.addIssue(Issue.builder().group('config').ref(key).message($sce.trustAsHtml(`<code>${value}</code> is not a number`)).build());
+                    model.addIssue(Issue.builder().group('config').ref(key).message('<code>'+$sanitize(value)+'</code> is not a number').build());
                 }
                 if (scope.state.config.codeModeError[key]) {
-                    model.addIssue(Issue.builder().group('config').ref(key).message($sce.trustAsHtml(`<code>${value}</code> is not valid JSON`)).build());
+                    model.addIssue(Issue.builder().group('config').ref(key).message('<code>'+$sanitize(value)+'</code> is not valid JSON').build());
                 }
             });
         }

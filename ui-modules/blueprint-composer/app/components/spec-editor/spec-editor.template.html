@@ -188,13 +188,15 @@
                             </div>
                         </div>
 
-                        <select ng-switch-when="java.lang.Enum"
+                        <span class="main-control span-for-rounded-edge">
+                            <select ng-switch-when="java.lang.Enum"
                                 ng-model="config[item.name]"
                                 ng-options="s.value as (s.description + (item.defaultValue === s.value ? ' --- default' : '')) for s in item.possibleValues"
                                 ng-focus="specEditor.recordFocus(item)"
-                                class="form-control"
+                                class="form-control rounded-edge"
                                 name="{{item.name}}"
                                 id="{{item.name}}"></select>
+                        </span>
 
                         <div ng-switch-when="map" 
                                 ng-init="expandMode = 'default'" class="collection"
@@ -224,19 +226,26 @@
                                     </span>
                                     <div class="collection-item-grow">
                                         <span class="input-group">
-                                            <input type="text" ng-model="config[item.name][mapKey]" class="form-control" placeholder="(empty)" 
+                                            <span class="main-control span-for-rounded-edge">
+                                                <input type="text" ng-model="config[item.name][mapKey]" class="form-control rounded-edge" placeholder="(empty)" 
                                                     ng-focus="specEditor.recordFocus(item)"
                                                     on-enter="specEditor.advanceControlInFormGroup" />
-                                            <span class="input-group-btn dsl-wizard-button" ng-if="specEditor.isDslWizardButtonAllowed(item.name, mapKey)">
+                                            </span>
+                                            <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name, mapKey)">
                                                 <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name, index: mapKey})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
                                             </span>
                                         </span>
                                     </div>
                                 </li>
-                                <li class="collection-item collection-add" ng-class="{'nonempty': nonempty(config[item.name])}">
-                                    <input ng-model="newKey" type="text" placeholder="Add property key" class="form-control" 
+                                <li class="collection-item collection-add input-group" ng-class="{'nonempty': nonempty(config[item.name])}">
+                                    <span class="main-control span-for-rounded-edge">
+                                      <input ng-model="newKey" type="text" placeholder="Add property key" class="form-control rounded-edge" 
                                         ng-focus="specEditor.recordFocus(item)"
                                         on-enter="specEditor.advanceOutToFormGroupInPanel" ng-blur="onAddMapProperty(item.name, newKey, $event); newKey = '';" required />
+                                    </span>
+                                    <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name, null, newKey)">
+                                        <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
+                                    </span>
                                 </li>
                             </ul>
                         </div>
@@ -268,21 +277,25 @@
                                     </span>
                                     <div class="collection-item-grow">
                                         <span class="input-group">
-                                            <input type="text" ng-model="config[item.name][$index]" class="form-control" placeholder="(empty)" 
+                                            <span class="main-control span-for-rounded-edge">
+                                                <input type="text" ng-model="config[item.name][$index]" class="form-control rounded-edge" placeholder="(empty)" 
                                                     ng-focus="specEditor.recordFocus(item)"
                                                     on-enter="specEditor.advanceControlInFormGroup" />
-                                            <span class="input-group-btn dsl-wizard-button" ng-if="specEditor.isDslWizardButtonAllowed(item.name, $index)" ng-focus="specEditor.recordFocus(item)">
+                                            </span>
+                                            <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name, $index)" ng-focus="specEditor.recordFocus(item)">
                                                 <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name, index: $index})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
                                             </span>
                                         </span>
                                     </div>
                                 </li>
-                                <li class="collection-item collection-add" ng-class="{'nonempty': config[item.name].length>0}">
+                                <li class="collection-item collection-add input-group" ng-class="{'nonempty': config[item.name].length>0}">
                                     <span class="input-group">
-                                        <input ng-model="newItem" type="text" placeholder="Add item" class="form-control" auto-focus="expandMode != 'closed'" 
+                                        <span class="main-control span-for-rounded-edge">
+                                          <input ng-model="newItem" type="text" placeholder="Add item" class="form-control rounded-edge" auto-focus="expandMode != 'closed'" 
                                             ng-focus="specEditor.recordFocus(item)"
                                             on-enter="specEditor.advanceOutToFormGroupInPanel" ng-blur="onAddListItem(item.name, newItem, $event, $element); newItem = '';" required />
-                                        <span class="input-group-btn dsl-wizard-button" ng-if="specEditor.isDslWizardButtonAllowed(item.name, -1)">
+                                        </span>
+                                        <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name, -1, newItem)">
                                             <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name, index: config[item.name].length})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
                                         </span>
                                     </span>
@@ -304,10 +317,12 @@
                         </div>
 
                         <div class="input-group" ng-switch-default>
-                            <textarea ng-model="config[item.name]" class="form-control" name="{{item.name}}" id="{{item.name}}" auto-grow
+                            <span class="main-control span-for-rounded-edge">
+                                <textarea ng-model="config[item.name]" class="form-control rounded-edge" name="{{item.name}}" id="{{item.name}}" auto-grow
                                       placeholder="{{defined(config[item.name]) ? null : item.defaultValue=='' || item.defaultValue==null ? '(empty)' : item.defaultValue}}"
                                       ng-focus="specEditor.recordFocus(item)" on-enter="specEditor.advanceOutToFormGroupInPanel"></textarea>
-                            <span class="input-group-btn dsl-wizard-button" ng-if="specEditor.isDslWizardButtonAllowed(item.name)">
+                            </span>
+                            <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name)">
                                 <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
                             </span>
                         </div>
@@ -425,7 +440,7 @@
             <p><i class="mini-icon fa fa-fw fa-cog"></i> <samp class="type-symbolic-name">{{item.name}}</samp>
             <span class="config-type label-color column-for-type oneline label label-success">{{item.type}}</span></p>
         </div>
-        <p class="quick-info-description" ng-if="item.description">{{item.description}}</p>
+        <p class="quick-info-description" ng-if="item.description" ng-bind-html="specEditor.descriptionHtml(item.description)"></p>
         <div class="quick-info-metadata config-default" ng-if="item.defaultValue"></i>Default value: <samp>{{item.defaultValue}}</samp></div>
         <div class="quick-info-metadata config-required" ng-if="item.constraints.required"><i>This field is required.</div>
     </div>
