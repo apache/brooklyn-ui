@@ -2,7 +2,7 @@
 
 ### Apache Brooklyn UI Sub-Project
 
-This repo contains the JavaSciprt UI for Apache Brooklyn plus server-side code to enable module lookup and discovery.
+This repo contains the JavaScript UI for Apache Brooklyn plus server-side code to enable module lookup and discovery.
 
 Essential contents:
 
@@ -41,8 +41,8 @@ You will need the following binaries installed first:
 * `git`
 * `bzip2`
 * `libpng`. This has different package names based on the distribution:
-  * `libpng-devel` for centos
-  * `libpng-dev` for debian/ubuntu (also requires `libpng12`)
+  * `libpng-devel` for CentOS
+  * `libpng-dev` for Debian/Ubuntu (also requires `libpng12`)
   * `libpng` for MacOS
 
 _Optional, only if the `libpng` cannot be found_
@@ -72,7 +72,7 @@ is to run `make` in the relevant module directory, with a Brooklyn REST server o
 For developers, the following links may be useful:
 
 * [Overview and architecture of the project](docs/overview.md)
-* [Building individual module / Dev environment](ui-modules/home/README.md)
+* [Building individual module / Dev environment](ui-modules/README.md)
 * [Skinning the UI with custom themes](docs/skinning.md)
 * [Customizing and embedding the UI](docs/customizations.md)
 
@@ -125,7 +125,7 @@ find ./ -type d -name "node_modules" -exec rm -rf {} \+
 
 ### Test Failure (PhantomJS)
 
-Developers have experienced occassional test failures like:
+Developers have experienced occasional test failures like:
 
 ```
 [INFO] 26 06 2018 09:33:31.658:INFO [karma]: Karma v1.7.1 server started at http://0.0.0.0:9876/
@@ -151,7 +151,7 @@ Developers have experienced occassional test failures like:
 [ERROR]   mvn <goals> -rf :brooklyn-ui-utils
 ```
 
-This appears to be a non-deterministic environment issue. The workaround is to rerun the test,
+This appears to be a non-deterministic environment issue. The workaround is to run the test again,
 resuming the build from the failed module. For example:
 
 ```bash
@@ -178,7 +178,7 @@ Developers have experienced build failures on OS X like:
 
 This is Docker bug: https://github.com/docker/for-mac/issues/2296.
 
-Try rerunning the build from the failed module (but this will not always work). For example:
+Try to run the build again from the failed module (but this will not always work). For example:
 
 ```bash
 pushd ui-modules/app-inspector
