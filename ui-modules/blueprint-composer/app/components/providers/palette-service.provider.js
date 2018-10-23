@@ -45,7 +45,7 @@ export function paletteServiceProvider() {
 class PaletteService {
     constructor(sectionsToAdd) {
         this.sections = {};
-        this.fields = ['title', 'type', 'icon'];
+        this.requiredFields = ['title', 'type', 'icon'];
 
         for (const [id, section] of Object.entries(sectionsToAdd)) {
             this.addSection(id, section);
@@ -57,7 +57,7 @@ class PaletteService {
             throw 'Section must be an object';
         }
 
-        this.fields.forEach(field => {
+        this.requiredFields.forEach(field => {
             if (!section.hasOwnProperty(field)) {
                 throw `Section must have field "${field}" defined`;
             }
