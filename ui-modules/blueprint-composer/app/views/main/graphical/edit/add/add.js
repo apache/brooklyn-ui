@@ -51,6 +51,8 @@ export function GraphicalEditAddController($scope, $filter, $state, $stateParams
             break;
     }
 
+    $scope.catalogItemsPerPage = 24;
+
     $scope.getParentLink = ()=> {
         let state = graphicalEditEntityState;
         let params = {entityId: $scope.entity.hasParent() ? $scope.entity.parent._id : $scope.entity._id};

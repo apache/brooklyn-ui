@@ -18,6 +18,30 @@
  */
 @import "./bottom-sheet.less";
 
+.navbar-mode {
+  background: #555;
+  border: none;
+  border-radius: 0;
+  border-color: @navbar-default-border;
+  z-index: 50;
+
+  .navbar-nav > li > a {
+    color: @gray-lighter;
+    padding-bottom: 10px;
+    border-bottom: 5px solid transparent;
+  }
+
+  .navbar-nav-mode > .active > a,
+  .navbar-nav-mode > .active > a:hover,
+  .navbar-nav-mode > .active > a:focus {
+    border-bottom: 5px solid @brand-primary;
+
+    & > i.fa {
+      color: @brand-primary;
+    }
+  }
+}
+
 .page-main-area {
   position: relative;
 

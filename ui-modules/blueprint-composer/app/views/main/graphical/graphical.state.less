@@ -16,99 +16,161 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-.left-panel {
-  display: block;
-  position: absolute;
-  left: 20px;
-  top: 20px;
-  width: 440px;
-  padding-top: 6px;
-  z-index: 200;
-  overflow-y: scroll;
-  height: calc(~"100vh - 95px");
-  box-shadow: 0 0 rgba(0, 0, 0, 0.2), 0 1px 18px 1px rgba(0, 0, 0, 0.11);
-  background-color: #fff;
-  border: 1px solid @navbar-default-border;
 
-  .container-fluid {
-    padding: 0;
-  }
-  
-  .spec-parent {
-    margin-top: -6px;
-    a {
-      background-color: @gray-lighter;
-      padding: 15px 45px 15px 15px;
-      position: relative;
-      color: @gray-light;
-      font-style: italic;
-      display: block;
-      transition: color 0.3s ease;
-      .text-overflow();
+.layout {
+  display: flex;
 
-      &:after{
-        content: '\f112';
-        font-family: FontAwesome;
-        position: absolute;
-        right: 15px;
-        color: @gray-light;
-        transition: color 0.3s ease;
+  .toolbar {
+    position: relative;
+    height: calc(~"100vh - 105px");
+    background-color: #fff;
+    overflow-y: scroll;
+    z-index: 40;
+    box-shadow: 0 0 10px 2px @navbar-default-border;
+
+    &:after {
+      position: absolute;
+      content: '';
+      width: 1px;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      background-color: @navbar-default-border;
+    }
+
+    .list-group-item {
+      @active-border-width: 4px;
+      padding-top: 10px + @active-border-width;
+      padding-bottom: 9px + @active-border-width;
+      border-left: none;
+      border-radius: 0;
+
+      &:first-child {
+        border-top: none;
       }
-      &:hover {
-        color: @gray;
-        &:after {
+      &.active {
+        border-right: none;
+        border-color: @list-group-border;
+        border-bottom: @active-border-width solid @brand-primary;
+        background-color: #fff;
+        color: @list-group-link-color;
+        padding-bottom: 10px;
+      }
+    }
+  }
+
+  designer {
+    flex-grow: 1;
+  }
+}
+
+.pane {
+  position: absolute;
+  top: 50px;
+  bottom: 0;
+  background-color: #fff;
+  z-index: 40;
+  overflow-y: scroll;
+
+  &.pane-palette {
+    left: 49px;
+    width: 440px;
+    box-shadow: 5px 0 10px -2px @navbar-default-border;
+
+    h3 {
+      color: @gray-light;
+    }
+    br-svg {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+  }
+
+  &.pane-configuration {
+    right: 0;
+    box-shadow: 5px 0 10px 5px @navbar-default-border;
+
+    & > ui-view > ui-view {
+      display: block;
+      width: 440px;
+    }
+
+    .container-fluid {
+      padding: 0;
+    }
+
+    .spec-parent {
+      a {
+        background-color: @gray-lighter;
+        padding: 15px 45px 15px 15px;
+        position: relative;
+        color: @gray-light;
+        font-style: italic;
+        display: block;
+        transition: color 0.3s ease;
+        .text-overflow();
+
+        &:after{
+          content: '\f112';
+          font-family: FontAwesome;
+          position: absolute;
+          right: 15px;
+          color: @gray-light;
+          transition: color 0.3s ease;
+        }
+        &:hover {
+          color: @gray;
+          &:after {
+            color: @gray;
+          }
+        }
+      }
+    }
+
+    // panel classes are added by use of accordion toggle in palette
+    // we also use these classes for spec editor and others
+    // (would be nice to refactor so we use our own classes instead)
+    .panel-group {
+      margin-bottom: 0;
+      .panel {
+        border-bottom: 1px solid @gray-lighter;
+        margin: 0 12px;
+        border-radius: 0;
+        box-shadow: none;
+        .panel-heading {
+          padding: 15px 3px 15px 3px;
+        }
+        .panel-title {
+          font-size: 16px;
+          font-weight: 400;
+        }
+        .panel-body {
+          padding: 0;
+          border: none !important;
+          margin-bottom: 24px;
+        }
+      }
+      .panel-title > a,
+      .panel-title > a:hover,
+      .panel-title > a:focus:hover {
+        background: none;
+        color: @gray-light;
+
+        .collapsible-action {
+          padding-left: 2px;
+          padding-right: 6px;
+          margin-top: 1px;
+        }
+        .collapsible-action, a.collapsible-action {
+          color: @gray-light;
+        }
+        .collapsible-action:active, a.collapsible-action:active,
+        .collapsible-action:hover, a.collapsible-action:hover,
+        .collapsible-action:focus, a.collapsible-action:focus {
           color: @gray;
         }
       }
     }
-  }
-
-  // panel classes are added by use of accordion toggle in palette
-  // we also use these classes for spec editor and others
-  // (would be nice to refactor so we use our own classes instead)
-  .panel-group {
-    margin-bottom: 0;
-    .panel {
-      border-bottom: 1px solid @gray-lighter;
-      margin: 0 12px;
-      border-radius: 0;
-      box-shadow: none;
-      .panel-heading {
-        padding: 15px 3px 15px 3px;
-      }
-      .panel-title {
-        font-size: 16px;
-        font-weight: 400;
-      }
-      .panel-body {
-        padding: 0;
-        border: none !important;
-        margin-bottom: 24px;
-      }
-    }
-    .panel-title > a,
-    .panel-title > a:hover,
-    .panel-title > a:focus:hover {
-      background: none;
-      color: @gray-light;
-
-      .collapsible-action {
-        padding-left: 2px;
-        padding-right: 6px;
-        margin-top: 1px;
-      }
-      .collapsible-action, a.collapsible-action {
-        color: @gray-light;
-      }
-      .collapsible-action:active, a.collapsible-action:active,
-      .collapsible-action:hover, a.collapsible-action:hover,
-      .collapsible-action:focus, a.collapsible-action:focus {
-        color: @gray;
-      }
-    }
-  }
-
-  br-collapsible catalog-selector {
-    margin-top: 0;
   }
 }

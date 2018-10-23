@@ -28,17 +28,21 @@ export const graphicalState = {
     templateProvider: function(composerOverrides) {
         return composerOverrides.paletteGraphicalStateTemplate || template;
     },
-    controller: ['$scope', '$state', 'blueprintService', graphicalController],
+    controller: ['$scope', '$state', 'blueprintService', 'paletteService', graphicalController],
+    controllerAs: 'vm',
     data: {
         label: 'Graphical Designer'
     }
 };
 
-function graphicalController($scope, $state, blueprintService) {
-    $scope.EntityFamily = EntityFamily;
-    $scope.catalogItemsPerPage = 24;
+function graphicalController($scope, $state, blueprintService, paletteService) {
+    this.EntityFamily = EntityFamily;
+    this.catalogItemsPerPage = 24;
 
-    $scope.onTypeSelected = (selectedType)=> {
+    this.sections = paletteService.getSections();
+    this.selectedSection = Object.values(this.sections).find(section => section.type === EntityFamily.ENTITY);
+
+    this.onTypeSelected = (selectedType)=> {
         let rootEntity = blueprintService.get();
 
         if (selectedType.supertypes.includes(EntityFamily.ENTITY.superType)) {

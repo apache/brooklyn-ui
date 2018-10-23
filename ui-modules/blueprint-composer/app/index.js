@@ -38,7 +38,8 @@ import brUtils from 'brooklyn-ui-utils/utils/general';
 
 import brSpecEditor from './components/spec-editor/spec-editor.directive';
 import brooklynCatalogSaver from './components/catalog-saver/catalog-saver.directive';
-import paletteApiProvider from "./components/providers/palette-api.provider"
+import paletteApiProvider from "./components/providers/palette-api.provider";
+import paletteServiceProvider from "./components/providers/palette-service.provider";
 
 import brooklynApi from "brooklyn-ui-utils/brooklyn.api/brooklyn.api";
 import {designerDirective} from "./components/designer/designer.directive";
@@ -71,11 +72,12 @@ import {graphicalEditSpecState} from "./views/main/graphical/edit/spec/edit.spec
 import {graphicalEditDslState, dslParamLabelFilter} from "./views/main/graphical/edit/dsl/edit.dsl.controller";
 import bottomSheet from "brooklyn-ui-utils/bottom-sheet/bottom-sheet";
 import stackViewer from 'angular-java-stack-viewer';
+import {EntityFamily} from "./components/util/model/entity.model";
 
-angular.module('app', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 'ui.router.state.events', brCore, 
-        brServerStatus, brAutoFocus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, 
-        brYamlEditor, brUtils, brSpecEditor, brooklynCatalogSaver, brooklynApi, bottomSheet, stackViewer, brDragndrop, 
-        customActionDirective, customConfigSuggestionDropdown, paletteApiProvider])
+angular.module('app', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 'ui.router.state.events', brCore,
+    brServerStatus, brAutoFocus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement,
+    brYamlEditor, brUtils, brSpecEditor, brooklynCatalogSaver, brooklynApi, bottomSheet, stackViewer, brDragndrop,
+    customActionDirective, customConfigSuggestionDropdown, paletteApiProvider, paletteServiceProvider])
     .directive('designer', ['$log', '$state', '$q', 'iconGenerator', 'catalogApi', 'blueprintService', 'brSnackbar', 'paletteDragAndDropService', designerDirective])
     .directive('onError', onErrorDirective)
     .directive('catalogSelector', catalogSelectorDirective)
@@ -96,6 +98,7 @@ angular.module('app', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 
     .filter('dslParamLabel', ['$filter', dslParamLabelFilter])
     .config(['$urlRouterProvider', '$stateProvider', '$logProvider', applicationConfig])
     .config(['actionServiceProvider', actionConfig])
+    .config(['paletteServiceProvider', paletteConfig])
     .run(['$rootScope', '$state', 'brSnackbar', errorHandler])
     .run(['$http', httpConfig]);
 
@@ -127,12 +130,35 @@ function composerOverridesProvider() {
 }
 
 function actionConfig(actionServiceProvider) {
-    actionServiceProvider.addAction("deploy", {html: '<button class="btn btn-success" ng-click="vm.deployApplication()" ng-disabled="vm.deploying">Deploy</button>'});
+    actionServiceProvider.addAction("deploy", {html: '<button class="btn btn-ouline btn-success" ng-click="vm.deployApplication()" ng-disabled="vm.deploying">Deploy</button>'});
     actionServiceProvider.addAction("add", {html: '<catalog-saver config="vm.saveToCatalogConfig"></catalog-saver>'});
 }
 
+function paletteConfig(paletteServiceProvider) {
+    paletteServiceProvider.addSection('entities', {
+        title: 'Entities',
+        type: EntityFamily.ENTITY,
+        icon: 'fa-square-o'
+    });
+    paletteServiceProvider.addSection('policies', {
+        title: 'Policies',
+        type: EntityFamily.POLICY,
+        icon: 'fa-heartbeat'
+    });
+    paletteServiceProvider.addSection('enrichers', {
+        title: 'Enrichers',
+        type: EntityFamily.ENRICHER,
+        icon: 'fa-puzzle-piece'
+    });
+    paletteServiceProvider.addSection('locations', {
+        title: 'Locations',
+        type: EntityFamily.LOCATION,
+        icon: 'fa-map-pin'
+    });
+}
+
 function errorHandler($rootScope, $state, brSnackbar) {
-    $rootScope.$on('$stateChangeError', (event, toState, toParams, fromState, fromParams, error)=> {
+    $rootScope.$on('$stateChangeError', (event, toState, toParams, fromState, fromParams, error) => {
         brSnackbar.create(error.detail);
         if (toState === yamlState) {
             $state.go(toState);
@@ -142,6 +168,6 @@ function errorHandler($rootScope, $state, brSnackbar) {
     });
 }
 
-function httpConfig($http){
+function httpConfig($http) {
     $http.defaults.headers.common['X-Csrf-Token-Required-For-Requests'] = 'write';
 }

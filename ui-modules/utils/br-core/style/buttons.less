@@ -16,17 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-.btn-primary {
-    border: none;
-}
-.btn-primary:hover,
-.btn-primary:focus {
-    box-shadow: inset 0px -2px 0px rgba(0,0,0,0.4);
-}
 @btn-primary-border: @btn-primary-bg;
 
 
 // Danger and error appear as red
 .btn-accent {
     .button-variant(@btn-accent-color; @btn-accent-bg; @btn-accent-border);
+}
+
+.btn-ouline {
+    &.btn-primary:not(:hover) {
+        background-color: transparent;
+        color: @brand-primary;
+    }
+    &.btn-accent:not(:hover) {
+        background-color: transparent;
+        color: @brand-accent;
+    }
+    &.btn-success:not(:hover) {
+        background-color: transparent;
+        color: @brand-success;
+    }
+    &.btn-info:not(:hover) {
+        background-color: transparent;
+        color: @brand-info;
+    }
+    &.btn-warning:not(:hover) {
+        background-color: transparent;
+        color: @brand-warning;
+    }
+    &.btn-danger:not(:hover) {
+        background-color: transparent;
+        color: @brand-danger;
+    }
 }
