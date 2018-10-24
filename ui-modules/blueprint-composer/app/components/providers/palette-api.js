@@ -28,7 +28,7 @@ export class PaletteApi {
         return Promise.resolve();
     }
 
-    getType(typeSymbolicName, typeVersion) {
+    getType(typeSymbolicName, typeVersion, config) {
         // no-op
         return Promise.resolve();
     }
@@ -43,7 +43,7 @@ export class PaletteApi {
         return Promise.resolve();
     }
 
-    getBundleType(bundleSymbolicName, bundleVersion, typeSymbolicName, typeVersion) {
+    getBundleType(bundleSymbolicName, bundleVersion, typeSymbolicName, typeVersion, config) {
         // no-op
         return Promise.resolve();
     }

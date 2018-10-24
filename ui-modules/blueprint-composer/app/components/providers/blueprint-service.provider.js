@@ -231,8 +231,8 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
             entity.family = family.id;
 
             let promise = entity.miscData.has('bundle')
-                ? paletteApi.getBundleType(entity.miscData.get('bundle').symbolicName, entity.miscData.get('bundle').version, entity.type, entity.version)
-                : paletteApi.getType(entity.type, entity.version);
+                ? paletteApi.getBundleType(entity.miscData.get('bundle').symbolicName, entity.miscData.get('bundle').version, entity.type, entity.version, entity.config)
+                : paletteApi.getType(entity.type, entity.version, entity.config);
 
             promise.then((data)=> {
                 deferred.resolve(populateEntityFromApiSuccess(entity, data));
