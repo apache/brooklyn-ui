@@ -16,7 +16,7 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<div class="container-fluid">
+<div class="container-fluid palette-full-height-wrapper">
     <div ng-show="isLoading">
         <div class="spinner-area">
             <div class="spinner">
@@ -30,7 +30,8 @@
         </div>
     </div>
 
-    <div ng-show="!isLoading">
+    <div ng-show="!isLoading" class="catalog-palette-main palette-full-height-wrapper">
+      <div class="catalog-palette-header">
         <div class="form-group" ng-class="{'has-error': isReserved()}">
             <div class="input-group input-group-sm">
                 <span class="input-group-btn" uib-dropdown keyboard-nav>
@@ -56,8 +57,9 @@
         <small class="help-block text-sm no-match" ng-if="search && searchedItems.length === 0">
             No {{family.displayName.toLowerCase()}} matching the current search
         </small>
+      </div>
 
-        <div class="row grid catalog-palette">
+        <div class="row grid">
             <!-- here and below, col-xs-3 or -4 or -2 all work giving different densities;
                  this could be configurable ("compressed"=xs-2 w no labels, "normal"=xs-3, "big"=xs-4) -->
             <div class="col-xs-3 catalog-palette-item"
@@ -94,9 +96,10 @@
             </div>
         </div>
 
-        <div uib-pagination total-items="searchedItems.length" items-per-page="pagination.itemsPerPage" ng-model="pagination.page" boundary-link-numbers="true" rotate="false" max-size="4" ng-show="searchedItems.length > pagination.itemsPerPage" class="pagination-sm pull-right"></div>
-        
-        <ng-include src="customFooterTemplateName"/>
+        <div class="catalog-palette-footer">
+            <div uib-pagination total-items="searchedItems.length" items-per-page="pagination.itemsPerPage" ng-model="pagination.page" boundary-link-numbers="true" rotate="false" max-size="4" ng-show="searchedItems.length > pagination.itemsPerPage" class="pagination-sm pull-right"></div>
+            <ng-include src="customFooterTemplateName"/>
+        </div>
     </div>
 </div>
 

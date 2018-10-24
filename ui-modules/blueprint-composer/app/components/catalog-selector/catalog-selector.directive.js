@@ -20,7 +20,7 @@ import angular from 'angular';
 import {EntityFamily} from '../util/model/entity.model';
 import template from './catalog-selector.template.html';
 
-const ITEMS_PER_PAGE = 30;
+const MIN_ITEMS_PER_PAGE = 16;
 // fields in either bundle or type record:
 const FIELDS_TO_SEARCH = ['name', 'displayName', 'symbolicName', 'version', 'type', 'supertypes', 'containingBundle', 'description', 'displayTags', 'tags'];
 
@@ -35,8 +35,36 @@ export function catalogSelectorDirective() {
             mode: '@?',  // for use by downstream projects to pass in special modes
         },
         template: template,
-        controller: ['$scope', '$element', '$q', '$uibModal', '$log', '$templateCache', 'paletteApi', 'paletteDragAndDropService', 'iconGenerator', 'composerOverrides', controller]
+        controller: ['$scope', '$element', '$timeout', '$q', '$uibModal', '$log', '$templateCache', 'paletteApi', 'paletteDragAndDropService', 'iconGenerator', 'composerOverrides', controller],
+        link: link,
     };
+}
+
+function link($scope, $element, attrs, controller) {
+    let main = angular.element($element[0].querySelector(".catalog-palette-main"));
+
+    // repaginate when load completes (and items are shown), or it is resized
+    $scope.$watchGroup([ () => $scope.isLoading, () => main[0].offsetHeight ],
+        (values) => controller.$timeout( () => { 
+                //console.log("WATCHED RESIZE TIMEOUT", new Date(), main, main[0].offsetHeight, $scope.isLoading);
+                repaginate($scope, $element);
+            } )
+        );
+    // also repaginate on window resize    
+    angular.element(window).bind('resize', () => repaginate($scope, $element));
+
+}
+
+function repaginate($scope, $element) {
+    let main = angular.element($element[0].querySelector(".catalog-palette-main"));
+    if (!main || main[0].offsetHeight==0 || $scope.itemsPerPage) {
+        // console.log("no main or hidden or items per page fixed");
+        return;
+    }
+    let header = angular.element(main[0].querySelector(".catalog-palette-header"));
+    let footer = angular.element(main[0].querySelector(".catalog-palette-footer"));
+    $scope.$apply( () =>
+        $scope.pagination.itemsPerPage = Math.max(MIN_ITEMS_PER_PAGE, Math.floor( (main[0].offsetHeight - header[0].offsetHeight - footer[0].offsetHeight - 4) / 96) * 4) );
 }
 
 export function catalogSelectorSearchFilter() {
@@ -108,10 +136,11 @@ export function catalogSelectorSortFilter($filter) {
     }
 }
 
-function controller($scope, $element, $q, $uibModal, $log, $templateCache, paletteApi, paletteDragAndDropService, iconGenerator, composerOverrides) {
+function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCache, paletteApi, paletteDragAndDropService, iconGenerator, composerOverrides) {
+    this.$timeout = $timeout;
     $scope.pagination = {
         page: 1,
-        itemsPerPage: $scope.itemsPerPage || ITEMS_PER_PAGE
+        itemsPerPage: $scope.itemsPerPage || MIN_ITEMS_PER_PAGE
     };
     $scope.state = {
         orders: ['name', 'type', 'id'],
@@ -127,7 +156,7 @@ function controller($scope, $element, $q, $uibModal, $log, $templateCache, palet
     $scope.getPlaceHolder = function () {
         return 'Search';
     };
-
+    
     $scope.isLoading = true;
 
     $scope.$watch('search', () => {

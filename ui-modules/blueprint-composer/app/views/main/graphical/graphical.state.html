@@ -34,14 +34,15 @@
 
 <div class="pane pane-palette" ng-if="vm.selectedSection">
     <div ng-repeat="section in vm.sections track by $index"
+         class="palette-full-height-wrapper"
          ng-if="vm.selectedSection === section">
-        <div class="container-fluid">
+        <div class="container-fluid palette-title">
             <h3>
                 {{section.title}}
                 <br-svg type="close" class="pull-right" ng-click="vm.selectedSection = undefined"></br-svg>
             </h3>
         </div>
-        <catalog-selector family="section.type" on-select="vm.onTypeSelected(item)" items-per-page="vm.catalogItemsPerPage"></catalog-selector>
+        <catalog-selector family="section.type" on-select="vm.onTypeSelected(item)" class="palette-full-height-wrapper"></catalog-selector>
     </div>
 </div>
 

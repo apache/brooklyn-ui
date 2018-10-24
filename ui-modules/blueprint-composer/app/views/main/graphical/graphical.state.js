@@ -37,7 +37,6 @@ export const graphicalState = {
 
 function graphicalController($scope, $state, blueprintService, paletteService) {
     this.EntityFamily = EntityFamily;
-    this.catalogItemsPerPage = 24;
 
     this.sections = paletteService.getSections();
     this.selectedSection = Object.values(this.sections).find(section => section.type === EntityFamily.ENTITY);
