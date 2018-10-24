@@ -177,7 +177,7 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
             symbolicName: $scope.search,
             name: $scope.search,
             displayName: $scope.search,
-            supertypes: [$scope.family.superType]
+            supertypes: ($scope.family ? [ $scope.family.superType ] : []),
         };
     });
 
