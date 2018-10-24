@@ -39,6 +39,7 @@ export function catalogSelectorDirective() {
             onSelect: '&',
             rowsPerPage: '<',  // if unset then fill
             reservedKeys: '<?',
+            state: '<?',
             mode: '@?',  // for use by downstream projects to pass in special modes
         },
         template: template,
@@ -147,15 +148,15 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
     this.$timeout = $timeout;
 
     $scope.viewModes = PALETTE_VIEW_MODES;
-    $scope.state = {
-        orders: ['name', 'type', 'id'],
-        currentOrder: 'name',
-        viewMode: PALETTE_VIEW_MODES.normal,
-    };
+    $scope.viewOrders = ['name', 'type', 'id'];
+    
+    if (!$scope.state) $scope.state = {};
+    if (!$scope.state.viewMode) $scope.state.viewMode = PALETTE_VIEW_MODES.normal;
+    if (!$scope.state.currentOrder) $scope.state.currentOrder = 'name';
     
     $scope.pagination = {
         page: 1,
-        itemsPerPage: $scope.state.viewMode.itemsPerRow * ($scope.rowsPerPage || MIN_ROWS_PER_PAGE)
+        itemsPerPage: $scope.state.viewMode.itemsPerRow * ($scope.rowsPerPage || 1)  // will fill out after load
     };
     
     $scope.getEntityNameForPalette = function(item, entityName) {

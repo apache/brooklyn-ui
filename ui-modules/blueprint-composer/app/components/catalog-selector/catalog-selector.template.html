@@ -46,7 +46,7 @@
                         </li>
                         
                         <li role="menuitem" class="dropdown-header">Sort</li>
-                        <li role="menuitem" ng-repeat="order in state.orders track by $index" ng-class="{'active': state.currentOrder === order}" class="layer">
+                        <li role="menuitem" ng-repeat="order in viewOrders track by $index" ng-class="{'active': state.currentOrder === order}" class="layer">
                             <a ng-click="state.currentOrder = order"><i class="fa fa-fw fa-circle"></i> {{order | capitalize}}</a>
                         </li>
                     </ul>

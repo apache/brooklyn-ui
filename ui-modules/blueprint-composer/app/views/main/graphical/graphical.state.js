@@ -40,6 +40,7 @@ function graphicalController($scope, $state, blueprintService, paletteService) {
 
     this.sections = paletteService.getSections();
     this.selectedSection = Object.values(this.sections).find(section => section.type === EntityFamily.ENTITY);
+    $scope.state = {};  // share state among all sections
 
     this.onTypeSelected = (selectedType)=> {
         let rootEntity = blueprintService.get();
