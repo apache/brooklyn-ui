@@ -319,15 +319,13 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
     function getEntityItems(entity, type) {
         let entities = [];
 
-        if (entity.miscData.get('traits').some(trait => trait.match(type)) || !angular.isDefined(type)) {
-            entities.push({
-                id: entity._id,
-                type: DSL_KINDS.ENTITY,
-                entity: entity,
-                name: entity.miscData.get('typeName') || $filter('entityName')(entity) || 'New application',
-                description: entity.description
-            });
-        }
+        entities.push({
+            id: entity._id,
+            type: DSL_KINDS.ENTITY,
+            entity: entity,
+            name: entity.miscData.get('typeName') || $filter('entityName')(entity) || 'New application',
+            description: entity.description
+        });
 
         entities = Object.values(entity.getClusterMemberspecEntities()).reduce((acc, spec) => {
             return acc.concat(getEntityItems(spec, type));
