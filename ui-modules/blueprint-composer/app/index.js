@@ -38,7 +38,8 @@ import brUtils from 'brooklyn-ui-utils/utils/general';
 
 import brSpecEditor from './components/spec-editor/spec-editor.directive';
 import brooklynCatalogSaver from './components/catalog-saver/catalog-saver.directive';
-import paletteApiProvider from "./components/providers/palette-api.provider"
+import paletteApiProvider from "./components/providers/palette-api.provider";
+import blueprintLoaderApiProvider from "./components/providers/blueprint-loader-api.provider";
 
 import brooklynApi from "brooklyn-ui-utils/brooklyn.api/brooklyn.api";
 import {designerDirective} from "./components/designer/designer.directive";
@@ -75,7 +76,7 @@ import stackViewer from 'angular-java-stack-viewer';
 angular.module('app', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 'ui.router.state.events', brCore, 
         brServerStatus, brAutoFocus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, 
         brYamlEditor, brUtils, brSpecEditor, brooklynCatalogSaver, brooklynApi, bottomSheet, stackViewer, brDragndrop, 
-        customActionDirective, customConfigSuggestionDropdown, paletteApiProvider])
+        customActionDirective, customConfigSuggestionDropdown, paletteApiProvider, blueprintLoaderApiProvider])
     .directive('designer', ['$log', '$state', '$q', 'iconGenerator', 'catalogApi', 'blueprintService', 'brSnackbar', 'paletteDragAndDropService', designerDirective])
     .directive('onError', onErrorDirective)
     .directive('catalogSelector', catalogSelectorDirective)
