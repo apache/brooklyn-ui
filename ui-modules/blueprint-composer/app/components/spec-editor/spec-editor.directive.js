@@ -34,7 +34,7 @@ const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
 const REPLACED_DSL_ENTITYSPEC = '___brooklyn:entitySpec';
 
 angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer])
-    .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', 'blueprintService', composerOverrides, specEditorDirective])
+    .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', 'blueprintService', 'composerOverrides', specEditorDirective])
     .filter('specEditorConfig', specEditorConfigFilter)
     .filter('specEditorType', specEditorTypeFilter);
 
