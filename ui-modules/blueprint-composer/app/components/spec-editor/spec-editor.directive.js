@@ -34,7 +34,7 @@ const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
 const REPLACED_DSL_ENTITYSPEC = '___brooklyn:entitySpec';
 
 angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer])
-    .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', 'blueprintService', specEditorDirective])
+    .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', 'blueprintService', composerOverrides, specEditorDirective])
     .filter('specEditorConfig', specEditorConfigFilter)
     .filter('specEditorType', specEditorTypeFilter);
 
@@ -72,7 +72,7 @@ export const CONFIG_FILTERS = [
     }
 ];
 
-export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, $state, blueprintService) {
+export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, $state, blueprintService, composerOverrides) {
     return {
         restrict: 'E',
         scope: {
@@ -130,7 +130,13 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 open: false
             }
         };
-
+        // allow downstream to configure this controller and/or scope
+        (composerOverrides.configureSpecEditor || function() {})(this, $scope, $element);
+        var headerTemplate = angular.element($templateCache.get('spec-editor/header.html'));
+        if (headerTemplate){
+            var compiledHTML = $compile(headerTemplate[0])(scope)
+            element[0].querySelector('.spec-type-header').append(compiledHTML[0]);
+        }
         scope.filters = {
             config: CONFIG_FILTERS
         };
