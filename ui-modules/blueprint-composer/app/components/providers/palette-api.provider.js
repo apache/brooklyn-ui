@@ -54,7 +54,7 @@ class PaletteApiProvider extends PaletteApi {
         return this.catalogApi.getTypes(params);
     }
 
-    getType(typeSymbolicName, typeVersion) {
+    getType(typeSymbolicName, typeVersion, config) {
         return this.catalogApi.getType(typeSymbolicName, typeVersion);
     }
 
