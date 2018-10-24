@@ -64,7 +64,7 @@ function repaginate($scope, $element) {
     let header = angular.element(main[0].querySelector(".catalog-palette-header"));
     let footer = angular.element(main[0].querySelector(".catalog-palette-footer"));
     $scope.$apply( () =>
-        $scope.pagination.itemsPerPage = Math.max(MIN_ITEMS_PER_PAGE, Math.floor( (main[0].offsetHeight - header[0].offsetHeight - footer[0].offsetHeight - 4) / 96) * 4) );
+        $scope.pagination.itemsPerPage = Math.max(MIN_ITEMS_PER_PAGE, Math.floor( (main[0].offsetHeight - header[0].offsetHeight - footer[0].offsetHeight) / 96) * 4) );
 }
 
 export function catalogSelectorSearchFilter() {
