@@ -42,6 +42,36 @@ catalog-selector {
     padding-left: 5px;
     padding-right: 5px;
     height: 96px;
+    &.item-compact {
+        height: 75px;
+    }
+    
+    &.item-full-width {
+        .item {
+            display: flex;
+            flex-direction: horizontal;
+            .item-logo {
+                flex: 0 0 auto;
+                width: auto;
+                height: 78px;
+                min-width: 90px;
+                img {
+                    margin: 0;
+                    width: auto;
+                }
+            }
+            .item-content {
+                flex: 1 1 auto;
+                display: flex;
+                align-items: center;
+                h3 {
+                    text-align: left;
+                    font-size: 1em;
+                    margin-left: 8px;
+                }
+            }
+        }
+    }
   }
   .catalog-palette-footer {
     padding-bottom: 5px;
@@ -64,7 +94,6 @@ catalog-selector {
       margin-bottom: -2px;
       padding-top: 3px;
       padding-bottom: 7px;
-      // transform: scaleY(1.1);
 
       .fa-info-circle {
         opacity: 1;
@@ -110,7 +139,7 @@ catalog-selector {
         left: 0;
         right: 0;
         margin: auto;
-        max-width: 90%;
+        max-width: 100%;
         max-height: 100%;
       }
     }
