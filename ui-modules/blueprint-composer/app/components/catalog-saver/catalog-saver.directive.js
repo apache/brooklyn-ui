@@ -60,12 +60,47 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, co
         link: link
     };
 
-    function link($scope, $element) {
+    function link($scope, $element, $compile, controller) {
         $scope.buttonText = $scope.config.label || ($scope.config.itemType ? `Update ${$scope.config.name || $scope.config.symbolicName}` : 'Add to catalog');
 
         $scope.activateModal = () => {
-            // Override callback to update catalog configuration data in other applications
-            $scope.config = (composerOverrides.updateCatalogConfig || (($scope, $element) => $scope.config))($scope, $element);
+            function injectorGet(reference) { return $element.injector().get(reference); }
+            function blueprintService() { return injectorGet('blueprintService'); }
+
+            let entity = blueprintService().get();
+            let config = controller.saveToCatalogConfig;
+
+            // Reset the config values if this is not an update
+            if (!$scope.isUpdate) {
+                config = {
+                    itemType: 'entity',
+                };
+            }
+
+            // Set various properties from the blueprint entity data
+            if (!config.version && entity.hasVersion()) {
+                config.version = entity.version;
+            }
+            if (!config.iconUrl && entity.hasIcon()) {
+                config.iconUrl = entity.icon;
+            }
+            if (!config.name && entity.hasName()) {
+                config.name = entity.name;
+            }
+            if (!config.symbolicName && entity.hasId()) {
+                config.symbolicName = entity.id;
+            }
+            if (!config.bundle) {
+                let bundle = config.symbolicName || config.name;
+                bundle = bundle.split(/[^-a-zA-Z0-9.,_]+/).join('-').toLowerCase();
+                config.bundle = bundle;
+                if (!config.symbolicName) {
+                    config.symbolicName = bundle;
+                }
+            }
+
+            // Override this callback to update configuration data elsewhere
+            (composerOverrides.updateCatalogConfig || ((config, $element, controller) => { }))(config, $element, controller);
 
             let modalInstance = $uibModal.open({
                 templateUrl: TEMPLATE_MODAL_URL,
@@ -82,6 +117,7 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, co
                         break;
                     case REASONS.deploy:
                         $rootScope.$broadcast('blueprint.deploy');
+                        $scope.isUpdate = true;
                         break;
                 }
             });
@@ -98,15 +134,14 @@ export function CatalogItemModalController($scope, blueprintService, paletteApi,
         view: VIEWS.form,
         saving: false,
         force: false,
-        isUpdate: Object.keys($scope.config).length > 0
     };
 
     $scope.getTitle = () => {
         switch ($scope.state.view) {
             case VIEWS.form:
-                return $scope.state.isUpdate ? `Update ${$scope.config.name || $scope.config.symbolicName}` : 'Add to catalog';
+                return $scope.isUpdate ? `Update ${$scope.config.name || $scope.config.symbolicName}` : 'Add to catalog';
             case VIEWS.saved:
-                return `${$scope.config.name || $scope.config.symbolicName} ${$scope.state.isUpdate ? 'updated' : 'saved'}`;
+                return `${$scope.config.name || $scope.config.symbolicName} ${$scope.isUpdate ? 'updated' : 'saved'}`;
         }
     };
 
