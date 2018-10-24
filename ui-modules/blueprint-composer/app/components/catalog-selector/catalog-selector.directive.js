@@ -70,7 +70,7 @@ function repaginate($scope, $element) {
         }
         let header = angular.element(main[0].querySelector(".catalog-palette-header"));
         let footer = angular.element(main[0].querySelector(".catalog-palette-footer"));
-        rowsPerPage = Math.max(MIN_ROWS_PER_PAGE, Math.floor( (main[0].offsetHeight - header[0].offsetHeight - footer[0].offsetHeight) / ($scope.state.viewMode.rowHeightPx || 96)) );
+        rowsPerPage = Math.max(MIN_ROWS_PER_PAGE, Math.floor( (main[0].offsetHeight - header[0].offsetHeight - footer[0].offsetHeight - 16) / ($scope.state.viewMode.rowHeightPx || 96)) );
     }
     $scope.$apply( () => $scope.pagination.itemsPerPage = rowsPerPage * $scope.state.viewMode.itemsPerRow );
 }
