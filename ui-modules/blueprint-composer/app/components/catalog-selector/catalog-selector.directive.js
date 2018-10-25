@@ -57,7 +57,6 @@ function link($scope, $element, attrs, controller) {
         (values) => controller.$timeout( () => repaginate($scope, $element) ) );
     // also repaginate on window resize    
     angular.element(window).bind('resize', () => repaginate($scope, $element));
-
 }
 
 function repaginate($scope, $element) {
@@ -272,6 +271,32 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
         });
         $scope.items = items;
     });
+    $scope.showPaletteControls = false;
+    $scope.onFiltersShown = () => {
+      $timeout( () => {
+        // check do we need to show the multiline
+        let filters = angular.element($element[0].querySelector(".filters"));
+        $scope.$apply( () => $scope.filterSettings.filtersMultilineAvailable = filters[0].scrollHeight > filters[0].offsetHeight );
+        
+        repaginate($scope, $element);
+      } );
+    };
+    $scope.togglePaletteControls = () => {
+        $scope.showPaletteControls = !$scope.showPaletteControls;
+        $timeout( () => repaginate($scope, $element) );
+    }
+    $scope.toggleShowAllFilters = () => {
+        $scope.filterSettings.showAllFilters = !$scope.filterSettings.showAllFilters;
+        $timeout( () => repaginate($scope, $element) );
+    };
+    $scope.filterSettings = {};
+
+    $scope.filters = [
+        // TODO determine recent ones, set some default recent ones
+        { label: 'Recent', icon: 'clock-o', title: "Recently used and standard favorites", filterFn: item => item.displayTags.includes("RECENT"), enabled: false },
+    ];
+    $scope.disableFilters = () => $scope.filters.forEach( f => f.enabled = false );
+    
     // this can be overridden for third-party filters.
     // it receives result of filtering based on search so filters can adjust based on number of search resullts
     $scope.filterPaletteItems = (items) => items;
@@ -286,5 +311,4 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
     // allow downstream to configure this controller and/or scope
     (composerOverrides.configurePaletteController || function() {})(this, $scope, $element);
     
-    $scope.paletteItemClasses = "col-xs-3";
 }
