@@ -42,7 +42,7 @@
                 <br-svg type="close" class="pull-right" ng-click="vm.selectedSection = undefined"></br-svg>
             </h3>
         </div>
-        <catalog-selector state="paletteState" family="section.type" on-select="vm.onTypeSelected(item)" class="palette-full-height-wrapper"></catalog-selector>
+        <catalog-selector state="paletteState" family="section.type" mode="{{ section.mode }}" on-select="vm.onTypeSelected(item)" class="palette-full-height-wrapper"></catalog-selector>
     </div>
 </div>
 

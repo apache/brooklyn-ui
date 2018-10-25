@@ -48,6 +48,7 @@ class PaletteService {
     constructor(sectionsToAdd) {
         this.sections = {};
         this.requiredFields = ['title', 'type', 'icon'];
+        // 'mode' is optional
 
         for (const [id, section] of Object.entries(sectionsToAdd)) {
             this.addSection(id, section);
