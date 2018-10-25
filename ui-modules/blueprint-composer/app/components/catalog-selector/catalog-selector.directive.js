@@ -22,11 +22,19 @@ import template from './catalog-selector.template.html';
 
 const MIN_ROWS_PER_PAGE = 4;
 
+const PALETTE_VIEW_ORDERS = {
+        name: { label: "Name", field: "displayName" },
+        lastUsed: { label: "Last Used", field: "-lastUsed" }, 
+        bundle: { label: "Bundle", field: "containingBundle" }, 
+        id: { label: "ID", field: "symbolicName" }, 
+    };
+
 const PALETTE_VIEW_MODES = {
-  compact: { name: "Compact", classes: "col-xs-2 item-compact", itemsPerRow: 6, rowHeightPx: 75, hideName: true },
-  normal: { name: "Normal", classes: "col-xs-3", itemsPerRow: 4 },
-  large: { name: "Large", classes: "col-xs-4", itemsPerRow: 3 },
-  list: { name: "List", classes: "col-xs-12 item-full-width", itemsPerRow: 1 } };
+        compact: { name: "Compact", classes: "col-xs-2 item-compact", itemsPerRow: 6, rowHeightPx: 75, hideName: true },
+        normal: { name: "Normal", classes: "col-xs-3", itemsPerRow: 4 },
+        large: { name: "Large", classes: "col-xs-4", itemsPerRow: 3 },
+        list: { name: "List", classes: "col-xs-12 item-full-width", itemsPerRow: 1 },
+    };
 
 // fields in either bundle or type record:
 const FIELDS_TO_SEARCH = ['name', 'displayName', 'symbolicName', 'version', 'type', 'supertypes', 'containingBundle', 'description', 'displayTags', 'tags'];
@@ -43,7 +51,7 @@ export function catalogSelectorDirective() {
             mode: '@?',  // for use by downstream projects to pass in special modes
         },
         template: template,
-        controller: ['$scope', '$element', '$timeout', '$q', '$uibModal', '$log', '$templateCache', 'paletteApi', 'paletteDragAndDropService', 'iconGenerator', 'composerOverrides', controller],
+        controller: ['$scope', '$element', '$timeout', '$q', '$uibModal', '$log', '$templateCache', 'paletteApi', 'paletteDragAndDropService', 'iconGenerator', 'composerOverrides', 'recentlyUsedService', controller],
         link: link,
     };
 }
@@ -100,58 +108,15 @@ export function catalogSelectorSearchFilter() {
     }
 }
 
-export function catalogSelectorSortFilter($filter) {
-    return function (items, family) {
-        return items.sort(function (left, right) {
-            let nameLeft;
-            let nameRight;
-            if (family) {
-                switch (family) {
-                    case EntityFamily.ENTITY:
-                    case EntityFamily.SPEC:
-                    case EntityFamily.POLICY:
-                    case EntityFamily.ENRICHER:
-                    case EntityFamily.LOCATION:
-                        nameLeft = $filter('entityName')(left);
-                        nameRight = $filter('entityName')(right);
-                        break;
-                }
-            }
-
-            if (!nameLeft || !nameRight) {
-                return 0;
-            }
-            let nameCompare = nameLeft.localeCompare(nameRight);
-            if (nameCompare !== 0) {
-                return nameCompare;
-            }
-            let versionCompare = right.version.localeCompare(left.version);
-            if (versionCompare !== 0) {
-                return versionCompare
-            }
-            // TODO should symbolic name be the sorted field?
-            let symNameCompare = left.symbolicName.localeCompare(right.symbolicName);
-            if (symNameCompare !== 0) {
-                return symNameCompare
-            }            
-            let containingBundleCompare = right.containingBundle.localeCompare(left.containingBundle);
-            if (containingBundleCompare !== 0) {
-                return containingBundleCompare
-            }            
-            return 0;
-        });
-    }
-}
-
-function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCache, paletteApi, paletteDragAndDropService, iconGenerator, composerOverrides) {
+function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCache, paletteApi, paletteDragAndDropService, iconGenerator, composerOverrides, recentlyUsedService) {
     this.$timeout = $timeout;
 
     $scope.viewModes = PALETTE_VIEW_MODES;
-    $scope.viewOrders = ['name', 'type', 'id'];
+    $scope.viewOrders = PALETTE_VIEW_ORDERS;
     
     if (!$scope.state) $scope.state = {};
     if (!$scope.state.viewMode) $scope.state.viewMode = PALETTE_VIEW_MODES.normal;
-    if (!$scope.state.currentOrder) $scope.state.currentOrder = 'name';
+    if (!$scope.state.currentOrder) $scope.state.currentOrder = [ PALETTE_VIEW_ORDERS.name.field, '-version' ];
     
     $scope.pagination = {
         page: 1,
@@ -200,7 +165,9 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
         }
 
         return defer.then(data => {
+            data.forEach( recentlyUsedService.embellish );
             return data;
+            
         }).catch(error => {
             return [];
         }).finally(() => {
@@ -233,6 +200,12 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
     };
     $scope.onDragEnd = function (item, event) {
         paletteDragAndDropService.dragEnd();
+        recentlyUsedService.markUsed(item);
+    };
+    $scope.sortBy = function (order) {
+        let newOrder = [].concat($scope.state.currentOrder);
+        newOrder = newOrder.filter( (o) => o !== order.field );
+        $scope.state.currentOrder = [order.field].concat(newOrder);
     };
     $scope.allowFreeForm = function () {
         return [
@@ -310,5 +283,4 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
 
     // allow downstream to configure this controller and/or scope
     (composerOverrides.configurePaletteController || function() {})(this, $scope, $element);
-    
 }
