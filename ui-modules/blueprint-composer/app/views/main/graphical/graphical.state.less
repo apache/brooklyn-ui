@@ -19,7 +19,12 @@
 
 .layout {
   display: flex;
+  designer {
+    flex-grow: 1;
+  }
+}
 
+.palette-and-or-toolbar {
   .toolbar {
     position: relative;
     height: calc(~"100vh - 105px");
@@ -59,9 +64,6 @@
     }
   }
 
-  designer {
-    flex-grow: 1;
-  }
 }
 
 .pane {
@@ -118,6 +120,25 @@
       padding: 0;
     }
 
+    .add-panel {
+        display: flex;
+        flex-direction: column;
+        > .spec-parent {
+            flex: 0 0 auto;
+        } 
+        > .add-panel-main {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: row;
+            .toolbar {
+                flex: 0 0 auto;
+            }
+            .pane-palette {
+                flex: 1 1 auto;
+            }
+        }
+    }
+    
     .spec-parent {
       a {
         background-color: @gray-lighter;

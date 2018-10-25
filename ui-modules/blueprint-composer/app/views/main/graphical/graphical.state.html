@@ -17,7 +17,9 @@
   under the License.
 -->
 
-<div class="layout">
+<div class="palette-and-or-toolbar">
+
+  <div class="layout">
     <div class="toolbar">
         <div class="list-group">
             <a href class="list-group-item"
@@ -30,9 +32,9 @@
     </div>
 
     <designer></designer>
-</div>
+  </div>
 
-<div class="pane pane-palette" ng-if="vm.selectedSection">
+  <div class="pane pane-palette" ng-if="vm.selectedSection">
     <div ng-repeat="section in vm.sections track by $index"
          class="palette-full-height-wrapper"
          ng-if="vm.selectedSection === section">
@@ -44,8 +46,10 @@
         </div>
         <catalog-selector state="paletteState" family="section.type" mode="{{ section.mode }}" on-select="vm.onTypeSelected(item)" class="palette-full-height-wrapper"></catalog-selector>
     </div>
-</div>
+  </div>
 
-<div class="pane pane-configuration">
+  <div class="pane pane-configuration">
     <ui-view></ui-view>
+  </div>
+
 </div>
