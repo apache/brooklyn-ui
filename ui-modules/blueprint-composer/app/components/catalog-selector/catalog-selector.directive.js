@@ -19,12 +19,13 @@
 import angular from 'angular';
 import {EntityFamily} from '../util/model/entity.model';
 import template from './catalog-selector.template.html';
+import moment from "moment";
 
 const MIN_ROWS_PER_PAGE = 4;
 
 const PALETTE_VIEW_ORDERS = {
         name: { label: "Name", field: "displayName" },
-        lastUsed: { label: "Last Used", field: "-lastUsed" }, 
+        lastUsed: { label: "Recent", field: "-lastUsed" }, 
         bundle: { label: "Bundle", field: "containingBundle" }, 
         id: { label: "ID", field: "symbolicName" }, 
     };
@@ -165,6 +166,7 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
         }
 
         return defer.then(data => {
+            data = $scope.filterPaletteItemsForMode(data, $scope);
             data.forEach( recentlyUsedService.embellish );
             return data;
             
@@ -176,6 +178,7 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
     };
     $scope.onSelectItem = function (item) {
         if (angular.isFunction($scope.onSelect)) {
+            recentlyUsedService.markUsed(item);
             $scope.onSelect({item: item});
         }
         $scope.search = '';
@@ -244,6 +247,12 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
         });
         $scope.items = items;
     });
+    $scope.lastUsedText = (item) => {
+        let l = (Number)(item.lastUsed);
+        if (!l || isNaN(l) || l<=0) return "";
+        if (l < 100000) return 'Preselected for inclusion in "Recent" filter.';
+        return 'Last used: ' + moment(l).fromNow();
+    }; 
     $scope.showPaletteControls = false;
     $scope.onFiltersShown = () => {
       $timeout( () => {
@@ -265,14 +274,48 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
     $scope.filterSettings = {};
 
     $scope.filters = [
-        // TODO determine recent ones, set some default recent ones
-        { label: 'Recent', icon: 'clock-o', title: "Recently used and standard favorites", filterFn: item => item.displayTags.includes("RECENT"), enabled: false },
+        { label: 'Recent', icon: 'clock-o', title: "Recently used and standard favorites", limitToOnePage: true,
+            filterInit: items => {
+                $scope.recentItems = items.filter( i => i.lastUsed && i.lastUsed > 0 );
+                $scope.recentItems.sort( (a,b) => b.lastUsed - a.lastUsed );
+                return $scope.recentItems; 
+            }, enabled: false },
     ];
     $scope.disableFilters = () => $scope.filters.forEach( f => f.enabled = false );
     
-    // this can be overridden for third-party filters.
-    // it receives result of filtering based on search so filters can adjust based on number of search resullts
-    $scope.filterPaletteItems = (items) => items;
+    // this can be overridden for palette sections/modes which show a subset of the types returned by the server;
+    // this is applied when the data is received from the server.
+    // it is used by filterPaletteItemsWithActiveFilters; 
+    $scope.filterPaletteItemsForMode = (items) => items;
+
+    // compute counts and apply active filters;     
+    // this is called by the view after filtering based on search,
+    // so filters can adjust based on number of search results
+    $scope.filterPaletteItemsWithActiveFilters = (items) => {
+      $scope.itemsBeforeActiveFilters = items;
+      $scope.skippingFilters = false; 
+      let filters = $scope.filters.filter(f => f.enabled);
+      let filtersWithFn = filters.filter(f => f.filterFn);
+      if (!filters.length) {
+        $scope.itemsAfterActiveFilters = items;
+        return items;
+      }
+      filters.forEach(filter => { if (filter.filterInit) items = filter.filterInit(items); });
+      if (filtersWithFn.length) {
+        items = items.filter( item => filtersWithFn.some(filter => filter.filterFn(item)) );
+      }
+      if (!items || !items.length) {
+        // if search matches nothing then disable filters
+        items = $scope.itemsAfterActiveFilters = $scope.itemsBeforeActiveFilters;
+        $scope.skippingFilters = true;
+      } else {
+        if (filters.find(filter => filter.limitToOnePage)) {
+            items = items.splice(0, $scope.pagination.itemsPerPage);
+        }  
+        $scope.itemsAfterActiveFilters = items;
+      }
+      return items; 
+    };
 
     // downstream can override this to insert lines below the header
     $scope.customSubHeadTemplateName = 'composer-palette-empty-sub-head';

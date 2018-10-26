@@ -60,7 +60,8 @@
     "lodash": "^4.16.4",
     "ngclipboard": "^1.1.1",
     "normalizr": "^2.2.1",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "moment": "^2.15.1"
   },
   "devDependencies": {
     "angular-mocks": "^1.6.1",

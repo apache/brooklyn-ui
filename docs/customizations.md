@@ -4,7 +4,7 @@ and widgets cherry-picked as needed.
 
 There are a number of points where UI default choices can be overridden:
 
-* Actions on Composer: by changing the config value for `'actionServiceProvider'` in `ui-modules/blueprint-composer/app/index.js`,
+* Actions on Composer: by changing the config value for `'actionServiceProvider'` from `ui-modules/blueprint-composer/app/index.js`,
   a different set of actions can be displayed on the composer screen
 
 * Composer - Virtual palette items and alternate catalog endpoints:  by registering a different `blueprintServiceProvider`
@@ -19,6 +19,9 @@ There are a number of points where UI default choices can be overridden:
   (as shown in the accompanying `vanillia-with-custom-widget.bom`);
   widgets should be registered as angular directives using the standard Angular naming conventions 
   (e.g. suggestionDropdownDirective), as done for that directive in app/index.js and app/index.less.
+
+* Composer - Identify entities and other items to be preselected when "Recent" is applied by adding a tag of the form
+  `{ ui-composer-recent-preselect: 100 }` (where the number `100` determines its sort order)
 
 <!--
   Licensed to the Apache Software Foundation (ASF) under one

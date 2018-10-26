@@ -103,7 +103,7 @@
             <!-- here and below, col-xs-3 or -4 or -2 all work giving different densities;
                  this could be configurable ("compressed"=xs-2 w no labels, "normal"=xs-3, "big"=xs-4) -->
             <div class="catalog-palette-item" ng-class="state.viewMode.classes"
-                    ng-repeat="item in searchedItems = filterPaletteItems(items | catalogSelectorSearch:search) | orderBy:state.currentOrder | limitTo:pagination.itemsPerPage:(pagination.page-1)*pagination.itemsPerPage track by (item.containingBundle + ':' + item.symbolicName + ':' + item.version)"
+                    ng-repeat="item in searchedItems = filterPaletteItemsWithActiveFilters(items | catalogSelectorSearch:search) | orderBy:state.currentOrder | limitTo:pagination.itemsPerPage:(pagination.page-1)*pagination.itemsPerPage track by (item.containingBundle + ':' + item.symbolicName + ':' + item.version)"
                     ng-click="onSelectItem(item)">
                 <div class="item" draggable="true" ng-dragstart="onDragItem(item, $event)" ng-dragend="onDragEnd(item, $event)">
                     <div class="item-logo">
@@ -155,8 +155,10 @@
         </div>
         <p class="quick-info-description" ng-if="item.description">{{item.description}}</p>
         <div class="quick-info-metadata bundle">
+            <p ng-if="lastUsedText(item)"><i class="mini-icon fa fa-clock-o"></i> {{ lastUsedText(item) }}</p>
             <p ng-if="item.displayTags && item.displayTags.length"><i class="mini-icon fa fa-fw fa-tags"></i> 
-                <span ng-repeat="tag in item.displayTags" class="label label-primary palette-item-tag">{{ tag }}</span> </p>
+                <span ng-repeat-start="tag in item.displayTags" class="label label-primary palette-item-tag">{{ tag }}</span>
+                <span ng-repeat-end> </span> </p>
             <p><i class="mini-icon fa fa-fw fa-file-zip-o"></i> {{item.containingBundle}}</p>
         </div>
     </div>

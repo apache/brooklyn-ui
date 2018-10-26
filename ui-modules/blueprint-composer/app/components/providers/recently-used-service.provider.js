@@ -47,12 +47,15 @@ function RecentlyUsedService($log) {
     };
     service.getLastUsed = (item) => {
         let id = service.getId(item); 
-        let s = sessionStorage.getItem(PREFIX+id); 
-        return s ? ((Number)(s)) : -1; 
+        let s = sessionStorage.getItem(PREFIX+id);
+        if (s) return ((Number)(s));
+        let tag = item.tags && item.tags.find(t => t['ui-composer-recent-preselect']);
+        if (tag) return tag['ui-composer-recent-preselect']; 
+        return -1; 
     };
     
     service.embellish = (item) => {
-        item.lastUsed = service.getLastUsed(service.getId(item));
+        item.lastUsed = service.getLastUsed(item);
     };
     
     service.markUsed('io.cloudsoft.demo.bank.threetier:0.1.0-SNAPSHOT::db:0.1.0-SNAPSHOT', 100);
