@@ -58,7 +58,5 @@ function RecentlyUsedService($log) {
         item.lastUsed = service.getLastUsed(item);
     };
     
-    service.markUsed('io.cloudsoft.demo.bank.threetier:0.1.0-SNAPSHOT::db:0.1.0-SNAPSHOT', 100);
-    
     return service;
 }

@@ -1,0 +1,42 @@
+<div class="paletteItemsFooter">
+    <div ng-if="searchedItems.length === 0" class="no-match">
+        <i class="fa fa-lemon-o"></i>
+    </div>
+    <small class="help-block text-sm palette-footer-message">
+        <span ng-if="search">
+          <span ng-if="searchedItems.length === 0">
+            <span ng-if="!skippingFilters && itemsBeforeActiveFilters.length > itemsAfterActiveFilters.length">
+                    <b>{{ itemsBeforeActiveFilters.length - itemsAfterActiveFilters.length }} item{{ itemsBeforeActiveFilters.length - itemsAfterActiveFilters.length > 1 ? 's' : ''}}</b> 
+                    matching search but excluded by filters. 
+                    <button class="btn btn-outline btn-info" ng-click="disableFilters()">Clear filters</button>
+            </span>
+            <span ng-if="skippingFilters || itemsBeforeActiveFilters.length === 0">
+                    No matches for <code>{{ search }}</code>.
+            </span>
+          </span>
+          <span ng-if="searchedItems.length > 0">
+            <span ng-if="skippingFilters">
+                    <b>No matches with selected filters.</b><br/>
+                    Showing matches ignoring filters.
+            </span>
+            <span ng-if="!skippingFilters && itemsBeforeActiveFilters.length > itemsAfterActiveFilters.length">
+                    <b>{{ itemsBeforeActiveFilters.length - itemsAfterActiveFilters.length }} more item{{ itemsBeforeActiveFilters.length - itemsAfterActiveFilters.length > 1 ? 's' : ''}}</b> 
+                    matching search but excluded by filters.
+                    <button class="btn btn-outline btn-info" ng-click="disableFilters()">Clear filters</button>
+            </span>
+          </span>
+        </span>
+        <span ng-if="!search">
+            <span ng-if="skippingFilters && searchedItems.length > 0">
+                    <b>Nothing available in selected filters.</b><br/>
+                    Ignoring filters.
+            </span>
+            <span ng-if="!skippingFilters && itemsBeforeActiveFilters.length > itemsAfterActiveFilters.length">
+                    <b>{{ itemsBeforeActiveFilters.length - itemsAfterActiveFilters.length }} more item{{ itemsBeforeActiveFilters.length - itemsAfterActiveFilters.length > 1 ? 's' : ''}}</b> 
+                    excluded by filters. 
+                    <button class="btn btn-outline btn-info" ng-click="disableFilters()">Clear filters</button>
+            </span>
+        </span>
+        
+    </small>
+</div>

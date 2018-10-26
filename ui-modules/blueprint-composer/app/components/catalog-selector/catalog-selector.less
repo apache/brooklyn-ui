@@ -207,6 +207,30 @@ catalog-selector {
       }
     }
   }
+  .catalog-palette-footer {
+    .palette-footer-message {
+        .btn {
+          font-size: inherit;
+          padding: 3px 8px;
+          margin-left: 1em;
+          font-style: normal;
+        }
+        text-align: right;
+        // useful if it wraps, e.g. because pagination buttons show:
+        line-height: 2;
+        margin-top: -2px;
+    }
+    div[uib-pagination] {
+      margin-left: 1em;
+    }
+    .no-match {
+      font-size: 8em;
+      margin-top: 24px;
+      margin-bottom: 36px;
+      text-align: center;
+      color: @gray-lighter;
+    }
+  }
 }
 
 .catalog-selector-popover {

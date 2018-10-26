@@ -19,6 +19,7 @@
 import angular from 'angular';
 import {EntityFamily} from '../util/model/entity.model';
 import template from './catalog-selector.template.html';
+import footerTemplate from './catalog-selector-palette-footer.html';
 import moment from "moment";
 
 const MIN_ROWS_PER_PAGE = 4;
@@ -281,7 +282,10 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
                 return $scope.recentItems; 
             }, enabled: false },
     ];
-    $scope.disableFilters = () => $scope.filters.forEach( f => f.enabled = false );
+    $scope.disableFilters = (showFilters) => {
+        $scope.filters.forEach( f => f.enabled = false );
+        if (showFilters !== false) $scope.showPaletteControls = true;
+    }
     
     // this can be overridden for palette sections/modes which show a subset of the types returned by the server;
     // this is applied when the data is received from the server.
@@ -321,8 +325,8 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
     $scope.customSubHeadTemplateName = 'composer-palette-empty-sub-head';
     $templateCache.put($scope.customSubHeadTemplateName, '');
     
-    $scope.customFooterTemplateName = 'composer-palette-empty-footer';
-    $templateCache.put($scope.customFooterTemplateName, '');
+    $scope.customFooterTemplateName = 'composer-palette-default-footer';
+    $templateCache.put($scope.customFooterTemplateName, footerTemplate);
 
     // allow downstream to configure this controller and/or scope
     (composerOverrides.configurePaletteController || function() {})(this, $scope, $element);
