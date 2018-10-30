@@ -323,6 +323,8 @@
                         <exclude>.mvn/jvm.config</exclude>
                         <!-- maven cache -->
                         <exclude>**/.m2/**</exclude>
+                        <!-- travis config file -->
+                        <exclude>.travis.yml</exclude>
                     </excludes>
                 </configuration>
             </plugin>
