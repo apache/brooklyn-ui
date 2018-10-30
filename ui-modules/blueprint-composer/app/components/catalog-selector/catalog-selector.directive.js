@@ -20,7 +20,7 @@ import angular from 'angular';
 import {EntityFamily} from '../util/model/entity.model';
 import template from './catalog-selector.template.html';
 import footerTemplate from './catalog-selector-palette-footer.html';
-import moment from "moment";
+import { distanceInWordsToNow } from 'date-fns';
 
 const MIN_ROWS_PER_PAGE = 4;
 
@@ -252,7 +252,7 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
         let l = (Number)(item.lastUsed);
         if (!l || isNaN(l) || l<=0) return "";
         if (l < 100000) return 'Preselected for inclusion in "Recent" filter.';
-        return 'Last used: ' + moment(l).fromNow();
+        return 'Last used: ' + distanceInWordsToNow(l, { includeSeconds: true, addSuffix: true });
     }; 
     $scope.showPaletteControls = false;
     $scope.onFiltersShown = () => {
