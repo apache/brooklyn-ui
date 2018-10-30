@@ -34,22 +34,11 @@
       <div class="catalog-palette-header">
         <div class="form-group" ng-class="{'has-error': isReserved()}">
             <div class="input-group input-group-sm">
-                <span class="input-group-btn" uib-dropdown keyboard-nav>
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" uib-dropdown-toggle>
-                        <i class="fa fa-sort"></i>
+                <span class="input-group-btn" keyboard-nav>
+                    <button id="palette-controls-button" type="button" class="btn btn-default dropdown-toggle" ng-class="{ 'btn-primary': showPaletteControls }" id="palette-controls" aria-haspopup="true" aria-expanded="false" 
+                            ng-click="togglePaletteControls()">
+                        <i class="fa fa-cog"></i>
                     </button>
-                    {{filters | json}}
-                    <ul class="dropdown-menu" role="menu" uib-dropdown-menu>
-                        <li role="menuitem" class="dropdown-header">View</li>
-                        <li role="menuitem" ng-repeat="view in viewModes track by $index" ng-class="{'active': state.viewMode === view}" class="layer">
-                            <a ng-click="state.viewMode = view"><i class="fa fa-fw fa-circle"></i> {{view.name}}</a>
-                        </li>
-                        
-                        <li role="menuitem" class="dropdown-header">Sort</li>
-                        <li role="menuitem" ng-repeat="order in viewOrders track by $index" ng-class="{'active': state.currentOrder === order}" class="layer">
-                            <a ng-click="state.currentOrder = order"><i class="fa fa-fw fa-circle"></i> {{order | capitalize}}</a>
-                        </li>
-                    </ul>
                 </span>
                 <input ng-model="search" type="text" placeholder="{{getPlaceHolder()}}" class="form-control" auto-focus />
                 <span class="input-group-addon">
@@ -57,18 +46,61 @@
                     {{(searchedItems.length === 0 && search && allowFreeForm() ? 1 : searchedItems.length) == 1 ? 'item' : 'items'}}
                 </span>
             </div>
+            <div class="pane-nav-row" id="palette-controls" ng-if="showPaletteControls" aria-labelledby="palette-controls-button">
+
+             <div class="filters" ng-class="{ 'multiline': filterSettings.showAllFilters }" ng-init="onFiltersShown()">
+             
+              <div class="spacer" ng-repeat-start="filter in filters" ng-if="filter.spacerBefore"></div>
+              <div class="nav-row-item" ng-repeat-end ng-click="filter.enabled = !filter.enabled">
+                <span title="{{ filter.hoverTest }}" class="label" ng-class="{'label-primary': filter.enabled, 'label-default': !filter.enabled }">
+                    <i class="fa fa-{{ filter.icon }}" ng-if="filter.icon"></i>
+                    <span ng-if="filter.label">{{ filter.label }}</span>
+                </span>
+              </div>
+             </div>
+
+              <div class="nav-row-item" ng-if="filterSettings.filtersMultilineAvailable" title="More filters available"
+                    ng-click="toggleShowAllFilters()" >
+                <span class="label" ng-class="{'label-primary': filterSettings.showAllFilters, 'label-default': !filterSettings.showAllFilters }">
+                    ...
+                </span>
+              </div>
+              
+              <div class="spacer"></div>
+                
+              <span uib-dropdown>
+                <a href id="palette-sort" uib-dropdown-toggle aria-haspopup="true" aria-expanded="false" >
+                  <div class="nav-row-item tool" title="Sort">
+                    <i class="fa fa-sort"></i></div>
+                </a>
+                <ul class="dropdown-menu right-align-icon" role="menu" uib-dropdown-menu aria-labelledby="palette-sort">
+                        <li role="menuitem" ng-repeat="order in viewOrders track by $index" ng-class="{'active': state.currentOrder[0] === order.field}" class="layer">
+                            <a ng-click="sortBy(order)"><i class="fa fa-fw fa-circle"></i> {{ order.label }}</a>
+                        </li>
+                </ul>
+              </span>
+              
+              <span uib-dropdown>
+                <a href id="palette-view-mode" uib-dropdown-toggle aria-haspopup="true" aria-expanded="false" >
+                  <div class="nav-row-item tool" title="Display mode">
+                    <i class="fa fa-th"></i></div>
+                </a>
+                <ul class="dropdown-menu right-align-icon" role="menu" uib-dropdown-menu aria-labelledby="palette-view-mode">
+                        <li role="menuitem" ng-repeat="view in viewModes track by $index" ng-class="{'active': state.viewMode === view}" class="layer">
+                            <a ng-click="state.viewMode = view"><i class="fa fa-fw fa-circle"></i> {{view.name}}</a>
+                        </li>
+                </ul>
+              </span>
+            </div>
             <ng-include src="customSubHeadTemplateName"/>
         </div>
-        <small class="help-block text-sm no-match" ng-if="search && searchedItems.length === 0">
-            No {{family.displayName.toLowerCase()}} matching the current search
-        </small>
       </div>
 
         <div class="row grid">
             <!-- here and below, col-xs-3 or -4 or -2 all work giving different densities;
                  this could be configurable ("compressed"=xs-2 w no labels, "normal"=xs-3, "big"=xs-4) -->
             <div class="catalog-palette-item" ng-class="state.viewMode.classes"
-                    ng-repeat="item in searchedItems = (filterPaletteItems(items | catalogSelectorSearch:search) | catalogSelectorSort:family) | orderBy:state.currentOrder | limitTo:pagination.itemsPerPage:(pagination.page-1)*pagination.itemsPerPage track by (item.containingBundle + ':' + item.symbolicName + ':' + item.version)"
+                    ng-repeat="item in searchedItems = (items | catalogSelectorSearch:search | catalogSelectorFilters:this) | orderBy:state.currentOrder | limitTo:pagination.itemsPerPage:(pagination.page-1)*pagination.itemsPerPage track by (item.containingBundle + ':' + item.symbolicName + ':' + item.version)"
                     ng-click="onSelectItem(item)">
                 <div class="item" draggable="true" ng-dragstart="onDragItem(item, $event)" ng-dragend="onDragEnd(item, $event)">
                     <div class="item-logo">
@@ -120,8 +152,10 @@
         </div>
         <p class="quick-info-description" ng-if="item.description">{{item.description}}</p>
         <div class="quick-info-metadata bundle">
+            <p ng-if="lastUsedText(item)"><i class="mini-icon fa fa-clock-o"></i> {{ lastUsedText(item) }}</p>
             <p ng-if="item.displayTags && item.displayTags.length"><i class="mini-icon fa fa-fw fa-tags"></i> 
-                <span ng-repeat="tag in item.displayTags" class="label label-primary palette-item-tag">{{ tag }}</span> </p>
+                <span ng-repeat-start="tag in item.displayTags" class="label label-primary palette-item-tag">{{ tag }}</span>
+                <span ng-repeat-end> </span> </p>
             <p><i class="mini-icon fa fa-fw fa-file-zip-o"></i> {{item.containingBundle}}</p>
         </div>
     </div>

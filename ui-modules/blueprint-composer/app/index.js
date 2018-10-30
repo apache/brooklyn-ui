@@ -46,7 +46,7 @@ import {designerDirective} from "./components/designer/designer.directive";
 import {
     catalogSelectorDirective,
     catalogSelectorSearchFilter,
-    catalogSelectorSortFilter
+    catalogSelectorFiltersFilter,
 } from "./components/catalog-selector/catalog-selector.directive";
 import customActionDirective from "./components/custom-action/custom-action.directive";
 import customConfigSuggestionDropdown from "./components/custom-config-widget/suggestion-dropdown";
@@ -57,6 +57,7 @@ import {objectCacheFactory} from './components/factories/object-cache.factory';
 import {entityNameFilter, entityVersionFilter, entityTypesFilter} from "./components/filters/entity.filter";
 import {locationsFilter} from "./components/filters/locations.filter";
 import {blueprintServiceProvider} from "./components/providers/blueprint-service.provider";
+import {recentlyUsedServiceProvider} from "./components/providers/recently-used-service.provider";
 import {dslServiceProvider} from "./components/providers/dsl-service.provider";
 import {paletteDragAndDropServiceProvider} from "./components/providers/palette-dragndrop.provider";
 import {actionServiceProvider} from "./components/providers/action-service.provider";
@@ -83,6 +84,7 @@ angular.module('app', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 
     .directive('catalogSelector', catalogSelectorDirective)
     .directive('breadcrumbs', breadcrumbsDirective)
     .provider('blueprintService', blueprintServiceProvider)
+    .provider('recentlyUsedService', recentlyUsedServiceProvider)
     .provider('dslService', dslServiceProvider)
     .provider('paletteDragAndDropService', paletteDragAndDropServiceProvider)
     .provider('actionService', actionServiceProvider)
@@ -94,7 +96,7 @@ angular.module('app', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 
     .filter('entityTypes', entityTypesFilter)
     .filter('locations', locationsFilter)
     .filter('catalogSelectorSearch', catalogSelectorSearchFilter)
-    .filter('catalogSelectorSort', ['$filter', catalogSelectorSortFilter])
+    .filter('catalogSelectorFilters', catalogSelectorFiltersFilter)
     .filter('dslParamLabel', ['$filter', dslParamLabelFilter])
     .config(['$urlRouterProvider', '$stateProvider', '$logProvider', applicationConfig])
     .config(['actionServiceProvider', actionConfig])

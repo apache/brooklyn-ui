@@ -166,10 +166,6 @@ catalog-selector {
       margin-top: 3px;
       margin-bottom: 3px;
   }
-  .no-match {
-    margin-top: 12px;
-    font-style: italic;
-  }
   
   .spinner-area {
     height: 300px;
@@ -207,6 +203,33 @@ catalog-selector {
       }
     }
   }
+  .catalog-palette-footer {
+    .palette-footer-message {
+        .btn {
+          font-size: inherit;
+          padding: 3px 8px;
+          margin-left: 1em;
+          font-style: normal;
+        }
+        text-align: right;
+        // useful if it wraps, e.g. because pagination buttons show:
+        line-height: 2;
+        margin-top: -2px;
+    }
+    div[uib-pagination] {
+      margin-left: 1em;
+    }
+    .no-match {
+      text-align: center;
+      font-size: 120%;
+    }
+    .no-match.icon {
+      font-size: 8em;
+      margin-top: 24px;
+      margin-bottom: 6px;
+      color: @gray-lighter;
+    }
+  }
 }
 
 .catalog-selector-popover {
@@ -230,12 +253,16 @@ catalog-selector {
         .type-symbolic-name {
             font-weight: bold;
         }
+        i { height: 100%; }
       }
       .mini-icon {
         width: 1.5em;
         overflow-x: visible;
-        margin-left: -1.5em;
+        margin-left: -1.75em;
         text-align: center;
+      }
+      .label {
+        line-height: 2.2;
       }
     }
     .deprecated-marker {

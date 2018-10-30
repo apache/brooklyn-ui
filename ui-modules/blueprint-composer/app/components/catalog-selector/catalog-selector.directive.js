@@ -19,14 +19,24 @@
 import angular from 'angular';
 import {EntityFamily} from '../util/model/entity.model';
 import template from './catalog-selector.template.html';
+import footerTemplate from './catalog-selector-palette-footer.html';
+import { distanceInWordsToNow } from 'date-fns';
 
 const MIN_ROWS_PER_PAGE = 4;
 
+const PALETTE_VIEW_ORDERS = {
+        name: { label: "Name", field: "displayName" },
+        lastUsed: { label: "Recent", field: "-lastUsed" }, 
+        bundle: { label: "Bundle", field: "containingBundle" }, 
+        id: { label: "ID", field: "symbolicName" }, 
+    };
+
 const PALETTE_VIEW_MODES = {
-  compact: { name: "Compact", classes: "col-xs-2 item-compact", itemsPerRow: 6, rowHeightPx: 75, hideName: true },
-  normal: { name: "Normal", classes: "col-xs-3", itemsPerRow: 4 },
-  large: { name: "Large", classes: "col-xs-4", itemsPerRow: 3 },
-  list: { name: "List", classes: "col-xs-12 item-full-width", itemsPerRow: 1 } };
+        compact: { name: "Compact", classes: "col-xs-2 item-compact", itemsPerRow: 6, rowHeightPx: 75, hideName: true },
+        normal: { name: "Normal", classes: "col-xs-3", itemsPerRow: 4 },
+        large: { name: "Large", classes: "col-xs-4", itemsPerRow: 3 },
+        list: { name: "List", classes: "col-xs-12 item-full-width", itemsPerRow: 1 },
+    };
 
 // fields in either bundle or type record:
 const FIELDS_TO_SEARCH = ['name', 'displayName', 'symbolicName', 'version', 'type', 'supertypes', 'containingBundle', 'description', 'displayTags', 'tags'];
@@ -37,13 +47,13 @@ export function catalogSelectorDirective() {
         scope: {
             family: '<',
             onSelect: '&',
-            rowsPerPage: '<',  // if unset then fill
+            rowsPerPage: '<?',  // if unset then fill
             reservedKeys: '<?',
             state: '<?',
             mode: '@?',  // for use by downstream projects to pass in special modes
         },
         template: template,
-        controller: ['$scope', '$element', '$timeout', '$q', '$uibModal', '$log', '$templateCache', 'paletteApi', 'paletteDragAndDropService', 'iconGenerator', 'composerOverrides', controller],
+        controller: ['$scope', '$element', '$timeout', '$q', '$uibModal', '$log', '$templateCache', 'paletteApi', 'paletteDragAndDropService', 'iconGenerator', 'composerOverrides', 'recentlyUsedService', controller],
         link: link,
     };
 }
@@ -57,7 +67,6 @@ function link($scope, $element, attrs, controller) {
         (values) => controller.$timeout( () => repaginate($scope, $element) ) );
     // also repaginate on window resize    
     angular.element(window).bind('resize', () => repaginate($scope, $element));
-
 }
 
 function repaginate($scope, $element) {
@@ -65,7 +74,7 @@ function repaginate($scope, $element) {
     if (!rowsPerPage) {
         let main = angular.element($element[0].querySelector(".catalog-palette-main"));
         if (!main || main[0].offsetHeight==0) {
-            // console.log("no main or hidden or items per page fixed");
+            // no main, or hidden, or items per page fixed
             return;
         }
         let header = angular.element(main[0].querySelector(".catalog-palette-header"));
@@ -101,58 +110,47 @@ export function catalogSelectorSearchFilter() {
     }
 }
 
-export function catalogSelectorSortFilter($filter) {
-    return function (items, family) {
-        return items.sort(function (left, right) {
-            let nameLeft;
-            let nameRight;
-            if (family) {
-                switch (family) {
-                    case EntityFamily.ENTITY:
-                    case EntityFamily.SPEC:
-                    case EntityFamily.POLICY:
-                    case EntityFamily.ENRICHER:
-                    case EntityFamily.LOCATION:
-                        nameLeft = $filter('entityName')(left);
-                        nameRight = $filter('entityName')(right);
-                        break;
-                }
-            }
+export function catalogSelectorFiltersFilter() {
+    // compute counts and apply active filters;     
+    // this is called by the view after filtering based on search,
+    // so filters can adjust based on number of search results
+    return function (items, $scope) {
+      $scope.itemsBeforeActiveFilters = items;
+      $scope.skippingFilters = false; 
+      let filters = $scope.filters.filter(f => f.enabled);
+      let filtersWithFn = filters.filter(f => f.filterFn);
+      if (!filters.length) {
+        $scope.itemsAfterActiveFilters = items;
+        return items;
+      }
+      filters.forEach(filter => { if (filter.filterInit) items = filter.filterInit(items); });
+      if (filtersWithFn.length) {
+        items = items.filter( item => filtersWithFn.some(filter => filter.filterFn(item)) );
+      }
+      if (!items || !items.length) {
+        // if search matches nothing then disable filters
+        items = $scope.itemsAfterActiveFilters = $scope.itemsBeforeActiveFilters;
+        $scope.skippingFilters = true;
+      } else {
+        if (filters.find(filter => filter.limitToOnePage)) {
+            items = items.splice(0, $scope.pagination.itemsPerPage);
+        }  
+        $scope.itemsAfterActiveFilters = items;
+      }
+      return items; 
 
-            if (!nameLeft || !nameRight) {
-                return 0;
-            }
-            let nameCompare = nameLeft.localeCompare(nameRight);
-            if (nameCompare !== 0) {
-                return nameCompare;
-            }
-            let versionCompare = right.version.localeCompare(left.version);
-            if (versionCompare !== 0) {
-                return versionCompare
-            }
-            // TODO should symbolic name be the sorted field?
-            let symNameCompare = left.symbolicName.localeCompare(right.symbolicName);
-            if (symNameCompare !== 0) {
-                return symNameCompare
-            }            
-            let containingBundleCompare = right.containingBundle.localeCompare(left.containingBundle);
-            if (containingBundleCompare !== 0) {
-                return containingBundleCompare
-            }            
-            return 0;
-        });
     }
 }
 
-function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCache, paletteApi, paletteDragAndDropService, iconGenerator, composerOverrides) {
+function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCache, paletteApi, paletteDragAndDropService, iconGenerator, composerOverrides, recentlyUsedService) {
     this.$timeout = $timeout;
 
     $scope.viewModes = PALETTE_VIEW_MODES;
-    $scope.viewOrders = ['name', 'type', 'id'];
+    $scope.viewOrders = PALETTE_VIEW_ORDERS;
     
     if (!$scope.state) $scope.state = {};
     if (!$scope.state.viewMode) $scope.state.viewMode = PALETTE_VIEW_MODES.normal;
-    if (!$scope.state.currentOrder) $scope.state.currentOrder = 'name';
+    if (!$scope.state.currentOrder) $scope.state.currentOrder = [ PALETTE_VIEW_ORDERS.name.field, '-version' ];
     
     $scope.pagination = {
         page: 1,
@@ -201,15 +199,28 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
         }
 
         return defer.then(data => {
+            data = $scope.filterPaletteItemsForMode(data, $scope);
+            data.forEach( recentlyUsedService.embellish );
             return data;
+            
         }).catch(error => {
             return [];
         }).finally(() => {
             $scope.isLoading = false;
         });
     };
+    function tryMarkUsed(item) {
+        try {
+            recentlyUsedService.markUsed(item);
+        } catch (e) {
+            // session storage can get full; usually the culprit is icons not this,
+            // but we may wish to clear out old items to ensure we don't bleed here
+            $log.warn("Could not mark item as used: "+item, e);
+        }
+    }
     $scope.onSelectItem = function (item) {
         if (angular.isFunction($scope.onSelect)) {
+            tryMarkUsed(item);
             $scope.onSelect({item: item});
         }
         $scope.search = '';
@@ -234,6 +245,12 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
     };
     $scope.onDragEnd = function (item, event) {
         paletteDragAndDropService.dragEnd();
+        tryMarkUsed(item);
+    };
+    $scope.sortBy = function (order) {
+        let newOrder = [].concat($scope.state.currentOrder);
+        newOrder = newOrder.filter( (o) => o !== order.field );
+        $scope.state.currentOrder = [order.field].concat(newOrder);
     };
     $scope.allowFreeForm = function () {
         return [
@@ -272,19 +289,59 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
         });
         $scope.items = items;
     });
-    // this can be overridden for third-party filters.
-    // it receives result of filtering based on search so filters can adjust based on number of search resullts
-    $scope.filterPaletteItems = (items) => items;
+    $scope.lastUsedText = (item) => {
+        let l = (Number)(item.lastUsed);
+        if (!l || isNaN(l) || l<=0) return "";
+        if (l < 100000) return 'Preselected for inclusion in "Recent" filter.';
+        return 'Last used: ' + distanceInWordsToNow(l, { includeSeconds: true, addSuffix: true });
+    }; 
+    $scope.showPaletteControls = false;
+    $scope.onFiltersShown = () => {
+      $timeout( () => {
+        // check do we need to show the multiline
+        let filters = angular.element($element[0].querySelector(".filters"));
+        $scope.$apply( () => $scope.filterSettings.filtersMultilineAvailable = filters[0].scrollHeight > filters[0].offsetHeight + 6 );
+        
+        repaginate($scope, $element);
+      } );
+    };
+    $scope.togglePaletteControls = () => {
+        $scope.showPaletteControls = !$scope.showPaletteControls;
+        $timeout( () => repaginate($scope, $element) );
+    }
+    $scope.toggleShowAllFilters = () => {
+        $scope.filterSettings.showAllFilters = !$scope.filterSettings.showAllFilters;
+        $timeout( () => repaginate($scope, $element) );
+    };
+    $scope.filterSettings = {};
+
+    $scope.filters = [
+        { label: 'Recent', icon: 'clock-o', title: "Recently used and standard favorites", limitToOnePage: true,
+            filterInit: items => {
+                $scope.recentItems = items.filter( i => i.lastUsed && i.lastUsed>0 );
+                $scope.recentItems.sort( (a,b) => b.lastUsed - a.lastUsed );
+                return $scope.recentItems; 
+            }, enabled: false },
+    ];
+    $scope.disableFilters = (showFilters) => {
+        $scope.filters.forEach( f => f.enabled = false );
+        if (showFilters !== false) {
+            $scope.showPaletteControls = true;
+        }
+    }
+    
+    // this can be overridden for palette sections/modes which show a subset of the types returned by the server;
+    // this is applied when the data is received from the server.
+    // it is used by catalogSelectorFiltersFilter; 
+    $scope.filterPaletteItemsForMode = (items) => items;
 
     // downstream can override this to insert lines below the header
     $scope.customSubHeadTemplateName = 'composer-palette-empty-sub-head';
     $templateCache.put($scope.customSubHeadTemplateName, '');
     
-    $scope.customFooterTemplateName = 'composer-palette-empty-footer';
-    $templateCache.put($scope.customFooterTemplateName, '');
+    $scope.customFooterTemplateName = 'composer-palette-default-footer';
+    $templateCache.put($scope.customFooterTemplateName, footerTemplate);
 
     // allow downstream to configure this controller and/or scope
     (composerOverrides.configurePaletteController || function() {})(this, $scope, $element);
-    
-    $scope.paletteItemClasses = "col-xs-3";
 }
