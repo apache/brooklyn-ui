@@ -20,7 +20,14 @@ import angular from 'angular';
 import {EntityFamily} from '../util/model/entity.model';
 import template from './catalog-selector.template.html';
 
-const ITEMS_PER_PAGE = 30;
+const MIN_ROWS_PER_PAGE = 4;
+
+const PALETTE_VIEW_MODES = {
+  compact: { name: "Compact", classes: "col-xs-2 item-compact", itemsPerRow: 6, rowHeightPx: 75, hideName: true },
+  normal: { name: "Normal", classes: "col-xs-3", itemsPerRow: 4 },
+  large: { name: "Large", classes: "col-xs-4", itemsPerRow: 3 },
+  list: { name: "List", classes: "col-xs-12 item-full-width", itemsPerRow: 1 } };
+
 // fields in either bundle or type record:
 const FIELDS_TO_SEARCH = ['name', 'displayName', 'symbolicName', 'version', 'type', 'supertypes', 'containingBundle', 'description', 'displayTags', 'tags'];
 
@@ -30,13 +37,42 @@ export function catalogSelectorDirective() {
         scope: {
             family: '<',
             onSelect: '&',
-            itemsPerPage: '<',
+            rowsPerPage: '<',  // if unset then fill
             reservedKeys: '<?',
+            state: '<?',
             mode: '@?',  // for use by downstream projects to pass in special modes
         },
         template: template,
-        controller: ['$scope', '$element', '$q', '$uibModal', '$log', '$templateCache', 'paletteApi', 'paletteDragAndDropService', 'iconGenerator', 'composerOverrides', controller]
+        controller: ['$scope', '$element', '$timeout', '$q', '$uibModal', '$log', '$templateCache', 'paletteApi', 'paletteDragAndDropService', 'iconGenerator', 'composerOverrides', controller],
+        link: link,
     };
+}
+
+function link($scope, $element, attrs, controller) {
+    let main = angular.element($element[0].querySelector(".catalog-palette-main"));
+
+    // repaginate when load completes (and items are shown), or it is resized
+    $scope.$watchGroup(
+        [ () => $scope.isLoading, () => main[0].offsetHeight, () => $scope.state.viewMode.itemsPerRow ],
+        (values) => controller.$timeout( () => repaginate($scope, $element) ) );
+    // also repaginate on window resize    
+    angular.element(window).bind('resize', () => repaginate($scope, $element));
+
+}
+
+function repaginate($scope, $element) {
+    let rowsPerPage = $scope.rowsPerPage;
+    if (!rowsPerPage) {
+        let main = angular.element($element[0].querySelector(".catalog-palette-main"));
+        if (!main || main[0].offsetHeight==0) {
+            // console.log("no main or hidden or items per page fixed");
+            return;
+        }
+        let header = angular.element(main[0].querySelector(".catalog-palette-header"));
+        let footer = angular.element(main[0].querySelector(".catalog-palette-footer"));
+        rowsPerPage = Math.max(MIN_ROWS_PER_PAGE, Math.floor( (main[0].offsetHeight - header[0].offsetHeight - footer[0].offsetHeight - 16) / ($scope.state.viewMode.rowHeightPx || 96)) );
+    }
+    $scope.$apply( () => $scope.pagination.itemsPerPage = rowsPerPage * $scope.state.viewMode.itemsPerRow );
 }
 
 export function catalogSelectorSearchFilter() {
@@ -108,15 +144,21 @@ export function catalogSelectorSortFilter($filter) {
     }
 }
 
-function controller($scope, $element, $q, $uibModal, $log, $templateCache, paletteApi, paletteDragAndDropService, iconGenerator, composerOverrides) {
+function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCache, paletteApi, paletteDragAndDropService, iconGenerator, composerOverrides) {
+    this.$timeout = $timeout;
+
+    $scope.viewModes = PALETTE_VIEW_MODES;
+    $scope.viewOrders = ['name', 'type', 'id'];
+    
+    if (!$scope.state) $scope.state = {};
+    if (!$scope.state.viewMode) $scope.state.viewMode = PALETTE_VIEW_MODES.normal;
+    if (!$scope.state.currentOrder) $scope.state.currentOrder = 'name';
+    
     $scope.pagination = {
         page: 1,
-        itemsPerPage: $scope.itemsPerPage || ITEMS_PER_PAGE
+        itemsPerPage: $scope.state.viewMode.itemsPerRow * ($scope.rowsPerPage || 1)  // will fill out after load
     };
-    $scope.state = {
-        orders: ['name', 'type', 'id'],
-        currentOrder: 'name'
-    };
+    
     $scope.getEntityNameForPalette = function(item, entityName) {
         return (composerOverrides.getEntityNameForPalette || 
             // above can be overridden with function of signature below to customize display name in palette
@@ -127,7 +169,7 @@ function controller($scope, $element, $q, $uibModal, $log, $templateCache, palet
     $scope.getPlaceHolder = function () {
         return 'Search';
     };
-
+    
     $scope.isLoading = true;
 
     $scope.$watch('search', () => {
@@ -135,7 +177,7 @@ function controller($scope, $element, $q, $uibModal, $log, $templateCache, palet
             symbolicName: $scope.search,
             name: $scope.search,
             displayName: $scope.search,
-            supertypes: [$scope.family.superType]
+            supertypes: ($scope.family ? [ $scope.family.superType ] : []),
         };
     });
 
@@ -243,4 +285,6 @@ function controller($scope, $element, $q, $uibModal, $log, $templateCache, palet
 
     // allow downstream to configure this controller and/or scope
     (composerOverrides.configurePaletteController || function() {})(this, $scope, $element);
+    
+    $scope.paletteItemClasses = "col-xs-3";
 }

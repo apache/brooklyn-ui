@@ -22,9 +22,12 @@ catalog-selector {
   
   display: block;
   margin-top: 15px;
-
+  height: 100%;
+  
   .grid {
     margin-bottom: 15px;
+    padding-left: 10px;
+    padding-right: 10px;
   }
   .pagination {
     margin-top: 0;
@@ -38,6 +41,40 @@ catalog-selector {
   .catalog-palette-item {
     padding-left: 5px;
     padding-right: 5px;
+    height: 96px;
+    &.item-compact {
+        height: 75px;
+    }
+    
+    &.item-full-width {
+        .item {
+            display: flex;
+            flex-direction: horizontal;
+            .item-logo {
+                flex: 0 0 auto;
+                width: auto;
+                height: 78px;
+                min-width: 90px;
+                img {
+                    margin: 0;
+                    width: auto;
+                }
+            }
+            .item-content {
+                flex: 1 1 auto;
+                display: flex;
+                align-items: center;
+                h3 {
+                    text-align: left;
+                    font-size: 1em;
+                    margin-left: 8px;
+                }
+            }
+        }
+    }
+  }
+  .catalog-palette-footer {
+    padding-bottom: 5px;
   }
   
   .item {
@@ -47,10 +84,16 @@ catalog-selector {
     transition: all @duration-item ease;
     position: relative;
     background: white; //useful when dragging
-    box-shadow: 0 0 rgba(0, 0, 0, 0.1), 0 1px 2px 1px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 rgba(0, 0, 0, 0.1), 0 0 2px 1px rgba(0, 0, 0, 0.2);
     &:hover {
-      box-shadow: 0 0 rgba(0, 0, 0, 0.2), 0 2px 4px 1px rgba(0, 0, 0, 0.2);
-      transform: scale(1.1);
+      box-shadow: 0 0 rgba(0, 0, 0, 0.2), 0 0 4px 1px rgba(0, 0, 0, 0.5);
+      margin: -2px;
+      padding: 5px;
+      
+      margin-top: 7px;
+      margin-bottom: -2px;
+      padding-top: 3px;
+      padding-bottom: 7px;
 
       .fa-info-circle {
         opacity: 1;
@@ -60,9 +103,10 @@ catalog-selector {
         position: absolute;
         top: 0;
         left: 0;
+        margin: 0;
+        border: 3px solid @brand-primary;
         width: 100%;
         height: 100%;
-        transform: scale(1.15);
     }
 
     .fa-info-circle {
@@ -95,7 +139,7 @@ catalog-selector {
         left: 0;
         right: 0;
         margin: auto;
-        max-width: 90%;
+        max-width: 100%;
         max-height: 100%;
       }
     }

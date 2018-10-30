@@ -19,7 +19,12 @@
 
 .layout {
   display: flex;
+  designer {
+    flex-grow: 1;
+  }
+}
 
+.palette-and-or-toolbar {
   .toolbar {
     position: relative;
     height: calc(~"100vh - 105px");
@@ -59,9 +64,6 @@
     }
   }
 
-  designer {
-    flex-grow: 1;
-  }
 }
 
 .pane {
@@ -77,6 +79,19 @@
     width: 440px;
     box-shadow: 5px 0 10px -2px @navbar-default-border;
 
+    .palette-title {
+        margin-left: 0;
+        margin-right: 0;
+    }    
+    
+    &, .palette-full-height-wrapper {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      margin-left: 0;
+      margin-right: 0;
+    }
+    
     h3 {
       color: @gray-light;
     }
@@ -93,13 +108,37 @@
 
     & > ui-view > ui-view {
       display: block;
-      width: 440px;
+      width: 489px;
     }
 
+    .pane-palette .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
     .container-fluid {
       padding: 0;
     }
 
+    .add-panel {
+        display: flex;
+        flex-direction: column;
+        > .spec-parent {
+            flex: 0 0 auto;
+        } 
+        > .add-panel-main {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: row;
+            .toolbar {
+                flex: 0 0 auto;
+            }
+            .pane-palette {
+                flex: 1 1 auto;
+            }
+        }
+    }
+    
     .spec-parent {
       a {
         background-color: @gray-lighter;

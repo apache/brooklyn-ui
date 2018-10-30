@@ -16,7 +16,7 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<div class="container-fluid">
+<div class="container-fluid palette-full-height-wrapper">
     <div ng-show="isLoading">
         <div class="spinner-area">
             <div class="spinner">
@@ -30,7 +30,8 @@
         </div>
     </div>
 
-    <div ng-show="!isLoading">
+    <div ng-show="!isLoading" class="catalog-palette-main palette-full-height-wrapper">
+      <div class="catalog-palette-header">
         <div class="form-group" ng-class="{'has-error': isReserved()}">
             <div class="input-group input-group-sm">
                 <span class="input-group-btn" uib-dropdown keyboard-nav>
@@ -39,8 +40,13 @@
                     </button>
                     {{filters | json}}
                     <ul class="dropdown-menu" role="menu" uib-dropdown-menu>
-                        <li role="menuitem" class="dropdown-header">Order by</li>
-                        <li role="menuitem" ng-repeat="order in state.orders track by $index" ng-class="{'active': state.currentOrder === order}" class="layer">
+                        <li role="menuitem" class="dropdown-header">View</li>
+                        <li role="menuitem" ng-repeat="view in viewModes track by $index" ng-class="{'active': state.viewMode === view}" class="layer">
+                            <a ng-click="state.viewMode = view"><i class="fa fa-fw fa-circle"></i> {{view.name}}</a>
+                        </li>
+                        
+                        <li role="menuitem" class="dropdown-header">Sort</li>
+                        <li role="menuitem" ng-repeat="order in viewOrders track by $index" ng-class="{'active': state.currentOrder === order}" class="layer">
                             <a ng-click="state.currentOrder = order"><i class="fa fa-fw fa-circle"></i> {{order | capitalize}}</a>
                         </li>
                     </ul>
@@ -56,18 +62,19 @@
         <small class="help-block text-sm no-match" ng-if="search && searchedItems.length === 0">
             No {{family.displayName.toLowerCase()}} matching the current search
         </small>
+      </div>
 
-        <div class="row grid catalog-palette">
+        <div class="row grid">
             <!-- here and below, col-xs-3 or -4 or -2 all work giving different densities;
                  this could be configurable ("compressed"=xs-2 w no labels, "normal"=xs-3, "big"=xs-4) -->
-            <div class="col-xs-3 catalog-palette-item"
+            <div class="catalog-palette-item" ng-class="state.viewMode.classes"
                     ng-repeat="item in searchedItems = (filterPaletteItems(items | catalogSelectorSearch:search) | catalogSelectorSort:family) | orderBy:state.currentOrder | limitTo:pagination.itemsPerPage:(pagination.page-1)*pagination.itemsPerPage track by (item.containingBundle + ':' + item.symbolicName + ':' + item.version)"
                     ng-click="onSelectItem(item)">
                 <div class="item" draggable="true" ng-dragstart="onDragItem(item, $event)" ng-dragend="onDragEnd(item, $event)">
                     <div class="item-logo">
                         <img ng-src="{{item | iconGeneratorPipe:'symbolicName'}}" alt="{{item.displayName}} logo" on-error="onImageError" item-id="{{item.symbolicName}}"/>
                     </div>
-                    <div class="item-content" ng-class="{ deprecated: item.deprecated }">
+                    <div class="item-content" ng-class="{ deprecated: item.deprecated }" ng-hide="state.viewMode.hideName">
                         <h3>{{ getEntityNameForPalette(item, item | entityName) }}</h3>
                     </div>
                     <i class="fa fa-info-circle"
@@ -79,12 +86,14 @@
                 </div>
             </div>
 
-            <div class="col-xs-3 catalog-palette-item" ng-if="searchedItems.length === 0 && search && allowFreeForm()" ng-click="onSelectItem(freeFormTile)">
+            <div class="catalog-palette-item"
+                    ng-class="state.viewMode.classes" 
+                    ng-if="searchedItems.length === 0 && search && allowFreeForm()" ng-click="onSelectItem(freeFormTile)">
                 <div class="item" draggable="true" ng-dragstart="onDragItem(freeFormTile, $event)" ng-dragend="onDragEnd(freeFormTile, $event)">
                     <div class="item-logo">
                         <img ng-src="{{freeFormTile | iconGeneratorPipe:'symbolicName'}}" alt="{{freeFormTile.displayName}} logo" on-error="onImageError" item-id="{{freeFormTile.symbolicName}}"/>
                     </div>
-                    <div class="item-content">
+                    <div class="item-content" ng-hide="state.viewMode.hideName">
                         <h3>{{freeFormTile | entityName}}</h3>
                     </div>
                 </div>
@@ -94,9 +103,10 @@
             </div>
         </div>
 
-        <div uib-pagination total-items="searchedItems.length" items-per-page="pagination.itemsPerPage" ng-model="pagination.page" boundary-link-numbers="true" rotate="false" max-size="4" ng-show="searchedItems.length > pagination.itemsPerPage" class="pagination-sm pull-right"></div>
-        
-        <ng-include src="customFooterTemplateName"/>
+        <div class="catalog-palette-footer">
+            <div uib-pagination total-items="searchedItems.length" items-per-page="pagination.itemsPerPage" ng-model="pagination.page" boundary-link-numbers="true" rotate="false" max-size="4" ng-show="searchedItems.length > pagination.itemsPerPage" class="pagination-sm pull-right"></div>
+            <ng-include src="customFooterTemplateName"/>
+        </div>
     </div>
 </div>
 

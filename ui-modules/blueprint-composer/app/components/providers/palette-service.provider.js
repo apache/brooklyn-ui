@@ -37,7 +37,9 @@ export function paletteServiceProvider() {
             sections[id] = section;
         },
         deleteSection(id) {
+            let old = sections[id];
             delete sections[id];
+            return old;
         }
     }
 }
@@ -46,6 +48,7 @@ class PaletteService {
     constructor(sectionsToAdd) {
         this.sections = {};
         this.requiredFields = ['title', 'type', 'icon'];
+        // 'mode' is optional
 
         for (const [id, section] of Object.entries(sectionsToAdd)) {
             this.addSection(id, section);

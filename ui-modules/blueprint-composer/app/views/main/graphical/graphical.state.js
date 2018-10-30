@@ -37,10 +37,10 @@ export const graphicalState = {
 
 function graphicalController($scope, $state, blueprintService, paletteService) {
     this.EntityFamily = EntityFamily;
-    this.catalogItemsPerPage = 24;
 
     this.sections = paletteService.getSections();
     this.selectedSection = Object.values(this.sections).find(section => section.type === EntityFamily.ENTITY);
+    $scope.paletteState = {};  // share state among all sections
 
     this.onTypeSelected = (selectedType)=> {
         let rootEntity = blueprintService.get();
