@@ -52,7 +52,9 @@ export function GraphicalEditAddController($scope, $filter, $state, $stateParams
             break;
     }
 
-    if (!$scope.familiesToShow) $scope.familiesToShow = [ $scope.family ];
+    if (!$scope.familiesToShow) {
+        $scope.familiesToShow = [ $scope.family ];
+    }
     
     this.sections = paletteService.getSections();
     this.selectedSection = Object.values(this.sections).find(section => $scope.familiesToShow.indexOf(section.type) >= 0);

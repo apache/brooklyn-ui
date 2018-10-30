@@ -47,7 +47,7 @@ export function catalogSelectorDirective() {
         scope: {
             family: '<',
             onSelect: '&',
-            rowsPerPage: '<',  // if unset then fill
+            rowsPerPage: '<?',  // if unset then fill
             reservedKeys: '<?',
             state: '<?',
             mode: '@?',  // for use by downstream projects to pass in special modes
@@ -74,7 +74,7 @@ function repaginate($scope, $element) {
     if (!rowsPerPage) {
         let main = angular.element($element[0].querySelector(".catalog-palette-main"));
         if (!main || main[0].offsetHeight==0) {
-            // console.log("no main or hidden or items per page fixed");
+            // no main, or hidden, or items per page fixed
             return;
         }
         let header = angular.element(main[0].querySelector(".catalog-palette-header"));
