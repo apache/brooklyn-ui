@@ -46,6 +46,7 @@ import {designerDirective} from "./components/designer/designer.directive";
 import {
     catalogSelectorDirective,
     catalogSelectorSearchFilter,
+    catalogSelectorFiltersFilter,
 } from "./components/catalog-selector/catalog-selector.directive";
 import customActionDirective from "./components/custom-action/custom-action.directive";
 import customConfigSuggestionDropdown from "./components/custom-config-widget/suggestion-dropdown";
@@ -95,6 +96,7 @@ angular.module('app', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 
     .filter('entityTypes', entityTypesFilter)
     .filter('locations', locationsFilter)
     .filter('catalogSelectorSearch', catalogSelectorSearchFilter)
+    .filter('catalogSelectorFilters', catalogSelectorFiltersFilter)
     .filter('dslParamLabel', ['$filter', dslParamLabelFilter])
     .config(['$urlRouterProvider', '$stateProvider', '$logProvider', applicationConfig])
     .config(['actionServiceProvider', actionConfig])

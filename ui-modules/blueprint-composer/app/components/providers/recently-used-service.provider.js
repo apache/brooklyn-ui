@@ -43,6 +43,7 @@ function RecentlyUsedService($log) {
             when = Date.now();
         }
         sessionStorage.setItem(PREFIX+id, when);
+        // update the item if it is embellished
         if (item.lastUsed) item.lastUsed = when;
     };
     service.getLastUsed = (item) => {

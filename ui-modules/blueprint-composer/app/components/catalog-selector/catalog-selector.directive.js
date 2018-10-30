@@ -110,6 +110,38 @@ export function catalogSelectorSearchFilter() {
     }
 }
 
+export function catalogSelectorFiltersFilter() {
+    // compute counts and apply active filters;     
+    // this is called by the view after filtering based on search,
+    // so filters can adjust based on number of search results
+    return function (items, $scope) {
+      $scope.itemsBeforeActiveFilters = items;
+      $scope.skippingFilters = false; 
+      let filters = $scope.filters.filter(f => f.enabled);
+      let filtersWithFn = filters.filter(f => f.filterFn);
+      if (!filters.length) {
+        $scope.itemsAfterActiveFilters = items;
+        return items;
+      }
+      filters.forEach(filter => { if (filter.filterInit) items = filter.filterInit(items); });
+      if (filtersWithFn.length) {
+        items = items.filter( item => filtersWithFn.some(filter => filter.filterFn(item)) );
+      }
+      if (!items || !items.length) {
+        // if search matches nothing then disable filters
+        items = $scope.itemsAfterActiveFilters = $scope.itemsBeforeActiveFilters;
+        $scope.skippingFilters = true;
+      } else {
+        if (filters.find(filter => filter.limitToOnePage)) {
+            items = items.splice(0, $scope.pagination.itemsPerPage);
+        }  
+        $scope.itemsAfterActiveFilters = items;
+      }
+      return items; 
+
+    }
+}
+
 function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCache, paletteApi, paletteDragAndDropService, iconGenerator, composerOverrides, recentlyUsedService) {
     this.$timeout = $timeout;
 
@@ -177,9 +209,18 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
             $scope.isLoading = false;
         });
     };
+    function tryMarkUsed(item) {
+        try {
+            recentlyUsedService.markUsed(item);
+        } catch (e) {
+            // session storage can get full; usually the culprit is icons not this,
+            // but we may wish to clear out old items to ensure we don't bleed here
+            $log.warn("Could not mark item as used: "+item, e);
+        }
+    }
     $scope.onSelectItem = function (item) {
         if (angular.isFunction($scope.onSelect)) {
-            recentlyUsedService.markUsed(item);
+            tryMarkUsed(item);
             $scope.onSelect({item: item});
         }
         $scope.search = '';
@@ -204,7 +245,7 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
     };
     $scope.onDragEnd = function (item, event) {
         paletteDragAndDropService.dragEnd();
-        recentlyUsedService.markUsed(item);
+        tryMarkUsed(item);
     };
     $scope.sortBy = function (order) {
         let newOrder = [].concat($scope.state.currentOrder);
@@ -277,49 +318,22 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
     $scope.filters = [
         { label: 'Recent', icon: 'clock-o', title: "Recently used and standard favorites", limitToOnePage: true,
             filterInit: items => {
-                $scope.recentItems = items.filter( i => i.lastUsed && i.lastUsed > 0 );
+                $scope.recentItems = items.filter( i => i.lastUsed && i.lastUsed>0 );
                 $scope.recentItems.sort( (a,b) => b.lastUsed - a.lastUsed );
                 return $scope.recentItems; 
             }, enabled: false },
     ];
     $scope.disableFilters = (showFilters) => {
         $scope.filters.forEach( f => f.enabled = false );
-        if (showFilters !== false) $scope.showPaletteControls = true;
+        if (showFilters !== false) {
+            $scope.showPaletteControls = true;
+        }
     }
     
     // this can be overridden for palette sections/modes which show a subset of the types returned by the server;
     // this is applied when the data is received from the server.
-    // it is used by filterPaletteItemsWithActiveFilters; 
+    // it is used by catalogSelectorFiltersFilter; 
     $scope.filterPaletteItemsForMode = (items) => items;
-
-    // compute counts and apply active filters;     
-    // this is called by the view after filtering based on search,
-    // so filters can adjust based on number of search results
-    $scope.filterPaletteItemsWithActiveFilters = (items) => {
-      $scope.itemsBeforeActiveFilters = items;
-      $scope.skippingFilters = false; 
-      let filters = $scope.filters.filter(f => f.enabled);
-      let filtersWithFn = filters.filter(f => f.filterFn);
-      if (!filters.length) {
-        $scope.itemsAfterActiveFilters = items;
-        return items;
-      }
-      filters.forEach(filter => { if (filter.filterInit) items = filter.filterInit(items); });
-      if (filtersWithFn.length) {
-        items = items.filter( item => filtersWithFn.some(filter => filter.filterFn(item)) );
-      }
-      if (!items || !items.length) {
-        // if search matches nothing then disable filters
-        items = $scope.itemsAfterActiveFilters = $scope.itemsBeforeActiveFilters;
-        $scope.skippingFilters = true;
-      } else {
-        if (filters.find(filter => filter.limitToOnePage)) {
-            items = items.splice(0, $scope.pagination.itemsPerPage);
-        }  
-        $scope.itemsAfterActiveFilters = items;
-      }
-      return items; 
-    };
 
     // downstream can override this to insert lines below the header
     $scope.customSubHeadTemplateName = 'composer-palette-empty-sub-head';
