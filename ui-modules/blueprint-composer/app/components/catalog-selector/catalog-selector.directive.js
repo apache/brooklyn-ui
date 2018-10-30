@@ -259,7 +259,7 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
       $timeout( () => {
         // check do we need to show the multiline
         let filters = angular.element($element[0].querySelector(".filters"));
-        $scope.$apply( () => $scope.filterSettings.filtersMultilineAvailable = filters[0].scrollHeight > filters[0].offsetHeight );
+        $scope.$apply( () => $scope.filterSettings.filtersMultilineAvailable = filters[0].scrollHeight > filters[0].offsetHeight + 6 );
         
         repaginate($scope, $element);
       } );
