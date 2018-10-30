@@ -556,6 +556,7 @@ Entity.prototype.addMetadata = addMetadata;
 Entity.prototype.removeConfig = removeConfig;
 Entity.prototype.removeMetadata = removeMetadata;
 Entity.prototype.isCluster = isCluster;
+Entity.prototype.isMemberSpec = isMemberSpec;
 Entity.prototype.setClusterMemberspecEntity = setClusterMemberspecEntity;
 Entity.prototype.getClusterMemberspecEntity = getClusterMemberspecEntity;
 Entity.prototype.getClusterMemberspecEntities = getClusterMemberspecEntities;
@@ -642,6 +643,14 @@ function isCluster() {
                 'org.apache.brooklyn.entity.group.Fabric']
                 .indexOf(trait) !== -1
     }).length > 0;
+}
+
+/**
+ *
+ * @returns {boolean}
+ */
+function isMemberSpec() {
+    return this.parent.isCluster() && this.parent.getClusterMemberspecEntity() === this;
 }
 
 export function baseType(s) {
