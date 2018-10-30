@@ -17,14 +17,15 @@
   under the License.
 -->
 <div class="paletteItemsFooter">
-    <div ng-if="searchedItems.length === 0" class="no-match">
-        <i class="fa fa-lemon-o"></i>
+    <div ng-if="searchedItems.length === 0" class="icon no-match">
+        <span>&oslash;</span>
     </div>
-    <small class="help-block text-sm palette-footer-message">
+    <small class="help-block text-sm palette-footer-message" ng-class="{ 'no-match': searchedItems.length === 0 }">
         <span ng-if="search">
           <span ng-if="searchedItems.length === 0">
             <span ng-if="!skippingFilters && itemsBeforeActiveFilters.length > itemsAfterActiveFilters.length">
-                    <b>{{ itemsBeforeActiveFilters.length - itemsAfterActiveFilters.length }} item{{ itemsBeforeActiveFilters.length - itemsAfterActiveFilters.length > 1 ? 's' : ''}}</b> 
+                    <strong>{{ itemsBeforeActiveFilters.length - itemsAfterActiveFilters.length }} 
+                        <ng-pluralize count="itemsBeforeActiveFilters.length" when="{ '1': 'item', 'other': 'items' }"></<ng-pluralize></strong> 
                     matching search but excluded by filters. 
                     <button class="btn btn-outline btn-info" ng-click="disableFilters()">Clear filters</button>
             </span>
@@ -34,23 +35,28 @@
           </span>
           <span ng-if="searchedItems.length > 0">
             <span ng-if="skippingFilters">
-                    <b>No matches with selected filters.</b><br/>
+                    <strong>No matches with selected filters.</strong><br/>
                     Showing matches ignoring filters.
             </span>
             <span ng-if="!skippingFilters && itemsBeforeActiveFilters.length > itemsAfterActiveFilters.length">
-                    <b>{{ itemsBeforeActiveFilters.length - itemsAfterActiveFilters.length }} more item{{ itemsBeforeActiveFilters.length - itemsAfterActiveFilters.length > 1 ? 's' : ''}}</b> 
+                    <strong>{{ itemsBeforeActiveFilters.length - itemsAfterActiveFilters.length }} more 
+                        <ng-pluralize count="itemsBeforeActiveFilters.length" when="{ '1': 'item', 'other': 'items' }"></<ng-pluralize></strong> 
                     matching search but excluded by filters.
                     <button class="btn btn-outline btn-info" ng-click="disableFilters()">Clear filters</button>
             </span>
           </span>
         </span>
         <span ng-if="!search">
+            <span ng-if="itemsBeforeActiveFilters.length == 0">
+                <strong>Nothing available.</strong>
+            </span>
             <span ng-if="skippingFilters && searchedItems.length > 0">
-                    <b>Nothing available in selected filters.</b><br/>
+                    <strong>Nothing available in selected filters.</strong><br/>
                     Ignoring filters.
             </span>
             <span ng-if="!skippingFilters && itemsBeforeActiveFilters.length > itemsAfterActiveFilters.length">
-                    <b>{{ itemsBeforeActiveFilters.length - itemsAfterActiveFilters.length }} more item{{ itemsBeforeActiveFilters.length - itemsAfterActiveFilters.length > 1 ? 's' : ''}}</b> 
+                    <strong>{{ itemsBeforeActiveFilters.length - itemsAfterActiveFilters.length }} more 
+                        <ng-pluralize count="itemsBeforeActiveFilters.length" when="{ '1': 'item', 'other': 'items' }"></<ng-pluralize></strong> 
                     excluded by filters. 
                     <button class="btn btn-outline btn-info" ng-click="disableFilters()">Clear filters</button>
             </span>
