@@ -78,13 +78,15 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope: {
             model: '='
         },
-        controller: controller,
+        controller: ['$scope', '$element', controller],
         template: template,
         link: link,
         controllerAs: 'specEditor',
     };
 
-    function controller() {
+    function controller($scope, $element) {
+        (composerOverrides.configureSpecEditorController || function() {})(this, $scope, $element);
+        
         // does very little currently, but link adds to this
         return this;
     }
