@@ -33,9 +33,10 @@ const PALETTE_VIEW_ORDERS = {
     };
 
 const PALETTE_VIEW_MODES = {
-        compact: { name: "Compact", classes: "col-xs-2 item-compact", itemsPerRow: 6, rowHeightPx: 75, hideName: true },
-        normal: { name: "Normal", classes: "col-xs-3", itemsPerRow: 4 },
-        large: { name: "Large", classes: "col-xs-4", itemsPerRow: 3 },
+        tiny: { name: "Tiny", classes: "col-xs-2 item-compact", itemsPerRow: 6, rowHeightPx: 75, hideName: true },
+        compact: { name: "Compact", classes: "col-xs-3", itemsPerRow: 4 },
+        normal: { name: "Normal", classes: "col-xs-4", itemsPerRow: 3 },
+        large: { name: "Large", classes: "col-xs-6", itemsPerRow: 2 },
         list: { name: "List", classes: "col-xs-12 item-full-width", itemsPerRow: 1 },
     };
 
