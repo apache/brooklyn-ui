@@ -25,10 +25,11 @@ import { distanceInWordsToNow } from 'date-fns';
 const MIN_ROWS_PER_PAGE = 4;
 
 const PALETTE_VIEW_ORDERS = {
-        name: { label: "Name", field: "displayName" },
-        lastUsed: { label: "Recent", field: "-lastUsed" }, 
-        bundle: { label: "Bundle", field: "containingBundle" }, 
-        id: { label: "ID", field: "symbolicName" }, 
+        relevance: { id: "relevance", label: "Relevance", field: "relevance" },
+        name: { id: "name", label: "Name", field: "displayName" },
+        lastUsed: { id: "lastUsed", label: "Recent", field: "-lastUsed" }, 
+        bundle: { id: "bundle", label: "Bundle", field: "containingBundle" }, 
+        id: { id: "id", label: "ID", field: "symbolicName" }, 
     };
 
 const PALETTE_VIEW_MODES = {
@@ -39,7 +40,7 @@ const PALETTE_VIEW_MODES = {
     };
 
 // fields in either bundle or type record:
-const FIELDS_TO_SEARCH = ['name', 'displayName', 'symbolicName', 'version', 'type', 'supertypes', 'containingBundle', 'description', 'displayTags', 'tags'];
+const FIELDS_TO_SEARCH = ['displayName', 'name', 'symbolicName', 'version', 'type', 'supertypes', 'containingBundle', 'description', 'displayTags', 'tags'];
 
 export function catalogSelectorDirective() {
     return {
@@ -88,23 +89,42 @@ export function catalogSelectorSearchFilter() {
     return function (items, search) {
         if (search) {
             return items.filter(function (item) {
-                return search.toLowerCase().split(' ').reduce( (found, part) => 
-                    found &&
-                    FIELDS_TO_SEARCH
-                        .filter(field => item.hasOwnProperty(field) && item[field])
-                        .reduce((match, field) => {
+                item.relevance = 0;
+                let wordNum = 0;
+                return search.toLowerCase().split(' ').reduce( (found, part) => {
+                    wordNum++;
+                    let fieldNum = 0;
+                    return found &&
+                        FIELDS_TO_SEARCH.reduce((match, field) => {
                             if (match) return true;
+                            fieldNum++;
+                            if (!item.hasOwnProperty(field) || !item[field]) return false;
                             let text = item[field];
                             if (!text.toLowerCase) {
                                 text = JSON.stringify(text).toLowerCase();
                             } else {
                                 text = text.toLowerCase();
                             }
-                            return match || text.indexOf(part) > -1;
+                            let index = text.indexOf(part);
+                            if (index == -1) return false;
+                            // found, set relevance -- uses an ad hoc heuristic preferring first fields and short text length,
+                            // earlier occurrences and earlier words weighted more highly (smaller number is better)
+                            let score = fieldNum * (2 / (1 + wordNum)) * Math.log(1 + text.length * index);
+                            /* to debug the scoring function:
+                            if (item.symbolicName.indexOf("EIP") >= 0 || item.symbolicName.indexOf("OpsWorks") >= 0) { 
+                                console.log(item.symbolicName, ": match", part, "in", field,
+                                    "#", fieldNum, wordNum, 
+                                    "pos", index, "/", text.length, 
+                                    ":", item.relevance, "+=", score);
+                            }
+                            */
+                            item.relevance += score;
+                            return true;
                         }, false)
-                , true);
+                }, true);
             });
         } else {
+            items.forEach( item => item.relevance = 0 );
             return items;
         }
     }
@@ -150,7 +170,6 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
     
     if (!$scope.state) $scope.state = {};
     if (!$scope.state.viewMode) $scope.state.viewMode = PALETTE_VIEW_MODES.normal;
-    if (!$scope.state.currentOrder) $scope.state.currentOrder = [ PALETTE_VIEW_ORDERS.name.field, '-version' ];
     
     $scope.pagination = {
         page: 1,
@@ -247,11 +266,23 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
         paletteDragAndDropService.dragEnd();
         tryMarkUsed(item);
     };
+    
     $scope.sortBy = function (order) {
-        let newOrder = [].concat($scope.state.currentOrder);
-        newOrder = newOrder.filter( (o) => o !== order.field );
-        $scope.state.currentOrder = [order.field].concat(newOrder);
+        let newFirst = {};
+        if (order) {
+            newFirst[order.id] = order;
+        }
+        $scope.state.currentOrder = Object.assign(newFirst, $scope.state.currentOrder, newFirst);
+        $scope.state.currentOrderFields = [];
+        $scope.state.currentOrderValues = [];
+        Object.values($scope.state.currentOrder).forEach( it => {
+            $scope.state.currentOrderValues.push(it);
+            $scope.state.currentOrderFields.push(it.field);
+        });
     };
+    if (!$scope.state.currentOrder) $scope.state.currentOrder = Object.assign({}, PALETTE_VIEW_ORDERS);
+    $scope.sortBy();
+    
     $scope.allowFreeForm = function () {
         return [
             EntityFamily.LOCATION
@@ -295,6 +326,8 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
         if (l < 100000) return 'Preselected for inclusion in "Recent" filter.';
         return 'Last used: ' + distanceInWordsToNow(l, { includeSeconds: true, addSuffix: true });
     }; 
+    $scope.roundTwoDecimals = (num) => Math.round(num*100)/100.0;
+    
     $scope.showPaletteControls = false;
     $scope.onFiltersShown = () => {
       $timeout( () => {

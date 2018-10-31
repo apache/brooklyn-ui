@@ -74,7 +74,7 @@
                     <i class="fa fa-sort"></i></div>
                 </a>
                 <ul class="dropdown-menu right-align-icon" role="menu" uib-dropdown-menu aria-labelledby="palette-sort">
-                        <li role="menuitem" ng-repeat="order in viewOrders track by $index" ng-class="{'active': state.currentOrder[0] === order.field}" class="layer">
+                        <li role="menuitem" ng-repeat="order in state.currentOrderValues track by $index" class="layer">
                             <a ng-click="sortBy(order)"><i class="fa fa-fw fa-circle"></i> {{ order.label }}</a>
                         </li>
                 </ul>
@@ -100,7 +100,7 @@
             <!-- here and below, col-xs-3 or -4 or -2 all work giving different densities;
                  this could be configurable ("compressed"=xs-2 w no labels, "normal"=xs-3, "big"=xs-4) -->
             <div class="catalog-palette-item" ng-class="state.viewMode.classes"
-                    ng-repeat="item in searchedItems = (items | catalogSelectorSearch:search | catalogSelectorFilters:this) | orderBy:state.currentOrder | limitTo:pagination.itemsPerPage:(pagination.page-1)*pagination.itemsPerPage track by (item.containingBundle + ':' + item.symbolicName + ':' + item.version)"
+                    ng-repeat="item in searchedItems = (items | catalogSelectorSearch:search | catalogSelectorFilters:this) | orderBy:state.currentOrderFields | limitTo:pagination.itemsPerPage:(pagination.page-1)*pagination.itemsPerPage track by (item.containingBundle + ':' + item.symbolicName + ':' + item.version)"
                     ng-click="onSelectItem(item)">
                 <div class="item" draggable="true" ng-dragstart="onDragItem(item, $event)" ng-dragend="onDragEnd(item, $event)">
                     <div class="item-logo">
@@ -157,6 +157,7 @@
                 <span ng-repeat-start="tag in item.displayTags" class="label label-primary palette-item-tag">{{ tag }}</span>
                 <span ng-repeat-end> </span> </p>
             <p><i class="mini-icon fa fa-fw fa-file-zip-o"></i> {{item.containingBundle}}</p>
+            <p ng-if="item.relevance"><i class="mini-icon fa fa-sort-numeric-asc"></i> Relevance score: {{ roundTwoDecimals(item.relevance) }}</p>
         </div>
     </div>
 </script>
