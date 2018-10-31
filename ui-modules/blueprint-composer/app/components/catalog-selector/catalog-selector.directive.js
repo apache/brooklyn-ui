@@ -49,6 +49,7 @@ export function catalogSelectorDirective() {
         scope: {
             family: '<',
             onSelect: '&',
+            onSelectText: "@?",
             rowsPerPage: '<?',  // if unset then fill
             reservedKeys: '<?',
             state: '<?',
@@ -238,7 +239,32 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
             $log.warn("Could not mark item as used: "+item, e);
         }
     }
-    $scope.onSelectItem = function (item) {
+    $scope.mouseInfoPopover = (item, enter) => {
+        if ($scope.popoverModal && $scope.popover==item) {
+            // ignore if modal
+            return;
+        }
+        $scope.popoverModal = false;
+        if (enter) {
+            $scope.popover = item;
+        } else {
+            $scope.popover = null;
+        }
+    }
+    $scope.onClickItem = (item, $event) => {
+        if ($scope.popoverModal && $scope.popover == item) {
+            $scope.closePopover();
+        } else {
+            $scope.popover = item;
+            $scope.popoverModal = true;
+        }
+        $event.stopPropagation();
+    }
+    $scope.closePopover = () => {
+        $scope.popover = null;
+        $scope.popoverModal = false;
+    }
+    $scope.onSelectItemToAdd = function (item) {
         if (angular.isFunction($scope.onSelect)) {
             tryMarkUsed(item);
             $scope.onSelect({item: item});
@@ -268,6 +294,9 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
         tryMarkUsed(item);
     };
     
+    $scope.getOpenCatalogLink = (item) => {
+        return "/brooklyn-ui-catalog/#!/bundles/"+item.containingBundle.replace(":","/")+"/types/"+item.symbolicName+"/"+item.version;
+    }
     $scope.sortBy = function (order) {
         let newFirst = {};
         if (order) {
@@ -322,6 +351,7 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
         $scope.items = items;
     });
     $scope.lastUsedText = (item) => {
+        if (item==null) return "";
         let l = (Number)(item.lastUsed);
         if (!l || isNaN(l) || l<=0) return "";
         if (l < 100000) return 'Preselected for inclusion in "Recent" filter.';
