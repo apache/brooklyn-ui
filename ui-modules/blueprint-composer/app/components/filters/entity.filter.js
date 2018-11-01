@@ -16,11 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-const DEFAULT = '';
-
 export function entityNameFilter() {
     return function (input) {
-        var result = input ? (input.displayName || input.name || input.symbolicName || input.type || DEFAULT) : DEFAULT;
+        var result = input ? (input.displayName || input.name || input.symbolicName || input.type || null) : null;
+        if (!result) {
+            if (input && !input.parent) result = 'Application';
+            else result = 'Unnamed entity';
+        }
         if (result.match(/^[^\w]*deprecated[^\w]*/i)) {
             result = result.replace(/^[^\w]*deprecated[^\w]*/i, '');
         }

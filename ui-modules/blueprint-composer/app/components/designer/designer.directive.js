@@ -29,6 +29,9 @@ const TAG = 'DIRECTIVE :: DESIGNER :: ';
 export function designerDirective($log, $state, $q, iconGenerator, catalogApi, blueprintService, brSnackbar, paletteDragAndDropService) {
     let directive = {
         restrict: 'E',
+        scope: {
+            onSelectionChange: '<?'
+        },
         template: '',
         link: link
     };
@@ -109,13 +112,16 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
                     break;
             }
             if (angular.isDefined(id)) {
+                $log.debug(TAG + 'Select canvas, selected node: ' + id);
                 $scope.selectedEntity = blueprintService.findAny(id);
+                if ($scope.onSelectionChange) $scope.onSelectionChange($scope.selectedEntity);
             }
         });
 
         $element.bind('click-svg', (event)=> {
             $log.debug(TAG + 'Select canvas, un-select node (if one selected before)');
             $scope.selectedEntity = null;
+            if ($scope.onSelectionChange) $scope.onSelectionChange($scope.selectedEntity);
             $scope.$apply(()=> {
                 redrawGraph();
                 $state.go('main.graphical');

@@ -28,47 +28,53 @@ export const graphicalState = {
     templateProvider: function(composerOverrides) {
         return composerOverrides.paletteGraphicalStateTemplate || template;
     },
-    controller: ['$scope', '$state', 'blueprintService', 'paletteService', graphicalController],
+    controller: ['$scope', '$state', '$filter', 'blueprintService', 'paletteService', graphicalController],
     controllerAs: 'vm',
     data: {
         label: 'Graphical Designer'
     }
 };
 
-function graphicalController($scope, $state, blueprintService, paletteService) {
+function graphicalController($scope, $state, $filter, blueprintService, paletteService) {
     this.EntityFamily = EntityFamily;
 
     this.sections = paletteService.getSections();
     this.selectedSection = Object.values(this.sections).find(section => section.type === EntityFamily.ENTITY);
     $scope.paletteState = {};  // share state among all sections
 
-    this.onTypeSelected = (selectedType)=> {
-        let rootEntity = blueprintService.get();
+    this.onCanvasSelection = (item) => {
+        $scope.canvasSelectedItem = item;
+    }
+    this.getOnSelectText = (selectableType) => $scope.canvasSelectedItem ? "Add to " + $filter('entityName')($scope.canvasSelectedItem) : "Add to application";
+    
+    this.addSelectedTypeToTargetEntity = (selectedType, targetEntity) => {
+        if (!targetEntity) targetEntity = $scope.canvasSelectedItem;
+        if (!targetEntity) targetEntity = blueprintService.get();
 
         if (selectedType.supertypes.includes(EntityFamily.ENTITY.superType)) {
             let newEntity = blueprintService.populateEntityFromApi(new Entity(), selectedType);
-            rootEntity.addChild(newEntity);
+            targetEntity.addChild(newEntity);
             blueprintService.refreshEntityMetadata(newEntity, EntityFamily.ENTITY).then(() => {
                 $state.go(graphicalEditEntityState, {entityId: newEntity._id});
             })
         }
         else if (selectedType.supertypes.includes(EntityFamily.POLICY.superType)) {
             let newPolicy = blueprintService.populateEntityFromApi(new Entity(), selectedType);
-            rootEntity.addPolicy(newPolicy);
+            targetEntity.addPolicy(newPolicy);
             blueprintService.refreshEntityMetadata(newPolicy, EntityFamily.POLICY).then(() => {
-                $state.go(graphicalEditPolicyState, {entityId: rootEntity._id, policyId: newPolicy._id});
+                $state.go(graphicalEditPolicyState, {entityId: targetEntity._id, policyId: newPolicy._id});
             });
         }
         else if (selectedType.supertypes.includes(EntityFamily.ENRICHER.superType)) {
             let newEnricher = blueprintService.populateEntityFromApi(new Entity(), selectedType);
-            rootEntity.addEnricher(newEnricher);
+            targetEntity.addEnricher(newEnricher);
             blueprintService.refreshEntityMetadata(newEnricher, EntityFamily.ENRICHER).then(() => {
-                $state.go(graphicalEditEnricherState, {entityId: rootEntity._id, enricherId: newEnricher._id});
+                $state.go(graphicalEditEnricherState, {entityId: targetEntity._id, enricherId: newEnricher._id});
             });
         }
         else if (selectedType.supertypes.includes(EntityFamily.LOCATION.superType)) {
-            blueprintService.populateLocationFromApi(rootEntity, selectedType);
-            $state.go(graphicalEditEntityState, {entityId: rootEntity._id});
+            blueprintService.populateLocationFromApi(targetEntity, selectedType);
+            $state.go(graphicalEditEntityState, {entityId: targetEntity._id});
         }
     };
 }

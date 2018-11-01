@@ -101,7 +101,7 @@
                  this could be configurable ("compressed"=xs-2 w no labels, "normal"=xs-3, "big"=xs-4) -->
             <div class="catalog-palette-item" ng-class="state.viewMode.classes"
                     ng-repeat="item in searchedItems = (items | catalogSelectorSearch:search | catalogSelectorFilters:this) | orderBy:state.currentOrderFields | limitTo:pagination.itemsPerPage:(pagination.page-1)*pagination.itemsPerPage track by (item.containingBundle + ':' + item.symbolicName + ':' + item.version)"
-                    ng-click="onClickItem(item, $event)">
+                    ng-click="onClickItem(item, false, $event)">
                 <div class="item" draggable="true" ng-dragstart="onDragItem(item, $event)" ng-dragend="onDragEnd(item, $event)">
                     <div class="item-logo">
                         <img ng-src="{{item | iconGeneratorPipe:'symbolicName'}}" alt="{{item.displayName}} logo" on-error="onImageError" item-id="{{item.symbolicName}}"/>
@@ -111,6 +111,7 @@
                     </div>
                     <i class="fa fa-info-circle"
                         uib-popover-template="'QuickInfoTemplate.html'"
+                        ng-click="onClickItem(item, true, $event)"
                         popover-is-open="popover == item"
                         popover-placement="right" popover-trigger="'none'"
                         popover-class="catalog-selector-popover" popover-append-to-body="true"
@@ -174,8 +175,8 @@
         </div>
         <div class="quick-info-buttons">
             <div class="spacer"></div>
-            <button class="btn btn-primary btn-outline" ng-click="onSelectItemToAdd(popover)">{{ onSelectText || "Select" }}</button>
-            <a ng-if="popover.containingBundle" href="{{ getOpenCatalogLink(popover) }}" target="_blank"><button class="btn btn-info btn-outline">Open in catalog</button></a>
+            <button class="btn btn-primary btn-outline select-item-button" ng-click="onSelectItem(popover, false, $event)">{{ getOnSelectText(popover) }}</button>
+            <a ng-if="popover.containingBundle && allowOpenInCatalog" href="{{ getOpenCatalogLink(popover) }}" target="_blank"><button class="btn btn-info btn-outline">Open in catalog</button></a>
         </div>
     </div>
 </script>

@@ -41,19 +41,20 @@ const PALETTE_VIEW_MODES = {
     };
 
 // fields in either bundle or type record:
-const FIELDS_TO_SEARCH = ['displayName', 'name', 'symbolicName', 'version', 'type', 'supertypes', 'containingBundle', 'description', 'displayTags', 'tags'];
+const FIELDS_TO_SEARCH = ['displayName', 'name', 'symbolicName', 'type', 'version', 'containingBundle', 'description', 'displayTags', 'tags', 'supertypes'];
 
 export function catalogSelectorDirective() {
     return {
         restrict: 'E',
         scope: {
             family: '<',
-            onSelect: '&',
-            onSelectText: "@?",
-            rowsPerPage: '<?',  // if unset then fill
+            onSelect: '&', // action to do when item is selected
+            onSelectText: "&?", // function returning text to show in the "on select" button for an item
+            iconSelects: '<?',  // boolean whether clicking the icon triggers selection directly or shows popup (false, default) 
+            rowsPerPage: '<?',  // optionally show fixed number of rows; unset (default and normal) computes based on available height
             reservedKeys: '<?',
-            state: '<?',
-            mode: '@?',  // for use by downstream projects to pass in special modes
+            state: '<?', // for shared state usage
+            mode: '@?',  // for use by downstream projects to pass in special modes to do add'l processing / rendering
         },
         template: template,
         controller: ['$scope', '$element', '$timeout', '$q', '$uibModal', '$log', '$templateCache', 'paletteApi', 'paletteDragAndDropService', 'iconGenerator', 'composerOverrides', 'recentlyUsedService', controller],
@@ -251,8 +252,10 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
             $scope.popover = null;
         }
     }
-    $scope.onClickItem = (item, $event) => {
-        if ($scope.popoverModal && $scope.popover == item) {
+    $scope.onClickItem = (item, isInfoIcon, $event) => {
+        if (!isInfoIcon && $scope.iconSelects) {
+            $scope.onSelectItem(item);
+        } else if ($scope.popoverModal && $scope.popover == item) {
             $scope.closePopover();
         } else {
             $scope.popover = item;
@@ -264,7 +267,12 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
         $scope.popover = null;
         $scope.popoverModal = false;
     }
-    $scope.onSelectItemToAdd = function (item) {
+    $scope.getOnSelectText = function (item) {
+        if (!($scope.onSelectText)) return "Select";
+        return $scope.onSelectText({item: item});
+    }
+    $scope.onSelectItem = function (item) {
+        $scope.closePopover();
         if (angular.isFunction($scope.onSelect)) {
             tryMarkUsed(item);
             $scope.onSelect({item: item});
@@ -393,6 +401,9 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
             $scope.showPaletteControls = true;
         }
     }
+    
+    // can be overridden to disable "open in catalog" button
+    $scope.allowOpenInCatalog = true;
     
     // this can be overridden for palette sections/modes which show a subset of the types returned by the server;
     // this is applied when the data is received from the server.
