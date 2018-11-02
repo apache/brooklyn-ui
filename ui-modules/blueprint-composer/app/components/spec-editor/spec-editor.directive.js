@@ -320,7 +320,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 scope.state.config.filter.values.all = true;
             }
         };
-        scope.recordFocus = specEditor.recordFocus = ($item)=> {
+        scope.recordFocus = specEditor.recordFocus = ($item) => {
             scope.state.config.focus = $item.name;
         };
 

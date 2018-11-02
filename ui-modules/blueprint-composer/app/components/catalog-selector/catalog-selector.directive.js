@@ -241,30 +241,32 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
         }
     }
     $scope.mouseInfoPopover = (item, enter) => {
-        if ($scope.popoverModal && $scope.popover==item) {
+        if ($scope.popoverModal && $scope.popoverVisible && $scope.popover==item) {
             // ignore if modal
             return;
         }
         $scope.popoverModal = false;
         if (enter) {
             $scope.popover = item;
+            $scope.popoverVisible = true;
         } else {
-            $scope.popover = null;
+            $scope.popoverVisible = false;
         }
     }
     $scope.onClickItem = (item, isInfoIcon, $event) => {
         if (!isInfoIcon && $scope.iconSelects) {
             $scope.onSelectItem(item);
-        } else if ($scope.popoverModal && $scope.popover == item) {
+        } else if ($scope.popoverModal && $scope.popoverVisible && $scope.popover == item) {
             $scope.closePopover();
         } else {
             $scope.popover = item;
+            $scope.popoverVisible = true;
             $scope.popoverModal = true;
         }
         $event.stopPropagation();
     }
     $scope.closePopover = () => {
-        $scope.popover = null;
+        $scope.popoverVisible = false;
         $scope.popoverModal = false;
     }
     $scope.getOnSelectText = function (item) {
@@ -365,7 +367,6 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
         if (l < 100000) return 'Preselected for inclusion in "Recent" filter.';
         return 'Last used: ' + distanceInWordsToNow(l, { includeSeconds: true, addSuffix: true });
     }; 
-    $scope.roundTwoDecimals = (num) => Math.round(num*100)/100.0;
     
     $scope.showPaletteControls = false;
     $scope.onFiltersShown = () => {
