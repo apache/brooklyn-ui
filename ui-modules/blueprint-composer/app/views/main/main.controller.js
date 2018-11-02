@@ -251,23 +251,7 @@ export const mainState = {
     controller: ['$scope', '$element', '$log', '$state', '$stateParams', 'brBrandInfo', 'blueprintService', 'actionService', 'catalogApi', 'applicationApi', 'brSnackbar', 'brBottomSheet', 'edit', 'yaml', 'composerOverrides', MainController],
     controllerAs: 'vm',
     resolve: {
-        edit: ['$stateParams', '$q', 'paletteApi', ($stateParams, $q, paletteApi) => {
-            let deferred = $q.defer();
-            if (!($stateParams.bundleSymbolicName && $stateParams.bundleVersion && $stateParams.typeSymbolicName && $stateParams.typeVersion)) {
-                deferred.resolve(null);
-            } else if ($stateParams.bundleSymbolicName && $stateParams.bundleVersion && $stateParams.typeSymbolicName && $stateParams.typeVersion) {
-                $q.all([
-                    paletteApi.getBundle($stateParams.bundleSymbolicName, $stateParams.bundleVersion),
-                    paletteApi.getBundleType($stateParams.bundleSymbolicName, $stateParams.bundleVersion, $stateParams.typeSymbolicName, $stateParams.typeVersion),
-                    paletteApi.getTypeVersions($stateParams.typeSymbolicName)
-                ]).then(responses => {
-                    deferred.resolve({bundle: responses[0], type: responses[1], versions: responses[2].map(item => item.version)});
-                }).catch(response => deferred.reject(response.error.message));
-            } else {
-                deferred.reject('Both bundle and type information must be supplied');
-            }
-            return deferred.promise;
-        }],
-        yaml: ['$stateParams', $stateParams => $stateParams.yaml]
+        edit: ['$stateParams', 'blueprintLoaderApi', ($stateParams, blueprintLoaderApi) => blueprintLoaderApi.loadBlueprint($stateParams)],
+        yaml: ['$stateParams', 'blueprintLoaderApi', ($stateParams, blueprintLoaderApi) => blueprintLoaderApi.loadYaml($stateParams)]
     }
 };
