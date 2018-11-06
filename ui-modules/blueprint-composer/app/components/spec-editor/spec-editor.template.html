@@ -341,7 +341,9 @@
 </br-collapsible>
 
 <!-- ENTITY LOCATION -->
-<br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.location.open">
+<ng-include src="'SpecEditorLocationSection.html'"></ng-include>
+<script type="text/ng-template" id="SpecEditorLocationSection.html">
+  <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.location.open">
     <heading>
         Location
         <span ng-if="(model.issues | filter:{group:'location'}).length> 0" class="badge" ng-class="getBadgeClass((model.issues | filter:{group:'location'}))">{{(model.issues | filter:{group:'location'}).length}}</span>
@@ -365,10 +367,13 @@
             <button class="btn btn-danger btn-link" ng-click="model.clearIssues({group: 'location'}).removeLocation()">Remove</button>
         </div>
     </div>
-</br-collapsible>
+  </br-collapsible>
+</script>
 
 <!-- ENTITY POLICIES -->
-<br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.policy.open">
+<ng-include src="'SpecEditorPoliciesSection.html'"></ng-include>
+<script type="text/ng-template" id="SpecEditorPoliciesSection.html">
+  <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.policy.open">
     <heading>
         Policies
         <span ng-if="getPoliciesIssues().length> 0" class="badge" ng-class="getBadgeClass(getPoliciesIssues())">{{getPoliciesIssues().length}}</span>
@@ -398,10 +403,13 @@
             <ng-include src="'AdjunctTemplate.html'"></ng-include>
         </div>
     </div>
-</br-collapsible>
+  </br-collapsible>
+</script>
 
 <!-- ENTITY ENRICHERS -->
-<br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.enricher.open">
+<ng-include src="'SpecEditorEnrichersSection.html'"></ng-include>
+<script type="text/ng-template" id="SpecEditorEnrichersSection.html">
+  <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.enricher.open">
     <heading>
         Enrichers
         <span ng-if="getEnrichersIssues().length> 0" class="badge" ng-class="getBadgeClass(getEnrichersIssues())">{{getEnrichersIssues().length}}</span>
@@ -431,7 +439,13 @@
             <ng-include src="'AdjunctTemplate.html'"></ng-include>
         </div>
     </div>
-</br-collapsible>
+  </br-collapsible>
+</script>
+
+<ng-include src="'SpecEditorOtherSections.html'"></ng-include>
+<script type="text/ng-template" id="SpecEditorOtherSections.html">
+</script>
+
 
 <!-- CONFIG INFO TEMPLATE :: START -->
 <script type="text/ng-template" id="ConfigInfoTemplate.html">
