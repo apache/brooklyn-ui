@@ -17,7 +17,7 @@
  * under the License.
  */
 import {Entity} from "../util/model/entity.model";
-import {D3Blueprint} from "../util/d3-blueprint";
+import {D3BlueprintMgmtView} from "../util/d3-blueprint-mgmt-view";
 import {EntityFamily} from '../util/model/entity.model';
 import {graphicalEditEntityState} from '../../views/main/graphical/edit/entity/edit.entity.controller';
 import {graphicalEditSpecState} from '../../views/main/graphical/edit/spec/edit.spec.controller';
@@ -38,7 +38,7 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
     return directive;
 
     function link($scope, $element) {
-        let blueprintGraph = new D3Blueprint($element[0]).center();
+        let blueprintGraph = new D3BlueprintMgmtView($element[0]).center();
 
         $scope.blueprint = blueprintService.get();
         $scope.$watch('blueprint', ()=> {
