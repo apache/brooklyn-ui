@@ -60,17 +60,19 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, co
         link: link
     };
 
-    function link($scope, $element, $compile, controller) {
+    function link($scope, $element) {
         $scope.buttonText = $scope.config.label || ($scope.config.itemType ? `Update ${$scope.config.name || $scope.config.symbolicName}` : 'Add to catalog');
 
         $scope.activateModal = () => {
             function injectorGet(reference) { return $element.injector().get(reference); }
-            function blueprintService() { return injectorGet('blueprintService'); }
+            let blueprintService = injectorGet('blueprintService');
 
-            let entity = blueprintService().get();
-            let config = controller.saveToCatalogConfig;
+            let entity = blueprintService.get();
+            let metadata = blueprintService.entityHasMetadata(entity) ? blueprintService.getEntityMetadata(entity) : { };
+            let config = $scope.$parent.$parent.vm.saveToCatalogConfig;
 
             // Reset the config values if this is not an update
+            $scope.isUpdate = Object.keys($scope.config).length > 1;
             if (!$scope.isUpdate) {
                 config = {
                     itemType: 'entity',
@@ -78,29 +80,28 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, co
             }
 
             // Set various properties from the blueprint entity data
-            if (!config.version && entity.hasVersion()) {
-                config.version = entity.version;
+            if (!config.version && (entity.hasVersion() || metadata.has('version'))) {
+                config.version = entity.version || metadata.get('version');
             }
-            if (!config.iconUrl && entity.hasIcon()) {
-                config.iconUrl = entity.icon;
+            if (!config.iconUrl && (entity.hasIcon() || metadata.has('iconUrl'))) {
+                config.iconUrl = entity.icon || metadata.get('iconUrl');
             }
             if (!config.name && entity.hasName()) {
                 config.name = entity.name;
             }
-            if (!config.symbolicName && entity.hasId()) {
-                config.symbolicName = entity.id;
+            if (!config.symbolicName && (entity.hasId() || metadata.has('id'))) {
+                config.symbolicName = entity.id || metadata.get('id');
             }
             if (!config.bundle) {
-                let bundle = config.symbolicName || config.name;
-                bundle = bundle.split(/[^-a-zA-Z0-9.,_]+/).join('-').toLowerCase();
-                config.bundle = bundle;
+                let bundle = config.symbolicName || config.name || 'untitled';
+                config.bundle = bundle.split(/[^-a-zA-Z0-9.,_]+/).join('-').toLowerCase();
                 if (!config.symbolicName) {
                     config.symbolicName = bundle;
                 }
             }
 
             // Override this callback to update configuration data elsewhere
-            (composerOverrides.updateCatalogConfig || ((config, $element, controller) => { }))(config, $element, controller);
+            $scope.config = (composerOverrides.updateCatalogConfig || ((config, $element) => config))(config, $element);
 
             let modalInstance = $uibModal.open({
                 templateUrl: TEMPLATE_MODAL_URL,
@@ -117,7 +118,6 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, co
                         break;
                     case REASONS.deploy:
                         $rootScope.$broadcast('blueprint.deploy');
-                        $scope.isUpdate = true;
                         break;
                 }
             });
