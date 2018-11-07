@@ -92,7 +92,7 @@
                 </ul>
               </span>
             </div>
-            <ng-include src="customSubHeadTemplateName"/>
+            <ng-include src="blueprint-composer/component/catalog-selector/subhead.html"/>
         </div>
       </div>
 
@@ -146,7 +146,7 @@
 
         <div class="catalog-palette-footer">
             <div uib-pagination total-items="searchedItems.length" items-per-page="pagination.itemsPerPage" ng-model="pagination.page" boundary-link-numbers="true" rotate="false" max-size="4" ng-show="searchedItems.length > pagination.itemsPerPage" class="pagination-sm pull-right"></div>
-            <ng-include src="customFooterTemplateName"/>
+            <ng-include src="blueprint-composer/component/catalog-selector/footer.html"/>
         </div>
     </div>
 </div>

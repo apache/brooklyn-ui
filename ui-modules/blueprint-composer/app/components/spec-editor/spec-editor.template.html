@@ -309,7 +309,7 @@
                                             class="open-entity-spec"
                                             title="Open in spec editor"
                                             ng-focus="specEditor.recordFocus(item)"></a>
-                                <ng-include src="'AdjunctTemplate.html'"></ng-include>
+                                <ng-include src="'blueprint-composer/component/spec-editor/adjunct.html'"></ng-include>
                             </div>
                             <a ng-if="!config[item.name][REPLACED_DSL_ENTITYSPEC]" ui-sref="main.graphical.edit.add({entityId: model._id, family: 'spec', configKey: item.name})" class="no-spec">
                                 (no spec set)
@@ -341,8 +341,8 @@
 </br-collapsible>
 
 <!-- ENTITY LOCATION -->
-<ng-include src="'SpecEditorLocationSection.html'"></ng-include>
-<script type="text/ng-template" id="SpecEditorLocationSection.html">
+<ng-include src="'blueprint-composer/component/spec-editor/section-locations.html'"></ng-include>
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-locations.html">
   <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.location.open">
     <heading>
         Location
@@ -371,8 +371,8 @@
 </script>
 
 <!-- ENTITY POLICIES -->
-<ng-include src="'SpecEditorPoliciesSection.html'"></ng-include>
-<script type="text/ng-template" id="SpecEditorPoliciesSection.html">
+<ng-include src="'blueprint-composer/component/spec-editor/section-policies.html'"></ng-include>
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-policies.html">
   <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.policy.open">
     <heading>
         Policies
@@ -400,15 +400,15 @@
 
         <div ng-repeat="adjunct in filteredPolicies = (model.getPoliciesAsArray() | specEditorType:state.policy.search) track by adjunct._id" class="spec-policy spec-adjunct">
             <a ui-sref="main.graphical.edit.policy({entityId: model._id, policyId: adjunct._id})"></a>
-            <ng-include src="'AdjunctTemplate.html'"></ng-include>
+            <ng-include src="'blueprint-composer/component/spec-editor/adjunct.html'"></ng-include>
         </div>
     </div>
   </br-collapsible>
 </script>
 
 <!-- ENTITY ENRICHERS -->
-<ng-include src="'SpecEditorEnrichersSection.html'"></ng-include>
-<script type="text/ng-template" id="SpecEditorEnrichersSection.html">
+<ng-include src="'blueprint-composer/component/spec-editor/section-enrichers.html'"></ng-include>
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-enrichers.html">
   <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.enricher.open">
     <heading>
         Enrichers
@@ -436,14 +436,14 @@
 
         <div ng-repeat="adjunct in filteredEnrichers = (model.getEnrichersAsArray() | specEditorType:state.enricher.search) track by adjunct._id" class="spec-enricher spec-adjunct">
             <a ui-sref="main.graphical.edit.enricher({entityId: model._id, enricherId: adjunct._id})"></a>
-            <ng-include src="'AdjunctTemplate.html'"></ng-include>
+            <ng-include src="'blueprint-composer/component/spec-editor/adjunct.html'"></ng-include>
         </div>
     </div>
   </br-collapsible>
 </script>
 
-<ng-include src="'SpecEditorOtherSections.html'"></ng-include>
-<script type="text/ng-template" id="SpecEditorOtherSections.html">
+<ng-include src="'blueprint-composer/component/spec-editor/section-others.html'"></ng-include>
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-others.html">
 </script>
 
 
@@ -494,7 +494,7 @@
 <!--TYPEAHEAD TEMPLATE :: END-->
 
 <!--ADJUNCT TEMPLATE :: START-->
-<script type="text/ng-template" id="AdjunctTemplate.html">
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/adjunct.html">
     <div class="media" ng-class="{'has-issues': adjunct.hasIssues()}">
         <div class="media-left media-middle">
             <img ng-src="{{adjunct.icon}}" alt="{{adjunct | entityName}} logo" class="media-object" />

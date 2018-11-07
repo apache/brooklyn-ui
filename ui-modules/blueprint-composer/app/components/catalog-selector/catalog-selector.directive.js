@@ -411,12 +411,8 @@ function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCa
     // it is used by catalogSelectorFiltersFilter; 
     $scope.filterPaletteItemsForMode = (items) => items;
 
-    // downstream can override this to insert lines below the header
-    $scope.customSubHeadTemplateName = 'composer-palette-empty-sub-head';
-    $templateCache.put($scope.customSubHeadTemplateName, '');
-    
-    $scope.customFooterTemplateName = 'composer-palette-default-footer';
-    $templateCache.put($scope.customFooterTemplateName, footerTemplate);
+    $templateCache.put('blueprint-composer/component/catalog-selector/subhead.html', '');
+    $templateCache.put('blueprint-composer/component/catalog-selector/footer.html', footerTemplate);
 
     // allow downstream to configure this controller and/or scope
     (composerOverrides.configurePaletteController || function() {})(this, $scope, $element);
