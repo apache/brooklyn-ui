@@ -70,7 +70,8 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, co
             // Reset the config values if this is not an update
             $scope.isUpdate = Object.keys($scope.config).length > ($scope.config.label ? 1 : 0);
             if (!$scope.isUpdate) {
-                $scope.config.itemType = 'template';
+                $scope.config.template = true;
+                $scope.config.entity = false;
             }
 
             // Set various properties from the blueprint entity data
@@ -162,9 +163,15 @@ export function CatalogItemModalController($scope, blueprintService, paletteApi,
 
         let bomItem = {
             id: $scope.config.symbolicName,
-            itemType: $scope.config.itemType,
             item: blueprint
         };
+
+        // Set the itemType to the correct value or leave out entirely if config undefined
+        let itemType = $scope.config.entity ? 'entity' : $scope.config.template ? 'template' : undefined;
+        if (itemType) {
+            bomItem.itemType = itemType;
+        }
+
         if (brUtilsGeneral.isNonEmpty($scope.config.name)) {
             bomItem.name = $scope.config.name;
         }

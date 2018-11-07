@@ -72,16 +72,24 @@
                     <span ng-if="form.symbolicName.$error.required">You must specify a blueprint symbolic name</span>
                     <span ng-if="form.symbolicName.$error.pattern">The blueprint symbolic name can contains only letters, numbers as well a the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
                 </p>
+            </div>>
+
+            <div class="form-group">
+                <label class="control-label">Blueprint type</label>
+                <div class="checkbox">
+                    <label>
+                        <input ng-model="config.template" ng-disabled="state.saving" name="template" type="checkbox" ng-change="config.template && (config.entity = !config.template)" />
+                        Save this as a template displayable in quick-launch
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input ng-model="config.entity" ng-disabled="state.saving" name="entity" type="checkbox" ng-change="config.entity && (config.template = !config.entity)" />
+                        Store this blueprint as an extension to the referenced entities
+                    </label>
+                </div>
             </div>
 
-            <div class="form-group" ng-class="{'has-error': form.itemType.$invalid}">
-                <label class="control-label">Blueprint type</label>
-                <select class="form-control" name="itemType" ng-options="type.id as type.label for type in TYPES" ng-model="config.itemType" ng-disabled="state.saving" required >
-                </select>
-                <p class="help-block" ng-show="form.itemType.$invalid">
-                    <span ng-if="form.itemType.$error.required">You must specify a blueprint type</span>
-                </p>
-            </div>
             <div class="form-group">
                 <label class="control-label">Blueprint icon url</label>
                 <input ng-model="config.iconUrl" ng-disabled="state.saving" class="form-control" name="iconUrl" type="text" />
