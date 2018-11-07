@@ -24,6 +24,7 @@ import brAutoFocus from 'brooklyn-ui-utils/autofocus/autofocus';
 import brUtils from 'brooklyn-ui-utils/utils/general';
 
 const MODULE_NAME = 'brooklyn.components.dsl-editor';
+const TEMPLATE_URL = 'blueprint-composer/component/dsl-editor/index.html';
 const DSL_KINDS = {
     ALL: {
         id: 'all',
@@ -48,14 +49,17 @@ const DSL_KINDS = {
 };
 
 angular.module(MODULE_NAME, [angularSanitize, brAutoFocus, brUtils])
-    .directive('dslEditor', ['$rootScope', '$filter', '$log', 'brUtilsGeneral', 'blueprintService', dslEditorDirective]);
+    .directive('dslEditor', ['$rootScope', '$filter', '$log', 'brUtilsGeneral', 'blueprintService', dslEditorDirective])
+    .run(['$templateCache', templateCache]);
 
 export default MODULE_NAME;
 
 export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, blueprintService) {
     return {
         restrict: 'E',
-        template: template,
+        templateUrl: function (tElement, tAttrs) {
+            return tAttrs.templateUrl || TEMPLATE_URL;
+        },
         scope: {
             definition: '=',
             entity: '=',
@@ -360,4 +364,8 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
     function isSelfDsl(dsl) {
         return dsl && dsl.kind === KIND.TARGET && dsl.name === 'self';
     }
+}
+
+function templateCache($templateCache) {
+    $templateCache.put(TEMPLATE_URL, template);
 }

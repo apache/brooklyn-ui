@@ -16,10 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import angular from 'angular';
 import {Dsl, DslParser, KIND} from "../util/model/dsl.model";
 import {Entity} from "../util/model/entity.model";
 
+const MODULE_NAME = 'brooklyn.composer.service.dsl-service';
 const TAG = 'SERVICE :: DSL :: ';
+
+angular.module(MODULE_NAME, [])
+    .provider('dslService', dslServiceProvider);
+
+export default MODULE_NAME;
 
 export function dslServiceProvider() {
     return {
