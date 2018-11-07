@@ -21,12 +21,17 @@
     <nav class="navbar navbar-mode">
         <div class="container-fluid flush-left">
             <ul class="nav navbar-nav navbar-nav-mode">
-                <li ng-class="{'active': vm.viewMode()==='mgmt'}">
+                <li ng-class="{'active': vm.viewMode()==='mgmt'}" ng-if="!vm.experimental.enableLandscape">
+                    <a ui-sref="main.graphical" ng-disabled="vm.parseError">
+                        <i class="fa fa-fw fa-object-group"></i> Graphical Designer
+                    </a>
+                </li>
+                <li ng-class="{'active': vm.viewMode()==='mgmt'}" ng-if="vm.experimental.enableLandscape">
                     <a ui-sref="main.graphical({viewMode: 'mgmt'})" ng-disabled="vm.parseError">
                         <i class="fa fa-fw fa-object-group"></i> Management Hierarchy
                     </a>
                 </li>
-                <li ng-class="{'active': vm.viewMode()==='landscape'}">
+                <li ng-class="{'active': vm.viewMode()==='landscape'}" ng-if="vm.experimental.enableLandscape">
                     <a ui-sref="main.graphical({viewMode: 'landscape'})" ng-disabled="vm.parseError">
                         <i class="fa fa-fw fa-object-group"></i> Landscape View
                     </a>

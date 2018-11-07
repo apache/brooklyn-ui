@@ -31,8 +31,8 @@
         </div>
     </div>
 
-    <designer mode="mgmt" on-selection-change="vm.onCanvasSelection" ng-show="vm.viewMode() !== 'landscape'"></designer>
-    <designer mode="landscape" on-selection-change="vm.onCanvasSelection" ng-show="vm.viewMode() === 'landscape'"></designer>
+    <designer mode="mgmt" on-selection-change="vm.onCanvasSelection" ng-if="vm.viewMode() !== 'landscape'"></designer>
+    <designer mode="landscape" on-selection-change="vm.onCanvasSelection" ng-if="vm.viewMode() === 'landscape'"></designer>
   </div>
 
   <div class="pane pane-palette" ng-if="vm.selectedSection">

@@ -40,7 +40,8 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
     return directive;
 
     function link($scope, $element) {
-        let blueprintGraph = $scope.mode=='landscape' ? new D3BlueprintLandscapeView($element[0]).center() : new D3BlueprintMgmtView($element[0]).center();
+        let blueprintGraph = $scope.mode=='landscape' ? new D3BlueprintLandscapeView($element[0]) : new D3BlueprintMgmtView($element[0]);
+        blueprintGraph.center();
 
         $scope.blueprint = blueprintService.get();
         $scope.$watch('blueprint', ()=> {

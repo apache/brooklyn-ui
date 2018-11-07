@@ -18,132 +18,193 @@
  */
 import {D3BlueprintAbstract} from './d3-blueprint-abstract';
 import addIcon from '../../img/icon-add.svg';
+import * as d3 from 'd3';
 
 export function D3BlueprintMgmtView(container) {
-    let d3b = this;
-    let result = D3BlueprintAbstract.call(d3b, container);
+    let bp = this;
+    let result = D3BlueprintAbstract.call(bp, container);
+
+    function updateLayout(blueprint, relationships, d3data) {
+        let tree = d3.tree()
+            .nodeSize([bp.config.child.radius * 6, bp.config.child.radius * 6])
+            .separation((right, left)=> {
+                let maxColumnsBeforeExpand = 2;
+                let adjuncts = bp.getImportantAdjuncts(left).length;
+                let currentCols = Math.floor(adjuncts / bp.config.adjunct.itemPerCol) + (adjuncts > 0 && adjuncts % bp.config.adjunct.itemPerCol !== 0 ? 1 : 0);
+                let additionalCol = currentCols > maxColumnsBeforeExpand ? currentCols - maxColumnsBeforeExpand : 0;
+
+                let colWidth = bp.config.adjunct.width + 15;
+
+                return 1 + (colWidth / (bp.config.child.radius * 6)) * additionalCol;
+            });
+        let root = d3.hierarchy(blueprint);
+        tree(root);
+        d3data.nodes = root.descendants();
+        d3data.links = root.links();
+        d3data.relationships = relationships;
+    };
+            
+    let tagWithAttrs = (tag, attrs) => { return { tag, attrs }; };
+    let addC = (n, ifMissing) => (x) => typeof x !== 'undefined' ? x+n : typeof ifMissing !== 'undefined' ? ifMissing : n;
     
-    Object.assign(d3b._configHolder, {
-        nodes: {
-            root: {
-                rect: {
+    let getNodeProperty = (node, prop) => {
+        let data = bp.isRootNode(node) ? bp.config.root : bp.config.child;
+        return data[prop];
+    };
+    let getPropertyFn = (prop) => (node) => getNodeProperty(node, prop);
+    let width = (node) => getNodeProperty(node, 'width');
+    let height = (node) => getNodeProperty(node, 'height');
+    
+    let childRadius = 50;
+    let locationAttrs = { width: 100, height: 50 };
+    Object.assign(locationAttrs, { x: -locationAttrs.width/2, y: -110 });
+    let memberspecRadius = 35;  
+    
+    Object.assign(bp.config, {
+        global: {
+            transitionDuration: 300,
+            nodeWidth: width,
+            nodeHeight: height,
+            updateLayout,
+        },
+        
+        root: {
+            width: 250,
+            height: 100,
+            maxNameLength: 18,
+            shape: tagWithAttrs('rect', {
                     class: 'node-root',
-                    x: -125,
-                    y: -50,
-                    width: 250,
-                    height: 100,
+                    x: (d) => -width(d)/2,
+                    y: (d) => -height(d)/2,
+                    width,
+                    height,
                     rx: 50,
-                    ry: 50,
-                },
-                text: {
+                    ry: 50
+                }),
+            title: tagWithAttrs('text', {
                     class: 'node-name',
-                    width: 250,
-                    height: 100
-                },
-                maxNameLength: 18
+                    width,
+                    height,
+                }),
+            dropOverrides: {
+                // expand by 7
+                x: addC(-7), y: addC(-7), 
+                rx: addC(7, 0), ry: addC(7, 0),
+                width: addC(2*7), height: addC(2*7),
+                class: (c) => (c || '') + ' dropzone dropzone-self',
             },
-            child: {
-                circle: {
-                    r: 50,
+        },
+        
+        child: {
+            radius: childRadius,
+            width: 2*childRadius,
+            height: 2*childRadius,
+            imgSize: 64,
+            
+            shape: tagWithAttrs('circle', {
+                    r: getPropertyFn('radius'),
                     class: (d)=>(`node-cluster node-cluster-${d}`)
-                },
-                image: {
+                }),
+            icon: tagWithAttrs('image', {
                     class: 'node-icon',
-                    width: 64,
-                    height: 64,
-                    x: -32,
-                    y: -32,
+                    width: getPropertyFn('imgSize'),
+                    height: getPropertyFn('imgSize'),
+                    x: (d) => -getPropertyFn('imgSize')(d)/2,
+                    y: (d) => -getPropertyFn('imgSize')(d)/2,
                     opacity: 0
-                }
+                }),
+            dropOverrides: {
+                // scale by 1.5 or 1.15
+                transform: (ignoreOldVal, d) => (d && d.data && d.data.isCluster ? `scale(${d.data.isCluster() ? 1.5 : 1.15})` : 'scale(1)'), 
+                class: (c) => (c || '') + ' dropzone dropzone-self',
             },
-            location: {
-                rect: {
-                    x: -50,
-                    y: -110,
-                    width: 100,
-                    height: 50
-                },
-                image: {
-                    x: -50,
-                    y: -110,
-                    width: 100,
-                    height: 50,
-                    opacity: 0
-                }
-            },
-            dropzonePrev: {
-                circle: {
-                    cx: -150,
-                    r: 30,
+        },
+        
+        location: {
+            shape: tagWithAttrs('rect', locationAttrs),
+            icon: tagWithAttrs('image', Object.assign({ opacity: 0 }, locationAttrs)),
+        },
+        
+        dropzonePrev: {
+            shape: tagWithAttrs('circle', {
+                    cx: -3*childRadius,
+                    r: 3/5 * childRadius,
                     class: 'dropzone dropzone-prev'
-                },
-            },
-            dropzoneNext: {
-                circle: {
-                    cx: 150,
-                    r: 30,
+                }),
+        },
+        dropzoneNext: {
+            shape: tagWithAttrs('circle', {
+                    cx: 3*childRadius,
+                    r: 3/5 * childRadius,
                     class: 'dropzone dropzone-next'
-                }
-            },
-            adjunct: {
-                rect: {
-                    id: (d)=>(`entity-${d._id}`),
-                    class: 'node-adjunct adjunct entity',
-                    width: 20,
-                    height: 20,
-                    transform: 'scale(0)'
-                }
-            },
-            memberspec: {
-                circle: {
-                    r: 35,
-                    cx: 0,
-                    cy: 170,
-                    class: 'node-spec-entity',
-                    'transform-origin': 0
-                },
-                image: {
-                    x: -20,
-                    y: 150,
-                    width: 40,
-                    height: 40,
-                    opacity: 0,
-                    class: 'node-spec-image',
-                    'transform-origin': 0
-                }
-            },
-            buttongroup: {
-                line: {
+                }),
+        },
+        
+        adjunct: {
+            width: 20,
+            height: 20,
+            itemPerCol: 3,
+            gutterSize: 15,
+            adjunctBox: tagWithAttrs('rect', {
+                id: (d)=>(`entity-${d._id}`),  // TODO should this be adjunct-d._id ?
+                class: 'node-adjunct adjunct entity',
+                width: () => bp.config.adjunct.width,
+                height: () => bp.config.adjunct.height,
+                transform: 'scale(0)'
+            }),
+        },
+        
+        memberspec: {
+            deltaX: 0,
+            deltaY: 170,
+            width: 2*memberspecRadius,
+            height: 2*memberspecRadius,
+            radius: memberspecRadius,
+            iconSize: 40,
+            circle: tagWithAttrs('circle', {
+                r: () => bp.config.memberspec.radius,
+                cx: () => bp.config.memberspec.deltaX,
+                cy: () => bp.config.memberspec.deltaY,
+                class: 'node-spec-entity',
+                'transform-origin': 0
+            }),
+            icon: tagWithAttrs('image', {
+                x: () => bp.config.memberspec.deltaX - bp.config.memberspec.iconSize/2,
+                y: () => bp.config.memberspec.deltaY - bp.config.memberspec.iconSize/2,
+                width: () => bp.config.memberspec.iconSize,
+                height: () => bp.config.memberspec.iconSize,
+                opacity: 0,
+                class: 'node-spec-image',
+                'transform-origin': 0
+            }),
+        },
+        
+        buttongroup: {
+            lineToGroup: tagWithAttrs('line', {
                     class: 'link',
                     x1: 0,
                     x2: 0,
-                    y1: (d)=>(d3b.isRootNode(d) ? d3b._configHolder.nodes.root.rect.height / 2 : d3b._configHolder.nodes.child.circle.r),
-                    y2: (d)=>((d3b.isRootNode(d) ? d3b._configHolder.nodes.root.rect.height / 2 : d3b._configHolder.nodes.child.circle.r) + 30),
-                },
-                circle: {
+                    y1: (d) => height(d)/2,
+                    y2: (d) => height(d)/2 + 30,
+                }),
+            circleAsLineSource: tagWithAttrs('circle', {
                     class: 'connector',
                     r: 6,
-                    cy: (d)=>(d3b.isRootNode(d) ? d3b._configHolder.nodes.root.rect.height / 2 : d3b._configHolder.nodes.child.circle.r),
-                }
-            },
-            buttonAdd: {
-                circle: {
+                    cy: (d) => height(d)/2,
+                }),
+        },
+        buttonAdd: {
+            circleAsTarget: tagWithAttrs('circle', {
                     r: 20,
-                    cy: 100
-                },
-                image: {
+                    cy: 100,
+                }),
+            imageInGreenCircle: tagWithAttrs('image', {
                     width: 50,
                     height: 50,
                     x: -25,
                     y: 75,
-                    'xlink:href': d3b.addIcon
-                }
-            }
-        },
-        transition: 300,
-        grid: {
-            itemPerCol: 3,
-            gutter: 15
+                    'xlink:href': addIcon
+                }),
         },
     });
     
