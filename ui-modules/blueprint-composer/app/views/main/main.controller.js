@@ -66,7 +66,7 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
     }
 
     // uncomment this to enable dev work on landscape mode
-    vm.experimental = { enableLandscape: true };
+    // vm.experimental = { enableLandscape: true };
     
     vm.mode = $state.current;
     $scope.$on('$stateChangeSuccess', (event, toState)=>{
