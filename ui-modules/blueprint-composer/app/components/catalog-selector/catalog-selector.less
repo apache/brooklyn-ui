@@ -45,7 +45,8 @@ catalog-selector {
     &.item-compact {
         height: 75px;
     }
-    
+
+    &.item-compact-list,
     &.item-full-width {
         .item {
             display: flex;
@@ -53,8 +54,6 @@ catalog-selector {
             .item-logo {
                 flex: 0 0 auto;
                 width: auto;
-                height: 78px;
-                min-width: 90px;
                 img {
                     margin: 0;
                     width: auto;
@@ -71,6 +70,23 @@ catalog-selector {
                 }
             }
         }
+    }
+    &.item-compact-list{
+      height: 30px;
+      .item {
+        .item-logo {
+          height: 20px;
+          min-width: 20px;
+        }
+      }
+    }
+    &.item-full-width{
+      .item {
+        .item-logo {
+          height: 78px;
+          min-width: 90px;
+        }
+      }
     }
   }
   .catalog-palette-footer {

@@ -42,6 +42,7 @@ const PALETTE_VIEW_MODES = {
         normal: { name: "Normal", classes: "col-xs-4", itemsPerRow: 3 },
         large: { name: "Large", classes: "col-xs-6", itemsPerRow: 2 },
         list: { name: "List", classes: "col-xs-12 item-full-width", itemsPerRow: 1 },
+        compactList: { name: "Compact list", classes: "col-xs-12 item-compact-list", itemsPerRow: 1, rowHeightPx: 30 },
     };
 
 // fields in either bundle or type record:
@@ -75,13 +76,12 @@ export function catalogSelectorDirective() {
         link: link,
     };
 
-
     function link($scope, $element, attrs, controller) {
         let main = angular.element($element[0].querySelector(".catalog-palette-main"));
 
         // repaginate when load completes (and items are shown), or it is resized
         $scope.$watchGroup(
-            [() => $scope.isLoading, () => main[0].offsetHeight, () => $scope.state.viewMode.itemsPerRow],
+            [() => $scope.isLoading, () => main[0].offsetHeight, () => $scope.state.viewMode.name],
             (values) => controller.$timeout(() => repaginate($scope, $element)));
         // also repaginate on window resize
         angular.element(window).bind('resize', () => repaginate($scope, $element));
