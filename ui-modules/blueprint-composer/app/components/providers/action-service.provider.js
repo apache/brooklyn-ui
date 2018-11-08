@@ -16,6 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import angular from 'angular';
+
+const MODULE_NAME = 'brooklyn.composer.service.action-service';
+
+angular.module(MODULE_NAME, [])
+    .provider('actionService', actionServiceProvider);
+
+export default MODULE_NAME;
+
 export function actionServiceProvider() {
     let actions = {};
     return {
@@ -41,7 +50,7 @@ function ActionService(actionsToAdd) {
     return {
         addAction: addAction,
         getActions: getActions
-    }
+    };
 
     function addAction(id, action) {
         if (!action || !action.hasOwnProperty('html')) {

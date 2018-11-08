@@ -16,33 +16,49 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import angular from 'angular';
 import template from './breadcrumbs.template.html';
+
+const MODULE_NAME = 'brooklyn.components.breadcrumbs';
+const TEMPLATE_URL = 'blueprint-composer/component/breadcrumbs/index.html';
+
+angular.module(MODULE_NAME, [])
+    .directive('breadcrumbs', breadcrumbsDirective)
+    .run(['$templateCache', templateCache]);
+
+export default MODULE_NAME;
 
 export function breadcrumbsDirective() {
     return {
         restrict: 'E',
+        templateUrl: function(tElement, tAttrs) {
+            return tAttrs.templateUrl || TEMPLATE_URL;
+        },
         scope: {
             entity: '<',
             current: '<'
         },
-        template: template,
         link: link
+    };
+
+    function link(scope) {
+        if (scope.entity) {
+            scope.breadcrumbs = [];
+            if (scope.current) {
+                scope.breadcrumbs.push(scope.current);
+            }
+
+            let currentEntity = scope.entity;
+            while (currentEntity.hasParent()) {
+                scope.breadcrumbs.push(currentEntity);
+                currentEntity = currentEntity.parent;
+            }
+            scope.breadcrumbs.push(currentEntity);
+            scope.breadcrumbs.reverse();
+        }
     }
 }
 
-function link(scope) {
-    if (scope.entity) {
-        scope.breadcrumbs = [];
-        if (scope.current) {
-            scope.breadcrumbs.push(scope.current);
-        }
-
-        let currentEntity = scope.entity;
-        while (currentEntity.hasParent()) {
-            scope.breadcrumbs.push(currentEntity);
-            currentEntity = currentEntity.parent;
-        }
-        scope.breadcrumbs.push(currentEntity);
-        scope.breadcrumbs.reverse();
-    }
+function templateCache($templateCache) {
+    $templateCache.put(TEMPLATE_URL, template);
 }

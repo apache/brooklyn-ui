@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import angular from 'angular';
 import {Entity} from "../util/model/entity.model";
 import {D3BlueprintMgmtView} from "../util/d3-blueprint-mgmt-view";
 import {D3BlueprintLandscapeView} from "../util/d3-blueprint-landscape-view";
@@ -24,20 +25,30 @@ import {graphicalEditEntityState} from '../../views/main/graphical/edit/entity/e
 import {graphicalEditSpecState} from '../../views/main/graphical/edit/spec/edit.spec.controller';
 import {graphicalEditPolicyState} from '../../views/main/graphical/edit/policy/edit.policy.controller';
 import {graphicalEditEnricherState} from '../../views/main/graphical/edit/enricher/edit.enricher.controller';
+
+const MODULE_NAME = 'brooklyn.components.designer';
+const TEMPLATE_URL = 'blueprint-composer/component/designer/index.html';
 const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
 const TAG = 'DIRECTIVE :: DESIGNER :: ';
 
+angular.module(MODULE_NAME, [])
+    .directive('designer', ['$log', '$state', '$q', 'iconGenerator', 'catalogApi', 'blueprintService', 'brSnackbar', 'paletteDragAndDropService', designerDirective])
+    .run(['$templateCache', templateCache]);
+
+export default MODULE_NAME;
+
 export function designerDirective($log, $state, $q, iconGenerator, catalogApi, blueprintService, brSnackbar, paletteDragAndDropService) {
-    let directive = {
+    return {
         restrict: 'E',
+        templateUrl: function (tElement, tAttrs) {
+            return tAttrs.templateUrl || TEMPLATE_URL;
+        },
         scope: {
             mode: '@?',
             onSelectionChange: '<?'
         },
-        template: '',
         link: link
     };
-    return directive;
 
     function link($scope, $element) {
         let blueprintGraph = $scope.mode=='landscape' ? new D3BlueprintLandscapeView($element[0]) : new D3BlueprintMgmtView($element[0]);
@@ -237,4 +248,8 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
             }
         }
     }
+}
+
+function templateCache($templateCache) {
+    $templateCache.put(TEMPLATE_URL, '');
 }
