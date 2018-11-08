@@ -280,6 +280,9 @@ catalog-selector {
       .label {
         line-height: 2.2;
       }
+      .closer .br-icon-close-bar {
+        stroke: @brand-primary;
+      }
     }
     .deprecated-marker {
       float: right;
@@ -295,6 +298,44 @@ catalog-selector {
     }
     .palette-item-tag {
         margin-right: 4px;
+    }
+    .quick-info-title {
+        background-color: @gray-lightest;
+        border-bottom: 1px solid @popover-border-color;
+        margin-left: -15px;
+        margin-right: -15px;
+        margin-top: -10px;
+        margin-bottom: 12px;
+        padding: 8px 16px 6px 16px;
+        border-radius: 5px 5px 0 0;
+        .closer {
+            margin-top: 6px;
+        }
+    }
+    .closer {
+        width: 10px;
+        > svg { width: 10px; } 
+        cursor: pointer;
+        margin-left: 6px;
+    }
+    .quick-info-buttons {
+        border-top: 1px solid @popover-border-color;
+        margin-top: 10px;
+        padding-top: 10px;
+        display: flex;
+        div.spacer {
+            flex: 1 1 auto;
+        }
+        button {
+            padding: 6px 9px;
+            line-height: 1;
+            margin-left: 12px;
+        }
+        .select-item-button {
+            flex: 0 1 auto;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
     }
   }
 

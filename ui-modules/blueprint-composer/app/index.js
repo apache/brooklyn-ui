@@ -43,25 +43,19 @@ import paletteServiceProvider from "./components/providers/palette-service.provi
 import blueprintLoaderApiProvider from "./components/providers/blueprint-loader-api.provider";
 
 import brooklynApi from "brooklyn-ui-utils/brooklyn.api/brooklyn.api";
-import {designerDirective} from "./components/designer/designer.directive";
-import {
-    catalogSelectorDirective,
-    catalogSelectorSearchFilter,
-    catalogSelectorFiltersFilter,
-} from "./components/catalog-selector/catalog-selector.directive";
+import designer from './components/designer/designer.directive';
+import catalogSelector from './components/catalog-selector/catalog-selector.directive';
 import customActionDirective from "./components/custom-action/custom-action.directive";
 import customConfigSuggestionDropdown from "./components/custom-config-widget/suggestion-dropdown";
-import {onErrorDirective} from "./components/catalog-selector/on-error.directive";
-import {breadcrumbsDirective} from "./components/breacrumbs/breadcrumbs.directive";
-import {recursionHelperFactory} from "./components/factories/recursion-helper.factory";
-import {objectCacheFactory} from './components/factories/object-cache.factory';
-import {entityNameFilter, entityVersionFilter, entityTypesFilter} from "./components/filters/entity.filter";
-import {locationsFilter} from "./components/filters/locations.filter";
-import {blueprintServiceProvider} from "./components/providers/blueprint-service.provider";
-import {recentlyUsedServiceProvider} from "./components/providers/recently-used-service.provider";
-import {dslServiceProvider} from "./components/providers/dsl-service.provider";
-import {paletteDragAndDropServiceProvider} from "./components/providers/palette-dragndrop.provider";
-import {actionServiceProvider} from "./components/providers/action-service.provider";
+import breadcrumbs from "./components/breacrumbs/breadcrumbs.directive";
+import objectCache from './components/factories/object-cache.factory';
+import entityFilters from "./components/filters/entity.filter";
+import locationFilter from "./components/filters/locations.filter";
+import blueprintService from "./components/providers/blueprint-service.provider";
+import recentlyUsedService from "./components/providers/recently-used-service.provider";
+import dslService from "./components/providers/dsl-service.provider";
+import paletteDragAndDropService from "./components/providers/palette-dragndrop.provider";
+import actionService from "./components/providers/action-service.provider";
 import {mainState} from "./views/main/main.controller";
 import {yamlState} from "./views/main/yaml/yaml.state";
 import {graphicalState} from "./views/main/graphical/graphical.state";
@@ -76,28 +70,13 @@ import bottomSheet from "brooklyn-ui-utils/bottom-sheet/bottom-sheet";
 import stackViewer from 'angular-java-stack-viewer';
 import {EntityFamily} from "./components/util/model/entity.model";
 
-angular.module('app', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 'ui.router.state.events', brCore, 
-        brServerStatus, brAutoFocus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, 
-        brYamlEditor, brUtils, brSpecEditor, brooklynCatalogSaver, brooklynApi, bottomSheet, stackViewer, brDragndrop, 
-        customActionDirective, customConfigSuggestionDropdown, paletteApiProvider, paletteServiceProvider, blueprintLoaderApiProvider])
-    .directive('designer', ['$log', '$state', '$q', 'iconGenerator', 'catalogApi', 'blueprintService', 'brSnackbar', 'paletteDragAndDropService', designerDirective])
-    .directive('onError', onErrorDirective)
-    .directive('catalogSelector', catalogSelectorDirective)
-    .directive('breadcrumbs', breadcrumbsDirective)
-    .provider('blueprintService', blueprintServiceProvider)
-    .provider('recentlyUsedService', recentlyUsedServiceProvider)
-    .provider('dslService', dslServiceProvider)
-    .provider('paletteDragAndDropService', paletteDragAndDropServiceProvider)
-    .provider('actionService', actionServiceProvider)
+angular.module('app', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 'ui.router.state.events', brCore,
+    brServerStatus, brAutoFocus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement,
+    brYamlEditor, brUtils, brSpecEditor, brooklynCatalogSaver, brooklynApi, bottomSheet, stackViewer, brDragndrop,
+    customActionDirective, customConfigSuggestionDropdown, paletteApiProvider, paletteServiceProvider, blueprintLoaderApiProvider,
+    breadcrumbs, catalogSelector, designer, objectCache, entityFilters, locationFilter, actionService, blueprintService,
+    dslService, paletteDragAndDropService, recentlyUsedService])
     .provider('composerOverrides', composerOverridesProvider)
-    .factory('recursionHelper', ['$compile', recursionHelperFactory])
-    .factory('objectCache', ['$cacheFactory', objectCacheFactory])
-    .filter('entityName', entityNameFilter)
-    .filter('entityVersion', entityVersionFilter)
-    .filter('entityTypes', entityTypesFilter)
-    .filter('locations', locationsFilter)
-    .filter('catalogSelectorSearch', catalogSelectorSearchFilter)
-    .filter('catalogSelectorFilters', catalogSelectorFiltersFilter)
     .filter('dslParamLabel', ['$filter', dslParamLabelFilter])
     .config(['$urlRouterProvider', '$stateProvider', '$logProvider', applicationConfig])
     .config(['actionServiceProvider', actionConfig])

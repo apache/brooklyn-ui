@@ -23,10 +23,10 @@ import template from './catalog-saver.template.html';
 import modalTemplate from './catalog-saver.modal.template.html';
 import jsYaml from 'js-yaml';
 import brUtils from 'brooklyn-ui-utils/utils/general';
-import {yamlState} from "../../views/main/yaml/yaml.state";
-import {graphicalState} from "../../views/main/graphical/graphical.state";
 
 const MODULE_NAME = 'brooklyn.components.catalog-saver';
+const TEMPLATE_URL = 'blueprint-composer/component/catalog-saver/index.html';
+const TEMPLATE_MODAL_URL = 'blueprint-composer/component/catalog-saver/modal.html';
 
 const REASONS = {
     new: 0,
@@ -43,14 +43,17 @@ const TYPES = [
 
 angular.module(MODULE_NAME, [angularAnimate, uibModal, brUtils])
     .directive('catalogSaver', ['$rootScope', '$uibModal', '$injector', 'composerOverrides', saveToCatalogModalDirective])
-    .directive('catalogVersion', ['$parse', catalogVersionDirective]);
+    .directive('catalogVersion', ['$parse', catalogVersionDirective])
+    .run(['$templateCache', templateCache]);
 
 export default MODULE_NAME;
 
 export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, composerOverrides) {
     return {
         restrict: 'E',
-        template: template,
+        templateUrl: function (tElement, tAttrs) {
+            return tAttrs.templateUrl || TEMPLATE_URL;
+        },
         scope: {
             config: '='
         },
@@ -60,14 +63,12 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, co
     function link($scope, $element) {
         $scope.buttonText = $scope.config.label || ($scope.config.itemType ? `Update ${$scope.config.name || $scope.config.symbolicName}` : 'Add to catalog');
 
-        $injector.get('$templateCache').put('catalog-saver.modal.template.html', modalTemplate);
-
         $scope.activateModal = () => {
             // Override callback to update catalog configuration data in other applications
             $scope.config = (composerOverrides.updateCatalogConfig || (($scope, $element) => $scope.config))($scope, $element);
 
             let modalInstance = $uibModal.open({
-                templateUrl: 'catalog-saver.modal.template.html',
+                templateUrl: TEMPLATE_MODAL_URL,
                 size: 'save',
                 controller: ['$scope', 'blueprintService', 'paletteApi', 'brUtilsGeneral', CatalogItemModalController],
                 scope: $scope,
@@ -162,7 +163,7 @@ export function catalogVersionDirective($parse) {
         link: link
     };
 
-    function link (scope, elm, attr, ctrl) {
+    function link(scope, elm, attr, ctrl) {
         if (!ctrl) {
             return;
         }
@@ -187,4 +188,9 @@ export function catalogVersionDirective($parse) {
             return !angular.isDefined(matches) || ctrl.$isEmpty(viewValue) || viewValue.endsWith('SNAPSHOT') || force === true || matches.indexOf(viewValue) === -1;
         };
     }
+}
+
+function templateCache($templateCache) {
+    $templateCache.put(TEMPLATE_URL, template);
+    $templateCache.put(TEMPLATE_MODAL_URL, modalTemplate);
 }

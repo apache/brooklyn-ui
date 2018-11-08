@@ -88,6 +88,17 @@ export function GraphicalEditAddController($scope, $filter, $state, $stateParams
 
         return label;
     };
+    
+    this.getOnSelectText = () => {
+        switch ($scope.family) {
+            case EntityFamily.ENTITY: return "Add as child";
+            case EntityFamily.SPEC: return "Set as spec";
+            case EntityFamily.POLICY: return "Add this policy";
+            case EntityFamily.ENRICHER: return "Add this enricher";
+            case EntityFamily.LOCATION: return "Add this location";
+        }
+        return "Select";
+    };
 
     this.onTypeSelected = (type)=> {
         switch ($scope.family) {
