@@ -16,13 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import angular from 'angular';
 import {Entity, EntityFamily} from "../util/model/entity.model";
 import {Issue, ISSUE_LEVEL} from '../util/model/issue.model';
 import {Dsl} from "../util/model/dsl.model";
 import jsYaml from "js-yaml";
 import typeNotFoundIcon from "../../img/icon-not-found.svg";
 
+const MODULE_NAME = 'brooklyn.composer.service.blueprint-service';
 const TAG = 'SERVICE :: BLUEPRINT :: ';
+
+angular.module(MODULE_NAME, [])
+    .provider('blueprintService', blueprintServiceProvider);
+
+export default MODULE_NAME;
+
 export const RESERVED_KEYS = ['name', 'location', 'locations', 'type', 'services', 'brooklyn.config', 'brooklyn.children', 'brooklyn.enrichers', 'brooklyn.policies'];
 export const DSL_ENTITY_SPEC = '$brooklyn:entitySpec';
 

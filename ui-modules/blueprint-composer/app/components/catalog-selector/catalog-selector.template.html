@@ -92,7 +92,7 @@
                 </ul>
               </span>
             </div>
-            <ng-include src="customSubHeadTemplateName"/>
+            <ng-include src="templateUrls.subhead"/>
         </div>
       </div>
 
@@ -110,7 +110,7 @@
                         <h3>{{ getEntityNameForPalette(item, item | entityName) }}</h3>
                     </div>
                     <i class="fa fa-info-circle"
-                        uib-popover-template="'QuickInfoTemplate.html'"
+                        uib-popover-template="'blueprint-composer/component/catalog-selector/quick-info.html'"
                         ng-click="onClickItem(item, true, $event)"
                         popover-is-open="popover == item && popoverVisible"
                         popover-placement="right" popover-trigger="'none'"
@@ -131,7 +131,7 @@
                         <h3>{{freeFormTile | entityName}}</h3>
                     </div>
                     <i class="fa fa-info-circle"
-                        uib-popover-template="'QuickInfoTemplate.html'"
+                        uib-popover-template="'blueprint-composer/component/catalog-selector/quick-info.html'"
                         popover-is-open="popover == freeFormTile && popoverVisible"
                         popover-placement="right-top" popover-trigger="'none'"
                         popover-class="catalog-selector-popover" popover-append-to-body="true"
@@ -146,13 +146,13 @@
 
         <div class="catalog-palette-footer">
             <div uib-pagination total-items="searchedItems.length" items-per-page="pagination.itemsPerPage" ng-model="pagination.page" boundary-link-numbers="true" rotate="false" max-size="4" ng-show="searchedItems.length > pagination.itemsPerPage" class="pagination-sm pull-right"></div>
-            <ng-include src="customFooterTemplateName"/>
+            <ng-include src="templateUrls.footer"/>
         </div>
     </div>
 </div>
 
 <!-- QUICK INFO TEMPLATE :: START-->
-<script type="text/ng-template" id="QuickInfoTemplate.html">
+<script type="text/ng-template" id="blueprint-composer/component/catalog-selector/quick-info.html">
     <div class="palette-item-quick-info">
         <div class="quick-info-title">{{ popover | entityName }}
             <br-svg type="close" class="pull-right closer" ng-click="closePopover()"></br-svg>

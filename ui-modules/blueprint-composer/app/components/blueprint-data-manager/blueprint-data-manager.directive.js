@@ -16,15 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import template from "./blueprint-data-manager.template.html";
-import {saveAs} from "file-saver/FileSaver";
-const VALID_FILENAME_REGEX = /^.*\.ya?ml$/
-const FILETYPE_TOKEN_REGEX = /^.*\.(.*)$/
+import angular from 'angular';
+import template from './blueprint-data-manager.template.html';
+import {saveAs} from 'file-saver/FileSaver';
+
+const MODULE_NAME = 'brooklyn.components.blueprint-data-manager';
+const TEMPLATE_URL = 'blueprint-composer/component/blueprint-data-manager/index.html';
+const VALID_FILENAME_REGEX = /^.*\.ya?ml$/;
+const FILETYPE_TOKEN_REGEX = /^.*\.(.*)$/;
+
+angular.module(MODULE_NAME, [])
+    .directive('blueprintDataManager', blueprintDataManagerDirective)
+    .run(['$templateCache', templateCache]);
+
+export default MODULE_NAME;
 
 export function blueprintDataManagerDirective() {
     return {
         restrict: 'E',
-        template: template,
+        templateUrl: function(tElement, tAttrs) {
+            return tAttrs.templateUrl || TEMPLATE_URL;
+        },
         controller: ['$rootScope', '$scope', '$element', '$document', 'blueprintService', 'brSnackbar', controller]
     };
 
@@ -88,7 +100,7 @@ export function blueprintDataManagerDirective() {
         function readFile(file) {
             if (VALID_FILENAME_REGEX.test(file.name)) {
                 var reader = new FileReader();
-                reader.addEventListener("load", function () {
+                reader.addEventListener('load', function () {
                     try {
                         var yaml = reader.result;
                         blueprintService.setFromYaml(yaml, true);
@@ -117,4 +129,8 @@ export function blueprintDataManagerDirective() {
             }, false);
         });
     }
+}
+
+function templateCache($templateCache) {
+    $templateCache.put(TEMPLATE_URL, template);
 }

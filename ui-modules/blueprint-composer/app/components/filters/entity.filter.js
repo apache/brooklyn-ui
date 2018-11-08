@@ -16,6 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import angular from 'angular';
+
+const MODULE_NAME = 'brooklyn.filters.entity';
+
+angular.module(MODULE_NAME, [])
+    .filter('entityName', entityNameFilter)
+    .filter('entityVersion', entityVersionFilter)
+    .filter('entityTypes', entityTypesFilter);
+
+export default MODULE_NAME;
+
 export function entityNameFilter() {
     return function (input) {
         var result = input ? (input.displayName || input.name || input.symbolicName || input.type || null) : null;

@@ -16,6 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import angular from 'angular';
+
+const MODULE_NAME = 'brooklyn.factory.object-cache';
+
+angular.module(MODULE_NAME, [])
+    .factory('objectCache', ['$cacheFactory', objectCacheFactory]);
+
+export default MODULE_NAME;
+
 export function objectCacheFactory($cacheFactory) {
     return $cacheFactory('blueprint-composer');
 }

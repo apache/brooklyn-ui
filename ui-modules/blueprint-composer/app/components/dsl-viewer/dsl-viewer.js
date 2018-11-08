@@ -21,19 +21,23 @@ import template from './dsl-viewer.template.html';
 import {KIND} from '../util/model/dsl.model';
 
 const MODULE_NAME = 'brooklyn.components.dsl-viewer';
+const TEMPLATE_URL = 'blueprint-composer/component/dsl-viewer/index.html';
 
 angular.module(MODULE_NAME, [])
-    .directive('dslViewer', dslViewerDirective);
+    .directive('dslViewer', dslViewerDirective)
+    .run(['$templateCache', templateCache]);
 
 export default MODULE_NAME;
 
 export function dslViewerDirective() {
     return {
         restrict: 'E',
+        templateUrl: function (tElement, tAttrs) {
+            return tAttrs.templateUrl || TEMPLATE_URL;
+        },
         scope: {
             dsl: '<'
         },
-        template: template,
         link: link
     };
 
@@ -63,4 +67,8 @@ export function dslViewerDirective() {
             }
         }
     }
+}
+
+function templateCache($templateCache) {
+    $templateCache.put(TEMPLATE_URL, template);
 }
