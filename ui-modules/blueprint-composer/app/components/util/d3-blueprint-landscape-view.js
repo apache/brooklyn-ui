@@ -27,7 +27,7 @@ export function D3BlueprintLandscapeView(container) {
     function updateLayout(blueprint, relationships, d3data) {
         // TODO new layout will be needed to give fill width
         let tree = d3.tree()
-            .nodeSize([bp.config.child.width * 3, bp.config.child.height * 3])
+            .nodeSize([bp.config.child.width * 2, bp.config.child.height * 3])
             .separation((right, left)=> {
                 let maxColumnsBeforeExpand = 2;
                 let adjuncts = bp.getImportantAdjuncts(left).length;
@@ -99,9 +99,10 @@ export function D3BlueprintLandscapeView(container) {
         
         child: {
             radius: childRadius,
-            width: 200,
+            width: 250,
             height: 100,
             imgSize: 96,
+            maxNameLength: 15,
             
             shape: tagWithAttrs('rect', {
                     x: (d) => -width(d)/2,
@@ -112,11 +113,18 @@ export function D3BlueprintLandscapeView(container) {
                     ry: 15,
                     class: (d)=>(`node-cluster node-cluster-${d}`)
                 }),
+            title: tagWithAttrs('text', {
+                    class: 'node-name',
+                    width: (d) => width(d) - bp.config.child.imgSize - 16,
+                    height,
+                    x: 40,
+                    y: 0,
+                }),
             icon: tagWithAttrs('image', {
                     class: 'node-icon',
                     width: getPropertyFn('imgSize'),
                     height: getPropertyFn('imgSize'),
-                    x: (d) => -width(d)/2 + 10,
+                    x: (d) => -width(d)/2 + 4,
                     y: (d) => -getPropertyFn('imgSize')(d)/2,
                     opacity: 0
                 }),
@@ -136,14 +144,14 @@ export function D3BlueprintLandscapeView(container) {
         
         dropzonePrev: {
             shape: tagWithAttrs('circle', {
-                    cx: -3*childRadius,
+                    cx: -4*childRadius,
                     r: 3/5 * childRadius,
                     class: 'dropzone dropzone-prev'
                 }),
         },
         dropzoneNext: {
             shape: tagWithAttrs('circle', {
-                    cx: 3*childRadius,
+                    cx: 4*childRadius,
                     r: 3/5 * childRadius,
                     class: 'dropzone dropzone-next'
                 }),

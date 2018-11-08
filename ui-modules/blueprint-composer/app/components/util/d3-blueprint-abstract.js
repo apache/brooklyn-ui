@@ -473,6 +473,11 @@ export function D3BlueprintAbstract(container) {
             .duration(config.global.transitionDuration)
             .attr('opacity', (d)=>(d.data.hasIcon() ? 1 : 0))
             .attr('xlink:href', (d)=>(d.data.icon));
+        nodeData.filter(isChildNode).select('.node-entity text')
+            .text(trimChildNodeText)
+            .transition()
+            .duration(config.global.transitionDuration)
+            .text(trimChildNodeText);
 
         // Draw child nodes
         appendElements(entity.filter(isChildNode).selectAll('circle').data([2, 1, 0]).enter(), config.child);
@@ -848,8 +853,18 @@ export function D3BlueprintAbstract(container) {
             return 'New application';
         } else {
             let name = d.data.metadata.get('name');
-            return name.length > config.root.maxNameLength ? name.substring(0, config.root.maxNameLength) + '...' : name
+            return name.length > config.root.maxNameLength ? name.substring(0, config.root.maxNameLength-2) + '...' : name
         }
+    }
+
+    let trimChildNodeText = bp.trimChildNodeText = (d) => {
+        var name;
+        if (!d.data.metadata.has('name') || d.data.metadata.get('name').length === 0) {
+            name = d.data.metadata.get('type');
+        } else {
+            name = d.data.metadata.get('name');
+        }
+        return name.length > config.child.maxNameLength ? name.substring(0, config.child.maxNameLength-2) + '...' : name
     }
 
     let isRootNode = bp.isRootNode = (d) => d.depth === 0;
