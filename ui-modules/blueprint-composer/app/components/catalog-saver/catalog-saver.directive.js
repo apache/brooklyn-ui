@@ -42,20 +42,20 @@ const TYPES = [
 ];
 
 angular.module(MODULE_NAME, [angularAnimate, uibModal, brUtils])
-    .directive('catalogSaver', ['$rootScope', '$uibModal', '$injector', 'composerOverrides', saveToCatalogModalDirective])
+    .directive('catalogSaver', ['$rootScope', '$uibModal', '$injector', 'composerOverrides', 'blueprintService', saveToCatalogModalDirective])
     .directive('catalogVersion', ['$parse', catalogVersionDirective])
     .run(['$templateCache', templateCache]);
 
 export default MODULE_NAME;
 
-export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, composerOverrides) {
+export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, composerOverrides, blueprintService) {
     return {
         restrict: 'E',
         templateUrl: function (tElement, tAttrs) {
             return tAttrs.templateUrl || TEMPLATE_URL;
         },
         scope: {
-            config: '='
+            config: '=',
         },
         link: link
     };
@@ -64,44 +64,38 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, co
         $scope.buttonText = $scope.config.label || ($scope.config.itemType ? `Update ${$scope.config.name || $scope.config.symbolicName}` : 'Add to catalog');
 
         $scope.activateModal = () => {
-            function injectorGet(reference) { return $element.injector().get(reference); }
-            let blueprintService = injectorGet('blueprintService');
-
             let entity = blueprintService.get();
-            let metadata = blueprintService.entityHasMetadata(entity) ? blueprintService.getEntityMetadata(entity) : { };
-            let config = $scope.$parent.$parent.vm.saveToCatalogConfig;
+            let metadata = blueprintService.entityHasMetadata(entity) ? blueprintService.getEntityMetadata(entity) : new Map();
 
             // Reset the config values if this is not an update
-            $scope.isUpdate = Object.keys($scope.config).length > 1;
+            $scope.isUpdate = Object.keys($scope.config).length > ($scope.config.label ? 1 : 0);
             if (!$scope.isUpdate) {
-                config = {
-                    itemType: 'entity',
-                };
+                $scope.config.itemType = 'template';
             }
 
             // Set various properties from the blueprint entity data
-            if (!config.version && (entity.hasVersion() || metadata.has('version'))) {
-                config.version = entity.version || metadata.get('version');
+            if (!$scope.config.version && (entity.hasVersion() || metadata.has('version'))) {
+                $scope.config.version = entity.version || metadata.get('version');
             }
-            if (!config.iconUrl && (entity.hasIcon() || metadata.has('iconUrl'))) {
-                config.iconUrl = entity.icon || metadata.get('iconUrl');
+            if (!$scope.config.iconUrl && (entity.hasIcon() || metadata.has('iconUrl'))) {
+                $scope.config.iconUrl = entity.icon || metadata.get('iconUrl');
             }
-            if (!config.name && entity.hasName()) {
-                config.name = entity.name;
+            if (!$scope.config.name && entity.hasName()) {
+                $scope.config.name = entity.name;
             }
-            if (!config.symbolicName && (entity.hasId() || metadata.has('id'))) {
-                config.symbolicName = entity.id || metadata.get('id');
+            if (!$scope.config.symbolicName && (entity.hasId() || metadata.has('id'))) {
+                $scope.config.symbolicName = entity.id || metadata.get('id');
             }
-            if (!config.bundle) {
-                let bundle = config.symbolicName || config.name || 'untitled';
-                config.bundle = bundle.split(/[^-a-zA-Z0-9.,_]+/).join('-').toLowerCase();
-                if (!config.symbolicName) {
-                    config.symbolicName = bundle;
+            if (!$scope.config.bundle) {
+                let bundle = $scope.config.symbolicName || $scope.config.name || 'untitled';
+                $scope.config.bundle = bundle.split(/[^-a-zA-Z0-9._]+/).join('-').toLowerCase();
+                if (!$scope.config.symbolicName) {
+                    $scope.config.symbolicName = $scope.config.bundle;
                 }
             }
 
             // Override this callback to update configuration data elsewhere
-            $scope.config = (composerOverrides.updateCatalogConfig || ((config, $element) => config))(config, $element);
+            $scope.config = (composerOverrides.updateCatalogConfig || ((config, $element) => config))($scope.config, $element);
 
             let modalInstance = $uibModal.open({
                 templateUrl: TEMPLATE_MODAL_URL,
