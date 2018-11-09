@@ -42,20 +42,20 @@ const TYPES = [
 ];
 
 angular.module(MODULE_NAME, [angularAnimate, uibModal, brUtils])
-    .directive('catalogSaver', ['$rootScope', '$uibModal', '$injector', 'composerOverrides', saveToCatalogModalDirective])
+    .directive('catalogSaver', ['$rootScope', '$uibModal', '$injector', 'composerOverrides', 'blueprintService', saveToCatalogModalDirective])
     .directive('catalogVersion', ['$parse', catalogVersionDirective])
     .run(['$templateCache', templateCache]);
 
 export default MODULE_NAME;
 
-export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, composerOverrides) {
+export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, composerOverrides, blueprintService) {
     return {
         restrict: 'E',
         templateUrl: function (tElement, tAttrs) {
             return tAttrs.templateUrl || TEMPLATE_URL;
         },
         scope: {
-            config: '='
+            config: '=',
         },
         link: link
     };
@@ -64,8 +64,38 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, co
         $scope.buttonText = $scope.config.label || ($scope.config.itemType ? `Update ${$scope.config.name || $scope.config.symbolicName}` : 'Add to catalog');
 
         $scope.activateModal = () => {
-            // Override callback to update catalog configuration data in other applications
-            $scope.config = (composerOverrides.updateCatalogConfig || (($scope, $element) => $scope.config))($scope, $element);
+            let entity = blueprintService.get();
+            let metadata = blueprintService.entityHasMetadata(entity) ? blueprintService.getEntityMetadata(entity) : new Map();
+
+            // Reset the config values if this is not an update
+            $scope.isUpdate = Object.keys($scope.config).length > ($scope.config.label ? 1 : 0);
+            if (!$scope.isUpdate) {
+                $scope.config.itemType = 'template';
+            }
+
+            // Set various properties from the blueprint entity data
+            if (!$scope.config.version && (entity.hasVersion() || metadata.has('version'))) {
+                $scope.config.version = entity.version || metadata.get('version');
+            }
+            if (!$scope.config.iconUrl && (entity.hasIcon() || metadata.has('iconUrl'))) {
+                $scope.config.iconUrl = entity.icon || metadata.get('iconUrl');
+            }
+            if (!$scope.config.name && entity.hasName()) {
+                $scope.config.name = entity.name;
+            }
+            if (!$scope.config.symbolicName && (entity.hasId() || metadata.has('id'))) {
+                $scope.config.symbolicName = entity.id || metadata.get('id');
+            }
+            if (!$scope.config.bundle) {
+                let bundle = $scope.config.symbolicName || $scope.config.name || 'untitled';
+                $scope.config.bundle = bundle.split(/[^-a-zA-Z0-9._]+/).join('-').toLowerCase();
+                if (!$scope.config.symbolicName) {
+                    $scope.config.symbolicName = $scope.config.bundle;
+                }
+            }
+
+            // Override this callback to update configuration data elsewhere
+            $scope.config = (composerOverrides.updateCatalogConfig || ((config, $element) => config))($scope.config, $element);
 
             let modalInstance = $uibModal.open({
                 templateUrl: TEMPLATE_MODAL_URL,
@@ -98,15 +128,14 @@ export function CatalogItemModalController($scope, blueprintService, paletteApi,
         view: VIEWS.form,
         saving: false,
         force: false,
-        isUpdate: Object.keys($scope.config).length > 0
     };
 
     $scope.getTitle = () => {
         switch ($scope.state.view) {
             case VIEWS.form:
-                return $scope.state.isUpdate ? `Update ${$scope.config.name || $scope.config.symbolicName}` : 'Add to catalog';
+                return $scope.isUpdate ? `Update ${$scope.config.name || $scope.config.symbolicName}` : 'Add to catalog';
             case VIEWS.saved:
-                return `${$scope.config.name || $scope.config.symbolicName} ${$scope.state.isUpdate ? 'updated' : 'saved'}`;
+                return `${$scope.config.name || $scope.config.symbolicName} ${$scope.isUpdate ? 'updated' : 'saved'}`;
         }
     };
 

@@ -23,17 +23,17 @@
 
 <div class="modal-body add-to-catalog-modal">
     <form ng-show="state.view === VIEWS.form" name="form" novalidate>
-        <div class="form-group" ng-class="{'has-error': form.bundle.$invalid}">
-            <label class="control-label">Bundle ID</label>
-            <div class="input-group">
-                <span class="input-group-addon">catalog-bom-</span>
-                <input ng-model="config.bundle" ng-disabled="state.saving" class="form-control" placeholder="E.g my-bundle" name="bundle" required ng-pattern="state.pattern" autofocus />
-            </div>
-            <p class="help-block" ng-show="form.bundle.$invalid">
-                <span ng-if="form.bundle.$error.required">You must specify a bundle ID</span>
-                <span ng-if="form.bundle.$error.pattern">The bundle ID can contains only letters, numbers as well a the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
-            </p>
+
+        <div class="form-group">
+            <label class="control-label">Blueprint display name</label>
+            <input ng-model="config.name" ng-disabled="state.saving" class="form-control" name="name" type="text" />
         </div>
+
+        <div class="form-group">
+            <label class="control-label">Blueprint description</label>
+            <textarea ng-model="config.description" ng-disabled="state.saving" class="form-control" name="description" rows="3"></textarea>
+        </div>
+
         <div class="form-group" ng-class="{'has-error': form.version.$invalid}">
             <label class="control-label">Version</label>
             <div class="input-group">
@@ -51,35 +51,42 @@
                 <span ng-if="form.version.$error.exist">This version has already been used</span>
             </p>
         </div>
-        <div class="form-group" ng-class="{'has-error': form.symbolicName.$invalid}">
-            <label class="control-label">Blueprint symbolic name</label>
-            <input ng-model="config.symbolicName" ng-disabled="state.saving" class="form-control" placeholder="E.g my-catalog-id" name="symbolicName" required ng-pattern="state.pattern" autofocus />
-            <p class="help-block" ng-show="form.symbolicName.$invalid">
-                <span ng-if="form.symbolicName.$error.required">You must specify a blueprint symbolic name</span>
-                <span ng-if="form.symbolicName.$error.pattern">The blueprint symbolic name can contains only letters, numbers as well a the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
-            </p>
-        </div>
 
-        <div class="form-group" ng-class="{'has-error': form.itemType.$invalid}">
-            <label class="control-label">Blueprint type</label>
-            <select class="form-control" name="itemType" ng-options="type.id as type.label for type in TYPES" ng-model="config.itemType" ng-disabled="state.saving" required >
-            </select>
-            <p class="help-block" ng-show="form.itemType.$invalid">
-                <span ng-if="form.itemType.$error.required">You must specify a blueprint type</span>
-            </p>
-        </div>
-        <div class="form-group">
-            <label class="control-label">Blueprint display name</label>
-            <input ng-model="config.name" ng-disabled="state.saving" class="form-control" name="name" type="text" />
-        </div>
-        <div class="form-group">
-            <label class="control-label">Blueprint description</label>
-            <textarea ng-model="config.description" ng-disabled="state.saving" class="form-control" name="description" rows="3"></textarea>
-        </div>
-        <div class="form-group">
-            <label class="control-label">Blueprint icon url</label>
-            <input ng-model="config.iconUrl" ng-disabled="state.saving" class="form-control" name="iconUrl" type="text" />
-        </div>
+        <br-collapsible heading="Advanced">
+            <div class="form-group" ng-class="{'has-error': form.bundle.$invalid}">
+                <label class="control-label">Bundle ID</label>
+                <div class="input-group">
+                    <span class="input-group-addon">catalog-bom-</span>
+                    <input ng-model="config.bundle" ng-disabled="state.saving" class="form-control" placeholder="E.g my-bundle" name="bundle" required ng-pattern="state.pattern" autofocus />
+                </div>
+                <p class="help-block" ng-show="form.bundle.$invalid">
+                    <span ng-if="form.bundle.$error.required">You must specify a bundle ID</span>
+                    <span ng-if="form.bundle.$error.pattern">The bundle ID can contains only letters, numbers as well a the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
+                </p>
+            </div>
+
+            <div class="form-group" ng-class="{'has-error': form.symbolicName.$invalid}">
+                <label class="control-label">Blueprint symbolic name</label>
+                <input ng-model="config.symbolicName" ng-disabled="state.saving" class="form-control" placeholder="E.g my-catalog-id" name="symbolicName" required ng-pattern="state.pattern" autofocus />
+                <p class="help-block" ng-show="form.symbolicName.$invalid">
+                    <span ng-if="form.symbolicName.$error.required">You must specify a blueprint symbolic name</span>
+                    <span ng-if="form.symbolicName.$error.pattern">The blueprint symbolic name can contains only letters, numbers as well a the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
+                </p>
+            </div>
+
+            <div class="form-group" ng-class="{'has-error': form.itemType.$invalid}">
+                <label class="control-label">Blueprint type</label>
+                <select class="form-control" name="itemType" ng-options="type.id as type.label for type in TYPES" ng-model="config.itemType" ng-disabled="state.saving" required >
+                </select>
+                <p class="help-block" ng-show="form.itemType.$invalid">
+                    <span ng-if="form.itemType.$error.required">You must specify a blueprint type</span>
+                </p>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Blueprint icon url</label>
+                <input ng-model="config.iconUrl" ng-disabled="state.saving" class="form-control" name="iconUrl" type="text" />
+            </div>
+        </br-collapsible>
     </form>
 
     <div class="text-center" ng-show="state.view === VIEWS.saved">
