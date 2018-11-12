@@ -44,6 +44,7 @@ const TYPES = [
 angular.module(MODULE_NAME, [angularAnimate, uibModal, brUtils])
     .directive('catalogSaver', ['$rootScope', '$uibModal', '$injector', 'composerOverrides', 'blueprintService', saveToCatalogModalDirective])
     .directive('catalogVersion', ['$parse', catalogVersionDirective])
+    .filter('bundlize', bundlizeProvider)
     .run(['$templateCache', templateCache]);
 
 export default MODULE_NAME;
@@ -87,10 +88,9 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, co
                 $scope.config.symbolicName = entity.id || metadata.get('id');
             }
             if (!$scope.config.bundle) {
-                let bundle = $scope.config.symbolicName || $scope.config.name || 'untitled';
-                $scope.config.bundle = bundle.split(/[^-a-zA-Z0-9._]+/).join('-').toLowerCase();
-                if (!$scope.config.symbolicName) {
-                    $scope.config.symbolicName = $scope.config.bundle;
+                // NB: when editing a bundle this will already be set
+                if ($scope.config.symbolicName) {
+                    $scope.config.bundle = $scope.config.symbolicName;
                 }
             }
 
@@ -133,9 +133,9 @@ export function CatalogItemModalController($scope, blueprintService, paletteApi,
     $scope.getTitle = () => {
         switch ($scope.state.view) {
             case VIEWS.form:
-                return $scope.isUpdate ? `Update ${$scope.config.name || $scope.config.symbolicName}` : 'Add to catalog';
+                return $scope.isUpdate ? `Update ${$scope.config.name || $scope.config.symbolicName || 'blueprint'}` : 'Add to catalog';
             case VIEWS.saved:
-                return `${$scope.config.name || $scope.config.symbolicName} ${$scope.isUpdate ? 'updated' : 'saved'}`;
+                return `${$scope.config.name || $scope.config.symbolicName || 'Blueprint'} ${$scope.isUpdate ? 'updated' : 'saved'}`;
         }
     };
 
@@ -160,10 +160,21 @@ export function CatalogItemModalController($scope, blueprintService, paletteApi,
     function createBom() {
         let blueprint = blueprintService.getAsJson();
 
+        let bundleBase = $scope.config.bundle || bundlize($scope.config.name);
+        let bundleId = $scope.config.symbolicName || bundlize($scope.config.name);
+        if (!bundleBase || !bundleId) {
+            throw "Either display name must be set of bundle and symbolic name explicitly set";  
+        }
+        
         let bomItem = {
-            id: $scope.config.symbolicName,
+            id: bundleId,
             itemType: $scope.config.itemType,
             item: blueprint
+        };
+        let bomCatalogYaml = {
+            bundle: `catalog-bom-${bundleBase}`,
+            version: $scope.config.version,
+            items: [ bomItem ]
         };
         if (brUtilsGeneral.isNonEmpty($scope.config.name)) {
             bomItem.name = $scope.config.name;
@@ -174,14 +185,8 @@ export function CatalogItemModalController($scope, blueprintService, paletteApi,
         if (brUtilsGeneral.isNonEmpty($scope.config.iconUrl)) {
             bomItem.iconUrl = $scope.config.iconUrl;
         }
-
-        return jsYaml.dump({
-            'brooklyn.catalog': {
-                bundle: `catalog-bom-${$scope.config.bundle}`,
-                version: $scope.config.version,
-                items: [bomItem]
-            }
-        });
+        
+        return jsYaml.dump({ 'brooklyn.catalog': bomCatalogYaml });
     }
 }
 
@@ -223,3 +228,7 @@ function templateCache($templateCache) {
     $templateCache.put(TEMPLATE_URL, template);
     $templateCache.put(TEMPLATE_MODAL_URL, modalTemplate);
 }
+
+var bundlize = (input) => input && input.split(/[^a-zA-Z0-9]+/).filter(x => x).join('-').toLowerCase();
+function bundlizeProvider() { return bundlize; }
+    
