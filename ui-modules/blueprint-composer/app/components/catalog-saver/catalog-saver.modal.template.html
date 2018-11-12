@@ -72,20 +72,24 @@
                     <span ng-if="form.symbolicName.$error.required">You must specify a blueprint symbolic name</span>
                     <span ng-if="form.symbolicName.$error.pattern">The blueprint symbolic name can contains only letters, numbers as well a the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
                 </p>
-            </div>>
+            </div>
 
             <div class="form-group">
                 <label class="control-label">Blueprint type</label>
                 <div class="checkbox">
                     <label>
-                        <input ng-model="config.template" ng-disabled="state.saving" name="template" type="checkbox" ng-change="config.template && (config.entity = !config.template)" />
-                        Save this as a template displayable in quick-launch
+                        <input ng-model="config.itemType" ng-disabled="state.saving" name="itemType" type="radio" value="template" />
+                        Template
+                        <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                           uib-popover="Save as 'template' which can be used as an editable starting point for other blueprints or quick-launched directly"></i>
                     </label>
                 </div>
                 <div class="checkbox">
                     <label>
-                        <input ng-model="config.entity" ng-disabled="state.saving" name="entity" type="checkbox" ng-change="config.entity && (config.template = !config.entity)" />
-                        Store this blueprint as an extension to the referenced entities
+                        <input ng-model="config.itemType" ng-disabled="state.saving" name="itemType" type="radio" value="entity" />
+                        Entity
+                        <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                           uib-popover="Save as a new 'entity' type which can be used in blueprints"></i>
                     </label>
                 </div>
             </div>
