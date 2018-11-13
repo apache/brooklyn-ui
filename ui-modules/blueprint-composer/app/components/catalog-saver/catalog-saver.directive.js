@@ -100,7 +100,7 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, co
             let modalInstance = $uibModal.open({
                 templateUrl: TEMPLATE_MODAL_URL,
                 size: 'save',
-                controller: ['$scope', 'blueprintService', 'paletteApi', 'brUtilsGeneral', CatalogItemModalController],
+                controller: ['$scope', '$filter', 'blueprintService', 'paletteApi', 'brUtilsGeneral', CatalogItemModalController],
                 scope: $scope,
             });
 
@@ -119,7 +119,7 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, co
     }
 }
 
-export function CatalogItemModalController($scope, blueprintService, paletteApi, brUtilsGeneral) {
+export function CatalogItemModalController($scope, $filter, blueprintService, paletteApi, brUtilsGeneral) {
     $scope.REASONS = REASONS;
     $scope.VIEWS = VIEWS;
     $scope.TYPES = TYPES;
@@ -160,8 +160,8 @@ export function CatalogItemModalController($scope, blueprintService, paletteApi,
     function createBom() {
         let blueprint = blueprintService.getAsJson();
 
-        let bundleBase = $scope.config.bundle || bundlize($scope.config.name);
-        let bundleId = $scope.config.symbolicName || bundlize($scope.config.name);
+        let bundleBase = $scope.config.bundle || $filter('bundlize')($scope.config.name);
+        let bundleId = $scope.config.symbolicName || $filter('bundlize')($scope.config.name);
         if (!bundleBase || !bundleId) {
             throw "Either display name must be set of bundle and symbolic name explicitly set";  
         }
@@ -229,6 +229,6 @@ function templateCache($templateCache) {
     $templateCache.put(TEMPLATE_MODAL_URL, modalTemplate);
 }
 
-var bundlize = (input) => input && input.split(/[^a-zA-Z0-9]+/).filter(x => x).join('-').toLowerCase();
-function bundlizeProvider() { return bundlize; }
-    
+function bundlizeProvider() { 
+    return (input) => input && input.split(/[^a-zA-Z0-9]+/).filter(x => x).join('-').toLowerCase(); 
+}

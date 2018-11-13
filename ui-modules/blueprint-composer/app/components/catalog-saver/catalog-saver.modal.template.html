@@ -60,7 +60,7 @@
                 <label class="control-label">Bundle ID</label>
                 <div class="input-group">
                     <span class="input-group-addon">catalog-bom-</span>
-                    <input ng-model="config.bundle" ng-disabled="state.saving" class="form-control" name="bundle" ng-pattern="state.pattern" autofocus placeholder="{{ config.name | bundlize }}"/>
+                    <input ng-model="config.bundle" ng-disabled="state.saving" class="form-control" name="bundle" ng-pattern="state.pattern" autofocus placeholder="{{ (config.name | bundlize) || 'E.g. my-bundle-id' }}"/>
                 </div>
                 <p class="help-block" ng-show="form.bundle.$invalid">
                     <span ng-if="form.bundle.$error.pattern">The bundle ID can contains only letters, numbers as well a the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
@@ -69,7 +69,7 @@
 
             <div class="form-group" ng-class="{'has-error': form.symbolicName.$invalid}">
                 <label class="control-label">Blueprint symbolic name</label>
-                <input ng-model="config.symbolicName" ng-disabled="state.saving" class="form-control" name="symbolicName" ng-pattern="state.pattern" autofocus placeholder="{{ config.name | bundlize }}"/>
+                <input ng-model="config.symbolicName" ng-disabled="state.saving" class="form-control" name="symbolicName" ng-pattern="state.pattern" autofocus placeholder="{{ (config.name | bundlize) || 'E.g. my-catalog-id' }}"/>
                 <p class="help-block" ng-show="form.symbolicName.$invalid">
                     <span ng-if="form.symbolicName.$error.pattern">The blueprint symbolic name can contains only letters, numbers as well a the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
                 </p>
