@@ -165,7 +165,6 @@ export function CatalogItemModalController($scope, blueprintService, paletteApi,
             itemType: $scope.config.itemType,
             item: blueprint
         };
-
         if (brUtilsGeneral.isNonEmpty($scope.config.name)) {
             bomItem.name = $scope.config.name;
         }
