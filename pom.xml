@@ -29,9 +29,9 @@
              we require that brooklyn-server is built first (this is needed anyway for the modularity java code) -->
     </parent>
 
-    <groupId>org.apache.brooklyn.ui</groupId>
+    <groupId>com.usharesoft.brooklyn.ui</groupId>
     <artifactId>brooklyn-ui-parent</artifactId>
-    <version>${revision}</version>
+    <version>0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Brooklyn UI :: Parent</name>
 
@@ -95,14 +95,13 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
-        <revision>1.0.0-USS-1.0-SNAPSHOT</revision>
         <brooklyn.ui.brand.dir>../branding/uss</brooklyn.ui.brand.dir><!-- empty string not allowed by npm plugin -->
-        <brooklyn.ui.version>${brooklyn.version}</brooklyn.ui.version><!-- this is intended to be overridden by branded projects -->
+        <brooklyn.ui.version>${project.version}</brooklyn.ui.version><!-- this is intended to be overridden by branded projects -->
         <brooklyn.ui.modules.version>${brooklyn.ui.version}</brooklyn.ui.modules.version>
         <brooklyn.ui.modularity.version>${brooklyn.ui.version}</brooklyn.ui.modularity.version><!-- this can be set different to ensure correct references if branded project is only rebuilding modules -->
         <assertj.version>2.2.0</assertj.version>
         <brooklyn.version>1.0.0-M1</brooklyn.version><!-- BROOKLYN_VERSION -->
-        <build.version>${revision}</build.version>
+        <build.version>${project.version}</build.version>
         <build.name>Apache Brooklyn</build.name>
         <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
 

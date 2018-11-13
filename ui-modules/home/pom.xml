@@ -24,8 +24,8 @@
          
     <parent>
         <artifactId>brooklyn-ui-modules-parent</artifactId>
-        <groupId>org.apache.brooklyn.ui.modules</groupId>
-        <version>${revision}</version>
+        <groupId>com.usharesoft.brooklyn.ui.modules</groupId>
+        <version>0.1-SNAPSHOT</version>
     </parent>
     
     <artifactId>brooklyn-ui-home</artifactId>

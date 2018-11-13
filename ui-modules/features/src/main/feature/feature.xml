@@ -17,7 +17,7 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<features xmlns="http://karaf.apache.org/xmlns/features/v1.3.0" name="org.apache.brooklyn.ui.modules.brooklyn-ui-modules-${project.version}">
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.3.0" name="com.usharesoft.brooklyn.ui.modules.brooklyn-ui-modules-${project.version}">
 
     <!-- do NOT set the repo; it forces other items to come from this version, which we don't want 
          if are installing a custom KAR for the UI Modules (wars) on top of a release version of Brooklyn;
