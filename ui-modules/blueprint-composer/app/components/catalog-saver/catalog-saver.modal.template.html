@@ -75,14 +75,26 @@
                 </p>
             </div>
 
-            <div class="form-group" ng-class="{'has-error': form.itemType.$invalid}">
+            <div class="form-group">
                 <label class="control-label">Blueprint type</label>
-                <select class="form-control" name="itemType" ng-options="type.id as type.label for type in TYPES" ng-model="config.itemType" ng-disabled="state.saving" required >
-                </select>
-                <p class="help-block" ng-show="form.itemType.$invalid">
-                    <span ng-if="form.itemType.$error.required">You must specify a blueprint type</span>
-                </p>
+                <div class="checkbox">
+                    <label>
+                        <input ng-model="config.itemType" ng-disabled="state.saving" name="itemType" type="radio" value="template" />
+                        Template
+                        <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                           uib-popover="Save as 'template' which can be used as an editable starting point for other blueprints or quick-launched directly"></i>
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input ng-model="config.itemType" ng-disabled="state.saving" name="itemType" type="radio" value="entity" />
+                        Entity
+                        <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                           uib-popover="Save as a new 'entity' type which can be used in blueprints"></i>
+                    </label>
+                </div>
             </div>
+
             <div class="form-group">
                 <label class="control-label">Blueprint icon url</label>
                 <input ng-model="config.iconUrl" ng-disabled="state.saving" class="form-control" name="iconUrl" type="text" />
