@@ -105,16 +105,31 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
 
     vm.saveToCatalogConfig = {};
     if (edit) {
+        console.log("edit", edit);
         vm.saveToCatalogConfig = Object.assign(vm.saveToCatalogConfig, {
-            bundle: edit.bundle.symbolicName.replace(/^catalog-bom-/, ''),
             version: edit.type.version,
-            symbolicName: edit.type.symbolicName,
-            itemType: edit.type.template ? 'template' : 'entity',
-            name: edit.type.displayName,
+            template: edit.type.template || false,
+            itemType: edit.type.template || !edit.type.superTypes || edit.type.superTypes.contains("org.apache.brooklyn.api.entity.Application") 
+                ? 'application'
+                : 'entity',
             description: edit.type.description,
             iconUrl: edit.type.iconUrl,
-            versions: edit.versions,
+            original: {
+                bundle: edit.bundle.symbolicName.replace(/^catalog-bom-/, ''),
+                symbolicName: edit.type.symbolicName,
+                name: edit.type.displayName,
+                versions: edit.versions,
+                itemType: edit.type.template ? 'template'  
+                    : !edit.type.superTypes || edit.type.superTypes.contains("org.apache.brooklyn.api.entity.Application") ? 'application'
+                    : 'entity', 
+            }
         });
+        if (!edit.type.template) {
+            // if loading a templates, do NOT set name, bundle, symbolicName, versions
+            // or in other words, for other items, DO set these
+            vm.saveToCatalogConfig = Object.assign(vm.saveToCatalogConfig, vm.saveToCatalogConfig.original); 
+        }
+        
         yaml = edit.type.plan.data;
     }
 
