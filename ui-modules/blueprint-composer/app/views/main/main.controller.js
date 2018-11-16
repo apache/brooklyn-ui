@@ -113,7 +113,7 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
                 ? 'application'
                 : 'entity',
             description: edit.type.description,
-            iconUrl: edit.type.iconUrl,
+            iconUrl: edit.type.iconUrlSource || edit.type.iconUrl,
             original: {
                 bundle: edit.bundle.symbolicName.replace(/^catalog-bom-/, ''),
                 symbolicName: edit.type.symbolicName,
