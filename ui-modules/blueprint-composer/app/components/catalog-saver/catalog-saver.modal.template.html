@@ -26,9 +26,9 @@
 
         <div class="form-group" ng-class="{'has-error': form.name.$invalid}">
             <label class="control-label">Blueprint display name</label>
-            <input ng-model="config.name" ng-disabled="state.saving" class="form-control" name="name" type="text" required />
+            <input ng-model="config.name" ng-disabled="state.saving" class="form-control" name="name" type="text" placeholder="{{ defaultName }}" composer-blueprint-name-validator/>
             <p class="help-block" ng-show="form.name.$invalid">
-                <span ng-if="form.name.$error.required">You must specify a name for this item</span>
+                <span ng-if="form.name.$invalid">You must specify a name for this item or supply explicit bundle ID and blueprint symbolic name</span>
             </p>
         </div>
 
@@ -60,7 +60,7 @@
                 <label class="control-label">Bundle ID</label>
                 <div class="input-group">
                     <span class="input-group-addon">catalog-bom-</span>
-                    <input ng-model="config.bundle" ng-disabled="state.saving" class="form-control" name="bundle" ng-pattern="state.pattern" autofocus placeholder="{{ (config.name | bundlize) || 'E.g. my-bundle-id' }}"/>
+                    <input ng-model="config.bundle" ng-disabled="state.saving" class="form-control" name="bundle" ng-pattern="state.pattern" autofocus placeholder="{{ defaultBundle || 'E.g. my-bundle-id' }}"/>
                 </div>
                 <p class="help-block" ng-show="form.bundle.$invalid">
                     <span ng-if="form.bundle.$error.pattern">The bundle ID can contains only letters, numbers as well a the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
@@ -69,7 +69,7 @@
 
             <div class="form-group" ng-class="{'has-error': form.symbolicName.$invalid}">
                 <label class="control-label">Blueprint symbolic name</label>
-                <input ng-model="config.symbolicName" ng-disabled="state.saving" class="form-control" name="symbolicName" ng-pattern="state.pattern" autofocus placeholder="{{ (config.name | bundlize) || 'E.g. my-catalog-id' }}"/>
+                <input ng-model="config.symbolicName" ng-disabled="state.saving" class="form-control" name="symbolicName" ng-pattern="state.pattern" autofocus placeholder="{{ defaultSymbolicName || 'E.g. my-catalog-id' }}"/>
                 <p class="help-block" ng-show="form.symbolicName.$invalid">
                     <span ng-if="form.symbolicName.$error.pattern">The blueprint symbolic name can contains only letters, numbers as well a the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
                 </p>
@@ -79,24 +79,32 @@
                 <label class="control-label">Blueprint type</label>
                 <div class="checkbox">
                     <label>
-                        <input ng-model="config.itemType" ng-disabled="state.saving" name="itemType" type="radio" value="template" />
-                        Template
+                        <input ng-model="config.itemType" ng-disabled="state.saving" name="itemType" type="radio" value="application" />
+                        Application entity
                         <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
-                           uib-popover="Save as 'template' which can be used as an editable starting point for other blueprints or quick-launched directly"></i>
+                           uib-popover="Save as an application entity which can be deployed on its own, or configured and used in blueprints but only config and sensors declared at the root are accessible in the Composer ('application' item type)"></i>
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input ng-model="config.itemType" ng-disabled="state.saving" name="itemType" type="radio" value="template" />
+                        Application template
+                        <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                           uib-popover="Save as a blueprint template which can be used as an editable starting point for blueprints or used as an application entity, and in some contexts this prioritizes the blueprint for inclusion in quick-selection views ('template' item type)"></i>
                     </label>
                 </div>
                 <div class="checkbox">
                     <label>
                         <input ng-model="config.itemType" ng-disabled="state.saving" name="itemType" type="radio" value="entity" />
-                        Entity
+                        Extended entity
                         <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
-                           uib-popover="Save as a new 'entity' type which can be used in blueprints"></i>
+                           uib-popover="Save as an entity which can be configured and used in blueprints, exposing the config and adjuncts it inherits ('entity' item type)"></i>
                     </label>
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="control-label">Blueprint icon url</label>
+                <label class="control-label">Blueprint icon URL</label>
                 <input ng-model="config.iconUrl" ng-disabled="state.saving" class="form-control" name="iconUrl" type="text" />
             </div>
         </br-collapsible>
