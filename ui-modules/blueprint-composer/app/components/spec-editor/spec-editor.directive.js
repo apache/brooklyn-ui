@@ -699,7 +699,24 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     // errors don't get stringified because model value was not parsed
                     return value;
                 }
-                return JSON.stringify(value);
+                // if current local value gives same result then don't change it
+                // (don't interrupt user's flow, and respect their spacing, at least until
+                // they click away; ultimately we would like access to the parse tree,
+                // so we could take the text as entered exactly (maybe stripping initial whitespace),
+                // also supporting yaml and comments, but that is a bigger task!)
+                if (scope.config && typeof scope.config[key] === 'string') {
+                    try {
+                        if (JSON.stringify(JSON.parse(scope.config[key]))===JSON.stringify(value)) {
+                            return scope.config[key];
+                        }
+                    } catch (ignoredError) {
+                        console.log("Couldn't handle entered JSON", scope.config[key], ignoredError);
+                    }
+                }
+                // otherwise pretty print it, so they get decent multiline on first load and
+                // if they click off the entity then back on to the entity and this field
+                // (we'd like to respect what they actually typed but that needs the parse tree, as above)
+                return JSON.stringify(value, null, "  ");
             }
 
             // else treat as value, with array/map special
@@ -737,8 +754,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 scope.state.config.codeModeActive[key] = true;
                 // and the widget mode updated to be 'manual'
                 scope.getConfigWidgetMode(definition, value);
-
-                return JSON.stringify(value);
+                // and rerun this method so we get it prettified if appropriate
+                return getLocalConfigValueFromModelValue(key, value);
             }
 
             // if boolean, return as primitive type
