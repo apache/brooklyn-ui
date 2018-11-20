@@ -44,7 +44,7 @@ const TYPES = [
 angular.module(MODULE_NAME, [angularAnimate, uibModal, brUtils])
     .directive('catalogSaver', ['$rootScope', '$uibModal', '$injector', '$filter', 'composerOverrides', 'blueprintService', saveToCatalogModalDirective])
     .directive('catalogVersion', ['$parse', catalogVersionDirective])
-    .directive('blueprintNameOrSymbolicNameAndBundleIdRequired', blueprintNameOrSymbolicNameAndBundleIdRequiredDirective)
+    .directive('composerBlueprintNameValidator', composerBlueprintNameValidatorDirective)
     .filter('bundlize', bundlizeProvider)
     .run(['$templateCache', templateCache]);
 
@@ -210,7 +210,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         $scope.defaultSymbolicName = ($scope.config.itemType==='template' && $scope.config.original.symbolicName) || bundlize(newName) || null;
         $scope.defaultBundle = ($scope.config.itemType==='template' && $scope.config.original.bundle) || bundlize(newName) || null;
     };
-    $scope.$watchGroup(['config.name', 'config.itemType'], (newVals) => {
+    $scope.$watchGroup(['config.name', 'config.itemType', 'config.bundle', 'config.symbolicName'], (newVals) => {
         $scope.updateDefaults(newVals[0]);
         $scope.form.name.$validate();
         $scope.buttonText = $scope.buttonTextFn();
@@ -218,13 +218,14 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
     });
 }
 
-function blueprintNameOrSymbolicNameAndBundleIdRequiredDirective() {
+function composerBlueprintNameValidatorDirective() {
     return {
         restrict: 'A',
         require: 'ngModel',
         link: function(scope, element, attr, ngModel) {
-            ngModel.$validators.blueprintNameOrSymbolicNameAndBundleIdRequired = function(modelValue, viewValue) {
+            ngModel.$validators.composerBlueprintNameValidator = function(modelValue, viewValue) {
                 scope.updateDefaults(modelValue);
+                console.log("valildating", scope.config.bundle, scope.config.symbolicName);
                 if (!ngModel.$isEmpty(modelValue)) {
                     // anything set is valid
                     return true;

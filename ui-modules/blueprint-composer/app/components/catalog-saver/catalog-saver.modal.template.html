@@ -26,7 +26,7 @@
 
         <div class="form-group" ng-class="{'has-error': form.name.$invalid}">
             <label class="control-label">Blueprint display name</label>
-            <input ng-model="config.name" ng-disabled="state.saving" class="form-control" name="name" type="text" placeholder="{{ defaultName }}" blueprint-name-or-symbolic-name-and-bundle-id-required/>
+            <input ng-model="config.name" ng-disabled="state.saving" class="form-control" name="name" type="text" placeholder="{{ defaultName }}" composer-blueprint-name-validator/>
             <p class="help-block" ng-show="form.name.$invalid">
                 <span ng-if="form.name.$invalid">You must specify a name for this item or supply explicit bundle ID and blueprint symbolic name</span>
             </p>
@@ -82,7 +82,7 @@
                         <input ng-model="config.itemType" ng-disabled="state.saving" name="itemType" type="radio" value="application" />
                         Application entity
                         <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
-                           uib-popover="Save as an application entity which can be configured and used in blueprints or used on its own ('application' item type)"></i>
+                           uib-popover="Save as an application entity which can be deployed on its own, or configured and used in blueprints but only config and sensors declared at the root are accessible in the Composer ('application' item type)"></i>
                     </label>
                 </div>
                 <div class="checkbox">
