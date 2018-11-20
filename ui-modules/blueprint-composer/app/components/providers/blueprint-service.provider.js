@@ -299,6 +299,10 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
                             }
                             let val = (k) => entity.config.get(k || config.name);
                             let isSet = (k) => entity.config.has(k || config.name) && angular.isDefined(val(k));
+                            let isAnySet = (k) => {
+                                if (!k || !Array.isArray(k)) return false;
+                                return k.some(isSet);
+                            }
                             let hasDefault = () => angular.isDefined(config.defaultValue);
                             switch (key) {
                                 case 'Predicates.notNull()':
@@ -319,22 +323,32 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
                                     break;
                                 case 'forbiddenIf':
                                     if (isSet() && isSet(args)) {
-                                        message = `<samp>${config.name}</samp> cannot be set when <samp>${args}</samp> is set`;
+                                        message = `<samp>${config.name}</samp> and <samp>${args}</samp> cannot both be set`;
                                     }
                                     break;
                                 case 'forbiddenUnless':
                                     if (isSet() && !isSet(args)) {
-                                        message = `<samp>${config.name}</samp> cannot be set unless <samp>${args}</samp> is set`;
+                                        message = `<samp>${config.name}</samp> can only be set when <samp>${args}</samp> is set`;
                                     }
                                     break;
                                 case 'requiredIf':
                                     if (!isSet() && isSet(args)) {
-                                        message = `<samp>${config.name}</samp> is required when <samp>${args}</samp> is set`;
+                                        message = `<samp>${config.name}</samp> must be set if <samp>${args}</samp> is set`;
                                     }
                                     break;
                                 case 'requiredUnless':
                                     if (!isSet() && !isSet(args)) {
-                                        message = `<samp>${config.name}</samp> is required when <samp>${args}</samp> is not set`;
+                                        message = `<samp>${config.name}</samp> or <samp>${args}</samp> is required`;
+                                    }
+                                    break;
+                                case 'requiredUnlessAnyOf':
+                                    if (!isSet() && !isAnySet(args)) {
+                                        message = `<samp>${config.name}</samp> or one of <samp>${args}</samp> is required`;
+                                    }
+                                    break;
+                                case 'forbiddenUnlessAnyOf':
+                                    if (isSet() && !isAnySet(args)) {
+                                        message = `<samp>${config.name}</samp> cannot be set if any of <samp>${args}</samp> are set`;
                                     }
                                     break;
                                 default:
