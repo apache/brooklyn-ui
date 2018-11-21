@@ -23,9 +23,9 @@ const MEMBERSPEC_REGEX = /^(\w+\.)*[mM]ember[sS]pec$/;
 const FIRST_MEMBERSPEC_REGEX = /^(\w+\.)*first[mM]ember[sS]pec$/;
 // TODO ideally we'd just look at type EntitySpec, not key name, but for now look at keyname, anything ending memberSpec
 const ANY_MEMBERSPEC_REGEX = /^(\w+\.)*(\w*)[mM]ember[sS]pec$/;
-const RESERVED_KEY_REGEX = /(^children$|^services$|^locations?$|^brooklyn\.config$|^brooklyn\.enrichers$|^brooklyn\.policies$)/;
+const RESERVED_KEY_REGEX = /(^children$|^services$|^locations?$|^brooklyn\.config$|^brooklyn\.parameters$|^brooklyn\.enrichers$|^brooklyn\.policies$)/;
 const FIELD = {
-    SERVICES: 'services', CHILDREN: 'brooklyn.children', CONFIG: 'brooklyn.config', LOCATION: 'location',
+    SERVICES: 'services', CHILDREN: 'brooklyn.children', CONFIG: 'brooklyn.config', PARAMETERS: 'brooklyn.parameters', LOCATION: 'location',
     POLICIES: 'brooklyn.policies', ENRICHERS: 'brooklyn.enrichers', TYPE: 'type', NAME: 'name', ID: 'id',
     // This field is not part of the Brooklyn blueprint spec but used to store information about the composer, e.g. X,Y coordinates, virtual items, etc
     COMPOSER_META: 'brooklyn.composer.metadata'
@@ -50,6 +50,7 @@ const ID = new WeakMap();
 const PARENT = new WeakMap();
 const METADATA = new WeakMap();
 const CONFIG = new WeakMap();
+const PARAMETERS = new WeakMap();
 const CHILDREN = new WeakMap();
 const LOCATIONS = new WeakMap();
 const POLICIES = new WeakMap();
@@ -69,6 +70,7 @@ export class Entity {
     constructor() {
         ID.set(this, Math.random().toString(36).slice(2));
         CONFIG.set(this, new Map());
+        PARAMETERS.set(this, new Map());
         METADATA.set(this, new Map());
         ENRICHERS.set(this, new Map());
         POLICIES.set(this, new Map());
@@ -321,6 +323,10 @@ export class Entity {
         return CONFIG.get(this);
     }
 
+    get parameters() {
+        return PARAMETERS.get(this);
+    }
+
     get metadata() {
         return METADATA.get(this);
     }
@@ -474,6 +480,14 @@ export class Entity {
     }
 
     /**
+     * Has {Entity} got parameters
+     * @returns {boolean}
+     */
+    hasParameters() {
+        return PARAMETERS.get(this).size > 0;
+    }
+
+    /**
      * Has {Entity} got a location
      * @returns {boolean}
      */
@@ -544,6 +558,9 @@ Entity.prototype.setChildrenFromJson = setChildrenFromJson;
 Entity.prototype.getConfigAsJson = getConfigAsJson;
 Entity.prototype.setConfigFromJson = setConfigFromJson;
 
+Entity.prototype.getParametersAsArray = getParametersAsArray;
+Entity.prototype.setParametersFromJson = setParametersFromJson;
+
 Entity.prototype.getMetadataAsJson = getMetadataAsJson;
 Entity.prototype.setMetadataFromJson = setMetadataFromJson;
 
@@ -552,8 +569,10 @@ Entity.prototype.setPoliciesFromJson = setPoliciesFromJson;
 
 Entity.prototype.getData = getData;
 Entity.prototype.addConfig = addConfig;
+Entity.prototype.addParameter = addParameter;
 Entity.prototype.addMetadata = addMetadata;
 Entity.prototype.removeConfig = removeConfig;
+Entity.prototype.removeParameter = removeParameter;
 Entity.prototype.removeMetadata = removeMetadata;
 Entity.prototype.isCluster = isCluster;
 Entity.prototype.isMemberSpec = isMemberSpec;
@@ -596,6 +615,13 @@ function addConfig(key, value) {
     }
 }
 
+function addParameter(param) {
+    let key = param.name;
+    PARAMETERS.get(this).set(key, param);
+    this.touch();
+    return this;
+}
+
 function addMetadata(key, value) {
     if (!RESERVED_KEY_REGEX.test(key)) {
         METADATA.get(this).set(key, value);
@@ -614,6 +640,17 @@ function addMetadata(key, value) {
  */
 function removeConfig(key) {
     CONFIG.get(this).delete(key);
+    this.touch();
+    return this;
+}
+
+/**
+ * Remove an entry from brooklyn.parameters
+ * @param {string} key
+ * @returns {Entity}
+ */
+function removeParameter(key) {
+    PARAMETERS.get(this).delete(key);
     this.touch();
     return this;
 }
@@ -734,6 +771,9 @@ function getData(includeChildren = true) {
     if (this.hasConfig()) {
         result[FIELD.CONFIG] = this.getConfigAsJson();
     }
+    if (this.hasParameters()) {
+        result[FIELD.PARAMETERS] = this.getParametersAsArray();
+    }
     if (this.hasLocation()) {
         result.location = LOCATIONS.get(this);
     }
@@ -845,6 +885,7 @@ function resetEntity() {
     ID.set(this, Math.random().toString(36).slice(2));
     this.removeLocation();
     CONFIG.set(this, new Map());
+    PARAMETERS.set(this, new Map());
     METADATA.set(this, new Map());
     ENRICHERS.set(this, new Map());
     POLICIES.set(this, new Map());
@@ -895,6 +936,9 @@ function setEntityFromJson(incomingModel, setChildren = true) {
                 break;
             case FIELD.CONFIG:
                 self.setConfigFromJson(incomingModel[key]);
+                break;
+            case FIELD.PARAMETERS:
+                self.setParametersFromJson(incomingModel[key]);
                 break;
             case FIELD.ENRICHERS:
                 self.setEnrichersFromJson(incomingModel[key]);
@@ -964,6 +1008,22 @@ function setConfigFromJson(incomingModel) {
     this.touch();
 }
 
+/**
+ * Set brooklyn.parameters from JSON {Array}
+ * @param {Array} incomingModel
+ */
+function setParametersFromJson(incomingModel) {
+    if (!Array.isArray(incomingModel)) {
+        throw new Error('Model parse error ... cannot add parameters as it must be an array')
+    }
+    PARAMETERS.get(this).clear();
+    var self = this;
+    incomingModel.map((param)=> {
+        self.addParameter(param);
+    });
+    this.touch();
+}
+
 
 function setMetadataFromJson(incomingModel) {
     METADATA.get(this).clear();
@@ -1020,6 +1080,10 @@ function getMetadataAsJson() {
 
 function getConfigAsJson() {
     return cleanForJson(CONFIG.get(this), -1);
+}
+
+function getParametersAsArray() {
+    return Array.from(PARAMETERS.get(this).values());
 }
 
 /* "cleaning" here means:  Dsl objects are toStringed, to the given depth (or infinite if depth<0);
