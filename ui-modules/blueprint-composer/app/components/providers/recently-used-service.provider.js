@@ -16,6 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import angular from 'angular';
+
+const MODULE_NAME = 'brooklyn.composer.service.recently-user';
+
+angular.module(MODULE_NAME, [])
+    .provider('recentlyUsedService', recentlyUsedServiceProvider);
+
+export default MODULE_NAME;
 
 export function recentlyUsedServiceProvider() {
     return {

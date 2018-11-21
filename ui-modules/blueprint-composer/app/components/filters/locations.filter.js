@@ -16,6 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import angular from 'angular';
+
+const MODULE_NAME = 'brooklyn.filters.location';
+
+angular.module(MODULE_NAME, [])
+    .filter('locations', locationsFilter);
+
+export default MODULE_NAME;
+
 export function locationsFilter() {
     return function (input, search) {
         return input.then(function (response) {

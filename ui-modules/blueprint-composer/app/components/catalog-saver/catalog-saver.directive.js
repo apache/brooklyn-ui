@@ -23,10 +23,10 @@ import template from './catalog-saver.template.html';
 import modalTemplate from './catalog-saver.modal.template.html';
 import jsYaml from 'js-yaml';
 import brUtils from 'brooklyn-ui-utils/utils/general';
-import {yamlState} from "../../views/main/yaml/yaml.state";
-import {graphicalState} from "../../views/main/graphical/graphical.state";
 
 const MODULE_NAME = 'brooklyn.components.catalog-saver';
+const TEMPLATE_URL = 'blueprint-composer/component/catalog-saver/index.html';
+const TEMPLATE_MODAL_URL = 'blueprint-composer/component/catalog-saver/modal.html';
 
 const REASONS = {
     new: 0,
@@ -42,37 +42,81 @@ const TYPES = [
 ];
 
 angular.module(MODULE_NAME, [angularAnimate, uibModal, brUtils])
-    .directive('catalogSaver', ['$rootScope', '$uibModal', '$injector', 'composerOverrides', saveToCatalogModalDirective])
-    .directive('catalogVersion', ['$parse', catalogVersionDirective]);
+    .directive('catalogSaver', ['$rootScope', '$uibModal', '$injector', '$filter', 'composerOverrides', 'blueprintService', saveToCatalogModalDirective])
+    .directive('catalogVersion', ['$parse', catalogVersionDirective])
+    .directive('composerBlueprintNameValidator', composerBlueprintNameValidatorDirective)
+    .filter('bundlize', bundlizeProvider)
+    .run(['$templateCache', templateCache]);
 
 export default MODULE_NAME;
 
-export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, composerOverrides) {
+export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $filter, composerOverrides, blueprintService) {
     return {
         restrict: 'E',
-        template: template,
+        templateUrl: function (tElement, tAttrs) {
+            return tAttrs.templateUrl || TEMPLATE_URL;
+        },
         scope: {
-            config: '='
+            config: '=',
         },
         link: link
     };
 
     function link($scope, $element) {
-        $scope.buttonText = $scope.config.label || ($scope.config.itemType ? `Update ${$scope.config.name || $scope.config.symbolicName}` : 'Add to catalog');
-
-        $injector.get('$templateCache').put('catalog-saver.modal.template.html', modalTemplate);
-
+        if (!$scope.config.original) {
+            // original if provided contains the original metadata, e.g. for use if coming from a template and switching between template and non-template
+            $scope.config.original = {}
+        }
+        $scope.isNewFromTemplate = () => ($scope.config.itemType !== 'template' && $scope.config.original.itemType === 'template');
+        $scope.isUpdate = () => !$scope.isNewFromTemplate() && Object.keys($scope.config.original).length>0;
+        $scope.buttonTextFn = () => $scope.config.label || ($scope.isUpdate() && ($scope.config.name || $scope.config.original.name || $scope.config.symbolicName || $scope.config.original.symbolicName)) || 'Add to catalog';
+        $scope.buttonText = $scope.buttonTextFn(); 
+        
         $scope.activateModal = () => {
-            // Override callback to update catalog configuration data in other applications
-            $scope.config = (composerOverrides.updateCatalogConfig || (($scope, $element) => $scope.config))($scope, $element);
+            let entity = blueprintService.get();
+            let metadata = blueprintService.entityHasMetadata(entity) ? blueprintService.getEntityMetadata(entity) : new Map();
+              
+            if (!$scope.config.itemType) {
+                // This is the default item type
+                $scope.config.itemType = 'application';
+            }
+            
+            // Set various properties from the blueprint entity data if not already set
+            if (!$scope.config.iconUrl && (entity.hasIcon() || metadata.has('iconUrl'))) {
+                $scope.config.iconUrl = entity.icon || metadata.get('iconUrl');
+            }
+            if (!$scope.isNewFromTemplate()) {
+                // (these should only be set if not making something new from a template, as the entity items will refer to the template)
+                
+                // the name and the ID can be set in the UI, 
+                // or all can be inherited if root node is a known application type we are editting 
+                // (normally in those cases $scope.config will already be set by caller, but maybe not always) 
+                if (!$scope.config.name && entity.hasName()) {
+                    $scope.config.name = entity.name;
+                }
+                if (!$scope.config.symbolicName && (entity.hasId() || metadata.has('id'))) {
+                    $scope.config.symbolicName = entity.id || metadata.get('id');
+                }
+                if (!$scope.config.version && (entity.hasVersion() || metadata.has('version'))) {
+                    $scope.config.version = entity.version || metadata.get('version');
+                }
+                if (!$scope.config.bundle) {
+                    if ($scope.config.symbolicName) {
+                        $scope.config.bundle = $scope.config.symbolicName;
+                    }
+                }
+            }
+            
+            // Override this callback to update configuration data elsewhere
+            $scope.config = (composerOverrides.updateCatalogConfig || ((config, $element) => config))($scope.config, $element);
 
             let modalInstance = $uibModal.open({
-                templateUrl: 'catalog-saver.modal.template.html',
+                templateUrl: TEMPLATE_MODAL_URL,
                 size: 'save',
-                controller: ['$scope', 'blueprintService', 'paletteApi', 'brUtilsGeneral', CatalogItemModalController],
+                controller: ['$scope', '$filter', 'blueprintService', 'paletteApi', 'brUtilsGeneral', CatalogItemModalController],
                 scope: $scope,
             });
-
+            
             // Promise is resolved when the modal is closed. We expect the modal to pass back the action to perform thereafter
             modalInstance.result.then(reason => {
                 switch (reason) {
@@ -88,7 +132,7 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, co
     }
 }
 
-export function CatalogItemModalController($scope, blueprintService, paletteApi, brUtilsGeneral) {
+export function CatalogItemModalController($scope, $filter, blueprintService, paletteApi, brUtilsGeneral) {
     $scope.REASONS = REASONS;
     $scope.VIEWS = VIEWS;
     $scope.TYPES = TYPES;
@@ -97,17 +141,17 @@ export function CatalogItemModalController($scope, blueprintService, paletteApi,
         view: VIEWS.form,
         saving: false,
         force: false,
-        isUpdate: Object.keys($scope.config).length > 0
     };
 
     $scope.getTitle = () => {
         switch ($scope.state.view) {
             case VIEWS.form:
-                return $scope.state.isUpdate ? `Update ${$scope.config.name || $scope.config.symbolicName}` : 'Add to catalog';
+                return $scope.isUpdate() ? `Update ${$scope.config.name || $scope.config.symbolicName || 'blueprint'}` : 'Add to catalog';
             case VIEWS.saved:
-                return `${$scope.config.name || $scope.config.symbolicName} ${$scope.state.isUpdate ? 'updated' : 'saved'}`;
+                return `${$scope.config.name || $scope.config.symbolicName || 'Blueprint'} ${$scope.isUpdate() ? 'updated' : 'saved'}`;
         }
     };
+    $scope.title = $scope.getTitle();
 
     $scope.save = () => {
         $scope.state.saving = true;
@@ -130,13 +174,25 @@ export function CatalogItemModalController($scope, blueprintService, paletteApi,
     function createBom() {
         let blueprint = blueprintService.getAsJson();
 
+        let bundleBase = $scope.config.bundle || $scope.defaultBundle;
+        let bundleId = $scope.config.symbolicName || $scope.defaultSymbolicName;
+        if (!bundleBase || !bundleId) {
+            throw "Either the display name must be set, or the bundle and symbolic name must be explicitly set";
+        }
+        
         let bomItem = {
-            id: $scope.config.symbolicName,
+            id: bundleId,
             itemType: $scope.config.itemType,
             item: blueprint
         };
-        if (brUtilsGeneral.isNonEmpty($scope.config.name)) {
-            bomItem.name = $scope.config.name;
+        let bomCatalogYaml = {
+            bundle: `catalog-bom-${bundleBase}`,
+            version: $scope.config.version,
+            items: [ bomItem ]
+        };
+        let bundleName = $scope.config.name || $scope.defaultName;
+        if (brUtilsGeneral.isNonEmpty(bundleName)) {
+            bomItem.name = bundleName;
         }
         if (brUtilsGeneral.isNonEmpty($scope.config.description)) {
             bomItem.description = $scope.config.description;
@@ -144,15 +200,48 @@ export function CatalogItemModalController($scope, blueprintService, paletteApi,
         if (brUtilsGeneral.isNonEmpty($scope.config.iconUrl)) {
             bomItem.iconUrl = $scope.config.iconUrl;
         }
-
-        return jsYaml.dump({
-            'brooklyn.catalog': {
-                bundle: `catalog-bom-${$scope.config.bundle}`,
-                version: $scope.config.version,
-                items: [bomItem]
-            }
-        });
+        
+        return jsYaml.dump({ 'brooklyn.catalog': bomCatalogYaml });
     }
+
+    let bundlize = $filter('bundlize');
+    $scope.updateDefaults = (newName) => {
+        $scope.defaultName = ($scope.config.itemType==='template' && $scope.config.original.name) || null;
+        $scope.defaultSymbolicName = ($scope.config.itemType==='template' && $scope.config.original.symbolicName) || bundlize(newName) || null;
+        $scope.defaultBundle = ($scope.config.itemType==='template' && $scope.config.original.bundle) || bundlize(newName) || null;
+    };
+    $scope.$watchGroup(['config.name', 'config.itemType', 'config.bundle', 'config.symbolicName'], (newVals) => {
+        $scope.updateDefaults(newVals[0]);
+        $scope.form.name.$validate();
+        $scope.buttonText = $scope.buttonTextFn();
+        $scope.title = $scope.getTitle();
+    });
+}
+
+function composerBlueprintNameValidatorDirective() {
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function(scope, element, attr, ngModel) {
+            ngModel.$validators.composerBlueprintNameValidator = function(modelValue, viewValue) {
+                scope.updateDefaults(modelValue);
+                console.log("valildating", scope.config.bundle, scope.config.symbolicName);
+                if (!ngModel.$isEmpty(modelValue)) {
+                    // anything set is valid
+                    return true;
+                }
+                // if not set, we need a bundle and symbolic name
+                if (scope.config.bundle && scope.config.symbolicName) {
+                    return true;
+                }
+                // or if we have defaults for bundle and symbolic name we don't need this name
+                if (scope.defaultBundle && scope.defaultSymbolicName) {
+                    return true;
+                }
+                return false;
+            }
+        },
+    };
 }
 
 export function catalogVersionDirective($parse) {
@@ -162,7 +251,7 @@ export function catalogVersionDirective($parse) {
         link: link
     };
 
-    function link (scope, elm, attr, ctrl) {
+    function link(scope, elm, attr, ctrl) {
         if (!ctrl) {
             return;
         }
@@ -185,6 +274,15 @@ export function catalogVersionDirective($parse) {
 
         ctrl.$validators.exist = (modelValue, viewValue) => {
             return !angular.isDefined(matches) || ctrl.$isEmpty(viewValue) || viewValue.endsWith('SNAPSHOT') || force === true || matches.indexOf(viewValue) === -1;
-        };
+        };        
     }
+}
+
+function templateCache($templateCache) {
+    $templateCache.put(TEMPLATE_URL, template);
+    $templateCache.put(TEMPLATE_MODAL_URL, modalTemplate);
+}
+
+function bundlizeProvider() { 
+    return (input) => input && input.split(/[^a-zA-Z0-9]+/).filter(x => x).join('-').toLowerCase(); 
 }
