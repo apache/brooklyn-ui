@@ -82,7 +82,9 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             model: '='
         },
         controller: ['$scope', '$element', controller],
-        templateUrl: TEMPLATE_URL,
+        templateUrl: function (tElement, tAttrs) { 
+            return tAttrs.templateUrl || TEMPLATE_URL; 
+        },
         link: link,
         controllerAs: 'specEditor',
     };
