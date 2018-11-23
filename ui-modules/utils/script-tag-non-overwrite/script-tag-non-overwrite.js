@@ -20,9 +20,16 @@
 import angular from 'angular';
 
 /**
- * If included, this decorates the default angular `<script>` tag so that it checks the
- * template cache and does _not_ put the contents of the `script` into the cache if there
- * is already an element with that ID present.
+ * If included, this decorates the default angular `<script>` tag so that it if a
+ * 'defer-to-preexisting-id' attribute is set, it will check the template cache and 
+ * skip putting the contents of the `script` into the cache if there is already an 
+ * element with that ID present.
+ *
+ * This allows us to include `<script type="ng-template" id="..." defer-to-preexisting-id="true">` blocks 
+ * in HTML templates that work in the usual way, but with the extra "defer" attribute we can allow
+ * the template to be overridden by a `run` block (or other block) installing a custom HTML template
+ * under the same ID.  (By default the `script` directive will always install the ID, on every
+ * directive processing on the template, meaning one cannot easily override the template.) 
  */
 
 const MODULE_NAME = 'brooklyn.components.script-tag-non-overwrite';
@@ -38,7 +45,7 @@ function scriptTagDirectiveDecorator($delegate, $templateCache) {
     let base = $delegate[0];
     return [ Object.assign({}, base, { compile: function(el, attr) {
         let match = $templateCache.get(attr.id);
-        if (!(match === null || typeof match === 'undefined')) {
+        if (attr.deferToPreexistingId && !(match === null || typeof match === 'undefined')) {
             // no-op if this ID is already in the cache (e.g. manually overridden)
             return function() {};
         }

@@ -62,7 +62,7 @@
 </div>
 
 <!--TYPEAHEAD TEMPLATE :: START-->
-<script type="text/ng-template" id="SuggestionTemplate.html">
+<script type="text/ng-template" id="SuggestionTemplate.html" defer-to-preexisting-id="true">
     <div class="dropdown-item">
         <span class="dropdown-item-value" ng-bind-html="match.model.value | uibTypeaheadHighlight:query"></span>
         <p class="dropdown-item-description" ng-if="match.model.description">{{ match.model.description }}</p>

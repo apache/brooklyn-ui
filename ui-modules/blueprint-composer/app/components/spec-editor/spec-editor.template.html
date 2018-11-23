@@ -342,7 +342,7 @@
 
 <!-- ENTITY LOCATION -->
 <ng-include src="'blueprint-composer/component/spec-editor/section-locations.html'"></ng-include>
-<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-locations.html">
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-locations.html" defer-to-preexisting-id="true">
   <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.location.open">
     <heading>
         Location
@@ -372,7 +372,7 @@
 
 <!-- ENTITY POLICIES -->
 <ng-include src="'blueprint-composer/component/spec-editor/section-policies.html'"></ng-include>
-<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-policies.html">
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-policies.html" defer-to-preexisting-id="true">
   <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.policy.open">
     <heading>
         Policies
@@ -408,7 +408,7 @@
 
 <!-- ENTITY ENRICHERS -->
 <ng-include src="'blueprint-composer/component/spec-editor/section-enrichers.html'"></ng-include>
-<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-enrichers.html">
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-enrichers.html" defer-to-preexisting-id="true">
   <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.enricher.open">
     <heading>
         Enrichers
@@ -443,12 +443,12 @@
 </script>
 
 <ng-include src="'blueprint-composer/component/spec-editor/section-others.html'"></ng-include>
-<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-others.html">
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-others.html" defer-to-preexisting-id="true">
 </script>
 
 
 <!-- CONFIG INFO TEMPLATE :: START -->
-<script type="text/ng-template" id="blueprint-composer/component/spec-editor/config-info.html">
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/config-info.html" defer-to-preexisting-id="true">
     <div class="config-item-quick-info">
         <div class="quick-info-metadata">
             <p><i class="mini-icon fa fa-fw fa-cog"></i> <samp class="type-symbolic-name">{{item.name}}</samp>
@@ -463,7 +463,7 @@
 <!-- CONFIG INFO TEMPLATE :: START-->
 
 <!-- SEARCH POLICY TEMPLATE :: START -->
-<script type="text/ng-template" id="blueprint-composer/component/spec-editor/search-policy.html">
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/search-policy.html" defer-to-preexisting-id="true">
     <div ng-click="$event.stopPropagation(); $event.preventDefault();">
         <input ng-model="state.policy.search" type="text" class="form-control" placeholder="Search for a policy" auto-focus blur-on-enter />
     </div>
@@ -471,7 +471,7 @@
 <!--SEARCH POLICY TEMPLATE :: START-->
 
 <!-- SEARCH ENRICHER TEMPLATE :: START -->
-<script type="text/ng-template" id="blueprint-composer/component/spec-editor/search-enricher.html">
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/search-enricher.html" defer-to-preexisting-id="true">
     <div ng-click="$event.stopPropagation(); $event.preventDefault();">
         <input ng-model="state.enricher.search" type="text" class="form-control" placeholder="Search for an enricher" auto-focus blur-on-enter />
     </div>
@@ -479,7 +479,7 @@
 <!--SEARCH ENRICHER TEMPLATE :: START-->
 
 <!--TYPEAHEAD TEMPLATE :: START-->
-<script type="text/ng-template" id="blueprint-composer/component/spec-editor/config-item.html">
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/config-item.html" defer-to-preexisting-id="true">
     <div class="dropdown-item" ng-init="item = match.model">
         <div class="dropdown-row">
             <span ng-bind-html="match.model.name | uibTypeaheadHighlight:query" class="config-name"></span>
@@ -494,7 +494,7 @@
 <!--TYPEAHEAD TEMPLATE :: END-->
 
 <!--ADJUNCT TEMPLATE :: START-->
-<script type="text/ng-template" id="blueprint-composer/component/spec-editor/adjunct.html">
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/adjunct.html" defer-to-preexisting-id="true">
     <div class="media" ng-class="{'has-issues': adjunct.hasIssues()}">
         <div class="media-left media-middle">
             <img ng-src="{{adjunct.icon}}" alt="{{adjunct | entityName}} logo" class="media-object" />
