@@ -22,9 +22,12 @@ catalog-selector {
   
   display: block;
   margin-top: 15px;
-
+  height: 100%;
+  
   .grid {
     margin-bottom: 15px;
+    padding-left: 10px;
+    padding-right: 10px;
   }
   .pagination {
     margin-top: 0;
@@ -38,6 +41,56 @@ catalog-selector {
   .catalog-palette-item {
     padding-left: 5px;
     padding-right: 5px;
+    height: 96px;
+    &.item-compact {
+        height: 75px;
+    }
+
+    &.item-compact-list,
+    &.item-full-width {
+        .item {
+            display: flex;
+            flex-direction: horizontal;
+            .item-logo {
+                flex: 0 0 auto;
+                width: auto;
+                img {
+                    margin: 0;
+                    width: auto;
+                }
+            }
+            .item-content {
+                flex: 1 1 auto;
+                display: flex;
+                align-items: center;
+                h3 {
+                    text-align: left;
+                    font-size: 1em;
+                    margin-left: 8px;
+                }
+            }
+        }
+    }
+    &.item-compact-list{
+      height: 30px;
+      .item {
+        .item-logo {
+          height: 20px;
+          min-width: 20px;
+        }
+      }
+    }
+    &.item-full-width{
+      .item {
+        .item-logo {
+          height: 78px;
+          min-width: 90px;
+        }
+      }
+    }
+  }
+  .catalog-palette-footer {
+    padding-bottom: 5px;
   }
   
   .item {
@@ -47,10 +100,18 @@ catalog-selector {
     transition: all @duration-item ease;
     position: relative;
     background: white; //useful when dragging
-    box-shadow: 0 0 rgba(0, 0, 0, 0.1), 0 1px 2px 1px rgba(0, 0, 0, 0.2);
+    border: 1px solid #ccc;  // same colour as input controls, works well with rgb(0,0,0,N) used for shadow  
+    box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.1);
     &:hover {
-      box-shadow: 0 0 rgba(0, 0, 0, 0.2), 0 2px 4px 1px rgba(0, 0, 0, 0.2);
-      transform: scale(1.1);
+      border: none;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 0 4px 1px rgba(0, 0, 0, 0.6);
+      margin: -2px;
+      padding: 5px;
+      
+      margin-top: 7px;
+      margin-bottom: -2px;
+      padding-top: 3px;
+      padding-bottom: 7px;
 
       .fa-info-circle {
         opacity: 1;
@@ -60,9 +121,10 @@ catalog-selector {
         position: absolute;
         top: 0;
         left: 0;
+        margin: 0;
+        border: 3px solid @brand-primary;
         width: 100%;
         height: 100%;
-        transform: scale(1.15);
     }
 
     .fa-info-circle {
@@ -95,7 +157,7 @@ catalog-selector {
         left: 0;
         right: 0;
         margin: auto;
-        max-width: 90%;
+        max-width: 100%;
         max-height: 100%;
       }
     }
@@ -121,10 +183,6 @@ catalog-selector {
   .form-group {
       margin-top: 3px;
       margin-bottom: 3px;
-  }
-  .no-match {
-    margin-top: 12px;
-    font-style: italic;
   }
   
   .spinner-area {
@@ -163,6 +221,33 @@ catalog-selector {
       }
     }
   }
+  .catalog-palette-footer {
+    .palette-footer-message {
+        .btn {
+          font-size: inherit;
+          padding: 3px 8px;
+          margin-left: 1em;
+          font-style: normal;
+        }
+        text-align: right;
+        // useful if it wraps, e.g. because pagination buttons show:
+        line-height: 2;
+        margin-top: -2px;
+    }
+    div[uib-pagination] {
+      margin-left: 1em;
+    }
+    .no-match {
+      text-align: center;
+      font-size: 120%;
+    }
+    .no-match.icon {
+      font-size: 8em;
+      margin-top: 24px;
+      margin-bottom: 6px;
+      color: @gray-lighter;
+    }
+  }
 }
 
 .catalog-selector-popover {
@@ -186,12 +271,19 @@ catalog-selector {
         .type-symbolic-name {
             font-weight: bold;
         }
+        i { height: 100%; }
       }
       .mini-icon {
         width: 1.5em;
         overflow-x: visible;
-        margin-left: -1.5em;
+        margin-left: -1.75em;
         text-align: center;
+      }
+      .label {
+        line-height: 2.2;
+      }
+      .closer .br-icon-close-bar {
+        stroke: @brand-primary;
       }
     }
     .deprecated-marker {
@@ -208,6 +300,44 @@ catalog-selector {
     }
     .palette-item-tag {
         margin-right: 4px;
+    }
+    .quick-info-title {
+        background-color: @gray-lightest;
+        border-bottom: 1px solid @popover-border-color;
+        margin-left: -15px;
+        margin-right: -15px;
+        margin-top: -10px;
+        margin-bottom: 12px;
+        padding: 8px 16px 6px 16px;
+        border-radius: 5px 5px 0 0;
+        .closer {
+            margin-top: 6px;
+        }
+    }
+    .closer {
+        width: 10px;
+        > svg { width: 10px; } 
+        cursor: pointer;
+        margin-left: 6px;
+    }
+    .quick-info-buttons {
+        border-top: 1px solid @popover-border-color;
+        margin-top: 10px;
+        padding-top: 10px;
+        display: flex;
+        div.spacer {
+            flex: 1 1 auto;
+        }
+        button {
+            padding: 6px 9px;
+            line-height: 1;
+            margin-left: 12px;
+        }
+        .select-item-button {
+            flex: 0 1 auto;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
     }
   }
 

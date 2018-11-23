@@ -29,7 +29,7 @@
             <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="spec-actions">
                 <li role="menuitem"><a ng-href="/brooklyn-ui-catalog/#!/bundles/{{model.miscData.get('bundle').symbolicName}}/{{model.miscData.get('bundle').version}}/types/{{model.type}}/{{model.version || 'latest'}}" target="_blank">Open in Catalog</a></li>
                 <li role="separator" class="divider"></li>
-                <li role="menuitem"><a href ng-click="removeEntity()"><span class="text-danger">Delete</span></a></li>
+                <li role="menuitem"><a href ng-click="removeModel()"><span class="text-danger">Delete</span></a></li>
             </ul>
         </div>
     </div>
@@ -86,7 +86,7 @@
              placeholder="Add a new configuration key or open existing"
              class="form-control"
              uib-typeahead="config.name for config in state.config.add.list | filter:{name:$viewValue}"
-             typeahead-template-url="ConfigItemTemplate.html"
+             typeahead-template-url="blueprint-composer/component/spec-editor/config-item.html"
              typeahead-editable="true"
              typeahead-show-hint="true"
              typeahead-min-length="0"
@@ -146,7 +146,7 @@
                         <span class="info-spec-configuration">
                            <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
                                popover-title="{{item.label || item.name}}"
-                               uib-popover-template="'ConfigInfoTemplate.html'"
+                               uib-popover-template="'blueprint-composer/component/spec-editor/config-info.html'"
                                popover-class="spec-editor-popover" popover-placement="top-left" popover-append-to-body="true"></i>
                         </span>
                     </label>
@@ -188,13 +188,15 @@
                             </div>
                         </div>
 
-                        <select ng-switch-when="java.lang.Enum"
+                        <span class="main-control span-for-rounded-edge">
+                            <select ng-switch-when="java.lang.Enum"
                                 ng-model="config[item.name]"
                                 ng-options="s.value as (s.description + (item.defaultValue === s.value ? ' --- default' : '')) for s in item.possibleValues"
                                 ng-focus="specEditor.recordFocus(item)"
-                                class="form-control"
+                                class="form-control rounded-edge"
                                 name="{{item.name}}"
                                 id="{{item.name}}"></select>
+                        </span>
 
                         <div ng-switch-when="map" 
                                 ng-init="expandMode = 'default'" class="collection"
@@ -224,19 +226,26 @@
                                     </span>
                                     <div class="collection-item-grow">
                                         <span class="input-group">
-                                            <input type="text" ng-model="config[item.name][mapKey]" class="form-control" placeholder="(empty)" 
+                                            <span class="main-control span-for-rounded-edge">
+                                                <input type="text" ng-model="config[item.name][mapKey]" class="form-control rounded-edge" placeholder="(empty)" 
                                                     ng-focus="specEditor.recordFocus(item)"
                                                     on-enter="specEditor.advanceControlInFormGroup" />
-                                            <span class="input-group-btn dsl-wizard-button" ng-if="specEditor.isDslWizardButtonAllowed(item.name, mapKey)">
+                                            </span>
+                                            <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name, mapKey)">
                                                 <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name, index: mapKey})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
                                             </span>
                                         </span>
                                     </div>
                                 </li>
-                                <li class="collection-item collection-add" ng-class="{'nonempty': nonempty(config[item.name])}">
-                                    <input ng-model="newKey" type="text" placeholder="Add property key" class="form-control" 
+                                <li class="collection-item collection-add input-group" ng-class="{'nonempty': nonempty(config[item.name])}">
+                                    <span class="main-control span-for-rounded-edge">
+                                      <input ng-model="newKey" type="text" placeholder="Add property key" class="form-control rounded-edge" 
                                         ng-focus="specEditor.recordFocus(item)"
                                         on-enter="specEditor.advanceOutToFormGroupInPanel" ng-blur="onAddMapProperty(item.name, newKey, $event); newKey = '';" required />
+                                    </span>
+                                    <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name, null, newKey)">
+                                        <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
+                                    </span>
                                 </li>
                             </ul>
                         </div>
@@ -268,21 +277,25 @@
                                     </span>
                                     <div class="collection-item-grow">
                                         <span class="input-group">
-                                            <input type="text" ng-model="config[item.name][$index]" class="form-control" placeholder="(empty)" 
+                                            <span class="main-control span-for-rounded-edge">
+                                                <input type="text" ng-model="config[item.name][$index]" class="form-control rounded-edge" placeholder="(empty)" 
                                                     ng-focus="specEditor.recordFocus(item)"
                                                     on-enter="specEditor.advanceControlInFormGroup" />
-                                            <span class="input-group-btn dsl-wizard-button" ng-if="specEditor.isDslWizardButtonAllowed(item.name, $index)" ng-focus="specEditor.recordFocus(item)">
+                                            </span>
+                                            <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name, $index)" ng-focus="specEditor.recordFocus(item)">
                                                 <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name, index: $index})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
                                             </span>
                                         </span>
                                     </div>
                                 </li>
-                                <li class="collection-item collection-add" ng-class="{'nonempty': config[item.name].length>0}">
+                                <li class="collection-item collection-add input-group" ng-class="{'nonempty': config[item.name].length>0}">
                                     <span class="input-group">
-                                        <input ng-model="newItem" type="text" placeholder="Add item" class="form-control" auto-focus="expandMode != 'closed'" 
+                                        <span class="main-control span-for-rounded-edge">
+                                          <input ng-model="newItem" type="text" placeholder="Add item" class="form-control rounded-edge" auto-focus="expandMode != 'closed'" 
                                             ng-focus="specEditor.recordFocus(item)"
                                             on-enter="specEditor.advanceOutToFormGroupInPanel" ng-blur="onAddListItem(item.name, newItem, $event, $element); newItem = '';" required />
-                                        <span class="input-group-btn dsl-wizard-button" ng-if="specEditor.isDslWizardButtonAllowed(item.name, -1)">
+                                        </span>
+                                        <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name, -1, newItem)">
                                             <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name, index: config[item.name].length})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
                                         </span>
                                     </span>
@@ -296,7 +309,7 @@
                                             class="open-entity-spec"
                                             title="Open in spec editor"
                                             ng-focus="specEditor.recordFocus(item)"></a>
-                                <ng-include src="'AdjunctTemplate.html'"></ng-include>
+                                <ng-include src="'blueprint-composer/component/spec-editor/adjunct.html'"></ng-include>
                             </div>
                             <a ng-if="!config[item.name][REPLACED_DSL_ENTITYSPEC]" ui-sref="main.graphical.edit.add({entityId: model._id, family: 'spec', configKey: item.name})" class="no-spec">
                                 (no spec set)
@@ -304,10 +317,12 @@
                         </div>
 
                         <div class="input-group" ng-switch-default>
-                            <textarea ng-model="config[item.name]" class="form-control" name="{{item.name}}" id="{{item.name}}" auto-grow
+                            <span class="main-control span-for-rounded-edge">
+                                <textarea ng-model="config[item.name]" class="form-control rounded-edge" name="{{item.name}}" id="{{item.name}}" auto-grow
                                       placeholder="{{defined(config[item.name]) ? null : item.defaultValue=='' || item.defaultValue==null ? '(empty)' : item.defaultValue}}"
                                       ng-focus="specEditor.recordFocus(item)" on-enter="specEditor.advanceOutToFormGroupInPanel"></textarea>
-                            <span class="input-group-btn dsl-wizard-button" ng-if="specEditor.isDslWizardButtonAllowed(item.name)">
+                            </span>
+                            <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name)">
                                 <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
                             </span>
                         </div>
@@ -326,7 +341,9 @@
 </br-collapsible>
 
 <!-- ENTITY LOCATION -->
-<br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.location.open">
+<ng-include src="'blueprint-composer/component/spec-editor/section-locations.html'"></ng-include>
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-locations.html">
+  <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.location.open">
     <heading>
         Location
         <span ng-if="(model.issues | filter:{group:'location'}).length> 0" class="badge" ng-class="getBadgeClass((model.issues | filter:{group:'location'}))">{{(model.issues | filter:{group:'location'}).length}}</span>
@@ -350,16 +367,19 @@
             <button class="btn btn-danger btn-link" ng-click="model.clearIssues({group: 'location'}).removeLocation()">Remove</button>
         </div>
     </div>
-</br-collapsible>
+  </br-collapsible>
+</script>
 
 <!-- ENTITY POLICIES -->
-<br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.policy.open">
+<ng-include src="'blueprint-composer/component/spec-editor/section-policies.html'"></ng-include>
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-policies.html">
+  <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.policy.open">
     <heading>
         Policies
         <span ng-if="getPoliciesIssues().length> 0" class="badge" ng-class="getBadgeClass(getPoliciesIssues())">{{getPoliciesIssues().length}}</span>
 
         <span class="pull-right" ng-show="$parent.stateWrapped.state">
-            <i class="fa fa-search collapsible-action" title="Filter policies" ng-click="$event.stopPropagation(); $event.preventDefault();" ng-class="{'text-success': state.policy.search.length > 0}" uib-popover-template="'SearchPolicyTemplate.html'" popover-placement="bottom-right" popover-trigger="'outsideClick'"></i>
+            <i class="fa fa-search collapsible-action" title="Filter policies" ng-click="$event.stopPropagation(); $event.preventDefault();" ng-class="{'text-success': state.policy.search.length > 0}" uib-popover-template="'blueprint-composer/component/spec-editor/search-policy.html'" popover-placement="bottom-right" popover-trigger="'outsideClick'"></i>
             <a class="fa fa-plus collapsible-action" title="Add policy" ui-sref="main.graphical.edit.add({entityId: model._id, family: 'policy'})" ng-click="$event.stopPropagation()" ></a>
         </span>
     </heading>
@@ -380,19 +400,22 @@
 
         <div ng-repeat="adjunct in filteredPolicies = (model.getPoliciesAsArray() | specEditorType:state.policy.search) track by adjunct._id" class="spec-policy spec-adjunct">
             <a ui-sref="main.graphical.edit.policy({entityId: model._id, policyId: adjunct._id})"></a>
-            <ng-include src="'AdjunctTemplate.html'"></ng-include>
+            <ng-include src="'blueprint-composer/component/spec-editor/adjunct.html'"></ng-include>
         </div>
     </div>
-</br-collapsible>
+  </br-collapsible>
+</script>
 
 <!-- ENTITY ENRICHERS -->
-<br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.enricher.open">
+<ng-include src="'blueprint-composer/component/spec-editor/section-enrichers.html'"></ng-include>
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-enrichers.html">
+  <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.enricher.open">
     <heading>
         Enrichers
         <span ng-if="getEnrichersIssues().length> 0" class="badge" ng-class="getBadgeClass(getEnrichersIssues())">{{getEnrichersIssues().length}}</span>
 
         <span class="pull-right" ng-show="$parent.stateWrapped.state">
-            <i class="fa fa-search collapsible-action" title="Search enrichers" ng-click="$event.stopPropagation(); $event.preventDefault();" ng-class="{'text-success': state.enricher.search.length > 0}" uib-popover-template="'SearchEnricherTemplate.html'" popover-placement="bottom-right" popover-trigger="'outsideClick'"></i>
+            <i class="fa fa-search collapsible-action" title="Search enrichers" ng-click="$event.stopPropagation(); $event.preventDefault();" ng-class="{'text-success': state.enricher.search.length > 0}" uib-popover-template="'blueprint-composer/component/spec-editor/search-enricher.html'" popover-placement="bottom-right" popover-trigger="'outsideClick'"></i>
             <a class="fa fa-plus collapsible-action" title="Add enricher" ui-sref="main.graphical.edit.add({entityId: model._id, family: 'enricher'})" ng-click="$event.stopPropagation()" ></a>
         </span>
     </heading>
@@ -413,19 +436,25 @@
 
         <div ng-repeat="adjunct in filteredEnrichers = (model.getEnrichersAsArray() | specEditorType:state.enricher.search) track by adjunct._id" class="spec-enricher spec-adjunct">
             <a ui-sref="main.graphical.edit.enricher({entityId: model._id, enricherId: adjunct._id})"></a>
-            <ng-include src="'AdjunctTemplate.html'"></ng-include>
+            <ng-include src="'blueprint-composer/component/spec-editor/adjunct.html'"></ng-include>
         </div>
     </div>
-</br-collapsible>
+  </br-collapsible>
+</script>
+
+<ng-include src="'blueprint-composer/component/spec-editor/section-others.html'"></ng-include>
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-others.html">
+</script>
+
 
 <!-- CONFIG INFO TEMPLATE :: START -->
-<script type="text/ng-template" id="ConfigInfoTemplate.html">
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/config-info.html">
     <div class="config-item-quick-info">
         <div class="quick-info-metadata">
             <p><i class="mini-icon fa fa-fw fa-cog"></i> <samp class="type-symbolic-name">{{item.name}}</samp>
             <span class="config-type label-color column-for-type oneline label label-success">{{item.type}}</span></p>
         </div>
-        <p class="quick-info-description" ng-if="item.description">{{item.description}}</p>
+        <p class="quick-info-description" ng-if="item.description" ng-bind-html="specEditor.descriptionHtml(item.description)"></p>
         <div class="quick-info-metadata config-default" ng-if="item.defaultValue"></i>Default value: <samp>{{item.defaultValue}}</samp></div>
         <div class="quick-info-metadata config-required" ng-if="item.constraints.required"><i>This field is required.</div>
     </div>
@@ -434,7 +463,7 @@
 <!-- CONFIG INFO TEMPLATE :: START-->
 
 <!-- SEARCH POLICY TEMPLATE :: START -->
-<script type="text/ng-template" id="SearchPolicyTemplate.html">
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/search-policy.html">
     <div ng-click="$event.stopPropagation(); $event.preventDefault();">
         <input ng-model="state.policy.search" type="text" class="form-control" placeholder="Search for a policy" auto-focus blur-on-enter />
     </div>
@@ -442,7 +471,7 @@
 <!--SEARCH POLICY TEMPLATE :: START-->
 
 <!-- SEARCH ENRICHER TEMPLATE :: START -->
-<script type="text/ng-template" id="SearchEnricherTemplate.html">
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/search-enricher.html">
     <div ng-click="$event.stopPropagation(); $event.preventDefault();">
         <input ng-model="state.enricher.search" type="text" class="form-control" placeholder="Search for an enricher" auto-focus blur-on-enter />
     </div>
@@ -450,7 +479,7 @@
 <!--SEARCH ENRICHER TEMPLATE :: START-->
 
 <!--TYPEAHEAD TEMPLATE :: START-->
-<script type="text/ng-template" id="ConfigItemTemplate.html">
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/config-item.html">
     <div class="dropdown-item" ng-init="item = match.model">
         <div class="dropdown-row">
             <span ng-bind-html="match.model.name | uibTypeaheadHighlight:query" class="config-name"></span>
@@ -465,7 +494,7 @@
 <!--TYPEAHEAD TEMPLATE :: END-->
 
 <!--ADJUNCT TEMPLATE :: START-->
-<script type="text/ng-template" id="AdjunctTemplate.html">
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/adjunct.html">
     <div class="media" ng-class="{'has-issues': adjunct.hasIssues()}">
         <div class="media-left media-middle">
             <img ng-src="{{adjunct.icon}}" alt="{{adjunct | entityName}} logo" class="media-object" />

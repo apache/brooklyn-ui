@@ -16,9 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import angular from 'angular';
 import {Entity} from '../util/model/entity.model';
 
+const MODULE_NAME = 'brooklyn.composer.service.palette-dragndrop-service';
 const TAG = 'SERVICE :: DRAGNDROP :: ';
+
+angular.module(MODULE_NAME, [])
+    .provider('paletteDragAndDropService', paletteDragAndDropServiceProvider);
+
+export default MODULE_NAME;
 
 export function paletteDragAndDropServiceProvider() {
     return {

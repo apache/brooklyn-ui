@@ -16,7 +16,7 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<div class="container-fluid">
+<div class="container-fluid palette-full-height-wrapper">
     <div ng-show="isLoading">
         <div class="spinner-area">
             <div class="spinner">
@@ -30,20 +30,15 @@
         </div>
     </div>
 
-    <div ng-show="!isLoading">
+    <div ng-show="!isLoading" class="catalog-palette-main palette-full-height-wrapper">
+      <div class="catalog-palette-header">
         <div class="form-group" ng-class="{'has-error': isReserved()}">
             <div class="input-group input-group-sm">
-                <span class="input-group-btn" uib-dropdown keyboard-nav>
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" uib-dropdown-toggle>
-                        <i class="fa fa-sort"></i>
+                <span class="input-group-btn" keyboard-nav>
+                    <button id="palette-controls-button" type="button" class="btn btn-default dropdown-toggle" ng-class="{ 'btn-primary': showPaletteControls }" id="palette-controls" aria-haspopup="true" aria-expanded="false" 
+                            ng-click="togglePaletteControls()">
+                        <i class="fa fa-cog"></i>
                     </button>
-                    {{filters | json}}
-                    <ul class="dropdown-menu" role="menu" uib-dropdown-menu>
-                        <li role="menuitem" class="dropdown-header">Order by</li>
-                        <li role="menuitem" ng-repeat="order in state.orders track by $index" ng-class="{'active': state.currentOrder === order}" class="layer">
-                            <a ng-click="state.currentOrder = order"><i class="fa fa-fw fa-circle"></i> {{order | capitalize}}</a>
-                        </li>
-                    </ul>
                 </span>
                 <input ng-model="search" type="text" placeholder="{{getPlaceHolder()}}" class="form-control" auto-focus />
                 <span class="input-group-addon">
@@ -51,42 +46,97 @@
                     {{(searchedItems.length === 0 && search && allowFreeForm() ? 1 : searchedItems.length) == 1 ? 'item' : 'items'}}
                 </span>
             </div>
-            <ng-include src="customSubHeadTemplateName"/>
-        </div>
-        <small class="help-block text-sm no-match" ng-if="search && searchedItems.length === 0">
-            No {{family.displayName.toLowerCase()}} matching the current search
-        </small>
+            <div class="pane-nav-row" id="palette-controls" ng-if="showPaletteControls" aria-labelledby="palette-controls-button">
 
-        <div class="row grid catalog-palette">
+             <div class="filters" ng-class="{ 'multiline': filterSettings.showAllFilters }" ng-init="onFiltersShown()">
+             
+              <div class="spacer" ng-repeat-start="filter in filters" ng-if="filter.spacerBefore"></div>
+              <div class="nav-row-item" ng-repeat-end ng-click="filter.enabled = !filter.enabled">
+                <span title="{{ filter.hoverTest }}" class="label" ng-class="{'label-primary': filter.enabled, 'label-default': !filter.enabled }">
+                    <i class="fa fa-{{ filter.icon }}" ng-if="filter.icon"></i>
+                    <span ng-if="filter.label">{{ filter.label }}</span>
+                </span>
+              </div>
+             </div>
+
+              <div class="nav-row-item" ng-if="filterSettings.filtersMultilineAvailable" title="More filters available"
+                    ng-click="toggleShowAllFilters()" >
+                <span class="label" ng-class="{'label-primary': filterSettings.showAllFilters, 'label-default': !filterSettings.showAllFilters }">
+                    ...
+                </span>
+              </div>
+              
+              <div class="spacer"></div>
+                
+              <span uib-dropdown>
+                <a href id="palette-sort" uib-dropdown-toggle aria-haspopup="true" aria-expanded="false" >
+                  <div class="nav-row-item tool" title="Sort">
+                    <i class="fa fa-sort"></i></div>
+                </a>
+                <ul class="dropdown-menu right-align-icon" role="menu" uib-dropdown-menu aria-labelledby="palette-sort">
+                        <li role="menuitem" ng-repeat="order in state.currentOrderValues track by $index" class="layer">
+                            <a ng-click="sortBy(order)"><i class="fa fa-fw fa-circle"></i> {{ order.label }}</a>
+                        </li>
+                </ul>
+              </span>
+              
+              <span uib-dropdown>
+                <a href id="palette-view-mode" uib-dropdown-toggle aria-haspopup="true" aria-expanded="false" >
+                  <div class="nav-row-item tool" title="Display mode">
+                    <i class="fa fa-th"></i></div>
+                </a>
+                <ul class="dropdown-menu right-align-icon" role="menu" uib-dropdown-menu aria-labelledby="palette-view-mode">
+                        <li role="menuitem" ng-repeat="view in viewModes track by $index" ng-class="{'active': state.viewMode === view}" class="layer">
+                            <a ng-click="state.viewMode = view"><i class="fa fa-fw fa-circle"></i> {{view.name}}</a>
+                        </li>
+                </ul>
+              </span>
+            </div>
+            <ng-include src="templateUrls.subhead"/>
+        </div>
+      </div>
+
+        <div class="row grid">
             <!-- here and below, col-xs-3 or -4 or -2 all work giving different densities;
                  this could be configurable ("compressed"=xs-2 w no labels, "normal"=xs-3, "big"=xs-4) -->
-            <div class="col-xs-3 catalog-palette-item"
-                    ng-repeat="item in searchedItems = (filterPaletteItems(items | catalogSelectorSearch:search) | catalogSelectorSort:family) | orderBy:state.currentOrder | limitTo:pagination.itemsPerPage:(pagination.page-1)*pagination.itemsPerPage track by (item.containingBundle + ':' + item.symbolicName + ':' + item.version)"
-                    ng-click="onSelectItem(item)">
+            <div class="catalog-palette-item" ng-class="state.viewMode.classes"
+                    ng-repeat="item in searchedItems = (items | catalogSelectorSearch:search | catalogSelectorFilters:this) | orderBy:state.currentOrderFields | limitTo:pagination.itemsPerPage:(pagination.page-1)*pagination.itemsPerPage track by (item.containingBundle + ':' + item.symbolicName + ':' + item.version)"
+                    ng-click="onClickItem(item, false, $event)">
                 <div class="item" draggable="true" ng-dragstart="onDragItem(item, $event)" ng-dragend="onDragEnd(item, $event)">
                     <div class="item-logo">
                         <img ng-src="{{item | iconGeneratorPipe:'symbolicName'}}" alt="{{item.displayName}} logo" on-error="onImageError" item-id="{{item.symbolicName}}"/>
                     </div>
-                    <div class="item-content" ng-class="{ deprecated: item.deprecated }">
+                    <div class="item-content" ng-class="{ deprecated: item.deprecated }" ng-hide="state.viewMode.hideName">
                         <h3>{{ getEntityNameForPalette(item, item | entityName) }}</h3>
                     </div>
                     <i class="fa fa-info-circle"
-                        uib-popover-template="'QuickInfoTemplate.html'"
-                        popover-title="{{item | entityName}}"
-                        popover-placement="right-top" popover-trigger="'mouseenter'"
+                        uib-popover-template="'blueprint-composer/component/catalog-selector/quick-info.html'"
+                        ng-click="onClickItem(item, true, $event)"
+                        popover-is-open="popover == item && popoverVisible"
+                        popover-placement="right" popover-trigger="'none'"
                         popover-class="catalog-selector-popover" popover-append-to-body="true"
-                        ng-click="$event.stopPropagation()"></i>
+                        ng-mouseenter="mouseInfoPopover(item, true)"
+                        ng-mouseleave="mouseInfoPopover(item, false)"></i>
                 </div>
             </div>
 
-            <div class="col-xs-3 catalog-palette-item" ng-if="searchedItems.length === 0 && search && allowFreeForm()" ng-click="onSelectItem(freeFormTile)">
+            <div class="catalog-palette-item"
+                    ng-class="state.viewMode.classes" 
+                    ng-if="searchedItems.length === 0 && search && allowFreeForm()" ng-click="onClickItem(freeFormTile, $event)">
                 <div class="item" draggable="true" ng-dragstart="onDragItem(freeFormTile, $event)" ng-dragend="onDragEnd(freeFormTile, $event)">
                     <div class="item-logo">
                         <img ng-src="{{freeFormTile | iconGeneratorPipe:'symbolicName'}}" alt="{{freeFormTile.displayName}} logo" on-error="onImageError" item-id="{{freeFormTile.symbolicName}}"/>
                     </div>
-                    <div class="item-content">
+                    <div class="item-content" ng-hide="state.viewMode.hideName">
                         <h3>{{freeFormTile | entityName}}</h3>
                     </div>
+                    <i class="fa fa-info-circle"
+                        uib-popover-template="'blueprint-composer/component/catalog-selector/quick-info.html'"
+                        popover-is-open="popover == freeFormTile && popoverVisible"
+                        popover-placement="right-top" popover-trigger="'none'"
+                        popover-class="catalog-selector-popover" popover-append-to-body="true"
+                        ng-mouseenter="mouseInfoPopover(freeFormTile, true)"
+                        ng-mouseleave="mouseInfoPopover(freeFormTile, false)"></i>
                 </div>
                 <div class="text-danger" ng-if="isReserved()">
                     Cannot add <code>{{freeFormTile.symbolicName}}</code> because it is reserved.
@@ -94,25 +144,40 @@
             </div>
         </div>
 
-        <div uib-pagination total-items="searchedItems.length" items-per-page="pagination.itemsPerPage" ng-model="pagination.page" boundary-link-numbers="true" rotate="false" max-size="4" ng-show="searchedItems.length > pagination.itemsPerPage" class="pagination-sm pull-right"></div>
-        
-        <ng-include src="customFooterTemplateName"/>
+        <div class="catalog-palette-footer">
+            <div uib-pagination total-items="searchedItems.length" items-per-page="pagination.itemsPerPage" ng-model="pagination.page" boundary-link-numbers="true" rotate="false" max-size="4" ng-show="searchedItems.length > pagination.itemsPerPage" class="pagination-sm pull-right"></div>
+            <ng-include src="templateUrls.footer"/>
+        </div>
     </div>
 </div>
 
 <!-- QUICK INFO TEMPLATE :: START-->
-<script type="text/ng-template" id="QuickInfoTemplate.html">
+<script type="text/ng-template" id="blueprint-composer/component/catalog-selector/quick-info.html">
     <div class="palette-item-quick-info">
-        <div class="deprecated-marker" ng-if="item.deprecated">DEPRECATED</div>
-        <div class="quick-info-metadata">
-            <p><i class="mini-icon fa fa-fw fa-bookmark"></i> <samp class="type-symbolic-name">{{item.symbolicName}}</samp></p>
-            <p ng-if="item.version"><i class="mini-icon fa fa-fw fa-code-fork"></i> {{item.version}}</p>
+        <div class="quick-info-title">{{ popover | entityName }}
+            <br-svg type="close" class="pull-right closer" ng-click="closePopover()"></br-svg>
         </div>
-        <p class="quick-info-description" ng-if="item.description">{{item.description}}</p>
+        <div class="deprecated-marker" ng-if="popover.deprecated">DEPRECATED</div>
+        <div class="quick-info-metadata">
+            <p><i class="mini-icon fa fa-fw fa-bookmark"></i> <samp class="type-symbolic-name">{{popover.symbolicName}}</samp></p>
+            <p ng-if="popover.version"><i class="mini-icon fa fa-fw fa-code-fork"></i> {{popover.version}}</p>
+        </div>
+        <p class="quick-info-description" ng-if="popover.description">{{popover.description}}</p>
+        <p class="quick-info-description" ng-if="popover == freeFormTile">This is an ad hoc tile for an item entered by the user not known in the catalog.</p>
         <div class="quick-info-metadata bundle">
-            <p ng-if="item.displayTags && item.displayTags.length"><i class="mini-icon fa fa-fw fa-tags"></i> 
-                <span ng-repeat="tag in item.displayTags" class="label label-primary palette-item-tag">{{ tag }}</span> </p>
-            <p><i class="mini-icon fa fa-fw fa-file-zip-o"></i> {{item.containingBundle}}</p>
+            <p ng-if="lastUsedText(popover)"><i class="mini-icon fa fa-clock-o"></i> {{ lastUsedText(popover) }}
+              <br-svg type="close" class="closer" ng-click="popover.lastUsed = 0"></br-svg>
+            </p>
+            <p ng-if="popover.displayTags && popover.displayTags.length"><i class="mini-icon fa fa-fw fa-tags"></i> 
+                <span ng-repeat-start="tag in popover.displayTags" class="label label-primary palette-item-tag">{{ tag }}</span>
+                <span ng-repeat-end> </span> </p>
+            <p ng-if="popover.containingBundle"><i class="mini-icon fa fa-fw fa-file-zip-o"></i> {{popover.containingBundle}}</p>
+            <p ng-if="popover.relevance"><i class="mini-icon fa fa-sort-numeric-asc"></i> Relevance score: {{ popover.relevance | number:2 }}</p>
+        </div>
+        <div class="quick-info-buttons">
+            <div class="spacer"></div>
+            <button class="btn btn-primary btn-outline select-item-button" ng-click="onSelectItem(popover, false, $event)">{{ getOnSelectText(popover) }}</button>
+            <a ng-if="popover.containingBundle && allowOpenInCatalog" href="{{ getOpenCatalogLink(popover) }}" target="_blank"><button class="btn btn-info btn-outline">Open in catalog</button></a>
         </div>
     </div>
 </script>
