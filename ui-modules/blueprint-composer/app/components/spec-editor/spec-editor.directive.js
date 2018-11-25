@@ -36,7 +36,10 @@ const REPLACED_DSL_ENTITYSPEC = '___brooklyn:entitySpec';
 angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer])
     .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', '$compile', 'blueprintService', 'composerOverrides', specEditorDirective])
     .filter('specEditorConfig', specEditorConfigFilter)
-    .filter('specEditorType', specEditorTypeFilter);
+    .filter('specEditorType', specEditorTypeFilter)
+    .run(['$templateCache', templateCache]);
+
+const TEMPLATE_URL = 'blueprint-composer/component/spec-editor/spec-editor.template.html';
 
 export default MODULE_NAME;
 
@@ -79,7 +82,9 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             model: '='
         },
         controller: ['$scope', '$element', controller],
-        template: template,
+        templateUrl: function (tElement, tAttrs) { 
+            return tAttrs.templateUrl || TEMPLATE_URL; 
+        },
         link: link,
         controllerAs: 'specEditor',
     };
@@ -900,4 +905,8 @@ export function specEditorTypeFilter() {
             return item.miscData.get('typeName').indexOf(search) > -1 || item.type.indexOf(search) > -1;
         });
     }
+}
+
+function templateCache($templateCache) {
+    $templateCache.put(TEMPLATE_URL, template);
 }
