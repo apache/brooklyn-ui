@@ -25,6 +25,21 @@ pipeline {
         NEXT_DEV_VERSION = "${NEXT_RELEASE_VERSION}-SNAPSHOT"
     }
     stages {
+        stage('Check pipeline parameters') {
+            steps {
+                script {
+                    def checkCorrectVersion = { String versionVariableName, String  versionValue ->
+                        if ( ! versionValue.matches("^[0-9]+(\\.[0-9]+){2}\$") ) {
+                            throw new java.security.InvalidParameterException(
+                                "Value for " + versionVariableName + " is incorrect, expected A.B.C, actual \"" + versionValue + "\""
+                            )
+                        }
+                    }
+                    checkCorrectVersion("RELEASE_VERSION", "${RELEASE_VERSION}")
+                    checkCorrectVersion("NEXT_RELEASE_VERSION", "${NEXT_RELEASE_VERSION}")
+                }
+            }
+        }
         stage('Create release branch') {
             steps {
                 script {

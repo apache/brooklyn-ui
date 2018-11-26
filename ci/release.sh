@@ -18,16 +18,16 @@
 # under the License.
 
 function checkCorrectVersion() {
-    if ! echo "${!1}" | grep -q -e "^[0-9]\+\(\.[0-9]\+\)\+$";
+    if ! echo "${!1}" | grep -q -e "^[0-9]\+\(\.[0-9]\+\)\{2\}$";
     then
-        echo "Value for ${1} is incorrect, expected /[0-9]+.[0-9]+(.[0-9]+)?/, actual \"${!1}\""
+        echo "Value for ${1} is incorrect, expected A.B.C actual \"${!1}\""
         exit 1
     fi
 }
 
 if [ -z "${RELEASE_VERSION}" -o -z "${NEXT_RELEASE_VERSION}" ];
 then
-    echo "Usage : RELEASE_VERSION=3.1 NEXT_RELEASE_VERSION=3.2 $0"
+    echo "Usage : RELEASE_VERSION=1.0.0 NEXT_RELEASE_VERSION=1.0.1 $0"
     exit 1
 fi
 
