@@ -17,7 +17,7 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<features xmlns="http://karaf.apache.org/xmlns/features/v1.3.0" name="org.apache.brooklyn.ui.brooklyn-ui-modularity-${project.version}">
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.3.0" name="com.usharesoft.brooklyn.ui.brooklyn-ui-modularity-${project.version}">
 
     <repository>mvn:org.apache.karaf.features/standard/${karaf.version}/xml/features</repository>
     <repository>mvn:org.apache.karaf.features/enterprise/${karaf.version}/xml/features</repository>
