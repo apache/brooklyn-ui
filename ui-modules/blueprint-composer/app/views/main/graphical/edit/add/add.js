@@ -27,17 +27,18 @@ export const graphicalEditAddState = {
     name: 'main.graphical.edit.add',
     url: '/add/:family?configKey',
     template: template,
-    controller: ['$scope', '$filter', '$state', '$stateParams', 'blueprintService', GraphicalEditAddController],
+    controller: ['$scope', '$filter', '$state', '$stateParams', 'blueprintService', 'paletteService', GraphicalEditAddController],
     controllerAs: 'vm',
 };
 
-export function GraphicalEditAddController($scope, $filter, $state, $stateParams, blueprintService) {
+export function GraphicalEditAddController($scope, $filter, $state, $stateParams, blueprintService, paletteService) {
     switch ($stateParams.family) {
         case EntityFamily.ENTITY.id.toLowerCase():
             $scope.family = EntityFamily.ENTITY;
             break;
         case EntityFamily.SPEC.id.toLowerCase():
             $scope.family = EntityFamily.SPEC;
+            $scope.familiesToShow = [ EntityFamily.ENTITY, EntityFamily.SPEC ];
             $scope.configKey = $stateParams.configKey;
             break;
         case EntityFamily.POLICY.id.toLowerCase():
@@ -51,6 +52,13 @@ export function GraphicalEditAddController($scope, $filter, $state, $stateParams
             break;
     }
 
+    if (!$scope.familiesToShow) {
+        $scope.familiesToShow = [ $scope.family ];
+    }
+    
+    this.sections = paletteService.getSections();
+    this.selectedSection = Object.values(this.sections).find(section => $scope.familiesToShow.indexOf(section.type) >= 0);
+    
     $scope.getParentLink = ()=> {
         let state = graphicalEditEntityState;
         let params = {entityId: $scope.entity.hasParent() ? $scope.entity.parent._id : $scope.entity._id};
@@ -80,8 +88,19 @@ export function GraphicalEditAddController($scope, $filter, $state, $stateParams
 
         return label;
     };
+    
+    this.getOnSelectText = () => {
+        switch ($scope.family) {
+            case EntityFamily.ENTITY: return "Add as child";
+            case EntityFamily.SPEC: return "Set as spec";
+            case EntityFamily.POLICY: return "Add this policy";
+            case EntityFamily.ENRICHER: return "Add this enricher";
+            case EntityFamily.LOCATION: return "Add this location";
+        }
+        return "Select";
+    };
 
-    $scope.onTypeSelected = (type)=> {
+    this.onTypeSelected = (type)=> {
         switch ($scope.family) {
             case EntityFamily.ENTITY:
                 let newEntity = blueprintService.populateEntityFromApi(new Entity(), type);

@@ -677,7 +677,13 @@ export function D3Blueprint(container) {
      * @return {*} a D3 tree node
      */
     function nodeForEntity(entity) {
-        let node = _d3DataHolder.nodes.find((d)=>(d.data._id === entity._id));
+        let node = _d3DataHolder.nodes.find(d => {
+            let predicate = d.data._id === entity._id;
+            if (!!d.data.getClusterMemberspecEntity(PREDICATE_MEMBERSPEC)) {
+                predicate |= d.data.getClusterMemberspecEntity(PREDICATE_MEMBERSPEC)._id === entity._id;
+            }
+            return predicate;
+        });
         if (!node) {
             throw new Error('Node for Entity ' + entity._id + ' not found');
         }
@@ -702,19 +708,21 @@ export function D3Blueprint(container) {
             .attr('d', function(d) {
                 let targetNode = nodeForEntity(d.target);
                 let sourceNode = nodeForEntity(d.source);
+                let sourceY = sourceNode.y + (d.source.isMemberSpec() ? _configHolder.nodes.memberspec.circle.cy : 0);
+                let targetY = targetNode.y + (d.target.isMemberSpec() ? _configHolder.nodes.memberspec.circle.cy : 0);
                 let dx = targetNode.x - sourceNode.x;
-                let dy = targetNode.y - sourceNode.y;
+                let dy = targetY - sourceY;
                 let dr = Math.sqrt(dx * dx + dy * dy);
                 let sweep = dx * dy > 0 ? 0 : 1;
-                _mirror.attr('d', `M ${sourceNode.x},${sourceNode.y} A ${dr},${dr} 0 0,${sweep} ${targetNode.x},${targetNode.y}`);
+                _mirror.attr('d', `M ${sourceNode.x},${sourceY} A ${dr},${dr} 0 0,${sweep} ${targetNode.x},${targetY}`);
 
                 let m = _mirror._groups[0][0].getPointAtLength(_mirror._groups[0][0].getTotalLength() - _configHolder.nodes.child.circle.r - 20);
 
                 dx = m.x - sourceNode.x;
-                dy = m.y - sourceNode.y;
+                dy = m.y - sourceY;
                 dr = Math.sqrt(dx * dx + dy * dy);
 
-                return `M ${sourceNode.x},${sourceNode.y} A ${dr},${dr} 0 0,${sweep} ${m.x},${m.y}`;
+                return `M ${sourceNode.x},${sourceY} A ${dr},${dr} 0 0,${sweep} ${m.x},${m.y}`;
             });
         relationData.exit()
             .transition()
@@ -879,8 +887,6 @@ export function D3Blueprint(container) {
         specNodeData.select('image')
             .transition()
             .duration(_configHolder.transition)
-            .attr('transform', (d)=>(`rotate(${d.data.hasChildren() ? 45 : 0})`))
-            .attr('transform-origin', 0)
             .attr('opacity', (d)=>(d.data.getClusterMemberspecEntity(PREDICATE_MEMBERSPEC).hasIcon() ? 1 : 0))
             .attr('xlink:href', (d)=>(d.data.getClusterMemberspecEntity(PREDICATE_MEMBERSPEC).icon));
     }

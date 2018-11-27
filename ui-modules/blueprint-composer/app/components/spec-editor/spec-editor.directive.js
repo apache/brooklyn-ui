@@ -27,15 +27,19 @@ import {RESERVED_KEYS, DSL_ENTITY_SPEC} from '../providers/blueprint-service.pro
 import brooklynDslEditor from '../dsl-editor/dsl-editor';
 import brooklynDslViewer from '../dsl-viewer/dsl-viewer';
 import template from './spec-editor.template.html';
+import {graphicalState} from '../../views/main/graphical/graphical.state';
 
 const MODULE_NAME = 'brooklyn.components.spec-editor';
 const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
 const REPLACED_DSL_ENTITYSPEC = '___brooklyn:entitySpec';
 
 angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer])
-    .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', 'blueprintService', specEditorDirective])
+    .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', '$compile', 'blueprintService', 'composerOverrides', specEditorDirective])
     .filter('specEditorConfig', specEditorConfigFilter)
-    .filter('specEditorType', specEditorTypeFilter);
+    .filter('specEditorType', specEditorTypeFilter)
+    .run(['$templateCache', templateCache]);
+
+const TEMPLATE_URL = 'blueprint-composer/component/spec-editor/spec-editor.template.html';
 
 export default MODULE_NAME;
 
@@ -71,19 +75,23 @@ export const CONFIG_FILTERS = [
     }
 ];
 
-export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, blueprintService) {
+export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, $state, $compile, blueprintService, composerOverrides) {
     return {
         restrict: 'E',
         scope: {
             model: '='
         },
-        controller: controller,
-        template: template,
+        controller: ['$scope', '$element', controller],
+        templateUrl: function (tElement, tAttrs) { 
+            return tAttrs.templateUrl || TEMPLATE_URL; 
+        },
         link: link,
         controllerAs: 'specEditor',
     };
-    
-    function controller() {
+
+    function controller($scope, $element) {
+        (composerOverrides.configureSpecEditorController || function() {})(this, $scope, $element);
+        
         // does very little currently, but link adds to this
         return this;
     }
@@ -94,7 +102,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope.FAMILIES = EntityFamily;
         scope.RESERVED_KEYS = RESERVED_KEYS;
         scope.REPLACED_DSL_ENTITYSPEC = REPLACED_DSL_ENTITYSPEC;
-        
+
         let defaultState = {
             config: {
                 add: {
@@ -110,7 +118,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 // TODO would be nice to set null here, then have it go true if there is filtered config
                 // but the collapsible widget doesn't seem to respond to subsequent state changed
                 open: true,
-                
+
                 dslViewerManualOverride: {},
                 codeModeActive: {},
                 codeModeForced: {},
@@ -129,6 +137,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 open: false
             }
         };
+        // allow downstream to configure this controller and/or scope
+        (composerOverrides.configureSpecEditor || function() {})(specEditor, scope, element, $state, $compile, $templateCache);
 
         scope.filters = {
             config: CONFIG_FILTERS
@@ -137,7 +147,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope.onFilterClicked = (filter) => {
             if (!scope.isFilterDisabled(filter)) scope.state.config.filter.values[ filter.id ] = !scope.state.config.filter.values[ filter.id ];
         };
-         
+
         scope.state = sessionStorage && sessionStorage.getItem(scope.model._id)
             ? JSON.parse(sessionStorage.getItem(scope.model._id))
             : defaultState;
@@ -155,7 +165,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         });
 
         loadCustomConfigWidgetMetadata(scope);
-        
+
         scope.config = {};
         scope.$watch('model', (newVal, oldVal)=> {
             if (newVal && !newVal.equals(oldVal)) {
@@ -245,13 +255,13 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope.nonempty = (o) => o && Object.keys(o).length;
         scope.defined = specEditor.defined = (o) => (typeof o !== 'undefined');
         specEditor.advanceOutToFormGroupInPanel = (element, event) => {
-            focusIfPossible(event, findAncestor(element, "form-group", "panel-body")) || element[0].blur(); 
+            focusIfPossible(event, findAncestor(element, "form-group", "panel-body")) || element[0].blur();
         };
         specEditor.advanceControlInFormGroup = (element, event) => {
             focusIfPossible(event, findNext(element, "form-control", "form-group")) ||
                 specEditor.advanceOutToFormGroupInPanel(element, event);
         };
-        
+
         scope.onAddMapProperty = (configKey, key, ev)=> {
             if (key) {
                 if (!scope.config[configKey]) {
@@ -259,7 +269,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 }
                 if (!scope.config[configKey].hasOwnProperty(key)) {
                     scope.config[configKey][key] = '';
-                    
+
                     // defer so control exists, then focus on previous item (new control)
                     $timeout(() => {
                         let element = angular.element(ev.target);
@@ -315,7 +325,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 scope.state.config.filter.values.all = true;
             }
         };
-        scope.recordFocus = specEditor.recordFocus = ($item)=> {
+        scope.recordFocus = specEditor.recordFocus = ($item) => {
             scope.state.config.focus = $item.name;
         };
 
@@ -332,8 +342,19 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             }
         };
 
-        scope.removeEntity = ()=> {
-            $rootScope.$broadcast('d3.remove', scope.model);
+        scope.removeModel = ()=> {
+            switch (scope.model.family) {
+                case EntityFamily.ENRICHER:
+                    scope.model.parent.removeEnricher(scope.model._id);
+                    break;
+                case EntityFamily.POLICY:
+                    scope.model.parent.removePolicy(scope.model._id);
+                    break;
+                default:
+                    $rootScope.$broadcast('d3.remove', scope.model);
+                    break;
+            }
+            $state.go(graphicalState.name);
         };
 
         scope.getConfigIssues = specEditor.getConfigIssues = ()=> {
@@ -366,35 +387,45 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             return issues.some(issue => issue.level === ISSUE_LEVEL.ERROR) ? 'badge-danger' : 'badge-warning';
         };
 
+        specEditor.descriptionHtml = (text) => {
+            let out = [];
+            for (let item of text.split(/\n\n+/)) {
+                out.push('<div class="paragraph-spacing"></div>');
+                out.push($sanitize(item));
+            }
+            out.splice(0,1);
+            return $sce.trustAsHtml(out.join("\n"));
+        };
+
         function getConfigWidgetModeInternal(item, val) {
             if (angular.element($document[0].activeElement).hasClass("form-control") && item.widgetMode) {
                 // don't switch mode in mid-edit, e.g. if you are manually typing $brooklyn:component("x").config("y")
                 // don't interrupt when the user has typed $brooklyn:component("x")!
                 return item.widgetMode;
             }
-            
+
             if (specEditor.isDsl(item.name)) {
-                return scope.state.config.dslViewerManualOverride && scope.state.config.dslViewerManualOverride[item.name] ? 
+                return scope.state.config.dslViewerManualOverride && scope.state.config.dslViewerManualOverride[item.name] ?
                     "dsl-manual" // causes default string editor
-                    : "dsl-viewer"; 
+                    : "dsl-viewer";
             }
-            
+
             if (!specEditor.defined(val)) val = scope.config[item.name];
             let type = baseType(item.type);
-            
+
             // if actual value's type does not match declared type,
             // e.g. object is a map when declared type is object or string or something else,
             // we could render e.g. w map editor as a convenience;
             // but for now the logic is only based on the declared type
-            
+
             if (type === 'java.lang.Boolean') type = 'boolean';
             else if (type === 'java.util.Map') type = 'map';
             else if (type === 'java.util.Set' || type === 'java.util.List' || type === 'java.util.Collection') type = 'array';
-            
+
             if (specEditor.defined(val)) {
                 // override to use string editor if the editor doesn't support the value
                 // (probably this is an error, though type-coercion might make it not so)
-                if (type === 'boolean') { 
+                if (type === 'boolean') {
                     if (typeof val !== type) return type+'-manual';  // causes default string editor
                 } else if (type === 'map') {
                     if (typeof val !== 'object') return type+'-manual';  // causes default string editor
@@ -406,16 +437,16 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 // code mode forces manual editor
                 return type+'-manual';
             }
-            
+
             return type;
         };
         scope.getConfigWidgetMode = (item, value) => {
             // record the value as `item.widgetMode` so we can reference it subsequently, as well as returning it
-            
+
             if (item.type) {
                 return item.widgetMode = getConfigWidgetModeInternal(item, value);
             }
-            
+
             // if type isn't set then infer
             if (value instanceof Array) {
                 definition.widgetMode = 'array';
@@ -427,7 +458,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         }
         scope.isCodeModeAvailable = (item) => {
             let val = scope.config[item.name];
-            
+
             if (scope.state.config.codeModeActive[item.name]) {
                 // simple check to update whether it is forced when active -- if it starts with { or [
                 scope.state.config.codeModeForced[item.name] = (typeof val === 'string' && val.trim().match(/^[{\[]/));
@@ -447,7 +478,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     // if parse returns a string or a complex object, then it looks like JSON was entered
                     // (e.g. "foo" or {a:1}); if not, eg user entered boolean or number (45 or true),
                     // then don't offer code mode; if it was complex, additionally force code mode
-                    scope.state.config.codeModeForced[item.name] = typeof parsed === 'object' || typeof parsed === 'array'; 
+                    scope.state.config.codeModeForced[item.name] = typeof parsed === 'object' || typeof parsed === 'array';
                     return (scope.state.config.codeModeForced[item.name] || typeof parsed === 'string');
                 } catch (ex) {
                     // not valid text input for code mode
@@ -491,7 +522,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                             // parsed value is a primitive, make that be the value shown
                         } else {
                             // if type is not a string, then show unchanged value
-                            // (would only come here on weird changes) 
+                            // (would only come here on weird changes)
                             value = null;
                         }
                     } catch (notJson) {
@@ -537,7 +568,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 return "Edit in simple mode, unwrapping JSON if possible ["+itemName+"]";
             }
         };
-        /** returns 'enabled' or 'disabled' if a widget is defined, or null if no special widget is defined */ 
+        /** returns 'enabled' or 'disabled' if a widget is defined, or null if no special widget is defined */
         specEditor.getCustomConfigWidgetMode = (item) => {
             var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
             if (!widgetMetadata || widgetMetadata["error"]) return null;
@@ -577,7 +608,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             }
             return templateName;
         };
-        
+
         specEditor.isDsl = (key, index) => {
             let val = scope.model.config.get(key);
             if (specEditor.defined(val) && specEditor.defined(index) && index!=null) val = val[index];
@@ -587,9 +618,10 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             // don't treat constants as DSL (not helpful, and the DSL editor doesn't support it)
             return (val instanceof Dsl) && val.kind && val.kind.family != 'constant';
         };
-        specEditor.isDslWizardButtonAllowed = (key, index) => {
+        specEditor.isDslWizardButtonAllowed = (key, index, nonModelValue) => {
             let val = scope.model.config.get(key);
             if (specEditor.defined(val) && specEditor.defined(index) && index!=null) val = val[index];
+            if (!specEditor.defined(val) || val===null || val==='') val = nonModelValue;
             if (!specEditor.defined(val) || val===null || val==='') return true;
             if (specEditor.isDslVal(val)) {
                 return true;
@@ -597,7 +629,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             // non-DSL values cannot be opened in DSL editor
             return false;
         };
-        
+
         function getAddListConfig() {
             if (!angular.isArray(scope.model.miscData.get('config'))) {
                 return [];
@@ -618,7 +650,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 });
             });
         }
-        
+
         /* config state for each item is stored in multiple places:
          * * scope.config = map of values used/set by editor (strings, map of strings, json code if using code mode, etc);
          *   this should be suitable for ng-model to work with, so e.g. if using code mode we need to put JSON.stringify value in here,
@@ -647,7 +679,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             if (!specEditor.defined(value) || value==null) {
                 return value;
             }
-             
+
             if (ANY_MEMBERSPEC_REGEX.test(key) && value.hasOwnProperty(DSL_ENTITY_SPEC)) {
                 let wrapper = {};
                 wrapper[REPLACED_DSL_ENTITYSPEC] = value[DSL_ENTITY_SPEC];
@@ -656,7 +688,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             if (value instanceof Dsl) {
                 return value.toString();
             }
-            
+
             let definition = scope.model.miscData.get('config').find(config => config.name === key);
             if (!definition) {
                 // odd, no def'n for this key
@@ -665,18 +697,35 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             } else {
                 if (!definition.widgetMode) scope.getConfigWidgetMode(definition);
             }
-            
+
             // if json mode, then just stringify
             if (scope.state.config.codeModeActive[key]) {
                 if (scope.state.config.codeModeError[key]) {
                     // errors don't get stringified because model value was not parsed
                     return value;
                 }
-                return JSON.stringify(value);
+                // if current local value gives same result then don't change it
+                // (don't interrupt user's flow, and respect their spacing, at least until
+                // they click away; ultimately we would like access to the parse tree,
+                // so we could take the text as entered exactly (maybe stripping initial whitespace),
+                // also supporting yaml and comments, but that is a bigger task!)
+                if (scope.config && typeof scope.config[key] === 'string') {
+                    try {
+                        if (JSON.stringify(JSON.parse(scope.config[key]))===JSON.stringify(value)) {
+                            return scope.config[key];
+                        }
+                    } catch (ignoredError) {
+                        console.log("Couldn't handle entered JSON", scope.config[key], ignoredError);
+                    }
+                }
+                // otherwise pretty print it, so they get decent multiline on first load and
+                // if they click off the entity then back on to the entity and this field
+                // (we'd like to respect what they actually typed but that needs the parse tree, as above)
+                return JSON.stringify(value, null, "  ");
             }
-            
+
             // else treat as value, with array/map special
-            
+
             try {
                 if (definition.widgetMode === 'array') {
                     return value.map(item => {
@@ -710,15 +759,15 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 scope.state.config.codeModeActive[key] = true;
                 // and the widget mode updated to be 'manual'
                 scope.getConfigWidgetMode(definition, value);
-                
-                return JSON.stringify(value);
+                // and rerun this method so we get it prettified if appropriate
+                return getLocalConfigValueFromModelValue(key, value);
             }
-            
+
             // if boolean, return as primitive type
             if (typeof value === 'boolean') {
                 return value;
             }
-            
+
             // all other primitives treat as string (as they will get a string-based widget)
             return ""+value;
         }
@@ -739,13 +788,13 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     // yaml editor from simplifying it to be "3" or "1".
                     throw 'decimal ending with dot or 0, eg version, treat as string';
                 }
-                // numbers and booleans are unquoted 
+                // numbers and booleans are unquoted
                 return prim;
             } catch (ex) {
                 return val;
             }
         }
-        
+
         function setModelFromLocalConfig() {
             let localConfig = scope.config;
             let result = {};
@@ -758,28 +807,28 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     result[keyRef][DSL_ENTITY_SPEC] = localConfig[keyRef][REPLACED_DSL_ENTITYSPEC];
                     continue;
                 }
-                
+
                 let definition = scope.model.miscData.get('config').find(config => config.name === keyRef);
                 if (!definition) {
                     // odd, no def'n for this key; infer
                     definition = {};
                     scope.getConfigWidgetMode(definition, localConfig[keyRef])
                 }
-                
+
                 // if JSON mode then parse
                 scope.state.config.codeModeError[keyRef] = null;
                 if (scope.state.config.codeModeActive && scope.state.config.codeModeActive[keyRef]) {
                     try {
                         result[keyRef] = JSON.parse(localConfig[keyRef]);
                     } catch (ex) {
-                        scope.state.config.codeModeError[keyRef] = "Invalid JSON"; 
+                        scope.state.config.codeModeError[keyRef] = "Invalid JSON";
                         result[keyRef] = localConfig[keyRef];
-                    }                    
+                    }
                     continue;
                 }
-                
+
                 // else return as is, or introspect for array/map
-                
+
                 if (definition.widgetMode === 'array') {
                     result[keyRef] = localConfig[keyRef].map(getModelValueFromString);
                     continue;
@@ -791,10 +840,10 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     }
                     continue;
                 }
-                
+
                 result[keyRef] = getModelValueFromString(localConfig[keyRef]);
             }
-            
+
             scope.model.setConfigFromJson(result);
         }
 
@@ -815,12 +864,15 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         function refreshCustomValidation(model) {
             model.config.forEach((value, key) => {
                 let config = model.miscData.get('config').find(config => config.name === key);
+                // Ideally code below would escaped or use template/directive; sanitize just catches attacks.
+                // (These values are automatically sanitized in any case, so that's redundant.)
+
                 // If we need an integer, check if the value is a number
                 if (config.type === 'java.lang.Integer' && !angular.isNumber(value) && !(value instanceof Dsl)) {
-                    model.addIssue(Issue.builder().group('config').ref(key).message($sce.trustAsHtml(`<code>${value}</code> is not a number`)).build());
+                    model.addIssue(Issue.builder().group('config').ref(key).message('<code>'+$sanitize(value)+'</code> is not a number').build());
                 }
                 if (scope.state.config.codeModeError[key]) {
-                    model.addIssue(Issue.builder().group('config').ref(key).message($sce.trustAsHtml(`<code>${value}</code> is not valid JSON`)).build());
+                    model.addIssue(Issue.builder().group('config').ref(key).message('<code>'+$sanitize(value)+'</code> is not valid JSON').build());
                 }
             });
         }
@@ -831,7 +883,7 @@ export function specEditorConfigFilter() {
     return function (input, filtersMapById, model) {
         let filters = [];
         Object.keys(filtersMapById).forEach( (k) => { if (filtersMapById[k]) filters.push(k); } );
-        
+
         if (!filters.every(filterId => CONFIG_FILTERS.some(filter => filter.id === filterId))) {
             return input;
         }
@@ -853,4 +905,8 @@ export function specEditorTypeFilter() {
             return item.miscData.get('typeName').indexOf(search) > -1 || item.type.indexOf(search) > -1;
         });
     }
+}
+
+function templateCache($templateCache) {
+    $templateCache.put(TEMPLATE_URL, template);
 }

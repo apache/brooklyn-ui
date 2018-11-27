@@ -21,9 +21,11 @@ import angular from 'angular';
 import template from './suggestion-dropdown.html';
 
 const MODULE_NAME = 'brooklyn.components.custom-config-widget.suggestion-dropdown';
+const TEMPLATE_URL = 'blueprint-composer/component/suggestion-dropdown/index.html';
 
 angular.module(MODULE_NAME, [])
-    .directive('suggestionDropdown', ['$rootScope', suggestionDropdownDirective]);
+    .directive('suggestionDropdown', ['$rootScope', suggestionDropdownDirective])
+    .run(['$templateCache', templateCache]);
 
 export default MODULE_NAME;
 
@@ -31,13 +33,15 @@ export function suggestionDropdownDirective($rootScope) {
     return {
         require: "^^specEditor",  // only intended for use in spec editor, and calls functions on that controller
         restrict: 'E',
+        templateUrl: function (tElement, tAttrs) {
+            return tAttrs.templateUrl || TEMPLATE_URL;
+        },
         scope: {
             item: '=',
             params: '=',
             config: '=',
             model: '=',
         },
-        template: template,
         link: link,
     };
 
@@ -58,5 +62,8 @@ export function suggestionDropdownDirective($rootScope) {
             }
         };
     }
-    
+}
+
+function templateCache($templateCache) {
+    $templateCache.put(TEMPLATE_URL, template);
 }
