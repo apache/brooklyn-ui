@@ -95,8 +95,10 @@ pipeline {
         stage('Push git change to remote server') {
             steps {
                 script {
-                    sh 'git push origin "${RELEASE_BRANCH}"'
-                    sh 'git push origin "${RELEASE_TAG}"'
+                    sshagent(['github-usharesoft-ci']) {
+                        sh 'git push origin "${RELEASE_BRANCH}"'
+                        sh 'git push origin "${RELEASE_TAG}"'
+                    }
                 }
             }
         }
