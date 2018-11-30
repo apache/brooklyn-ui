@@ -538,7 +538,8 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
     }
 
     function addUnlistedParameterDefinitions(entity) {
-        // copy parameter definitions set on this entity into the miscData aggregated view
+        // copy parameter definitions set on this entity into the miscData aggregated view;
+        // TODO see discussions in PR 112 about whether this is necessary and/or there is a better way
         let allParams = entity.miscData.get('parameters') || [];
         entity.parameters.forEach((param) => {
             if (!allParams.some((e) => e.name === param.name)) {
