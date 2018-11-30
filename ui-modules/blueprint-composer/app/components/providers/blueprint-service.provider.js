@@ -253,13 +253,11 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
             entity.miscData.set('traits', []);
             deferred.resolve(entity);
             addUnlistedConfigKeysDefinitions(entity);
-            addUnlistedParameterDefinitions(entity);
         } else {
             entity.miscData.set('sensors', []);
             entity.miscData.set('traits', []);
             deferred.resolve(entity);
             addUnlistedConfigKeysDefinitions(entity);
-            addUnlistedParameterDefinitions(entity);
         }
 
         return deferred.promise;
@@ -527,6 +525,8 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
     }
 
     function addUnlistedConfigKeysDefinitions(entity) {
+        // there may be config in the entity definition not in the model; if so, add them.
+        // parameters will all be defined in this model so no need to do this for them. 
         let allConfig = entity.miscData.get('config') || [];
         entity.config.forEach((value, key) => {
             if (!allConfig.some((e) => e.name === key)) {
@@ -534,16 +534,6 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
             }
         });
         entity.miscData.set('config', allConfig);
-    }
-
-    function addUnlistedParameterDefinitions(entity) {
-        let allParams = entity.miscData.get('parameters') || [];
-        entity.parameters.forEach((param) => {
-            if (!allParams.some((e) => e.name === param.name)) {
-                allParams.push(param);
-            }
-        });
-        entity.miscData.set('parameters', allParams);
     }
 
     function populateEntityFromApiSuccess(entity, data) {
@@ -568,7 +558,6 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         entity.miscData.set('ui-composer-hints', uiHints);
         entity.miscData.set('virtual', data.virtual || null);
         addUnlistedConfigKeysDefinitions(entity);
-        addUnlistedParameterDefinitions(entity);
         return entity;
     }
     function mergeAppendingLists(dst, src) {
@@ -594,7 +583,6 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         entity.miscData.set('virtual', null);
         entity.icon = typeNotFoundIcon;
         addUnlistedConfigKeysDefinitions(entity);
-        addUnlistedParameterDefinitions(entity);
         return entity;
     }
 
