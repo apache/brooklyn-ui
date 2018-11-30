@@ -527,6 +527,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
     }
 
     function addUnlistedConfigKeysDefinitions(entity) {
+        // copy config key definitions set on this entity into the miscData aggregated view
         let allConfig = entity.miscData.get('config') || [];
         entity.config.forEach((value, key) => {
             if (!allConfig.some((e) => e.name === key)) {
@@ -537,6 +538,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
     }
 
     function addUnlistedParameterDefinitions(entity) {
+        // copy parameter definitions set on this entity into the miscData aggregated view
         let allParams = entity.miscData.get('parameters') || [];
         entity.parameters.forEach((param) => {
             if (!allParams.some((e) => e.name === param.name)) {
