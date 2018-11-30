@@ -291,6 +291,18 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
             };
         });
 
+        let params = entity.miscData.get('parameters').filter(param => param !== definition).map(param => {
+            return {
+                id: param.name,
+                type: DSL_KINDS.CONFIG,
+                entity: entity,
+                name: param.name,
+                description: param.description
+            };
+        });
+        
+        config = config.concat(params);
+
         config = Object.values(entity.getClusterMemberspecEntities()).reduce((acc, spec) => {
             return acc.concat(getConfigItems(spec, definition));
         }, config);

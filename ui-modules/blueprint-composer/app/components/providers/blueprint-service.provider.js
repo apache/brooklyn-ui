@@ -253,11 +253,13 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
             entity.miscData.set('traits', []);
             deferred.resolve(entity);
             addUnlistedConfigKeysDefinitions(entity);
+            addUnlistedParameterDefinitions(entity);
         } else {
             entity.miscData.set('sensors', []);
             entity.miscData.set('traits', []);
             deferred.resolve(entity);
             addUnlistedConfigKeysDefinitions(entity);
+            addUnlistedParameterDefinitions(entity);
         }
 
         return deferred.promise;
@@ -534,6 +536,16 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         entity.miscData.set('config', allConfig);
     }
 
+    function addUnlistedParameterDefinitions(entity) {
+        let allParams = entity.miscData.get('parameters') || [];
+        entity.parameters.forEach((param) => {
+            if (!allParams.some((e) => e.name === param.name)) {
+                allParams.push(param);
+            }
+        });
+        entity.miscData.set('parameters', allParams);
+    }
+
     function populateEntityFromApiSuccess(entity, data) {
         entity.clearIssues({group: 'type'});
         entity.type = data.symbolicName;
@@ -545,6 +557,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         });
         entity.miscData.set('typeName', data.displayName || data.symbolicName);
         entity.miscData.set('config', data.config || []);
+        entity.miscData.set('parameters', data.parameters || []);
         entity.miscData.set('sensors', data.sensors || []);
         entity.miscData.set('traits', data.supertypes || []);
         entity.miscData.set('tags', data.tags || []);
@@ -555,6 +568,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         entity.miscData.set('ui-composer-hints', uiHints);
         entity.miscData.set('virtual', data.virtual || null);
         addUnlistedConfigKeysDefinitions(entity);
+        addUnlistedParameterDefinitions(entity);
         return entity;
     }
     function mergeAppendingLists(dst, src) {
@@ -574,11 +588,13 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         entity.addIssue(Issue.builder().group('type').message($sce.trustAsHtml(`Type <samp>${entity.type + (entity.hasVersion ? ':' + entity.version : '')}</samp> does not exist`)).build());
         entity.miscData.set('typeName', entity.type || '');
         entity.miscData.set('config', []);
+        entity.miscData.set('parameters', []);
         entity.miscData.set('sensors', []);
         entity.miscData.set('traits', []);
         entity.miscData.set('virtual', null);
         entity.icon = typeNotFoundIcon;
         addUnlistedConfigKeysDefinitions(entity);
+        addUnlistedParameterDefinitions(entity);
         return entity;
     }
 
