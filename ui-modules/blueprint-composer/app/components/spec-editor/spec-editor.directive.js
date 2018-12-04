@@ -81,7 +81,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope: {
             model: '='
         },
-        controller: ['$scope', '$element', controller],
+        controller: ['$scope', '$element', 'paletteService', controller],
         templateUrl: function (tElement, tAttrs) { 
             return tAttrs.templateUrl || TEMPLATE_URL; 
         },
@@ -89,7 +89,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         controllerAs: 'specEditor',
     };
 
-    function controller($scope, $element) {
+    function controller($scope, $element, paletteService) {
+        $scope.paletteService = paletteService;
         (composerOverrides.configureSpecEditorController || function() {})(this, $scope, $element);
         
         // does very little currently, but link adds to this
@@ -102,6 +103,19 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope.FAMILIES = EntityFamily;
         scope.RESERVED_KEYS = RESERVED_KEYS;
         scope.REPLACED_DSL_ENTITYSPEC = REPLACED_DSL_ENTITYSPEC;
+
+        specEditor.sections = scope.paletteService.getSections();
+        specEditor.hasParentEntity = element.parent().children()[0].tagName == "SECTION"
+            && element.parent().children()[0].classList.contains("spec-parent");
+        specEditor.needToolbar = !["policy", "enricher", "location", "other"].includes(element.attr("model"));
+
+        if (specEditor.hasParentEntity) {
+            $rootScope.oldSelectedSection = $rootScope.selectedSection
+            $rootScope.selectedSection = specEditor.sections.entities;
+        } else if ($rootScope.oldSelectedSection) {
+            $rootScope.selectedSection = $rootScope.oldSelectedSection;
+            $rootScope.oldSelectedSection = undefined;
+        }
 
         let defaultState = {
             config: {

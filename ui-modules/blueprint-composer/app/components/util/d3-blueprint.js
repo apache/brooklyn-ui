@@ -30,7 +30,6 @@ export function D3Blueprint(container) {
     let _relationGroup = _parentGroup.append('g').attr('class', 'relation-group');
     let _specNodeGroup = _parentGroup.append('g').attr('class', 'spec-node-group');
     let _dropZoneGroup = _parentGroup.append('g').attr('class', 'dropzone-group');
-    let _ghostNodeGroup = _parentGroup.append('g').attr('class', 'ghost-node-group');
     let _nodeGroup = _parentGroup.append('g').attr('class', 'node-group');
     let _cloneGroup = _parentGroup.append('g').attr('class', 'clone-group');
 
@@ -167,7 +166,6 @@ export function D3Blueprint(container) {
     };
     let _d3DataHolder = {
         nodes: [],
-        ghostNodes: [],
         orphans: [],
         links: [],
         relationships: [],
@@ -261,25 +259,6 @@ export function D3Blueprint(container) {
             _dropZoneGroup.selectAll('.dropzone-prev').classed('hidden', false);
             _dropZoneGroup.selectAll('.dropzone-next').classed('hidden', false);
         }
-    }
-
-    /**
-     * Mouse Enter Event Handler
-     *
-     * @param {object} node The graph node the mouse is over
-     */
-    function onGhostOver(node) {
-        d3.select(`#ghost-node-${node.data._id} g.buttons`).classed('active', true);
-        // show whole group not just buttons
-    }
-
-    /**
-     * Mouse Leave Event Handler
-     *
-     * @param {object} node The graph node the mouse just left
-     */
-    function onGhostLeave(node) {
-        d3.select(`#ghost-node-${node.data._id} g.buttons`).classed('active', false);
     }
 
     /**
@@ -451,8 +430,6 @@ export function D3Blueprint(container) {
             if (id) {
                 _dropZoneGroup.select(`#${id}`).classed('active', true)
             }
-        } else {
-            onGhostOver(node);
         }
     }
 
@@ -472,8 +449,6 @@ export function D3Blueprint(container) {
             if (id) {
                 _dropZoneGroup.select(`#${id}`).classed('active', false)
             }
-        } else {
-            onGhostLeave(node);
         }
     }
 
@@ -541,7 +516,6 @@ export function D3Blueprint(container) {
         drawRelationships();
         drawNodeGroup();
         drawSpecNodeGroup();
-        drawGhostNode();
         drawDropZoneGroup();
         return this;
     }
@@ -577,8 +551,6 @@ export function D3Blueprint(container) {
         let entity = nodeGroup.append('g')
             .attr('class', 'node-entity entity')
             .on('click', onEntityClick)
-            .on('mouseenter', onGhostOver)
-            .on('mouseleave', onGhostLeave)
             .call(d3.drag()
                 .on('start', onDragStart)
                 .on('drag', onDrag)
@@ -729,40 +701,6 @@ export function D3Blueprint(container) {
             .duration(_configHolder.transition)
             .attr('opacity', 0)
             .remove();
-    }
-
-    function drawGhostNode() {
-        let ghostNodeData = _ghostNodeGroup.selectAll('g.ghost-node')
-            .data(_d3DataHolder.nodes, (d)=>(`ghost-node-${d.data._id}`));
-        let ghostNode = ghostNodeData
-            .enter()
-            .append('g')
-            .attr('id', (d)=>(`ghost-node-${d.data._id}`))
-            .attr('class', 'ghost-node')
-            .attr('transform', (d)=>(`translate(${d.x}, ${d.y})`))
-            .on('mouseenter', onGhostOver)
-            .on('mouseleave', onGhostLeave);
-        ghostNodeData
-            .transition()
-            .duration(_configHolder.transition)
-            .attr('transform', (d)=>(`translate(${d.x}, ${d.y})`));
-        ghostNodeData.exit().remove();
-
-        ghostNode.append('rect')
-            .attr('class', 'ghost')
-            .attr('width', (d)=>(isRootNode(d) ? _configHolder.nodes.root.rect.width : _configHolder.nodes.child.circle.r * 2))
-            .attr('height', (d)=>((isRootNode(d) ? _configHolder.nodes.root.rect.height : _configHolder.nodes.child.circle.r * 2) + 80))
-            .attr('x', (d)=>(isRootNode(d) ? _configHolder.nodes.root.rect.x : -_configHolder.nodes.child.circle.r))
-            .attr('y', (d)=>(isRootNode(d) ? _configHolder.nodes.root.rect.y : -_configHolder.nodes.child.circle.r));
-
-        let buttonsGroup = ghostNode.append('g')
-            .attr('class', 'buttons');
-        appendElements(buttonsGroup, _configHolder.nodes.buttongroup);
-
-        let buttonAdd = buttonsGroup.append('g')
-            .attr('class', 'button button-add')
-            .on('click', onAddChildClick);
-        appendElements(buttonAdd, _configHolder.nodes.buttonAdd);
     }
 
     function drawDropZoneGroup() {
