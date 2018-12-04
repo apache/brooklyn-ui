@@ -687,7 +687,7 @@ function isCluster() {
  * @returns {boolean}
  */
 function isMemberSpec() {
-    return this.parent.isCluster() && this.parent.getClusterMemberspecEntity() === this;
+    return this.parent && this.parent.isCluster() && this.parent.getClusterMemberspecEntity() === this;
 }
 
 export function baseType(s) {
