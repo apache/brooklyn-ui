@@ -24,8 +24,8 @@
          
     <parent>
         <artifactId>brooklyn-ui-modules-parent</artifactId>
-        <groupId>org.apache.brooklyn.ui.modules</groupId>
-        <version>${revision}</version>
+        <groupId>com.usharesoft.brooklyn.ui.modules</groupId>
+        <version>0.2.1-SNAPSHOT</version>
     </parent>
     
     <artifactId>brooklyn-ui-modules-features</artifactId>
@@ -57,9 +57,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.brooklyn.ui.modularity</groupId>
+            <groupId>com.usharesoft.brooklyn.ui.modularity</groupId>
             <artifactId>brooklyn-ui-modularity-features</artifactId>
-            <version>${brooklyn.ui.modularity.version}</version>
+            <version>${project.version}</version>
             <type>xml</type>
             <classifier>features</classifier>
             <scope>provided</scope>
@@ -105,7 +105,7 @@
                                 <descriptor>mvn:org.apache.karaf.features/framework/${karaf.version}/xml/features</descriptor>
                                 <descriptor>mvn:org.apache.karaf.features/standard/${karaf.version}/xml/features</descriptor>
                                 <descriptor>mvn:org.apache.brooklyn/brooklyn-features/${brooklyn.version}/xml/features</descriptor>
-                                <descriptor>mvn:org.apache.brooklyn.ui.modularity/brooklyn-ui-modularity-features/${brooklyn.version}/xml/features</descriptor>
+                                <descriptor>mvn:com.usharesoft.brooklyn.ui.modularity/brooklyn-ui-modularity-features/${project.version}/xml/features</descriptor>
                                 <descriptor>file:${project.build.directory}/feature/feature.xml</descriptor>
                             </descriptors>
                         </configuration>

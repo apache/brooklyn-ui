@@ -23,9 +23,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.apache.brooklyn.ui</groupId>
+        <groupId>com.usharesoft.brooklyn.ui</groupId>
         <artifactId>brooklyn-ui-parent</artifactId>
-        <version>${revision}</version>
+        <version>0.2.1-SNAPSHOT</version>
     </parent>
     
     <artifactId>brooklyn-ui-features</artifactId>

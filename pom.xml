@@ -24,14 +24,14 @@
     <parent>
         <groupId>org.apache.brooklyn</groupId>
         <artifactId>brooklyn-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>  <!-- BROOKLYN_VERSION -->
+        <version>1.0.0-M1</version>  <!-- BROOKLYN_VERSION -->
         <!-- do not link to sibling directory as that breaks builds where this code is embedded, e.g. for branding;
              we require that brooklyn-server is built first (this is needed anyway for the modularity java code) -->
     </parent>
 
-    <groupId>org.apache.brooklyn.ui</groupId>
+    <groupId>com.usharesoft.brooklyn.ui</groupId>
     <artifactId>brooklyn-ui-parent</artifactId>
-    <version>${revision}</version>
+    <version>0.2.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Brooklyn UI :: Parent</name>
 
@@ -41,19 +41,38 @@
     </description>
 
     <scm>
-        <connection>scm:git:https://git-wip-us.apache.org/repos/asf/brooklyn-ui.git</connection>
-        <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/brooklyn-ui.git</developerConnection>
-        <url>https://git-wip-us.apache.org/repos/asf?p=brooklyn-ui.git</url>
-        <tag>HEAD</tag>
+        <connection>scm:git:https://github.com/usharesoft/brooklyn-ui.git</connection>
+        <url>https://github.com/usharesoft/brooklyn-ui</url>
     </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>usharesoft-maven-private</id>
+            <name>UShareSoft Private Repository</name>
+            <url>https://maven.usharesoft.com/nexus/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>usharesoft-maven-private</id>
+            <name>UShareSoft Private Repository</name>
+            <url>https://maven.usharesoft.com/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>usharesoft-maven-proxy</id>
+            <name>UShareSoft Proxy Repository</name>
+            <url>https://maven.usharesoft.com/repository/proxy/</url>
+        </repository>
+    </repositories>
 
     <issueManagement>
         <system>JIRA</system>
-        <url>https://issues.apache.org/jira/browse/BROOKLYN</url>
+        <url>https://jira.usharesoft.com/jira/projects/UFORGE</url>
     </issueManagement>
     <ciManagement>
-        <system>Jenkins</system>
-        <url>https://builds.apache.org/view/Brooklyn/job/brooklyn-ui-master/</url>
+        <system>Travis CI</system>
+        <url>https://travis-ci.org/usharesoft/brooklyn-ui</url>
     </ciManagement>
     <mailingLists>
         <mailingList>
@@ -76,14 +95,13 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
-        <revision>${brooklyn.ui.version}</revision>
-        <brooklyn.ui.brand.dir>default</brooklyn.ui.brand.dir><!-- empty string not allowed by npm plugin -->
-        <brooklyn.ui.version>${brooklyn.version}</brooklyn.ui.version><!-- this is intended to be overridden by branded projects -->
+        <brooklyn.ui.brand.dir>../branding/uss</brooklyn.ui.brand.dir><!-- empty string not allowed by npm plugin -->
+        <brooklyn.ui.version>${project.version}</brooklyn.ui.version><!-- this is intended to be overridden by branded projects -->
         <brooklyn.ui.modules.version>${brooklyn.ui.version}</brooklyn.ui.modules.version>
         <brooklyn.ui.modularity.version>${brooklyn.ui.version}</brooklyn.ui.modularity.version><!-- this can be set different to ensure correct references if branded project is only rebuilding modules -->
         <assertj.version>2.2.0</assertj.version>
-        <brooklyn.version>1.0.0-SNAPSHOT</brooklyn.version><!-- BROOKLYN_VERSION -->
-        <build.version>${revision}</build.version>
+        <brooklyn.version>1.0.0-M1</brooklyn.version><!-- BROOKLYN_VERSION -->
+        <build.version>${project.version}</build.version>
         <build.name>Apache Brooklyn</build.name>
         <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
 
@@ -99,7 +117,7 @@
         <maven-resources-plugin.version>3.0.1</maven-resources-plugin.version>
         <maven-war-plugin.version>3.0.0</maven-war-plugin.version>
         <frontend-maven-plugin.version>1.3</frontend-maven-plugin.version>
-        <pax-web.version>7.2.3</pax-web.version>
+        <pax-web.version>6.0.6</pax-web.version>
         <pax-web-extender-whiteboard.version>${pax-web.version}</pax-web-extender-whiteboard.version>
 
         <!-- new deps not used in brooklyn-server -->
@@ -330,19 +348,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <repositories>
-        <repository>
-            <id>apache-snapshots</id>
-            <url>https://repository.apache.org/content/repositories/snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 
     <profiles>
         <profile>   

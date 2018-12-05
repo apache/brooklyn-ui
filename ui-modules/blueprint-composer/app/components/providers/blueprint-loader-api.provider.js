@@ -36,8 +36,8 @@ export function blueprintLoaderApi() {
             }
             implementation = impl;
         },
-        $get: ['$q', 'paletteApi', function ($q, paletteApi) {
-            return new implementation($q, paletteApi);
+        $get: ['$stateParams', '$q', 'paletteApi', function ($stateParams, $q, paletteApi) {
+            return new implementation($stateParams, $q, paletteApi);
         }]
     }
 }
