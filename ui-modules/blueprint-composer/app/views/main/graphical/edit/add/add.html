@@ -23,18 +23,6 @@
 </section>
 
  <div class="add-panel-main">
-    <div class="toolbar">
-        <div class="list-group">
-            <a href class="list-group-item"
-               ng-repeat="section in vm.sections track by $index"
-               ng-class="{'active': vm.selectedSection === section}"
-               ng-if="familiesToShow.indexOf(section.type) >= 0"
-               ng-click="vm.selectedSection = section">
-                <i class="fa fa-fw" ng-class="section.icon"></i>
-            </a>
-        </div>
-    </div>
-
   <div class="pane pane-palette" ng-if="vm.selectedSection">
     <div ng-repeat="section in vm.sections track by $index"
          class="palette-full-height-wrapper"
@@ -42,7 +30,6 @@
         <div class="container-fluid palette-title">
             <h3>
                 {{section.title}}
-                <br-svg type="close" class="pull-right" ng-click="vm.selectedSection = undefined"></br-svg>
             </h3>
         </div>
         <catalog-selector state="paletteState" family="section.type" mode="{{ section.mode }}" on-select="vm.onTypeSelected(item)" on-select-text="vm.getOnSelectText(item)" icon-selects="true" class="palette-full-height-wrapper"></catalog-selector>

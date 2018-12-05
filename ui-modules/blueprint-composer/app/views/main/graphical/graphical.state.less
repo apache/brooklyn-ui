@@ -29,19 +29,9 @@
     position: relative;
     height: calc(~"100vh - 105px");
     background-color: #fff;
-    overflow-y: scroll;
+    overflow-y: auto;
     z-index: 40;
-    box-shadow: 0 0 10px 2px @navbar-default-border;
-
-    &:after {
-      position: absolute;
-      content: '';
-      width: 1px;
-      top: 0;
-      bottom: 0;
-      right: 0;
-      background-color: @navbar-default-border;
-    }
+    flex-shrink: 0;
 
     .list-group-item {
       @active-border-width: 4px;
@@ -62,6 +52,10 @@
         padding-bottom: 10px;
       }
     }
+  }
+
+  .toolbar-left {
+    box-shadow: -5px 0 10px 5px @navbar-default-border;
   }
   
   #palette-controls-button {
@@ -132,12 +126,13 @@
   bottom: 0;
   background-color: #fff;
   z-index: 40;
-  overflow-y: scroll;
+  overflow-y: auto;
 
   &.pane-palette {
-    left: 49px;
-    width: 440px;
+    left: 48px;
+    width: 23%;
     box-shadow: 5px 0 10px -2px @navbar-default-border;
+    border-left: 1px solid @navbar-default-border;
 
     .palette-title {
         margin-left: 0;
@@ -166,9 +161,12 @@
     right: 0;
     box-shadow: 5px 0 10px 5px @navbar-default-border;
 
+    &.config-panel-open {
+        width: 23%;
+    }
+
     & > ui-view > ui-view {
       display: block;
-      width: 489px;
     }
 
     .pane-palette .container-fluid {
@@ -233,8 +231,6 @@
     .panel-group {
       margin-bottom: 0;
       .panel {
-        border-bottom: 1px solid @gray-lighter;
-        margin: 0 12px;
         border-radius: 0;
         box-shadow: none;
         .panel-heading {
@@ -271,5 +267,13 @@
         }
       }
     }
+  }
+
+  .br-icon-close-bar {
+    stroke: @gray-light ;
+  }
+
+  svg:hover .br-icon-close-bar {
+    stroke: black;
   }
 }

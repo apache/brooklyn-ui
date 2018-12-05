@@ -27,8 +27,14 @@
 
 spec-editor {
   display: block;
-  margin-top: 15px;
   color: @gray;
+
+  .config-panel {
+    padding: 20px 15px;
+    flex-basis: 100%;
+    border-right: 1px solid @navbar-default-border;
+    min-width: 0;
+  }
 
   .toolbar-button-affordance() {
     color: mix(@gray, @gray-lighter);
@@ -76,6 +82,7 @@ spec-editor {
 
   .panel-header-body {
     padding-left: 2em;
+    width: initial;
     .panel-header-icon {
       width: 30px;
       margin-left: -30px;
@@ -196,6 +203,66 @@ spec-editor {
       .spec-actions {
         flex-grow: 0;
       }
+      h2 {
+        margin-bottom: 0px;
+        input {
+          color: @gray-light;
+        }
+      }
+      .btn-group {
+        display: flex;
+        align-items: center;
+
+        & br-svg {
+          display: block;
+          height: 20px;
+          width: 20px;
+          cursor: pointer;
+        }
+
+        .fa-bars {
+          font-size: 20px;
+        }
+      }
+    }
+
+    .media {
+      display: flex;
+
+      .panel-header-body {
+        min-width: 0;
+        padding-left: 0;
+
+        div {
+          display: flex;
+        }
+
+        .fa-bookmark {
+          display: block;
+          min-width: 28px;
+          margin-left: 0;
+        }
+
+        .fa-id-card-o {
+          margin-left: 0;
+          margin-right: 0;
+        }
+
+        .entity-type-header {
+          text-overflow: ellipsis;
+          overflow: hidden;
+          display: block;
+        }
+
+        .version {
+          margin-left: 28px;
+        }
+
+        .identifier {
+          margin-top: 0;
+          align-items: center;
+        }
+      }
     }
 
     .spec-actions {
@@ -212,6 +279,26 @@ spec-editor {
     }
     .spec-title {
       margin-top: 0;
+    }
+  }
+
+  .core-config-panel {
+    margin-top: 20px;
+
+    > div:first-child {
+      display:flex;
+      align-items: center;
+
+      div:first-child {
+        color: @gray-light;
+        font-size: 16px;
+      }
+      span {
+        margin-left: 6px;
+      }
+      div:last-child {
+        margin-left: auto;
+      }
     }
   }
 
@@ -856,4 +943,11 @@ dsl-viewer {
     a {
         cursor: alias;
     }
+}
+
+.pane-configuration .pane-palette {
+  width: initial;
+  left: initial;
+  border-left: initial;
+  box-shadow: initial;
 }
