@@ -24,24 +24,29 @@ import template from './graphical.state.html';
 
 export const graphicalState = {
     name: 'main.graphical',
-    url: 'graphical',
+    url: 'graphical?viewMode',
     templateProvider: function(composerOverrides) {
         return composerOverrides.paletteGraphicalStateTemplate || template;
     },
-    controller: ['$scope', '$state', '$filter', 'blueprintService', 'paletteService', graphicalController],
+    controller: ['$scope', '$state', '$stateParams', '$filter', 'blueprintService', 'paletteService', graphicalController],
     controllerAs: 'vm',
     data: {
         label: 'Graphical Designer'
-    }
+    },
 };
 
-function graphicalController($scope, $state, $filter, blueprintService, paletteService) {
+function graphicalController($scope, $state, $stateParams, $filter, blueprintService, paletteService) {
     this.EntityFamily = EntityFamily;
 
     this.sections = paletteService.getSections();
     this.selectedSection = Object.values(this.sections).find(section => section.type === EntityFamily.ENTITY);
     $scope.paletteState = {};  // share state among all sections
+    $scope.useLandscapeMode = true;
 
+    if ($stateParams.viewMode) $scope.composerState.viewMode = $stateParams.viewMode;
+    if (!$scope.composerState.viewMode) $scope.composerState.viewMode = 'mgmt';
+    this.viewMode = () => $scope.composerState.viewMode || 'mgmt';
+    
     this.onCanvasSelection = (item) => {
         $scope.canvasSelectedItem = item;
     }

@@ -18,23 +18,25 @@
  */
 import * as d3 from 'd3';
 import {PREDICATE_MEMBERSPEC} from './model/entity.model';
-import addIcon from '../../img/icon-add.svg';
 import {ISSUE_LEVEL} from './model/issue.model';
 
-export function D3Blueprint(container) {
-    let _svg = d3.select(container).append('svg').attr('class', 'blueprint-canvas');
-    let _mirror = _svg.append('path').style('display', 'none');
-    let _zoomGroup = _svg.append('g').attr('class', 'zoom-group');
-    let _parentGroup = _zoomGroup.append('g').attr('class', 'parent-group');
-    let _linkGroup = _parentGroup.append('g').attr('class', 'link-group');
-    let _relationGroup = _parentGroup.append('g').attr('class', 'relation-group');
-    let _specNodeGroup = _parentGroup.append('g').attr('class', 'spec-node-group');
-    let _dropZoneGroup = _parentGroup.append('g').attr('class', 'dropzone-group');
-    let _ghostNodeGroup = _parentGroup.append('g').attr('class', 'ghost-node-group');
-    let _nodeGroup = _parentGroup.append('g').attr('class', 'node-group');
-    let _cloneGroup = _parentGroup.append('g').attr('class', 'clone-group');
+export function D3BlueprintAbstract(container) {
+    var bp = this;
+    let result = {};
+    
+    let _svg = bp._svg = d3.select(container).append('svg').attr('class', 'blueprint-canvas');
+    let _mirror = bp._mirror = _svg.append('path').style('display', 'none');
+    let _zoomGroup = bp._zoomGroup = _svg.append('g').attr('class', 'zoom-group');
+    let _parentGroup = bp._parentGroup = _zoomGroup.append('g').attr('class', 'parent-group');
+    let _linkGroup = bp._linkGroup = _parentGroup.append('g').attr('class', 'link-group');
+    let _relationGroup = bp._relationGroup = _parentGroup.append('g').attr('class', 'relation-group');
+    let _specNodeGroup = bp._specNodeGroup = _parentGroup.append('g').attr('class', 'spec-node-group');
+    let _dropZoneGroup = bp._dropZoneGroup = _parentGroup.append('g').attr('class', 'dropzone-group');
+    let _ghostNodeGroup = bp._ghostNodeGroup = _parentGroup.append('g').attr('class', 'ghost-node-group');
+    let _nodeGroup = bp._nodeGroup = _parentGroup.append('g').attr('class', 'node-group');
+    let _cloneGroup = bp._cloneGroup = _parentGroup.append('g').attr('class', 'clone-group');
 
-    let _dragState = {
+    let _dragState = bp._dragState = {
         dragInProgress: false,
         dragStarted: false,
         clone: null,
@@ -42,130 +44,9 @@ export function D3Blueprint(container) {
         cloneY: 0,
     };
 
-    const _configHolder = {
-        nodes: {
-            root: {
-                rect: {
-                    class: 'node-root',
-                    x: -125,
-                    y: -50,
-                    width: 250,
-                    height: 100,
-                    rx: 50,
-                    ry: 50,
-                },
-                text: {
-                    class: 'node-name',
-                    width: 250,
-                    height: 100
-                },
-                maxNameLength: 18
-            },
-            child: {
-                circle: {
-                    r: 50,
-                    class: (d)=>(`node-cluster node-cluster-${d}`)
-                },
-                image: {
-                    class: 'node-icon',
-                    width: 64,
-                    height: 64,
-                    x: -32,
-                    y: -32,
-                    opacity: 0
-                }
-            },
-            location: {
-                rect: {
-                    x: -50,
-                    y: -110,
-                    width: 100,
-                    height: 50
-                },
-                image: {
-                    x: -50,
-                    y: -110,
-                    width: 100,
-                    height: 50,
-                    opacity: 0
-                }
-            },
-            dropzonePrev: {
-                circle: {
-                    cx: -150,
-                    r: 30,
-                    class: 'dropzone dropzone-prev'
-                },
-            },
-            dropzoneNext: {
-                circle: {
-                    cx: 150,
-                    r: 30,
-                    class: 'dropzone dropzone-next'
-                }
-            },
-            adjunct: {
-                rect: {
-                    id: (d)=>(`entity-${d._id}`),
-                    class: 'node-adjunct adjunct entity',
-                    width: 20,
-                    height: 20,
-                    transform: 'scale(0)'
-                }
-            },
-            memberspec: {
-                circle: {
-                    r: 35,
-                    cx: 0,
-                    cy: 170,
-                    class: 'node-spec-entity',
-                    'transform-origin': 0
-                },
-                image: {
-                    x: -20,
-                    y: 150,
-                    width: 40,
-                    height: 40,
-                    opacity: 0,
-                    class: 'node-spec-image',
-                    'transform-origin': 0
-                }
-            },
-            buttongroup: {
-                line: {
-                    class: 'link',
-                    x1: 0,
-                    x2: 0,
-                    y1: (d)=>(isRootNode(d) ? _configHolder.nodes.root.rect.height / 2 : _configHolder.nodes.child.circle.r),
-                    y2: (d)=>((isRootNode(d) ? _configHolder.nodes.root.rect.height / 2 : _configHolder.nodes.child.circle.r) + 30),
-                },
-                circle: {
-                    class: 'connector',
-                    r: 6,
-                    cy: (d)=>(isRootNode(d) ? _configHolder.nodes.root.rect.height / 2 : _configHolder.nodes.child.circle.r),
-                }
-            },
-            buttonAdd: {
-                circle: {
-                    r: 20,
-                    cy: 100
-                },
-                image: {
-                    width: 50,
-                    height: 50,
-                    x: -25,
-                    y: 75,
-                    'xlink:href': addIcon
-                }
-            }
-        },
-        transition: 300,
-        grid: {
-            itemPerCol: 3,
-            gutter: 15
-        },
-    };
-    let _d3DataHolder = {
+    const config = bp.config = {};
+
+    let d3data = bp.d3data = {
         nodes: [],
         ghostNodes: [],
         orphans: [],
@@ -173,7 +54,8 @@ export function D3Blueprint(container) {
         relationships: [],
     };
 
-    let zoom = d3.zoom().scaleExtent([0.1, 1]).on('zoom', onSvgZoom);
+    let zoom = bp.zoom = d3.zoom().scaleExtent([0.1, 1]).on('zoom', onSvgZoom);
+    
     _svg
         .attr('preserveAspectRatio', 'xMinYMin meet')
         .attr('viewBox', () => {
@@ -193,7 +75,8 @@ export function D3Blueprint(container) {
         .attr('width', 4)
         .attr('height', 4);
     pattern.append('path')
-        .attr('d', 'M1 3h1v1H1V3zm2-2h1v1H3V1z');
+        // fill colour set by CSS; no stroke wanted
+        .attr('d', 'M 1 3 h1 v1 H1 V3 z  m 2 -2 h1 v1 H3 V1 z');
 
     let defs = _svg.append('defs');
     let arrowhead = defs.append('marker')
@@ -349,7 +232,7 @@ export function D3Blueprint(container) {
         }
         if (node.depth) { // exclude the root element
             onSvgDragOver();
-            hideInvalidDropzones(node);
+            hideInvalidDropZones(node);
 
             d3.event.sourceEvent.preventDefault(); // disable browser text selection
             d3.event.sourceEvent.stopPropagation();
@@ -359,8 +242,11 @@ export function D3Blueprint(container) {
             _dragState.dragStarted = true;
             let entityId = node.data._id;
             let mouseCoords = d3.mouse(_nodeGroup.select(`#entity-${node.data._id}`).node());
-            _dragState.cloneX = node.x + _configHolder.nodes.child.circle.r + mouseCoords[0];
-            _dragState.cloneY = node.y + _configHolder.nodes.child.circle.r + mouseCoords[1];
+            // would be more normal not to add child sizes and mouseCoords
+            // (so cursor stays in the same position relative to the dragged item as where the user clicks)
+            // but that breaks the code for dropping/hovering when moving items
+            _dragState.cloneX = node.x + config.child.width/2 + mouseCoords[0];
+            _dragState.cloneY = node.y + config.child.height/2 + mouseCoords[1];
             _dragState.clone = _cloneGroup.append('use')
                 .attr('xlink:href', function(d) {
                     return `#entity-${entityId}` } )
@@ -424,8 +310,8 @@ export function D3Blueprint(container) {
             } else {
                 setTimeout(() => {
                     showRelationships();
-                    showDropzones();
-                }, _configHolder.transition);
+                    showDropZones();
+                }, config.global.transitionDuration);
             }
         }
         if (_dragState.clone) {
@@ -512,43 +398,27 @@ export function D3Blueprint(container) {
      *
      * @param {object} blueprint The graph
      */
-    function update(blueprint, relationships) {
-        let tree = d3.tree()
-            .nodeSize([_configHolder.nodes.child.circle.r * 6, _configHolder.nodes.child.circle.r * 6])
-            .separation((right, left)=> {
-                let maxColumnsBeforeExpand = 2;
-                let adjuncts = getImportantAdjuncts(left).length;
-                let currentCols = Math.floor(adjuncts / _configHolder.grid.itemPerCol) + (adjuncts > 0 && adjuncts % _configHolder.grid.itemPerCol !== 0 ? 1 : 0);
-                let additionalCol = currentCols > maxColumnsBeforeExpand ? currentCols - maxColumnsBeforeExpand : 0;
-
-                let colWidth = _configHolder.nodes.adjunct.rect.width + 15;
-
-                return 1 + (colWidth / (_configHolder.nodes.child.circle.r * 6)) * additionalCol;
-            });
-        let root = d3.hierarchy(blueprint);
-        tree(root);
-        _d3DataHolder.nodes = root.descendants();
-        _d3DataHolder.links = root.links();
-        _d3DataHolder.relationships = relationships;
-        return this;
+    bp.update = (blueprint, relationships) => {
+        bp.config.global.updateLayout(blueprint, relationships, d3data);
+        return result;
     }
 
     /**
      * Redraw the graph
      */
-    function draw() {
-        drawLinks();
-        drawRelationships();
-        drawNodeGroup();
-        drawSpecNodeGroup();
-        drawGhostNode();
-        drawDropZoneGroup();
-        return this;
+    bp.draw = () => {
+        bp.drawLinks();
+        bp.drawRelationships();
+        bp.drawNodeGroup();
+        bp.drawSpecNodeGroup();
+        bp.drawGhostNode();
+        bp.drawDropZoneGroup();
+        return result;
     }
 
-    function drawNodeGroup() {
+    bp.drawNodeGroup = () => {
         let nodeData = _nodeGroup.selectAll('g.node')
-            .data(_d3DataHolder.nodes, (d)=>(`node-${d.data._id}`));
+            .data(bp.d3data.nodes, (d)=>(`node-${d.data._id}`));
 
         // Draw group that contains all SVG element: node representation and location/policies/enricher indicators
         // -----------------------------------------------------
@@ -562,12 +432,12 @@ export function D3Blueprint(container) {
             .attr('transform', (d)=>(`translate(${d.x}, ${d.y}) scale(${isRootNode(d) ? 1 : 0})`))
             .attr('opacity', (d)=> (isRootNode(d) ? 0 : 1));
         nodeData.transition()
-            .duration(_configHolder.transition)
+            .duration(config.global.transitionDuration)
             .attr('transform', (d)=>(`translate(${d.x}, ${d.y}) scale(1)`))
             .attr('opacity', 1);
         nodeData.exit()
             .transition()
-            .duration(_configHolder.transition)
+            .duration(config.global.transitionDuration)
             .attr('transform', (d)=>(`translate(${d.x}, ${d.y}) scale(${isRootNode(d) ? 1 : 0})`))
             .attr('opacity', (d)=> (isRootNode(d) ? 0 : 1))
             .remove();
@@ -591,21 +461,26 @@ export function D3Blueprint(container) {
             .classed('loading', (d)=>(d.data.miscData.get('loading')));
 
         // Draw root node
-        appendElements(entity.filter(isRootNode), _configHolder.nodes.root);
+        appendElements(entity.filter(isRootNode), config.root);
+        
         nodeData.filter(isRootNode).select('.node-entity text')
-            .text(trimNodeText)
+            .text(trimRootNodeText)
             .transition()
-            .duration(_configHolder.transition)
-            .text(trimNodeText);
+            .duration(config.global.transitionDuration)
+            .text(trimRootNodeText);
         nodeData.filter(isChildNode).select('.node-entity image')
             .transition()
-            .duration(_configHolder.transition)
+            .duration(config.global.transitionDuration)
             .attr('opacity', (d)=>(d.data.hasIcon() ? 1 : 0))
             .attr('xlink:href', (d)=>(d.data.icon));
+        nodeData.filter(isChildNode).select('.node-entity text')
+            .text(trimChildNodeText)
+            .transition()
+            .duration(config.global.transitionDuration)
+            .text(trimChildNodeText);
 
         // Draw child nodes
-        appendElement(entity.filter(isChildNode).selectAll('circle').data([2, 1, 0]).enter(), 'circle', _configHolder.nodes.child.circle);
-        appendElement(entity.filter(isChildNode), 'image', _configHolder.nodes.child.image);
+        appendElements(entity.filter(isChildNode).selectAll('circle').data([2, 1, 0]).enter(), config.child);
 
         // Draw location
         // -----------------------------------------------------
@@ -614,12 +489,12 @@ export function D3Blueprint(container) {
             .classed('loading', (d)=>(d.data.miscData.get('loading')));
         nodeData.select('g.node-location')
             .transition()
-            .duration(_configHolder.transition)
+            .duration(config.global.transitionDuration)
             .attr('opacity', (d)=>(d.data.hasLocation() ? 1 : 0));
-        appendElements(location, _configHolder.nodes.location);
+        appendElements(location, config.location);
         nodeData.select('g.node-location image')
             .transition()
-            .duration(_configHolder.transition)
+            .duration(config.global.transitionDuration)
             .attr('opacity', (d)=>(d.data.miscData.get('locationIcon') ? 1 : 0))
             .attr('xlink:href', (d)=>(d.data.miscData.get('locationIcon')));
 
@@ -636,22 +511,22 @@ export function D3Blueprint(container) {
             .classed('loading', (d)=>(d.miscData.get('loading')))
             .on('click', onEntityClick);
         adjunctData.transition()
-            .duration(_configHolder.transition)
-            .attr('x', (d, i)=>(getGridX(d, i)))
-            .attr('y', (d, i)=>(getGridY(d, i)))
+            .duration(config.global.transitionDuration)
+            .attr('x', bp.getAdjunctGridX)
+            .attr('y', bp.getAdjunctGridY)
             .attr('transform', 'scale(1)')
-            .attr('transform-origin', (d, i)=>(getGridItemCenter(d, i)));
+            .attr('transform-origin', bp.getAdjunctGridItemCenter);
         adjunctData.exit()
             .transition()
-            .duration(_configHolder.transition)
+            .duration(config.global.transitionDuration)
             .attr('transform', 'scale(0)')
             .remove();
-        appendElement(adjunctData.enter(), 'rect', _configHolder.nodes.adjunct.rect);
-    }
+        appendElements(adjunctData.enter(), config.adjunct);
+    };
 
-    function drawLinks() {
+    bp.drawLinks = () => {
         let link = _linkGroup.selectAll('line.link')
-            .data(_d3DataHolder.links, (d)=>(d.source.data._id + '_to_' + d.target.data._id));
+            .data(bp.d3data.links, (d)=>(d.source.data._id + '_to_' + d.target.data._id));
 
         link.enter().insert('line')
             .attr('class', 'link')
@@ -660,7 +535,7 @@ export function D3Blueprint(container) {
             .attr('x2', (d)=>(d.source.x))
             .attr('y2', (d)=>(d.source.y));
         link.transition()
-            .duration(_configHolder.transition)
+            .duration(config.global.transitionDuration)
             .attr('x1', (d)=>(d.source.x))
             .attr('y1', (d)=>(d.source.y))
             .attr('x2', (d)=>(d.target.x))
@@ -677,7 +552,7 @@ export function D3Blueprint(container) {
      * @return {*} a D3 tree node
      */
     function nodeForEntity(entity) {
-        let node = _d3DataHolder.nodes.find(d => {
+        let node = bp.d3data.nodes.find(d => {
             let predicate = d.data._id === entity._id;
             if (!!d.data.getClusterMemberspecEntity(PREDICATE_MEMBERSPEC)) {
                 predicate |= d.data.getClusterMemberspecEntity(PREDICATE_MEMBERSPEC)._id === entity._id;
@@ -690,11 +565,11 @@ export function D3Blueprint(container) {
         return node;
     }
 
-    function drawRelationships() {
+    bp.drawRelationships = () => {
         showRelationships();
 
         let relationData = _relationGroup.selectAll('.relation')
-            .data(_d3DataHolder.relationships, (d)=>(d.source._id + '_related_to_' + d.target._id));
+            .data(bp.d3data.relationships, (d)=>(d.source._id + '_related_to_' + d.target._id));
 
         relationData.enter().insert('path')
             .attr('class', 'relation')
@@ -702,21 +577,23 @@ export function D3Blueprint(container) {
             .attr('from', (d)=>(d.source._id))
             .attr('to', (d)=>(d.target._id));
         relationData.transition()
-            .duration(_configHolder.transition)
+            .duration(config.global.transitionDuration)
             .attr('opacity', 1)
             .attr('stroke', 'red')
             .attr('d', function(d) {
                 let targetNode = nodeForEntity(d.target);
                 let sourceNode = nodeForEntity(d.source);
-                let sourceY = sourceNode.y + (d.source.isMemberSpec() ? _configHolder.nodes.memberspec.circle.cy : 0);
-                let targetY = targetNode.y + (d.target.isMemberSpec() ? _configHolder.nodes.memberspec.circle.cy : 0);
-                let dx = targetNode.x - sourceNode.x;
+                let sourceX = sourceNode.x + (d.source.isMemberSpec() ? config.memberspec.deltaX : 0);
+                let targetX = targetNode.x + (d.target.isMemberSpec() ? config.memberspec.deltaX : 0);
+                let sourceY = sourceNode.y + (d.source.isMemberSpec() ? config.memberspec.deltaY : 0);
+                let targetY = targetNode.y + (d.target.isMemberSpec() ? config.memberspec.deltaY : 0);
+                let dx = targetX - sourceX;
                 let dy = targetY - sourceY;
                 let dr = Math.sqrt(dx * dx + dy * dy);
                 let sweep = dx * dy > 0 ? 0 : 1;
-                _mirror.attr('d', `M ${sourceNode.x},${sourceY} A ${dr},${dr} 0 0,${sweep} ${targetNode.x},${targetY}`);
-
-                let m = _mirror._groups[0][0].getPointAtLength(_mirror._groups[0][0].getTotalLength() - _configHolder.nodes.child.circle.r - 20);
+                
+                _mirror.attr('d', `M ${sourceX},${sourceY} A ${dr},${dr} 0 0,${sweep} ${targetX},${targetY}`);
+                let m = _mirror._groups[0][0].getPointAtLength(_mirror._groups[0][0].getTotalLength() - config.child.radius - 20);
 
                 dx = m.x - sourceNode.x;
                 dy = m.y - sourceY;
@@ -726,14 +603,14 @@ export function D3Blueprint(container) {
             });
         relationData.exit()
             .transition()
-            .duration(_configHolder.transition)
+            .duration(config.global.transitionDuration)
             .attr('opacity', 0)
             .remove();
     }
 
-    function drawGhostNode() {
+    bp.drawGhostNode = () => {
         let ghostNodeData = _ghostNodeGroup.selectAll('g.ghost-node')
-            .data(_d3DataHolder.nodes, (d)=>(`ghost-node-${d.data._id}`));
+            .data(bp.d3data.nodes, (d)=>(`ghost-node-${d.data._id}`));
         let ghostNode = ghostNodeData
             .enter()
             .append('g')
@@ -744,32 +621,32 @@ export function D3Blueprint(container) {
             .on('mouseleave', onGhostLeave);
         ghostNodeData
             .transition()
-            .duration(_configHolder.transition)
+            .duration(config.global.transitionDuration)
             .attr('transform', (d)=>(`translate(${d.x}, ${d.y})`));
         ghostNodeData.exit().remove();
 
         ghostNode.append('rect')
             .attr('class', 'ghost')
-            .attr('width', (d)=>(isRootNode(d) ? _configHolder.nodes.root.rect.width : _configHolder.nodes.child.circle.r * 2))
-            .attr('height', (d)=>((isRootNode(d) ? _configHolder.nodes.root.rect.height : _configHolder.nodes.child.circle.r * 2) + 80))
-            .attr('x', (d)=>(isRootNode(d) ? _configHolder.nodes.root.rect.x : -_configHolder.nodes.child.circle.r))
-            .attr('y', (d)=>(isRootNode(d) ? _configHolder.nodes.root.rect.y : -_configHolder.nodes.child.circle.r));
+            .attr('width', bp.config.global.nodeWidth)
+            .attr('height', (d)=>(bp.config.global.nodeHeight(d) + 80))
+            .attr('x', (d)=>(-bp.config.global.nodeWidth(d)/2))
+            .attr('y', (d)=>(-bp.config.global.nodeHeight(d)/2));
 
         let buttonsGroup = ghostNode.append('g')
             .attr('class', 'buttons');
-        appendElements(buttonsGroup, _configHolder.nodes.buttongroup);
+        appendElements(buttonsGroup, config.buttongroup);
 
         let buttonAdd = buttonsGroup.append('g')
             .attr('class', 'button button-add')
             .on('click', onAddChildClick);
-        appendElements(buttonAdd, _configHolder.nodes.buttonAdd);
+        appendElements(buttonAdd, config.buttonAdd);
     }
 
-    function drawDropZoneGroup() {
-        showDropzones();
+    bp.drawDropZoneGroup = () => {
+        showDropZones();
 
         let dropZoneData = _dropZoneGroup.selectAll('g.dropzone-group-node')
-            .data(_d3DataHolder.nodes, (d)=>(`dropzone-${d.data._id}`));
+            .data(bp.d3data.nodes, (d)=>(`dropzone-${d.data._id}`));
 
         let dropZoneGroup = dropZoneData
             .enter()
@@ -779,19 +656,14 @@ export function D3Blueprint(container) {
             .attr('transform', (d)=>(`translate(${d.x}, ${d.y})`));
         dropZoneData
             .transition()
-            .duration(_configHolder.transition)
+            .duration(config.global.transitionDuration)
             .attr('transform', (d)=>(`translate(${d.x}, ${d.y})`));
         dropZoneData.exit().remove();
 
-        appendElement(dropZoneGroup.filter(isRootNode), 'rect', Object.assign({},
-            _configHolder.nodes.root.rect,
-            // expand above by 7
-            {x: -132, y: -57, rx: 57, ry: 57, width: 264, height: 114, class: 'dropzone dropzone-self'}));
-        appendElement(dropZoneGroup.filter(isChildNode), 'circle', Object.assign({},
-            _configHolder.nodes.child.circle,
-            {transform: (d) => (`scale(${d.data.isCluster() ? 1.5 : 1.15})`), class: 'dropzone dropzone-self'}));
-        appendElements(dropZoneGroup.filter(isChildNode), _configHolder.nodes.dropzonePrev);
-        appendElements(dropZoneGroup.filter(isChildNode), _configHolder.nodes.dropzoneNext);
+        appendElement(dropZoneGroup.filter(isRootNode), bp.config.root.shape, bp.config.root.dropOverrides);
+        appendElement(dropZoneGroup.filter(isChildNode), bp.config.child.shape, bp.config.child.dropOverrides);
+        appendElements(dropZoneGroup.filter(isChildNode), config.dropzonePrev);
+        appendElements(dropZoneGroup.filter(isChildNode), config.dropzoneNext);
 
         dropZoneData.select('.dropzone-self')
             .attr('id', (d)=>(`dropzone-self-${d.data._id}`))
@@ -836,9 +708,9 @@ export function D3Blueprint(container) {
             .on('drop', (d) => onExternalDrop(d, `dropzone-self-${d.data._id}`));
     }
 
-    function drawSpecNodeGroup() {
+    bp.drawSpecNodeGroup = () => {
         let specNodeData = _specNodeGroup.selectAll('g.spec-node')
-            .data(_d3DataHolder.nodes.filter((node)=>{
+            .data(bp.d3data.nodes.filter((node)=>{
                 return !!node.data.getClusterMemberspecEntity(PREDICATE_MEMBERSPEC);
             }), (d)=>(`spec-node-${d.data._id}`));
         let specNodeGroup = specNodeData
@@ -848,32 +720,32 @@ export function D3Blueprint(container) {
             .attr('class', 'spec-node')
             .attr('transform', (d)=>(`translate(${d.x}, ${d.y})`));
         specNodeData.transition()
-            .duration(_configHolder.transition)
+            .duration(config.global.transitionDuration)
             .attr('transform', (d)=>(`translate(${d.x}, ${d.y}) rotate(${d.data.hasChildren() ? -45 : 0})`));
         specNodeData.exit()
             .transition()
-            .duration(_configHolder.transition)
+            .duration(config.global.transitionDuration)
             .attr('opacity', 0)
             .remove();
 
         specNodeGroup.append('polygon')
             .attr('class', 'node-memberspec-link')
             .attr('points', (d)=> {
-                let left = _configHolder.nodes.memberspec.circle.r * -1;
-                let right = _configHolder.nodes.memberspec.circle.r;
-                let bottom = _configHolder.nodes.memberspec.circle.cy;
+                let left = config.memberspec.deltaX + -config.memberspec.width/2;
+                let right = config.memberspec.deltaX + config.memberspec.width/2;
+                let bottom = config.memberspec.deltaY;
                 return `0,0 ${right},${bottom} ${left},${bottom}`;
             })
             .attr('transform', 'scale(0)');
         specNodeData.select('polygon')
             .transition()
-            .duration(_configHolder.transition)
+            .duration(config.global.transitionDuration)
             .attr('transform', 'scale(1)');
 
         let specNode = specNodeGroup.append('g')
             .attr('class', 'node-memberspec entity')
             .attr('id', (d)=>(`entity-${d.data.getClusterMemberspecEntity(PREDICATE_MEMBERSPEC)._id}`))
-            .attr('transform-origin', `0 ${_configHolder.nodes.memberspec.circle.cy}`)
+            .attr('transform-origin', `${config.memberspec.deltaX} ${config.memberspec.deltaY}`)
             .attr('transform', 'scale(0)')
             .on('click', (d)=>(onEntityClick({data: d.data.getClusterMemberspecEntity(PREDICATE_MEMBERSPEC)})));
         specNodeData.select('.node-memberspec')
@@ -881,151 +753,168 @@ export function D3Blueprint(container) {
             .classed('loading', (d)=>(d.data.getClusterMemberspecEntity(PREDICATE_MEMBERSPEC).miscData.get('loading')));
         specNodeData.select('.node-memberspec')
             .transition()
-            .duration(_configHolder.transition)
+            .duration(config.global.transitionDuration)
             .attr('transform', 'scale(1)');
-        appendElements(specNode, _configHolder.nodes.memberspec);
+        appendElements(specNode, config.memberspec);
         specNodeData.select('image')
             .transition()
-            .duration(_configHolder.transition)
+            .duration(config.global.transitionDuration)
             .attr('opacity', (d)=>(d.data.getClusterMemberspecEntity(PREDICATE_MEMBERSPEC).hasIcon() ? 1 : 0))
             .attr('xlink:href', (d)=>(d.data.getClusterMemberspecEntity(PREDICATE_MEMBERSPEC).icon));
     }
 
-    function appendElements(node, definition) {
-        let elements = [];
-        Object.keys(definition).forEach((tag)=> {
-            let properties = definition[tag];
-            let element = appendElement(node, tag, properties);
-            elements.push(element);
-        });
-        return elements;
-    }
+    let appendElements = bp.appendElements = (node, definition) => {
+        return Object.keys(definition).reduce( (elements, tagId) => {
+            elements.push(appendElement(node, definition[tagId]));
+            return elements;
+        }, []);
+    };
 
-    function appendElement(node, tag, properties) {
-        let element = node.append(tag);
-        Object.keys(properties).forEach((property)=> {
-            element.attr(property, properties[property]);
-        });
-        return element;
-    }
+    let appendElement = bp.appendElement = (node, properties, overrides) => {
+        let tag = properties.tag;
+        let attrs = properties.attrs;
+        if (!tag || !attrs) return;
+        return Object.keys( Object.assign({}, overrides, attrs) ).reduce((element, property)=> {
+            let val = attrs[property];
+            let override = overrides ? overrides[property] : null;
+            if (override) {
+                if (typeof override === 'function') {
+                    let ov = val;
+                    if (typeof val === 'function') {
+                        val = (d) => override(ov(d), d);
+                    } else {
+                        val = (d) => override(ov, d);
+                    }
+                } else {
+                    val = override;
+                }
+            }
+            return element.attr(property, val);
+        }, node.append(tag));
+    };
 
     /**
-     * Calculate the X coordinate of a policies/enricher to place it on the grid
+     * Calculate the X coordinate of a policies/enricher to place it on the adjunct grid
      *
      * @param d the current {entity}
      * @param i the index
      * @returns {number} The X coordinate within the grid
      */
-    function getGridX(d, i) {
-        let nodeWidth = isRootNode(d.parent) ? _configHolder.nodes.root.rect.width : _configHolder.nodes.child.circle.r * 2;
-        let offset = (_configHolder.nodes.adjunct.rect.width + _configHolder.grid.gutter) * Math.floor(i / _configHolder.grid.itemPerCol);
+    bp.getAdjunctGridX = (d, i) => {
+        let nodeWidth = bp.config.global.nodeWidth(d.parent);
+        let offset = (config.adjunct.width + config.adjunct.gutterSize) * Math.floor(i / config.adjunct.itemPerCol);
         if (d.parent.isCluster()) {
             offset += 20;
         }
 
-        return _configHolder.grid.gutter + (nodeWidth/2) + offset;
-    }
+        return config.adjunct.gutterSize + (nodeWidth/2) + offset;
+    };
 
     /**
-     * Calculate the Y coordinate of a policies/enricher to place it on the grid
+     * Calculate the Y coordinate of a policies/enricher to place it on the adjunct grid
      *
      * @param d the current {entity}
      * @param i the index
      * @returns {number} The Y coordinate within the grid
      */
-    function getGridY(d, i) {
-        let nodeHeight = isRootNode(d.parent) ? _configHolder.nodes.root.rect.height : _configHolder.nodes.child.circle.r * 2;
-        let columnHeight = _configHolder.nodes.adjunct.rect.height * _configHolder.grid.itemPerCol + _configHolder.grid.gutter * (_configHolder.grid.itemPerCol - 1);
+    bp.getAdjunctGridY = (d, i) => {
+        let nodeHeight = bp.config.global.nodeHeight(d.parent);
+        let columnHeight = config.adjunct.height * config.adjunct.itemPerCol + config.adjunct.gutterSize * (config.adjunct.itemPerCol - 1);
         let offset = nodeHeight > columnHeight ? (nodeHeight - columnHeight) / 2 : 0;
 
-        return (_configHolder.nodes.adjunct.rect.height + _configHolder.grid.gutter) * (i%_configHolder.grid.itemPerCol) - (nodeHeight/2) + offset;
-    }
+        return (config.adjunct.height + config.adjunct.gutterSize) * (i%config.adjunct.itemPerCol) - (nodeHeight/2) + offset;
+    };
 
     /**
-     * Calculate the center coordinates of a policies/enricher to place it on the grid
+     * Calculate the center coordinates of a policies/enricher to place it on the adjunct grid
      *
      * @param d the current {entity}
      * @param i the index
      * @returns {number} The center coordinates within the grid
      */
-    function getGridItemCenter(d, i) {
-        let centerX = getGridX(d, i) + _configHolder.nodes.adjunct.rect.width / 2;
-        let centerY = getGridY(d, i) + _configHolder.nodes.adjunct.rect.height / 2;
+    bp.getAdjunctGridItemCenter = (d, i) => {
+        let centerX = getGridX(d, i) + config.adjunct.width / 2;
+        let centerY = getGridY(d, i) + config.adjunct.height / 2;
         return `${centerX} ${centerY}`;
-    }
+    };
 
     /**
      * Center the graph in the view, considering palette
      */
-    function center() {
+    let center = bp.center = () => {
         let newX = window.innerWidth/2 + (window.innerWidth > 660 ? 220 : 0);
-        let newY = _configHolder.nodes.child.circle.r + (_configHolder.nodes.child.circle.r * 2);
+        let newY = config.child.height * 3/2;
         zoom.translateBy(_svg, newX, newY);
-        return this;
+        return result;
     }
 
-    function trimNodeText(d) {
+    let trimRootNodeText = bp.trimRootNodeText = (d) => {
         if (!d.data.metadata.has('name') || d.data.metadata.get('name').length === 0) {
             return 'New application';
         } else {
             let name = d.data.metadata.get('name');
-            return name.length > _configHolder.nodes.root.maxNameLength ? name.substring(0, _configHolder.nodes.root.maxNameLength) + '...' : name
+            return name.length > config.root.maxNameLength ? name.substring(0, config.root.maxNameLength-2) + '...' : name
         }
     }
 
-    function isRootNode(d) {
-        return d.depth === 0;
+    let trimChildNodeText = bp.trimChildNodeText = (d) => {
+        var name;
+        if (!d.data.metadata.has('name') || d.data.metadata.get('name').length === 0) {
+            name = d.data.metadata.get('type');
+        } else {
+            name = d.data.metadata.get('name');
+        }
+        return name.length > config.child.maxNameLength ? name.substring(0, config.child.maxNameLength-2) + '...' : name
     }
 
-    function isChildNode(d) {
-        return d.depth > 0;
-    }
+    let isRootNode = bp.isRootNode = (d) => d.depth === 0;
+    
+    let isChildNode = bp.isChildNode = (d) => d.depth > 0;
 
-    function getImportantAdjuncts(d) {
-        let adjuncts = d.data.getPoliciesAsArray().concat(d.data.getEnrichersAsArray());
-        return adjuncts.filter((adjunct)=>(adjunct.miscData.has('important') && adjunct.miscData.get('important') === true));
-    }
+    let getImportantAdjuncts = bp.getImportantAdjuncts = (d) =>
+        [].concat(d.data.getPoliciesAsArray()).concat(d.data.getEnrichersAsArray())
+            .filter( (adjunct)=>(adjunct.miscData.has('important') && adjunct.miscData.get('important') === true) );
 
-    function selectNode(id) {
+    let selectNode = bp.selectNode = (id) => {
         _svg.selectAll('.entity.selected').classed('selected', false);
         _svg.selectAll('.relation.highlight').classed('highlight', false);
         _svg.select(`#entity-${id}`).classed('selected', true);
         _svg.selectAll(`.relation[from='${id}']`).classed('highlight', true);
         _svg.selectAll(`.relation[to='${id}']`).classed('highlight', true);
-        return this;
-    }
+        return result;
+    };
 
-    function unselectNode() {
+    let unselectNode = bp.unselectNode = () => {
         _svg.selectAll('.entity.selected').classed('selected', false);
         _svg.selectAll('.relation.highlight').classed('highlight', false);
-        return this;
-    }
+        return result;
+    };
 
     /**
      * Hide the relationships for the dragged entity and its descendants
      * @param node the node for the dragged entity
      */
-    function hideRelationships(node) {
-        _d3DataHolder.relationships
+    let hideRelationships = bp.hideRelationships = (node) => {
+        bp.d3data.relationships
             .filter(r => r.source.hasAncestor(node.data) || r.target.hasAncestor(node.data))
             .forEach(r => {
                 _relationGroup.selectAll(`.relation[from='${r.source._id}'][to='${r.target._id}']`).classed('hidden', true);
             });
-    }
+    };
 
     /**
      * Shows all relationships
      */
-    function showRelationships() {
+    let showRelationships = bp.showRelationships = () => {
         _relationGroup.selectAll('.relation').classed('hidden', false);
-    }
+    };
 
     /**
      * Hide the invalid dropzones for the dragged node
      * @param node the node that is being dragged
      */
-    function hideInvalidDropzones(node) {
-        _d3DataHolder.nodes
+    let hideInvalidDropZones = bp.hideInvalidDropZones = (node) => {
+        d3data.nodes
             .filter(d => d.data.hasAncestor(node.data))
             .forEach(d => {
                 _dropZoneGroup.selectAll(`#dropzone-group-node-${d.data._id} .dropzone`).classed('hidden', true);
@@ -1037,18 +926,20 @@ export function D3Blueprint(container) {
     /**
      * Shows all dropzones
      */
-    function showDropzones() {
+    let showDropZones = bp.showDropZones = () => {
         _dropZoneGroup.selectAll('.dropzone').classed('hidden', false);
-    }
+    };
 
     // register global key events
     d3.select('body').on('keyup.body', onKeyUp);
 
-    return {
-        draw: draw,
-        update: update,
-        center: center,
-        select: selectNode,
+    // public signature
+    Object.assign(result, {
+        draw: bp.draw,
+        update: bp.update,
+        center: bp.center,
+        select: bp.selectNode,
         unselect: unselectNode
-    };
+    });
+    return result;
 }

@@ -28,7 +28,7 @@ import {graphicalEditSpecState} from './graphical/edit/spec/edit.spec.controller
 import bottomSheetTemplate from './bottom-sheet.template.html';
 import {ISSUE_LEVEL} from '../../components/util/model/issue.model';
 
-const layers = [
+const LAYERS = [
     {
         id: 'locations',
         label: 'Locations',
@@ -54,7 +54,8 @@ const layers = [
         active: true
     }
 ];
-const layerCacheKey = 'blueprint-composer.layers';
+
+const COMPOSER_STATE_CACHE_KEY = 'blueprint-composer.state';
 
 export function MainController($scope, $element, $log, $state, $stateParams, brBrandInfo, blueprintService, actionService, catalogApi, applicationApi, brSnackbar, brBottomSheet, edit, yaml, composerOverrides) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
@@ -64,25 +65,34 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
         throw 'Cannot supply both YAML source and a catalog item to edit';
     }
 
+    // uncomment this to enable dev work on landscape mode
+    // vm.experimental = { enableLandscape: true };
+    
     vm.mode = $state.current;
     $scope.$on('$stateChangeSuccess', (event, toState)=>{
         vm.mode = toState;
     });
 
-    vm.layers = localStorage && localStorage.getItem(layerCacheKey) !== null ?
-        JSON.parse(localStorage.getItem(layerCacheKey)) :
-        layers;
-    $scope.$watch('vm.layers', ()=> {
-        vm.layers.forEach(layer => {
+    $scope.composerState = localStorage && localStorage.getItem(COMPOSER_STATE_CACHE_KEY) !== null ?
+        JSON.parse(localStorage.getItem(COMPOSER_STATE_CACHE_KEY)) :
+        {
+            layers: LAYERS,
+            viewMode: 'mgmt',
+        };
+    if ($stateParams.viewMode) $scope.composerState.viewMode = $stateParams.viewMode;
+    $scope.$watch('composerState.layers', ()=> {
+        $scope.composerState.layers.forEach(layer => {
             document.querySelectorAll(layer.selector).forEach(node => {
                 angular.element(node).css('display', layer.active ? 'block' : 'none');
             });
         });
+    }, true);
+    $scope.$watch('composerState', ()=> {
         if (localStorage) {
             try {
-                localStorage.setItem(layerCacheKey, JSON.stringify(vm.layers));
+                localStorage.setItem(COMPOSER_STATE_CACHE_KEY, JSON.stringify($scope.composerState));
             } catch (ex) {
-                $log.error('Cannot save layers preferences: ' + ex.message);
+                $log.error('Cannot save composer state preferences: ' + ex.message);
             }
         }
     }, true);
@@ -150,6 +160,12 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
 
     vm.isGraphicalMode = () => {
         return $state.includes(graphicalState.name);
+    };
+    vm.viewMode = () => {
+        if (!vm.isGraphicalMode()) {
+            return 'yaml';
+        }
+        return $scope.composerState.viewMode;
     };
 
     vm.getAllActions = () => {

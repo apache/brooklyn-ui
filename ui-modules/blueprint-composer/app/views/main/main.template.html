@@ -21,12 +21,22 @@
     <nav class="navbar navbar-mode">
         <div class="container-fluid flush-left">
             <ul class="nav navbar-nav navbar-nav-mode">
-                <li ng-class="{'active': vm.isGraphicalMode()}">
+                <li ng-class="{'active': vm.viewMode()==='mgmt'}" ng-if="!vm.experimental.enableLandscape">
                     <a ui-sref="main.graphical" ng-disabled="vm.parseError">
                         <i class="fa fa-fw fa-object-group"></i> Graphical Designer
                     </a>
                 </li>
-                <li ng-class="{'active': !vm.isGraphicalMode()}">
+                <li ng-class="{'active': vm.viewMode()==='mgmt'}" ng-if="vm.experimental.enableLandscape">
+                    <a ui-sref="main.graphical({viewMode: 'mgmt'})" ng-disabled="vm.parseError">
+                        <i class="fa fa-fw fa-object-group"></i> Management Hierarchy
+                    </a>
+                </li>
+                <li ng-class="{'active': vm.viewMode()==='landscape'}" ng-if="vm.experimental.enableLandscape">
+                    <a ui-sref="main.graphical({viewMode: 'landscape'})" ng-disabled="vm.parseError">
+                        <i class="fa fa-fw fa-object-group"></i> Landscape View
+                    </a>
+                </li>
+                <li ng-class="{'active': vm.viewMode()==='yaml'}">
                     <a ui-sref="main.yaml">
                         <i class="fa fa-fw fa-pencil"></i> YAML Editor
                     </a>
@@ -46,7 +56,7 @@
                     <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu role="menu">
                         <li role="menuitem" class="layer"
                             ng-if="vm.isGraphicalMode()"
-                            ng-repeat="layer in vm.layers track by layer.id"
+                            ng-repeat="layer in composerState.layers track by layer.id"
                             ng-class="{'active': layer.active}">
                             <a ng-click="layer.active = !layer.active"><i class="fa fa-fw fa-circle"></i> {{layer.label}}</a>
                         </li>

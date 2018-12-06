@@ -369,9 +369,13 @@ export function catalogSelectorSearchFilter() {
                     let fieldNum = 0;
                     return found &&
                         FIELDS_TO_SEARCH.reduce((match, field) => {
-                            if (match) return true;
+                            if (match) {
+                                return true;
+                            }
                             fieldNum++;
-                            if (!item.hasOwnProperty(field) || !item[field]) return false;
+                            if (!item.hasOwnProperty(field) || !item[field]) {
+                                return false;
+                            }
                             let text = item[field];
                             if (!text.toLowerCase) {
                                 text = JSON.stringify(text).toLowerCase();
@@ -379,7 +383,9 @@ export function catalogSelectorSearchFilter() {
                                 text = text.toLowerCase();
                             }
                             let index = text.indexOf(part);
-                            if (index == -1) return false;
+                            if (index == -1) {
+                                return false;
+                            }
                             // found, set relevance -- uses an ad hoc heuristic preferring first fields and short text length,
                             // earlier occurrences and earlier words weighted more highly (smaller number is better)
                             let score = fieldNum * (2 / (1 + wordNum)) * Math.log(1 + text.length * index);
