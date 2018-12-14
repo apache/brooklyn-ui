@@ -60,5 +60,22 @@
     </filter-mapping>
     <!--FILTERS :: END-->
 
+    <login-config>
+        <auth-method>BASIC</auth-method>
+        <realm-name>webconsole</realm-name>
+    </login-config>
+
+    <security-constraint>
+      <web-resource-collection>
+        <web-resource-name>webconsole-static-assets</web-resource-name>
+        <url-pattern>/*</url-pattern>
+      </web-resource-collection>
+      <auth-constraint>
+        <role-name>**</role-name>
+      </auth-constraint>
+    </security-constraint>
+    <security-role>
+      <role-name>**</role-name>
+    </security-role>
 
 </web-app>
