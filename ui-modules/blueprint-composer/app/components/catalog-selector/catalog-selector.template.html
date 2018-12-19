@@ -104,7 +104,7 @@
                     ng-click="onClickItem(item, false, $event)">
                 <div class="item" draggable="true" ng-dragstart="onDragItem(item, $event)" ng-dragend="onDragEnd(item, $event)">
                     <div class="item-logo">
-                        <img ng-src="{{item | iconGeneratorPipe:'symbolicName'}}" alt="{{item.displayName}} logo" on-error="onImageError" item-id="{{item.symbolicName}}"/>
+                        <img draggable="false" ng-src="{{item | iconGeneratorPipe:'symbolicName'}}" alt="{{item.displayName}} logo" on-error="onImageError" item-id="{{item.symbolicName}}"/>
                     </div>
                     <div class="item-content" ng-class="{ deprecated: item.deprecated }" ng-hide="state.viewMode.hideName">
                         <h3>{{ getEntityNameForPalette(item, item | entityName) }}</h3>
@@ -125,7 +125,7 @@
                     ng-if="searchedItems.length === 0 && search && allowFreeForm()" ng-click="onClickItem(freeFormTile, $event)">
                 <div class="item" draggable="true" ng-dragstart="onDragItem(freeFormTile, $event)" ng-dragend="onDragEnd(freeFormTile, $event)">
                     <div class="item-logo">
-                        <img ng-src="{{freeFormTile | iconGeneratorPipe:'symbolicName'}}" alt="{{freeFormTile.displayName}} logo" on-error="onImageError" item-id="{{freeFormTile.symbolicName}}"/>
+                        <img draggable="false" ng-src="{{freeFormTile | iconGeneratorPipe:'symbolicName'}}" alt="{{freeFormTile.displayName}} logo" on-error="onImageError" item-id="{{freeFormTile.symbolicName}}"/>
                     </div>
                     <div class="item-content" ng-hide="state.viewMode.hideName">
                         <h3>{{freeFormTile | entityName}}</h3>
