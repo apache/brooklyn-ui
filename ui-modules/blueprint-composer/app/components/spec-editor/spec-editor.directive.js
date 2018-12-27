@@ -582,6 +582,9 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 return "Edit in simple mode, unwrapping JSON if possible ["+itemName+"]";
             }
         };
+
+        // can be overridden to disable "open in catalog" button
+        scope.allowOpenInCatalog = true;
         /** returns 'enabled' or 'disabled' if a widget is defined, or null if no special widget is defined */
         specEditor.getCustomConfigWidgetMode = (item) => {
             var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
