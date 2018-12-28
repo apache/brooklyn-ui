@@ -80,6 +80,7 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
 
             switch (entity.family) {
                 case EntityFamily.ENTITY:
+                    if ($scope.onSelectionChange) $scope.onSelectionChange(undefined);
                     entity.delete();
                     break;
                 case EntityFamily.POLICY:
