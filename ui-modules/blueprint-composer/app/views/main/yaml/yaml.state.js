@@ -40,29 +40,27 @@ function yamlStateController($scope, $rootScope, $timeout, blueprintService, brS
         vm.yaml = '';
     }
 
-    if (!CodeMirror.lint.hasOwnProperty('yaml-composer')) {
-        CodeMirror.registerGlobalHelper('lint', 'yaml-composer', mode => mode.name === 'yaml', (text, options, cm) => {
-            let issues = [];
+    CodeMirror.registerGlobalHelper('lint', 'yaml-composer', mode => mode.name === 'yaml', (text, options, cm) => {
+        let issues = [];
 
-            try {
-                blueprintService.setFromYaml(cm.getValue(), true);
-                //// the model of types etc is not updated in the YAML view; the line below will fix this
-                //// but it makes 1 request per type (even if duplicated) on _every_ keypress (modulo a minor debounce)
-                //// so it isn't worth it for now.  we should have a cache at which point the below could be supported again.
-                //// also it might make sense to do it in the `setFromYaml` method above instead of explicitly below.  
-                // blueprintService.refreshBlueprintMetadata();
-                
-            } catch (err) {
-                if (!(err instanceof YAMLException)) {
-                    issues.push({
-                        from: CodeMirror.Pos(0, 0),
-                        to: CodeMirror.Pos(0, 0),
-                        message: err.message
-                    });
-                }
+        try {
+            blueprintService.setFromYaml(cm.getValue(), true);
+            //// the model of types etc is not updated in the YAML view; the line below will fix this
+            //// but it makes 1 request per type (even if duplicated) on _every_ keypress (modulo a minor debounce)
+            //// so it isn't worth it for now.  we should have a cache at which point the below could be supported again.
+            //// also it might make sense to do it in the `setFromYaml` method above instead of explicitly below.
+            // blueprintService.refreshBlueprintMetadata();
+
+        } catch (err) {
+            if (!(err instanceof YAMLException)) {
+                issues.push({
+                    from: CodeMirror.Pos(0, 0),
+                    to: CodeMirror.Pos(0, 0),
+                    message: err.message
+                });
             }
+        }
 
-            return issues;
-        });
-    }
+        return issues;
+    });
 }
