@@ -212,6 +212,7 @@ export function catalogSelectorDirective() {
             let frame = document.createElement('div');
             frame.classList.add('drag-frame');
             event.target.appendChild(frame);
+            event.dataTransfer.setData(undefined, undefined);
             setTimeout(function() {
                 // can remove at end of this cycle, browser will have grabbed its drag image
                 frame.parentNode.removeChild(frame);
