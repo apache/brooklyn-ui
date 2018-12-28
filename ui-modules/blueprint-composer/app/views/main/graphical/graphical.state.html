@@ -20,7 +20,7 @@
 <div class="palette-and-or-toolbar">
 
   <div class="layout">
-    <div class="toolbar">
+    <div class="toolbar toolbar-left">
         <div class="list-group">
             <a href class="list-group-item"
                ng-repeat="section in vm.sections track by $index"
@@ -48,7 +48,7 @@
     </div>
   </div>
 
-  <div class="pane pane-configuration">
+  <div ng-class="['pane', 'pane-configuration', {'config-panel-open': $root.selectedSection && vm.$state.current.name != 'main.graphical'}]">
     <ui-view></ui-view>
   </div>
 

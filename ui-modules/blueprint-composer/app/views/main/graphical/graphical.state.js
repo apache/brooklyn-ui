@@ -38,6 +38,9 @@ export const graphicalState = {
 function graphicalController($scope, $state, $filter, blueprintService, paletteService) {
     this.EntityFamily = EntityFamily;
 
+    $scope.$root.selectedSection = paletteService.getSections().entities;
+    this.$state = $state;
+
     this.sections = paletteService.getSections();
     this.selectedSection = Object.values(this.sections).find(section => section.type === EntityFamily.ENTITY);
     $scope.paletteState = {};  // share state among all sections
