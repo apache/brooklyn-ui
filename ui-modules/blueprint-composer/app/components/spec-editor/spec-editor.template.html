@@ -450,7 +450,7 @@
     </div>
     <div class="toolbar" ng-if="specEditor.needToolbar">
         <div class="list-group">
-            <a href="" class="list-group-item ng-scope"
+            <a href="" class="list-group-item ng-scope" title="{{section.type.displayName}} configuration"
                ng-repeat="section in specEditor.sections track by $index"
                ng-class="{'active': $root.selectedSection === section}"
                ng-click="$root.selectedSection = section">

@@ -22,7 +22,7 @@
   <div class="layout">
     <div class="toolbar toolbar-left">
         <div class="list-group">
-            <a href class="list-group-item"
+            <a href class="list-group-item" title="{{section.title}} catalog"
                ng-repeat="section in vm.sections track by $index"
                ng-class="{'active': vm.selectedSection === section}"
                ng-click="vm.selectedSection = section">
