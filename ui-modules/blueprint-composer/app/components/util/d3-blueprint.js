@@ -678,8 +678,12 @@ export function D3Blueprint(container) {
             .attr('opacity', 1)
             .attr('stroke', 'red')
             .attr('d', function(d) {
-                let targetNode = nodeForEntity(d.target);
-                let sourceNode = nodeForEntity(d.source);
+                try {
+                    var targetNode = nodeForEntity(d.target);
+                    var sourceNode = nodeForEntity(d.source);
+                } catch (error) {
+                    return '';
+                }
                 let sourceY = sourceNode.y + (d.source.isMemberSpec() ? _configHolder.nodes.memberspec.circle.cy : 0);
                 let targetY = targetNode.y + (d.target.isMemberSpec() ? _configHolder.nodes.memberspec.circle.cy : 0);
                 let dx = targetNode.x - sourceNode.x;
