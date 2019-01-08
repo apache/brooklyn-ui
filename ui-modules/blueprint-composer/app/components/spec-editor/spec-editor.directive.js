@@ -103,6 +103,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope.FAMILIES = EntityFamily;
         scope.RESERVED_KEYS = RESERVED_KEYS;
         scope.REPLACED_DSL_ENTITYSPEC = REPLACED_DSL_ENTITYSPEC;
+        scope.showVersion = true;
 
         specEditor.sections = scope.paletteService.getSections();
         specEditor.hasParentEntity = element.parent().children()[0].tagName == "SECTION"

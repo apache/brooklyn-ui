@@ -48,7 +48,7 @@
                     </div>
                     <div class="panel-header-body">
                         <div title="{{model.type}}"><i class="fa fa-bookmark panel-header-icon"></i><samp class="entity-type-header">{{model.type}}</samp></div>
-                        <span class="label label-primary version">{{model | entityVersion}}</span>
+                        <span ng-if="showVersion" class="label label-primary version">{{model | entityVersion}}</span>
                         <div ng-if="['POLICY', 'ENRICHER'].indexOf(model.family.id) === -1" class="identifier">
                             <i class="fa fa-id-card-o panel-header-icon"></i>
                             <input class="form-control editable" ng-model="model.id" placeholder="(no reference ID)" blur-on-enter/>
