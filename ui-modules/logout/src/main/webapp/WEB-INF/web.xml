@@ -28,17 +28,6 @@
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>
 
-    <security-constraint>
-      <web-resource-collection>
-        <web-resource-name>webconsole-static-assets</web-resource-name>
-        <url-pattern>/*</url-pattern>
-      </web-resource-collection>
-      <auth-constraint>
-        <role-name>**</role-name>
-      </auth-constraint>
-    </security-constraint>
-    <security-role>
-      <role-name>**</role-name>
-    </security-role>
+    <!--no security for this module so we can confirm that the user has logged out-->
 
 </web-app>
