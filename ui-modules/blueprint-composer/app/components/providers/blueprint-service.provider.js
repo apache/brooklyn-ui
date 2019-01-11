@@ -466,7 +466,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
                 promises.push(
                     $q.all(Object.keys(value).reduce((issues, itemKey) => {
                         return issues.concat(
-                            parseInput(value[itemKey], entity).then(dsl => {
+                            parseInput(value[itemKey].toString(), entity).then(dsl => {
                                 value[itemKey] = dsl;
                                 return dsl.getAllIssues();
                             }).catch(() => [])
