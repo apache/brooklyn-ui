@@ -191,9 +191,18 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
             });
         });
 
+        // can be overridden to add function for confirmation before delete entity/policy... with press Delete key. Delete entity only if variable is undefined or promise
+        $scope.confirmDelete = undefined;
         $element.bind('delete-entity', function (event) {
-            $log.debug('delete-entity');
-            $scope.$broadcast('d3.remove', event.detail.entity);
+            var remove = () => {
+                $log.debug('delete-entity');
+                $scope.$broadcast('d3.remove', event.detail.entity);
+            }
+            if ($scope.confirmDelete != undefined) {
+                $scope.confirmDelete().then(remove);
+            } else {
+                remove();
+            }
         });
 
         $element.bind('drop-external-node', event => {

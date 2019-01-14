@@ -345,31 +345,45 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         };
 
         scope.removeAdjunct = ($event, adjunct)=> {
-            $event.preventDefault();
-            $event.stopPropagation();
-            switch(adjunct.family) {
-                case EntityFamily.POLICY:
-                    scope.model.removePolicy(adjunct._id);
-                    break;
-                case EntityFamily.ENRICHER:
-                    scope.model.removeEnricher(adjunct._id);
-                    break;
+            var remove = () => {
+                $event.preventDefault();
+                $event.stopPropagation();
+                switch(adjunct.family) {
+                    case EntityFamily.POLICY:
+                        scope.model.removePolicy(adjunct._id);
+                        break;
+                    case EntityFamily.ENRICHER:
+                        scope.model.removeEnricher(adjunct._id);
+                        break;
+                }
+            };
+            if (scope.confirmDelete != undefined) {
+                scope.confirmDelete().then(remove);
+            } else {
+                remove();
             }
         };
 
         scope.removeModel = ()=> {
-            switch (scope.model.family) {
-                case EntityFamily.ENRICHER:
-                    scope.model.parent.removeEnricher(scope.model._id);
-                    break;
-                case EntityFamily.POLICY:
-                    scope.model.parent.removePolicy(scope.model._id);
-                    break;
-                default:
-                    $rootScope.$broadcast('d3.remove', scope.model);
-                    break;
+            var remove = () => {
+                switch (scope.model.family) {
+                    case EntityFamily.ENRICHER:
+                        scope.model.parent.removeEnricher(scope.model._id);
+                        break;
+                    case EntityFamily.POLICY:
+                        scope.model.parent.removePolicy(scope.model._id);
+                        break;
+                    default:
+                        $rootScope.$broadcast('d3.remove', scope.model);
+                        break;
+                }
+                $state.go(graphicalState.name);
+            };
+            if (scope.confirmDelete != undefined) {
+                scope.confirmDelete().then(remove);
+            } else {
+                remove();
             }
-            $state.go(graphicalState.name);
         };
 
         scope.getConfigIssues = specEditor.getConfigIssues = ()=> {
@@ -586,6 +600,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
 
         // can be overridden to disable "open in catalog" button
         scope.allowOpenInCatalog = true;
+        // can be overridden to add function for confirmation before delete entity/policy... with click on button. Delete entity only if variable is undefined or promise
+        scope.confirmDelete = undefined;
         /** returns 'enabled' or 'disabled' if a widget is defined, or null if no special widget is defined */
         specEditor.getCustomConfigWidgetMode = (item) => {
             var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
