@@ -63,46 +63,11 @@
             <plugin>
                 <groupId>org.apache.karaf.tooling</groupId>
                 <artifactId>karaf-maven-plugin</artifactId>
+                <version>${karaf.plugin.version}</version>
+                <extensions>true</extensions>
                 <configuration>
                     <startLevel>100</startLevel>
-                    <aggregateFeatures>true</aggregateFeatures>		
-                    <resolver>(obr)</resolver>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>verify-brooklyn-ui-modularity-feature</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>verify</goal>
-                        </goals>
-                        <configuration>
-                            <distribution>org.apache.karaf.features:framework</distribution>
-                            <framework><!--REQUIRED FEATURES-->
-                                <feature>framework</feature>
-                                <feature>aries-blueprint</feature>
-                                <feature>config</feature>
-                                <feature>feature</feature>
-                                <feature>service</feature>
-                                <feature>ssh</feature>
-                                <feature>system</feature>
-                                <feature>wrap</feature>
-                                <feature>brooklyn-osgi-launcher</feature>
-                                <feature>brooklyn-rest-resources</feature>
-                            </framework>
-                            <features><!--SELECTED FEATURES TO VERIFY-->
-                                <feature>brooklyn-ui-modularity</feature>
-                                <feature>brooklyn-ui-modularity-prereqs</feature>
-                                <feature>brooklyn-ui-proxy</feature>
-                            </features>
-                            <descriptors>
-                                <descriptor>mvn:org.apache.karaf.features/framework/${karaf.version}/xml/features</descriptor>
-                                <descriptor>mvn:org.apache.karaf.features/standard/${karaf.version}/xml/features</descriptor>
-                                <descriptor>mvn:org.apache.brooklyn/brooklyn-features/${brooklyn.version}/xml/features</descriptor>
-                                <descriptor>file:${project.build.directory}/feature/feature.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
