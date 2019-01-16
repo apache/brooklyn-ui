@@ -25,7 +25,7 @@
     <parent>
         <artifactId>brooklyn-ui-modularity-server-parent</artifactId>
         <groupId>com.usharesoft.brooklyn.ui.modularity</groupId>
-        <version>0.2.5-SNAPSHOT</version>
+        <version>0.2.5</version>
     </parent>
 
     <artifactId>brooklyn-ui-metadata-registry</artifactId>
