@@ -31,7 +31,7 @@
                         <button id="spec-actions" type="button" class="btn btn-link" ng-if="model.hasType() && allowOpenInCatalog" uib-dropdown-toggle>
                             <span class="fa fa-bars"></span>
                         </button>
-                        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="spec-actions" ng-if="model.hasType()">
+                        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="spec-actions" ng-if="model.hasType() && allowOpenInCatalog">
                             <li role="menuitem"><a ng-href="/brooklyn-ui-catalog/#!/bundles/{{model.miscData.get('bundle').symbolicName}}/{{model.miscData.get('bundle').version}}/types/{{model.type}}/{{model.version || 'latest'}}" target="_blank">Open in Catalog</a></li>
                             <li role="separator" class="divider"></li>
                             <li role="menuitem"><a href ng-click="removeModel()"><span class="text-danger">Delete</span></a></li>

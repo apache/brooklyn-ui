@@ -345,7 +345,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         };
 
         scope.removeAdjunct = ($event, adjunct)=> {
-            var remove = () => {
+            var removeAdjunct = () => {
                 $event.preventDefault();
                 $event.stopPropagation();
                 switch(adjunct.family) {
@@ -358,14 +358,14 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 }
             };
             if (scope.confirmDelete != undefined) {
-                scope.confirmDelete().then(remove);
+                scope.confirmDelete().then(removeAdjunct);
             } else {
-                remove();
+                removeAdjunct();
             }
         };
 
         scope.removeModel = ()=> {
-            var remove = () => {
+            var removeModel = () => {
                 switch (scope.model.family) {
                     case EntityFamily.ENRICHER:
                         scope.model.parent.removeEnricher(scope.model._id);
@@ -380,9 +380,9 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 $state.go(graphicalState.name);
             };
             if (scope.confirmDelete != undefined) {
-                scope.confirmDelete().then(remove);
+                scope.confirmDelete().then(removeModel);
             } else {
-                remove();
+                removeModel();
             }
         };
 
@@ -600,8 +600,6 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
 
         // can be overridden to disable "open in catalog" button
         scope.allowOpenInCatalog = true;
-        // can be overridden to add function for confirmation before delete entity/policy... with click on button. Delete entity only if variable is undefined or promise
-        scope.confirmDelete = undefined;
         /** returns 'enabled' or 'disabled' if a widget is defined, or null if no special widget is defined */
         specEditor.getCustomConfigWidgetMode = (item) => {
             var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
