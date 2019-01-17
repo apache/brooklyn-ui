@@ -31,7 +31,7 @@
 
     <groupId>com.usharesoft.brooklyn.ui</groupId>
     <artifactId>brooklyn-ui-parent</artifactId>
-    <version>0.2.6-SNAPSHOT</version>
+    <version>0.2.7-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Brooklyn UI :: Parent</name>
 
