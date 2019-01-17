@@ -191,9 +191,17 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
             });
         });
 
+
         $element.bind('delete-entity', function (event) {
-            $log.debug('delete-entity');
-            $scope.$broadcast('d3.remove', event.detail.entity);
+            var removeEntity = () => {
+                $log.debug('delete-entity');
+                $scope.$broadcast('d3.remove', event.detail.entity);
+            }
+            if ($scope.confirmDelete != undefined) {
+                $scope.confirmDelete().then(removeEntity);
+            } else {
+                removeEntity();
+            }
         });
 
         $element.bind('drop-external-node', event => {

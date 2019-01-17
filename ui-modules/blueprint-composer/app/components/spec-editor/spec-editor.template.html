@@ -28,14 +28,17 @@
                     </h2>
 
                     <div class="btn-group pull-right spec-actions" uib-dropdown>
-                        <button id="spec-actions" type="button" class="btn btn-link" ng-if="model.hasType()" uib-dropdown-toggle>
+                        <button id="spec-actions" type="button" class="btn btn-link" ng-if="model.hasType() && allowOpenInCatalog" uib-dropdown-toggle>
                             <span class="fa fa-bars"></span>
                         </button>
-                        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="spec-actions" ng-if="model.hasType()">
-                            <li role="menuitem"><a ng-if="allowOpenInCatalog" ng-href="/brooklyn-ui-catalog/#!/bundles/{{model.miscData.get('bundle').symbolicName}}/{{model.miscData.get('bundle').version}}/types/{{model.type}}/{{model.version || 'latest'}}" target="_blank">Open in Catalog</a></li>
-                            <li role="separator" ng-if="allowOpenInCatalog" class="divider"></li>
+                        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="spec-actions" ng-if="model.hasType() && allowOpenInCatalog">
+                            <li role="menuitem"><a ng-href="/brooklyn-ui-catalog/#!/bundles/{{model.miscData.get('bundle').symbolicName}}/{{model.miscData.get('bundle').version}}/types/{{model.type}}/{{model.version || 'latest'}}" target="_blank">Open in Catalog</a></li>
+                            <li role="separator" class="divider"></li>
                             <li role="menuitem"><a href ng-click="removeModel()"><span class="text-danger">Delete</span></a></li>
                         </ul>
+                        <button type="button" ng-if="model.hasType() && !allowOpenInCatalog" ng-click="removeModel()" class="btn btn-link" title="Delete">
+                            <span class="fa fa-trash"></span>
+                        </button>
                         <br-svg type="close" ng-if="!specEditor.hasParentEntity" ng-click="$root.selectedSection = undefined"></br-svg>
                     </div>
                 </div>
