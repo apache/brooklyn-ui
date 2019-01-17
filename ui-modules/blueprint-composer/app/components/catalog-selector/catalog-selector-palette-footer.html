@@ -48,7 +48,7 @@
         </span>
         <span ng-if="!search">
             <span ng-if="itemsBeforeActiveFilters.length == 0">
-                <strong>Nothing available.</strong>
+                <div ng-bind-html="noEntityAvailableMessage"></div>
             </span>
             <span ng-if="skippingFilters && searchedItems.length > 0">
                     <strong>Nothing available in selected filters.</strong><br/>

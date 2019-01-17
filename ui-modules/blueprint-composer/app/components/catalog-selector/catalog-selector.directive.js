@@ -339,6 +339,8 @@ export function catalogSelectorDirective() {
         // it is used by catalogSelectorFiltersFilter;
         $scope.filterPaletteItemsForMode = (items) => items;
 
+        $scope.noEntityAvailableMessage = "<strong>Nothing available.</strong>";
+
         // allow downstream to configure this controller and/or scope
         (composerOverrides.configurePaletteController || function() {})(this, $scope, $element);
     }
