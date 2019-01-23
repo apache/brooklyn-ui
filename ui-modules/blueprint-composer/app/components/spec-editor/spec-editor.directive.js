@@ -101,6 +101,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope.specEditor = specEditor;
         scope.getParameter = getParameter;
         scope.addParameter = addParameter;
+        scope.removeParameter = removeParameter;
         scope.addConfigKey = addConfigKey;
         scope.FAMILIES = EntityFamily;
         scope.RESERVED_KEYS = RESERVED_KEYS;
@@ -114,6 +115,11 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     value: '',
                     open: false
                 },
+                edit: {
+                    value: '',
+                    name: '',
+                    open: false,
+                },
                 search: '',
                 focus: '',
                 filter: {
@@ -121,6 +127,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 },
                 open: false,
 
+                codeModeActive: {},
+                codeModeError: {},
             },
             config: {
                 add: {
@@ -130,7 +138,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 search: '',
                 focus: '',
                 filter: {
-                    values: {suggested: true, required: true, inuse: true},
+                    values: { suggested: true, required: true, inuse: true },
                     open: false,
                 },
                 // TODO would be nice to set null here, then have it go true if there is filtered config
@@ -625,6 +633,50 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 return "Edit in simple mode, unwrapping JSON if possible [" + itemName + "]";
             }
         };
+        scope.parameterCodeModeClick = (item) => {
+            let oldMode = !!(scope.state.parameters.codeModeActive[item.name]);
+            let value = null;
+            if (oldMode) {
+                // leaving code mode
+                value = scope.state.parameters.edit.value;
+                scope.state.parameters.edit.name = '';
+                scope.state.parameters.edit.open = false;
+                try {
+                    value = JSON.parse(value);
+                    let i = scope.parameters.findIndex(p => p.name === item.name);
+                    scope.parameters[i] = value;
+                } catch (notJson) {
+                    // if not parseable then leave alone
+                    value = null;
+                }
+            } else {
+                // entering code mode
+                // leave code mode for other parameter if set
+                if (scope.state.parameters.edit.name !== '') {
+                    scope.parameterCodeModeClick(getParameter(scope.state.parameters.edit.name));
+                }
+                // convert local parameter from json to non-json or vice-versa
+                value = item;
+                scope.state.parameters.edit.name = item.name;
+                scope.state.parameters.edit.open = true;
+                if (value != null) {
+                    try {
+                        JSON.parse(value);
+                    } catch (notJson) {
+                        // if not parseable or not a string, then convert to json
+                        value = JSON.stringify(value);
+                    }
+                    if (value != null) {
+                        scope.state.parameters.edit.value = value;
+                    }
+                }
+            }
+            scope.state.parameters.codeModeActive[item.name] = !oldMode;
+            if (value != null) {
+                // local parameters changed, make sure model is updated too
+                setModelFromLocalParameters();
+            }
+        };
         /** returns 'enabled' or 'disabled' if a widget is defined, or null if no special widget is defined */
         specEditor.getCustomConfigWidgetMode = (item) => {
             let widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
@@ -667,7 +719,6 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             }
             return templateName;
         };
-
         specEditor.isDsl = (key, index) => {
             let val = scope.model.config.get(key);
             if (specEditor.defined(val) && specEditor.defined(index) && index != null) val = val[index];
@@ -736,7 +787,6 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 if (blueprintService.isReservedKey(key)) {
                     continue; // skip
                 }
-
                 result[key] = getLocalConfigValueFromModelValue(key, value);
             }
             scope.config = result;
@@ -951,8 +1001,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
          * scope.model.parameters
          *   An array of values used in internal model
          *
-         * scope.model.miscData.get('parameters')
-         *   A list of parameters with their metadata, including derived widgetMode
+         * scope.state.parameters.codeModeActive
+         *   A map of booleans indicating whether to edit the parameter definition as JSON
          */
 
         function loadLocalParametersFromModel() {
@@ -994,6 +1044,14 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 scope.state.parameters.add.value = '';
                 scope.state.parameters.add.open = false;
                 scope.state.parameters.focus = name;
+            }
+        }
+
+        function removeParameter(name) {
+            scope.model.removeParameter(name);
+            loadLocalParametersFromModel();
+            if (scope.state.parameters.focus === name) {
+                scope.state.parameters.focus = '';
             }
         }
     }

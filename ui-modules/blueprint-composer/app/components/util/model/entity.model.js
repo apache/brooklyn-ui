@@ -650,17 +650,32 @@ function removeConfig(key) {
  */
 function removeParameter(name) {
     if (this.hasParameters()) {
-        let paramIndex = PARAMETERS.get(this)
-            .filter(e => e.name === name)
-            .map(e => PARAMETERS.get(this).indexOf(e));
-        if (paramIndex.length > 0) {
-            let removed = PARAMETERS.get(this).splice(paramIndex[0], 1);
+        let paramIndex = PARAMETERS.get(this).findIndex(e => e.name === name);
+        if (paramIndex != -1) {
+            PARAMETERS.get(this).splice(paramIndex, 1);
             this.touch();
         }
     }
     return this;
 }
 
+
+/**
+ * Update an entry in brooklyn.parameters
+ * @param {string} name
+ * @param {object} definition
+ * @returns {Entity}
+ */
+function updateParameter(name, definition) {
+    if (this.hasParameters()) {
+        let paramIndex = PARAMETERS.get(this).findIndex(e => e.name === name);
+        if (paramIndex != -1) {
+            PARAMETERS.get(this)[paramIndex] = definition;
+            this.touch();
+        }
+    }
+    return this;
+}
 /**
  * Remove an entry from the entity metadata
  * @param {string} key

@@ -95,6 +95,7 @@
                             <span ng-bind-html="state.parameters.add.value | uibTypeaheadHighlight:query" class="config-name"></span>
                             <i class="fa fa-fw fa-plus-square-o"></i>
                         </div>
+                    </div>
                 </a></li>
             </ul>
         </div>
@@ -102,10 +103,10 @@
 
     <div class="spec-configuration">
         <div class="spec-empty-state" ng-if="filteredItems.length === 0">
-            <div ng-if="model.miscData.get('parameters').length === 0">
+            <div ng-if="parameters.length === 0">
                 <h4>No parameters</h4>
             </div>
-            <div ng-if="model.miscData.get('parameters').length > 0">
+            <div ng-if="parameters.length > 0">
                 <h4>No matching parameters</h4>
                 <p class="buttons">
                     <button class="btn btn-sm btn-default" ng-if="state.parameters.search.length > 0" ng-click="state.parameters.search = ''">Clear search</button>
@@ -117,7 +118,7 @@
         </div>
 
         <form name="formSpecParameter" novalidate class="lightweight">
-            <div ng-repeat="item in (filteredItems = (model.miscData.get('parameters') | filter:{name:state.parameters.search} | orderBy:+priority)) track by item.name ">
+            <div ng-repeat="item in (filteredItems = (model.parameters | filter:{name:state.parameters.search} | orderBy:+priority)) track by item.name ">
                 <div class="form-group" ng-class="{'has-error': (model.issues | filter:{ref: item.name}:true).length > 0, 'used': getParameter(item.name) !== undefined}"
                      ng-switch="getParameterWidgetMode(item)"
                      tabindex="1"
@@ -127,7 +128,6 @@
                      ng-focus="specEditor.recordParameterFocus(item)"
                      on-enter="specEditor.advanceControlInFormGroup">
 
-                    <!-- have to hide it; excluding it conditionally via if doesn't play nice with switch -->
                     <div class="config-flex-row">
                         <label class="control-label" for="{{item.name}}">
                             <span class="label-spec-configuration">{{item.label || item.name}}</span>
@@ -141,13 +141,24 @@
 
                         <span class="label-rhs-buttons">
                             <span class="spacer"> </span>
+                            <span class="json-config" ng-class="{'code-mode-active': state.parameters.codeModeActive[item.name]}">
+                                <i class="fa fa-fw fa-code" ng-click="parameterCodeModeClick(item)" aria-hidden="true"
+                                   title="{{state.parameters.codeModeActive[item.name] ? 'Set' : 'Edit'}} value as a JSON-encoded object [{{item.name}}]"></i>
+                                <span class="sr-only">Edit value as a JSON-encoded object [{{item.name}}]</span>
+                            </span>
                             <span class="remove-spec-configuration" ng-if="getParameter(item.name) !== undefined">
-                                <i class="fa fa-fw fa-eraser" ng-click="model.removeParameter(item.name)" aria-hidden="true" title="Clear parameter [{{item.name}}]"></i>
-                                <span class="sr-only">Clear parameter [{{item.name}}]</span>
+                                <i class="fa fa-fw fa-trash" ng-click="removeParameter(item.name)" aria-hidden="true" title="Remove parameter {{item.name}}"></i>
+                                <span class="sr-only">Remove parameter {{item.name}}</span>
                             </span>
                         </span>
 
-                        <!-- TODO use the code editor for defining parameter properties -->
+                        <div class="input-group" ng-if="state.parameters.codeModeActive[item.name]">
+                            <span class="main-control span-for-rounded-edge">
+                                <textarea ng-model="state.parameters.edit.value" class="form-control rounded-edge" name="{{item.name}}" id="{{item.name}}"
+                                          auto-grow placeholder="(empty)" ng-focus="specEditor.recordParameterFocus(item)"
+                                          on-enter="specEditor.advanceOutToFormGroupInPanel"></textarea>
+                            </span>
+                        </div>
 
                         <small ng-repeat="issue in model.issues | filter:{ref: item.name}:true" class="help-block issue" ng-bind-html="issue.message"></small>
                     </div>
