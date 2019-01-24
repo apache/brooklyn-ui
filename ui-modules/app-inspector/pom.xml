@@ -113,6 +113,7 @@
                         <Import-Package>
                             org.apache.brooklyn.ui.modularity.module.api,
                             org.apache.brooklyn.rest.filter,
+                            org.apache.brooklyn.rest.util,
                             org.eclipse.jetty.servlets,
                             *
                         </Import-Package>
