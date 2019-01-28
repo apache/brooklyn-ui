@@ -31,7 +31,7 @@ export const mainState = {
     name: 'main',
     url: '/',
     template: require('ejs-html!./main.template.html'),
-    controller: ['$scope', mainStateController],
+    controller: ['$scope', '$http', mainStateController],
     controllerAs: 'vm'
 };
 
@@ -39,9 +39,61 @@ export function mainStateConfig($stateProvider) {
     $stateProvider.state(mainState);
 }
 
-export function mainStateController($scope) {
+export function mainStateController($scope, $http) {
+    $scope.state = { status: "checking", message: "Preparing to log out" };
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
+    function clearLocalCache() {
+        let ua = window.navigator.userAgent;
+        if (ua.indexOf('MSIE ') >= 0 || ua.indexOf(' Edge/') >= 0 || ua.indexOf(' Trident/') >= 0) {
+            document.execCommand('ClearAuthenticationCache', 'false');
+        }
+    }
+
+    function handleError(phase, response) {
+        if (response && response.status >= 300 && response.status < 500) {
+            // auth required
+            $scope.state = { status: "already-logged-out" };
+        } else if (response && response.status && response.status>0) {
+            console.log("Server failure "+phase, response);
+            $scope.state = { status: "failed", message: "server failure ("+response.status+") "+phase+
+                (response.message ? ": "+response.message : "") };
+        } else {
+            console.log("Connection failure "+phase, response);
+            $scope.state = { status: "failed", message: "connection failure "+phase };
+        }
+        clearLocalCache();
+    }
+        
+    function getUserThen(f) {
+        $http.get('v1/server/user').then(response => {
+            console.log("User check response", response);
+            $scope.state = { status: "logging-out", user: response.data };
+            f(response.data);
+            clearLocalCache();
+            
+        }, error => {
+            handleError("processing logged-on user check", error);
+        });
+    }
+    
+    function postLogout(user) {
+        console.log("posting to "+'v1/logout/'+user);
+        $http.post('v1/logout'+(user ? '/'+user : '')).then(response => {
+            console.log("Logout response", response);
+            $scope.state = { status: "just-logged-out" };
+            clearLocalCache();
+            
+        }, error => {
+            handleError("logging out", error);
+        });
+    }
+    
+    $scope.logout = () => getUserThen(postLogout);
+    $scope.logout();
+    
+    return;
+    
     let userRequest = new XMLHttpRequest();
     userRequest.onreadystatechange = function () {
         if (this.readyState === 4 && this.status === 200) {
@@ -51,15 +103,9 @@ export function mainStateController($scope) {
     userRequest.open('GET', '/v1/server/user', true);
     userRequest.send('');
 
-    /**
-     * Logout the supplied user
-     * @param user
-     */
-    function logout(user) {
-        let ua = window.navigator.userAgent;
-        if (ua.indexOf('MSIE ') >= 0 || ua.indexOf(' Edge/') >= 0 || ua.indexOf(' Trident/') >= 0) {
-            document.execCommand('ClearAuthenticationCache', 'false');
-        }
+    
+    function logout2(user) {
+        
         let logoutRequest = new XMLHttpRequest();
         logoutRequest.onreadystatechange = function () {
             if (this.readyState === 4) {

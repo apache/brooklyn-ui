@@ -18,9 +18,33 @@
 -->
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-12 text-center">
-            <h2>Thank you for using <%= getBrandedText('product.name') %>, see you soon</h2>
-            <p><a class="btn btn-lg btn-primary" href="/">Log back in</a></p>
+        <div class="col-md-12 text-center" ng-switch="state.status">
+            <div ng-switch-when="checking">
+                <h2>Logout in progress.../h2>
+                <p><a class="btn btn-lg btn-primary" ng-click="retry()">Retry</a></p>
+            </div>
+            <div ng-switch-when="logging-out">
+                <h2>Logout of {{ state.user }} in progress...</h2>
+                <p><a class="btn btn-lg btn-primary" ng-click="retry()">Retry</a></p>
+            </div>
+            <div ng-switch-when="just-logged-out">
+                <h2>Logout successful</h2>
+                <p>Thank you for using <%= getBrandedText('product.name') %>, see you soon</p>
+                <p><a class="btn btn-lg btn-primary" href="/">Log back in</a></p>
+                <p><a class="btn btn-lg btn-outline" ng-click="checkUnauthorized()">Clear local cached auth</a></p>
+            </div>
+            <div ng-switch-when="already-logged-out">
+                <h2>Already logged out</h2>
+                <p>Thank you for using <%= getBrandedText('product.name') %>, see you soon</p>
+                <p><a class="btn btn-lg btn-primary" href="/">Log back in</a></p>
+                <p><a class="btn btn-lg btn-outline" ng-click="checkUnauthorized()">Clear local cached auth</a></p>
+            </div>
+            <div ng-switch-default>
+                <h2>Log out failed<span ng-if="state.message">: {{ state.message }}</span</h2>
+                <p>
+                <p><a class="btn btn-lg btn-primary" ng-click="retry()">Try logging out again</a></p>
+                <p><a class="btn btn-lg btn-outline" href="/">Return to app (login if needed)</a></p>
+            </div>
         </div>
     </div>
 </div>
