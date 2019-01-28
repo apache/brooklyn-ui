@@ -40,7 +40,7 @@ export function mainStateConfig($stateProvider) {
 }
 
 export function mainStateController($scope, $http) {
-    $scope.state = { status: "checking", message: "Preparing to log out" };
+    $scope.state = { status: "confirm" };
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
     function clearLocalCache() {
@@ -64,22 +64,13 @@ export function mainStateController($scope, $http) {
         }
         clearLocalCache();
     }
-        
-    function getUserThen(f) {
-        $http.get('v1/server/user').then(response => {
-            console.log("User check response", response);
-            $scope.state = { status: "logging-out", user: response.data };
-            f(response.data);
-            clearLocalCache();
-            
-        }, error => {
-            handleError("processing logged-on user check", error);
-        });
-    }
     
-    function postLogout(user) {
-        console.log("posting to "+'v1/logout/'+user);
-        $http.post('v1/logout'+(user ? '/'+user : '')).then(response => {
+    this.logout = (keepCreds) => {
+        $scope.state = { status: "logging-out" };
+        $http({ url: 'v1/logout'+(keepCreds ? '' : '?unauthorize=logging-out-from-webapp'), 
+                method: 'POST',
+                transformResponse: x => x})
+        .then(response => {
             console.log("Logout response", response);
             $scope.state = { status: "just-logged-out" };
             clearLocalCache();
@@ -89,9 +80,10 @@ export function mainStateController($scope, $http) {
         });
     }
     
-    $scope.logout = () => getUserThen(postLogout);
-    $scope.logout();
-    
+    this.retry = () => {
+        $scope.state = { status: "confirm" };
+    }
+        
     return;
     
     let userRequest = new XMLHttpRequest();
