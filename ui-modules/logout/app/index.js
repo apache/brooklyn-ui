@@ -26,10 +26,11 @@ import brCore from 'brooklyn-ui-utils/br-core/br-core';
 import brInterstitialSpinner from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import brooklynModuleLinks from 'brooklyn-ui-utils/module-links/module-links';
 import brooklynUserManagement from 'brooklyn-ui-utils/user-management/user-management';
+import brServerStatus from 'brooklyn-ui-utils/server-status/server-status';
 
 import mainState from './views/main/main.controller';
 
-angular.module('app', [ngAnimate, ngCookies, uiRouter, brCore, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, mainState])
+angular.module('app', [ngAnimate, ngCookies, uiRouter, brCore, brInterstitialSpinner, brServerStatus, brooklynModuleLinks, brooklynUserManagement, mainState])
     .config(['$urlRouterProvider', '$logProvider', applicationConfig])
     .run(['$http', httpConfig]);
 

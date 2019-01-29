@@ -28,19 +28,52 @@ angular.module(MODULE_NAME, [uiRouter])
 export default MODULE_NAME;
 
 export const mainState = {
-    name: 'main',
-    url: '/',
+    name: 'mainRoot',
+    url: '/?debug&keepCreds&useGet&salt',
+    // experimental/test options:
+    // * useGet means to make a GET request instead of POST
+    // * keepCreds means not to request a 200 on successful logout instead of a 401;
+    //   this will prevent the browser from clearing cache 
     template: require('ejs-html!./main.template.html'),
-    controller: ['$scope', '$http', mainStateController],
+    controller: ['$scope', '$http', '$state', '$stateParams', '$log', '$timeout', mainStateController],
+    controllerAs: 'vm'
+};
+export const promptState = {
+    name: 'prompt',
+    url: '/prompt?debug',
+    params: { prompt: true },
+    template: require('ejs-html!./main.template.html'),
+    controller: ['$scope', '$http', '$state', '$stateParams', mainStateController],
     controllerAs: 'vm'
 };
 
 export function mainStateConfig($stateProvider) {
-    $stateProvider.state(mainState);
+    $stateProvider.state(promptState).state(mainState);
 }
 
-export function mainStateController($scope, $http) {
-    $scope.state = { status: "confirm" };
+export function mainStateController($scope, $http, $state, $stateParams, $log, $timeout) {
+    if (!$scope.state) $scope.state = {};
+    if ($stateParams.prompt) $scope.state.status = "prompt";
+    if (!$scope.state.status) $scope.state.status = "do-logout";
+    
+    /* There is a lot of complexity in here to support debug pathways with confirmation, 
+     * use of http GET instead of POST, and use of API which returns 200 instead of 401.
+     * This is because logging out nicely is quite tricky.
+     *   Currently we think we have a good pathway without any of that complexity,
+     * so if you haven't set "?debug=true" or other special option in the URL it is
+     * mostly disabled and follows the happy path where it just logs out and prompts
+     * you to log back in. But the debug stuff is left in, in case we encounter edge cases.
+     */
+     
+    $scope.debug = $stateParams.debug;
+    if ($scope.debug) {
+        $log.info("Logout page running in debug mode. state=", $state, "state params=", $stateParams);
+    }
+    if ($stateParams.salt) {
+        // specify some salt to ensure links change in dev mode
+        $scope.salt = (parseInt($stateParams.salt) || 0);
+    }
+    
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
     function clearLocalCache() {
@@ -50,67 +83,68 @@ export function mainStateController($scope, $http) {
         }
     }
 
-    function handleError(phase, response) {
-        if (response && response.status >= 300 && response.status < 500) {
+    function handleError(phase, response, expectAlreadyLoggedOut) {
+        if (response && response.status >= 300 && response.status < 400 || response.status == 401) {
             // auth required
-            $scope.state = { status: "already-logged-out" };
+            if (expectAlreadyLoggedOut) {
+                $scope.state = { status: "logout-confirmed", code: response.status };
+            } else {
+                $scope.state = { status: "already-logged-out", code: response.status };
+            }
         } else if (response && response.status && response.status>0) {
-            console.log("Server failure "+phase, response);
+            $log.warn("Server failure "+phase, response);
             $scope.state = { status: "failed", message: "server failure ("+response.status+") "+phase+
-                (response.message ? ": "+response.message : "") };
+                (response.message ? ": "+response.message : ""), code: response.status };
         } else {
-            console.log("Connection failure "+phase, response);
-            $scope.state = { status: "failed", message: "connection failure "+phase };
+            $log.info("Connection failure "+phase, response);
+            $scope.state = { status: "failed", message: "connection failure "+phase, code: response.status };
         }
         clearLocalCache();
     }
     
-    this.logout = (keepCreds) => {
+    this.logout = (expectAlreadyLoggedOut) => {
+        let useGet = $stateParams.useGet;
+        let keepCreds = $stateParams.keepCreds;
+        
         $scope.state = { status: "logging-out" };
-        $http({ url: 'v1/logout'+(keepCreds ? '' : '?unauthorize=logging-out-from-webapp'), 
-                method: 'POST',
-                transformResponse: x => x})
-        .then(response => {
-            console.log("Logout response", response);
+        let params = {};
+        let ourToken = 'logging-out-from-webapp';  // used to ensure the 401 is because we logged out
+        if (!keepCreds) params.unauthorize = ourToken;
+        //let httpCall = useGet ? $http.get('/v1/logout', { params }) : $http.post('/v1/logout', params);
+        //httpCall
+        $timeout(()=>
+          $http({ url: '/v1/logout', method: useGet ? "GET" : "POST", params })
+          .then(response => {
+            if ($scope.debug) $log.info("Logout response", response);
             $scope.state = { status: "just-logged-out" };
             clearLocalCache();
             
-        }, error => {
-            handleError("logging out", error);
-        });
-    }
-    
-    this.retry = () => {
-        $scope.state = { status: "confirm" };
-    }
-        
-    return;
-    
-    let userRequest = new XMLHttpRequest();
-    userRequest.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-            logout(this.responseText)
-        }
-    };
-    userRequest.open('GET', '/v1/server/user', true);
-    userRequest.send('');
-
-    
-    function logout2(user) {
-        
-        let logoutRequest = new XMLHttpRequest();
-        logoutRequest.onreadystatechange = function () {
-            if (this.readyState === 4) {
-                if (this.status === 401) {
-                    console.info('User ' + user + ' logged out')
+          }, error => {
+            if (error.data && error.data.message == ourToken) {
+                if ($scope.debug) $log.info("Logout response 401 - ", error);
+                if (expectAlreadyLoggedOut) {
+                    $scope.state = { status: "success-after-logout" };
                 } else {
-                    setTimeout(function () {
-                        logout(user);
-                    }, 1000);
+                    $scope.state = { status: "just-logged-out" };
                 }
+                clearLocalCache();
+                
+            } else {
+                handleError(expectAlreadyLoggedOut ? "confirming logout" : "logging out", error, expectAlreadyLoggedOut);
             }
-        };
-        logoutRequest.open('POST', '/v1/logout', true, user, Math.random().toString(36).slice(2));
-        logoutRequest.send('');
+          }), 500 /* delay 500ms so other requests finish loading */);
     }
+    
+    this.retry = () => this.logout();
+    
+    this.prompt = () => {
+        $scope.state.status = "prompt";
+    }
+    
+    this.confirm = () => {
+        clearLocalCache();
+        this.logout(true);
+    }
+    
+    if ($scope.state.status == "do-logout") this.logout();
 }
