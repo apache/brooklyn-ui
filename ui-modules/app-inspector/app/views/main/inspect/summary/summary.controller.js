@@ -150,7 +150,7 @@ export function summaryController($scope, $state, $stateParams, $q, $http, brSna
         vm.error.policies = 'Cannot load policies for entity with ID: ' + entityId;
     });
 
-    $http.get('v1/ui-metadata-registry', {params: {type: 'location'}}).then(response => {
+    $http.get('/v1/ui-metadata-registry', {params: {type: 'location'}}).then(response => {
         vm.metadata = response.data;
     });
 
