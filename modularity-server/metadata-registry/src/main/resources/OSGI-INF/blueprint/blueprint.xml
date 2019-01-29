@@ -34,7 +34,6 @@
         </cm:default-properties>
     </cm:property-placeholder>
 
-
     <bean id="registry" class="org.apache.brooklyn.ui.modularity.metadata.registry.impl.UiMetadataRegistryImpl"/>
 
     <service id="uiMetadataRegistryService" ref="registry" interface="org.apache.brooklyn.ui.modularity.metadata.registry.UiMetadataRegistry"/>
@@ -45,14 +44,30 @@
                 <property name="metadataRegistry" ref="registry"/>
             </bean>
         </jaxrs:serviceBeans>
-        <jaxrs:inInterceptors>
-            <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
-        </jaxrs:inInterceptors>
-        <jaxrs:outInterceptors>
-            <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
-        </jaxrs:outInterceptors>
+        
         <jaxrs:providers>
-            <bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
+            <bean class="org.apache.brooklyn.rest.util.DefaultExceptionMapper"/>
+            <bean class="org.apache.brooklyn.rest.util.json.BrooklynJacksonJsonProvider"/>
+            <bean class="org.apache.brooklyn.rest.util.FormMapProvider"/>
+            <bean class="org.apache.brooklyn.rest.util.ManagementContextProvider">
+                <argument ref="localManagementContext"/>
+            </bean>
+            <bean class="org.apache.brooklyn.rest.filter.BrooklynSecurityProviderFilterJersey"/>
+            <bean class="org.apache.brooklyn.rest.filter.CsrfTokenFilter"/>
+            <bean class="org.apache.brooklyn.rest.filter.RequestTaggingRsFilter"/>
+            <bean class="org.apache.brooklyn.rest.filter.NoCacheFilter"/>
+            <bean class="org.apache.brooklyn.rest.filter.HaHotCheckResourceFilter"/>
+            <bean class="org.apache.brooklyn.rest.filter.EntitlementContextFilter"/>
+            <bean class="org.apache.brooklyn.rest.filter.LoggingResourceFilter"/>
+            <bean class="io.swagger.jaxrs.listing.SwaggerSerializers"/>
+            <bean class="org.apache.brooklyn.rest.util.ShutdownHandlerProvider">
+                <argument ref="shutdownHandler"/>
+            </bean>
+            <ref component-id="cors-filter"/>
         </jaxrs:providers>
+
+        <jaxrs:properties>
+            <entry key="default.wae.mapper.least.specific" value="true"/>
+        </jaxrs:properties>
     </jaxrs:server>
 </blueprint>

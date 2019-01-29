@@ -36,7 +36,6 @@
         </cm:default-properties>
     </cm:property-placeholder>
 
-
     <bean id="servlet" class="org.apache.brooklyn.ui.modularity.module.registry.internal.RedirectServlet">
         <argument index="0" type="java.lang.String" value="${redirect.path}"/>
     </bean>
@@ -54,20 +53,36 @@
 
     <service interface="org.apache.brooklyn.ui.modularity.module.api.UiModuleRegistry" ref="module-registry"/>
 
-    <jaxrs:server id="brooklynRestApiV1" address="${ui.module.api.path}">
+    <jaxrs:server id="brooklynRestApiV1UiModuleRegistry" address="${ui.module.api.path}">
         <jaxrs:serviceBeans>
             <bean class="org.apache.brooklyn.ui.modularity.module.registry.RestUiModuleRegistry">
                 <property name="uiModuleRegistry" ref="module-registry"/>
             </bean>
         </jaxrs:serviceBeans>
-        <jaxrs:inInterceptors>
-            <bean class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
-        </jaxrs:inInterceptors>
-        <jaxrs:outInterceptors>
-            <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
-        </jaxrs:outInterceptors>
+        
         <jaxrs:providers>
-            <bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
+            <bean class="org.apache.brooklyn.rest.util.DefaultExceptionMapper"/>
+            <bean class="org.apache.brooklyn.rest.util.json.BrooklynJacksonJsonProvider"/>
+            <bean class="org.apache.brooklyn.rest.util.FormMapProvider"/>
+            <bean class="org.apache.brooklyn.rest.util.ManagementContextProvider">
+                <argument ref="localManagementContext"/>
+            </bean>
+            <bean class="org.apache.brooklyn.rest.filter.BrooklynSecurityProviderFilterJersey"/>
+            <bean class="org.apache.brooklyn.rest.filter.CsrfTokenFilter"/>
+            <bean class="org.apache.brooklyn.rest.filter.RequestTaggingRsFilter"/>
+            <bean class="org.apache.brooklyn.rest.filter.NoCacheFilter"/>
+            <bean class="org.apache.brooklyn.rest.filter.HaHotCheckResourceFilter"/>
+            <bean class="org.apache.brooklyn.rest.filter.EntitlementContextFilter"/>
+            <bean class="org.apache.brooklyn.rest.filter.LoggingResourceFilter"/>
+            <bean class="io.swagger.jaxrs.listing.SwaggerSerializers"/>
+            <bean class="org.apache.brooklyn.rest.util.ShutdownHandlerProvider">
+                <argument ref="shutdownHandler"/>
+            </bean>
+            <ref component-id="cors-filter"/>
         </jaxrs:providers>
+
+        <jaxrs:properties>
+            <entry key="default.wae.mapper.least.specific" value="true"/>
+        </jaxrs:properties>
     </jaxrs:server>
 </blueprint>
