@@ -45,6 +45,36 @@
         </service-properties>
     </service>
 
+    <reference id="localManagementContext"
+               interface="org.apache.brooklyn.core.mgmt.internal.ManagementContextInternal"/>
+
+    <reference id="shutdownHandler" interface="org.apache.brooklyn.core.mgmt.ShutdownHandler"/>
+
+    <cm:property-placeholder persistent-id="org.apache.brooklyn.rest.filter.cors" placeholder-prefix="$cors{">
+        <!-- since we have properties above for this bundle we need a unique prefix/suffix here -->
+        <cm:default-properties>
+            <cm:property name="cors.enabled" value="true"/>
+            <cm:property name="cors.allow.origins" value=""/>
+            <cm:property name="cors.allow.headers" value=""/>
+            <cm:property name="cors.expose.headers" value=""/>
+            <cm:property name="cors.allow.credentials" value="true"/>
+            <cm:property name="cors.max.age" value="-1"/>
+            <cm:property name="cors.preflight.error.status" value="200"/>
+            <cm:property name="cors.block.if.unauthorized" value="false"/>
+        </cm:default-properties>
+    </cm:property-placeholder>
+    
+    <bean class="org.apache.brooklyn.rest.filter.CorsImplSupplierFilter" id="cors-filter">
+        <property name="enableCors" value="$cors{cors.enabled}"/>
+        <property name="allowOrigins" value="$cors{cors.allow.origins}"/>
+        <property name="allowHeaders" value="$cors{cors.allow.headers}"/>
+        <property name="exposeHeaders" value="$cors{cors.expose.headers}"/>
+        <property name="allowCredentials" value="$cors{cors.allow.credentials}"/>
+        <property name="maxAge" value="$cors{cors.max.age}"/>
+        <property name="preflightErrorStatus" value="$cors{cors.preflight.error.status}"/>
+        <property name="blockCorsIfUnauthorized" value="$cors{cors.block.if.unauthorized}"/>
+    </bean>
+
     <bean id="module-registry"
           class="org.apache.brooklyn.ui.modularity.module.registry.UiModuleRegistryImpl"/>
     <reference-list interface="org.apache.brooklyn.ui.modularity.module.api.UiModule" availability="optional">
