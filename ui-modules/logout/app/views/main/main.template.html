@@ -18,9 +18,72 @@
 -->
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-12 text-center">
-            <h2>Thank you for using <%= getBrandedText('product.name') %>, see you soon</h2>
-            <p><a class="btn btn-lg btn-primary" href="/">Log back in</a></p>
+        <div class="col-md-12 text-center text-narrow" ng-switch="state.status">
+            <div ng-switch-when="prompt">
+                <h2>Are you sure you wish to logout?</h2>
+                <p>
+                    <a class="btn btn-lg btn-primary" ng-click="vm.logout()">Yes</a>
+                    <a class="btn btn-lg btn-outline" href="/">No, return to <%= getBrandedText('product.name') %></a>
+                </p>
+                <div br-server-status></div>
+            </div>
+            
+            <div ng-switch-when="logging-out">
+                <h2>Logging out...</h2>
+                <p>&nbsp;</p>
+                <p><a class="btn btn-lg btn-primary" ng-click="vm.retry()">Retry</a></p>
+            </div>
+            
+            <div ng-switch-when="just-logged-out">
+                <h2>Logout successful</h2>
+                <p>Thank you for using <%= getBrandedText('product.name') %>. See you soon!</p>
+                <p><i>Note that some browsers may cache credentials, 
+                    particularly if you have this app open in multiple tabs
+                    so you might not be prompted on a subsequent log in.</i></p>
+                <p>&nbsp;</p>
+                <p><a class="btn btn-lg btn-primary" href="/{{ debug || salt ? '#!/?' : '' }}{{ debug ? '&debug=true' : ''}}{{ salt ? '&salt='+(salt+1) : ''}}">Log back in</a></p>
+                <p ng-if="debug"><a class="btn btn-lg btn-outline" ng-click="vm.confirm()">Confirm and clear</a></p>
+            </div>
+            
+            <div ng-switch-when="already-logged-out">
+                <h2>Already logged out</h2>
+                <p>Thank you for using <%= getBrandedText('product.name') %>. See you soon!</p>
+                <p>&nbsp;</p>
+                <p><a class="btn btn-lg btn-primary" href="/{{ debug || salt ? '#!/?' : '' }}{{ debug ? '&debug=true' : ''}}{{ salt ? '&salt='+(salt+1) : ''}}">Log back in</a></p>
+                <p ng-if="debug"><a class="btn btn-lg btn-outline" ng-click="vm.confirm()">Confirm and clear</a></p>
+            </div>
+            
+            <div ng-switch-when="logout-confirmed">
+                <h2>Logout confirmed</h2>
+                <p>Thank you for using <%= getBrandedText('product.name') %>. See you soon!</p>
+                <p>The application is no longer able to log in to the server.</p>
+                <p>&nbsp;</p>
+                <p><a class="btn btn-lg btn-primary" href="/{{ debug || salt ? '#!/?' : '' }}{{ debug ? '&debug=true' : ''}}{{ salt ? '&salt='+(salt+1) : ''}}">Log back in</a></p>
+                <p ng-if="debug"><a class="btn btn-lg btn-outline" ng-click="vm.confirm()">Confirm and clear again</a></p>
+            </div>
+            <div ng-switch-when="success-after-logout">
+                <h2>Logged out again</h2>
+                <p>Thank you for using <%= getBrandedText('product.name') %>. See you soon!</p>
+                
+                <p>The app was able to log in successfully and logout again.</p>
+                <p>If you did not log again, this suggests the browser may be caching credentials or the server is unsecured.</p> 
+                <p>The server has confirmed it has deleted the session.</p>
+                <p>&nbsp;</p>
+                <p><a class="btn btn-lg btn-primary" href="/{{ debug || salt ? '#!/?' : '' }}{{ debug ? '&debug=true' : ''}}{{ salt ? '&salt='+(salt+1) : ''}}">Log back in</a></p>
+                <p ng-if="debug"><a class="btn btn-lg btn-outline" ng-click="vm.confirm()">Confirm and clear</a></p>
+            </div>
+            
+            
+            <div ng-switch-default>
+                <h2>Logout failed<span ng-if="state.message">: {{ state.message }}</span></h2>
+                <p ng-if="state.code==403"><i>CSRF cookie errors are common in development or can indicate that multiple sessions are open.
+                    Closing other tabs and retrying will usually fix this.</i></p>
+                <p><i>More information may be available in the logs.</i></p>
+                <p>&nbsp;</p>
+                <p><a class="btn btn-lg btn-primary" ng-click="vm.retry()">Retry</a></p>
+                <p ng-if="debug"><a class="btn btn-lg btn-outline" ui-sref="/prompt">Prompt to logout again</a></p>
+                <p><a class="btn btn-lg btn-outline" href="/">Return to <%= getBrandedText('product.name') %> (login if needed)</a></p>
+            </div>
         </div>
     </div>
 </div>

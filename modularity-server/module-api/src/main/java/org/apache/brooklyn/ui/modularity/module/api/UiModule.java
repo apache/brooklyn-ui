@@ -21,6 +21,8 @@ package org.apache.brooklyn.ui.modularity.module.api;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.brooklyn.ui.modularity.module.api.internal.UiModuleImpl;
+
 public interface UiModule {
     String DEFAULT_ICON = "fa-cogs";
 
@@ -69,4 +71,10 @@ public interface UiModule {
      * @return Registered module actions
      */
     List<UiModuleAction> getActions();
+    
+    public class Utils {
+        public static UiModule copyUiModule(UiModule src) {
+            return UiModuleImpl.copyOf(src);
+        }
+    }
 }

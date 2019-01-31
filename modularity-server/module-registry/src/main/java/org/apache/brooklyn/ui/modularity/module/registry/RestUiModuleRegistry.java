@@ -18,17 +18,20 @@
  */
 package org.apache.brooklyn.ui.modularity.module.registry;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Ordering;
-import org.apache.brooklyn.ui.modularity.module.api.UiModule;
-import org.apache.brooklyn.ui.modularity.module.api.UiModuleRegistry;
+import java.util.Collection;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.util.Collection;
+
+import org.apache.brooklyn.ui.modularity.module.api.UiModule;
+import org.apache.brooklyn.ui.modularity.module.api.UiModuleRegistry;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Ordering;
 
 @Path("/")
 public class RestUiModuleRegistry {
@@ -50,7 +53,9 @@ public class RestUiModuleRegistry {
     public Collection<UiModule> getRegisteredWebComponents() {
         return Ordering.natural()
                 .onResultOf(GET_NAME_FUNCTION)
-                .immutableSortedCopy(uiModuleRegistry.getRegisteredModules());
+                .immutableSortedCopy(
+                    // turn it from a proxy to a serializable bean
+                    Iterables.transform(uiModuleRegistry.getRegisteredModules(), x -> UiModule.Utils.copyUiModule(x)));
     }
 
     public void setUiModuleRegistry(final UiModuleRegistry uiModuleRegistry) {

@@ -41,6 +41,20 @@ public class UiModuleImpl implements UiModule {
     private String path;
     private List<UiModuleAction> actions = new ArrayList<>();
 
+    public static UiModuleImpl copyOf(UiModule src) {
+        final UiModuleImpl result = new UiModuleImpl();
+        result.setId(src.getId());
+        result.setName(src.getName());
+        result.setSlug(src.getSlug());
+        result.setIcon(src.getIcon());
+        if (src.getTypes()!=null) result.types.addAll(src.getTypes());
+        if (src.getSupersedesBundles()!=null) result.supersedesBundles.addAll(src.getSupersedesBundles());
+        result.setStopExisting(src.getStopExisting());
+        result.setPath(src.getPath());
+        if (src.getActions()!=null) result.actions.addAll(src.getActions());
+        return result;
+    }
+    
     public static UiModuleImpl createFromMap(final Map<String, ?> incomingMap) {
         final UiModuleImpl result = new UiModuleImpl();
         result.setId(Optional.fromNullable((String) incomingMap.get("id")).or(UUID.randomUUID().toString()));
