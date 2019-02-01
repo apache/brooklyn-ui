@@ -103,50 +103,51 @@ entity-policy {
   padding-top: 20px;
 }
 
-
 /* Editable text */
-
-
 .table-editable {
-  td.editable-click {
-    color: black;
-    &:hover {
-      border: none;
-    }
-  }
-  td.editable:not(.edit-disabled) {
-    cursor: pointer;
-    color: black;
-
-    &:hover {
-      border: none;
-      background: fade(@primary-500, 10%);
-      &:before {
-        opacity: 1.0;
-      }
-    }
-  }
-  td.editable:not(.edit-disabled):before {
-    font-family: "myriad-pro-1", Helvetica, Arial, sans-serif, FontAwesome;
-    content: '\f040 Edit';
-    float: right;
-    opacity: 0.2;
-    color: @primary-500;
+  .editable {
+    color: #000000;
+    border: none;
   }
 
-  .editable-wrap {
-    width: 100%;
-    .editable-controls {
+  .editable-column {
+    padding: 0;
+
+    .editable:not(.edit-disabled):after {
+      font-family: "myriad-pro-1", Helvetica, Arial, sans-serif, FontAwesome;
+      content: '\f040 Edit';
+      opacity: 0.2;
+      color: @primary-500;
+    }
+    .editable {
       display: flex;
-      flex-direction: row;
+      justify-content: space-between;
+      width: 100%;
+      padding: 8px;
 
-      input {
-        flex-grow: 2;
+      &:hover {
+        border: none;
+        background: fade(@primary-500, 10%);
+        &:after {
+          opacity: 1.0;
+        }
       }
+    }
 
-      .editable-buttons {
-        flex-grow: 0;
-        flex-shrink: 0;
+    .editable-wrap {
+      width: 100%;
+      .editable-controls {
+        display: flex;
+        flex-direction: row;
+
+        input {
+          flex-grow: 2;
+        }
+
+        .editable-buttons {
+          flex-grow: 0;
+          flex-shrink: 0;
+        }
       }
     }
   }
