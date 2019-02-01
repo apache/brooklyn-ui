@@ -37,18 +37,20 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="item in info | orderBy:'name':reverse | filter:{name: searchCriteria} track by item.name" ng-switch="item.type">
+                <tr ng-repeat="item in info | orderBy:'name':reverse | filter:{name: searchCriteria} track by item.name">
                     <td>
                         {{item.name}}
                     </td>
-                    <td ng-switch-when="java.lang.Number" editable-number="item.value" edit-disabled="!item.reconfigurable" onbeforesave="updateAdjunctConfig(item, $data)" buttons="right" e-disabled-submit-on-enter>
-                        {{item.value}}
-                    </td>
-                    <td ng-switch-when="java.lang.Integer" ng-class="{'edit-disabled': !item.reconfigurable}" editable-number="item.value" edit-disabled="!item.reconfigurable" onbeforesave="updateAdjunctConfig(item, $data)" buttons="right" e-disabled-submit-on-enter>
-                        {{item.value}}
-                    </td>
-                    <td ng-switch-default ng-class="{'edit-disabled': !item.reconfigurable}" editable-text="item.value" edit-disabled="!item.reconfigurable" onbeforesave="updateAdjunctConfig(item, $data)" buttons="right" e-disabled-submit-on-enter>
-                        {{item.value}}
+                    <td ng-switch="item.type" ng-class="{'editable-column': item.reconfigurable}">
+                        <div ng-switch-when="java.lang.Number" editable-number="item.value" edit-disabled="!item.reconfigurable" onbeforesave="updateAdjunctConfig(item, $data)" buttons="right" e-disabled-submit-on-enter>
+                            <span>{{item.value}}</span>
+                        </div>
+                        <div ng-switch-when="java.lang.Integer" ng-class="{'edit-disabled': !item.reconfigurable}" editable-number="item.value" edit-disabled="!item.reconfigurable" onbeforesave="updateAdjunctConfig(item, $data)" buttons="right" e-disabled-submit-on-enter>
+                            <span>{{item.value}}</span>
+                        </div>
+                        <div ng-switch-default ng-class="{'edit-disabled': !item.reconfigurable}" editable-text="item.value" edit-disabled="!item.reconfigurable" onbeforesave="updateAdjunctConfig(item, $data)" buttons="right" e-disabled-submit-on-enter>
+                            <span>{{item.value}}</span>
+                        </div>
                     </td>
                 </tr>
                 <tr ng-if="item.length == 0 ">
