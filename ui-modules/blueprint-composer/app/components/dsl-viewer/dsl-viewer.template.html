@@ -16,28 +16,30 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<span ng-if="isTargetDsl(dsl)">
+<span ng-switch="getMode(dsl)">
+
+  <span ng-switch-when="target">
     <span ng-if="dsl.getRoot().relationships.length === 0" class="label label-primary">{{dsl.params[0].name}}</span>
     <a ng-if="dsl.getRoot().relationships.length > 0" ui-sref="main.graphical.edit.entity({entityId: getRelatedEntity()._id})"><span class="label label-primary">{{(getRelatedEntity() | entityName) || 'New application'}}</span></a>
     <span ng-if="dsl.next">
         ⇒
         <dsl-viewer dsl="dsl.next"></dsl-viewer>
     </span>
-</span>
-
-<span ng-if="isMethodDsl(dsl) && !isFormatStringDsl(dsl)">
+  </span>
+  
+  <span ng-switch-when="method">
     <span class="label label-default">
-        <i class="fa" ng-class="{'fa-cog': dsl.name === 'config', 'fa-rss': dsl.name === 'sensor', 'fa-pause': dsl.name === 'attributeWhenReady'}"></i>
+        <i class="fa" ng-class="getIcon(dsl)"></i>
         {{dsl.name}}
     </span>
     →
     <dsl-viewer dsl="dsl.params[0]"></dsl-viewer>
-</span>
-
-<span ng-if="isFormatStringDsl(dsl)">
+  </span>
+  
+  <span ng-switch-when="utility">
     <span class="label label-info">
-        <i class="fa fa-qrcode"></i>
-        pattern
+        <i class="fa" ng-class="getIcon(dsl)"></i>
+        {{dsl.name}}
     </span>
     →
     {{dsl.params[0].name}}
@@ -46,6 +48,10 @@
             <dsl-viewer dsl="argument"></dsl-viewer>
         </li>
     </ol>
-</span>
+  </span>
 
-<span ng-if="isLiteralDsl(dsl)">{{dsl.name}}</span>
+  <span ng-switch-default>
+    {{ getMode(dsl) }}: {{ dsl }}
+  </span>
+  
+</span>

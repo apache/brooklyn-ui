@@ -42,18 +42,24 @@ export function dslViewerDirective() {
     };
 
     function link(scope) {
-        scope.isTargetDsl = (dsl) => {
-            return dsl.kind === KIND.TARGET;
+        
+        scope.getIcon = (dsl) => {
+            if (dsl.name === 'config') return 'fa-cog';
+            if (dsl.name === 'sensor') return 'fa-rss';
+            if (dsl.name === 'attributeWhenReady') return 'fa-pause';
+            if (dsl.name === 'literal') return 'fa-clone';
+            if (dsl.name === 'formatString') return 'fa-qrcode';
+            // catch-all
+            return 'fa-bolt';
         };
-        scope.isMethodDsl = (dsl) => {
-            return dsl.kind === KIND.METHOD;
+        
+        scope.getMode = (dsl) => {
+            if (dsl.kind === KIND.TARGET) return "target";
+            if (dsl.kind === KIND.METHOD) return "method";
+            if (dsl.kind === KIND.UTILITY) return "utility";
+            return "DSL";
         };
-        scope.isFormatStringDsl = (dsl) => {
-            return dsl.kind === KIND.UTILITY && dsl.name === 'formatString';
-        };
-        scope.isLiteralDsl = (dsl) => {
-            return [KIND.STRING, KIND.NUMBER].includes(dsl.kind);
-        };
+        
         scope.getRelatedEntity = () => {
             if (scope.dsl.params.length > 0) {
                 // If the DSL is looking at an entity ID
