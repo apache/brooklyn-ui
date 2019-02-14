@@ -571,8 +571,20 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         /** returns 'enabled' or 'disabled' if a widget is defined, or null if no special widget is defined */
         specEditor.getCustomConfigWidgetMode = (item) => {
             var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
-            if (!widgetMetadata || widgetMetadata["error"]) return null;
+            if (!widgetMetadata) return null;
+            if (widgetMetadata["error"]) {
+                return "disabled";
+            }
             return widgetMetadata["enabled"] ? 'enabled' : 'disabled';
+        };
+        specEditor.customConfigWidgetError = (item) => {
+            var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
+            if (!widgetMetadata || !widgetMetadata["error"]) return null;
+            if (widgetMetadata.manualToggleAfterError && widgetMetadata.enabled) {
+                // show the error if manually enabled
+                return widgetMetadata["error"];
+            }
+            return null;
         };
         specEditor.toggleCustomConfigWidgetMode = (item, newval) => {
             var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
@@ -580,7 +592,14 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 $log.error('Custom widget mode should not be toggled when not available: '+item.name);
                 return null;
             }
-            if (!specEditor.defined(newval)) newval = !widgetMetadata.enabled;
+            if (!specEditor.defined(newval)) {
+                if (widgetMetadata["error"] && !widgetMetadata.manualToggleAfterError) {
+                    widgetMetadata.manualToggleAfterError = true;
+                    newval = true;
+                } else {
+                    newval = !widgetMetadata.enabled;
+                }
+            }
             widgetMetadata.enabled = newval;
         }
         specEditor.getCustomConfigWidgetModeTitle = (item) => {
@@ -715,7 +734,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                             return scope.config[key];
                         }
                     } catch (ignoredError) {
-                        console.log("Couldn't handle entered JSON", scope.config[key], ignoredError);
+                        $log.debug("Couldn't handle entered JSON", scope.config[key], ignoredError);
                     }
                 }
                 // otherwise pretty print it, so they get decent multiline on first load and

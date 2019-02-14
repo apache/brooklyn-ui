@@ -127,7 +127,7 @@
 
         <form name="formSpecConfig" novalidate class="lightweight">
             <div ng-repeat="item in (filteredItems = (model.miscData.get('config') | specEditorConfig:state.config.filter.values:model | filter:{name:state.config.search} | orderBy:+priority)) track by item.name ">
-                <div class="form-group" ng-class="{'has-error': (model.issues | filter:{ref: item.name}:true).length > 0, 'used': config[item.name] !== undefined}" 
+                <div class="form-group" ng-class="{'has-error': ((model.issues | filter:{ref: item.name}:true).length > 0) || (specEditor.customConfigWidgetError(item)), 'used': config[item.name] !== undefined}" 
                         ng-switch="getConfigWidgetMode(item)" 
                         tabindex="1"
                         auto-focus="state.config.focus === item.name"
@@ -332,6 +332,10 @@
                     </div>
                     
                     <small ng-repeat="issue in model.issues | filter:{ref: item.name}:true" class="help-block issue" ng-bind-html="issue.message"></small>
+                    <small ng-if="specEditor.customConfigWidgetError(item)" class="help-block issue">
+                            Custom widget unavailable:
+                            {{ specEditor.customConfigWidgetError(item) }}
+                    </small>
                   </div>
 
                 </div>
