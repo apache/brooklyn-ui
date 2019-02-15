@@ -25,7 +25,7 @@
     <parent>
         <artifactId>brooklyn-ui-modules-parent</artifactId>
         <groupId>com.usharesoft.brooklyn.ui.modules</groupId>
-        <version>0.2.7</version>
+        <version>0.2.8-SNAPSHOT</version>
     </parent>
     
     <artifactId>brooklyn-ui-catalog</artifactId>
