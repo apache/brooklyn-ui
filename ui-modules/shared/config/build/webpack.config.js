@@ -39,7 +39,7 @@ const BRAND_DIR = (process.env.BROOKLYN_UI_BRAND_DIR && process.env.BROOKLYN_UI_
     ? path.isAbsolute(process.env.BROOKLYN_UI_BRAND_DIR) 
       ? process.env.BROOKLYN_UI_BRAND_DIR 
       : pj(ROOT_DIR, process.env.BROOKLYN_UI_BRAND_DIR) 
-    : pj(BRAND_FALLBACK_DIR, 'brooklyn');
+    : pj(BRAND_FALLBACK_DIR, 'uss');
 
 const brandProps = PropertiesReader(path.resolve(BRAND_FALLBACK_DIR, 'brand.properties'));
 brandProps.append(path.resolve(BRAND_DIR, 'brand.properties'));
