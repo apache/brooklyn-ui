@@ -617,11 +617,13 @@ export function D3Blueprint(container) {
             .duration(_configHolder.transition)
             .attr('opacity', (d)=>(d.data.hasLocation() ? 1 : 0));
         appendElements(location, _configHolder.nodes.location);
+        
         nodeData.select('g.node-location image')
             .transition()
             .duration(_configHolder.transition)
-            .attr('opacity', (d)=>(d.data.miscData.get('locationIcon') ? 1 : 0))
-            .attr('xlink:href', (d)=>(d.data.miscData.get('locationIcon')));
+            .attr('opacity', (d)=>(d.data.miscData.get('locationIcon') ? 1 : 0));
+        nodeData.select('g.node-location image')
+            .attr('xlink:href', (d)=>d.data.miscData.get('locationIcon'));
 
         // Draw important adjuncts (i.e policies/enrichers)
         // -----------------------------------------------------
