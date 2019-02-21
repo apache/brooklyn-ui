@@ -23,6 +23,9 @@
 .btn-accent {
     .button-variant(@btn-accent-color; @btn-accent-bg; @btn-accent-border);
 }
+.btn-light {
+  .button-variant(@gray-dark; @gray-lightest; @gray-lightest);
+}
 
 .btn-outline {
     &.btn-primary:not(:hover) {
@@ -48,5 +51,10 @@
     &.btn-danger:not(:hover) {
         background-color: transparent;
         color: @brand-danger;
+    }
+    
+    &.btn-light:not(:hover) {
+        background-color: transparent;
+        color: @gray-lightest;
     }
 }

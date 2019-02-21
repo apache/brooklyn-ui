@@ -21,17 +21,17 @@
 @brand-accent: #bf3727;
 
 
-// Create path variables for fonts and images
-@br-core-path-font: '../fonts';
-@br-core-path-img: '../img';
-// Override the font-awesome path to use our custom one
-@fa-font-path: @br-core-path-font;
+// bootstrap colours at
+// https://github.com/twbs/bootstrap-sass/blob/master/assets/stylesheets/bootstrap/_variables.scss
 
+@gray-light: #818899;   // override bootstrap default of #777
+@gray-lighter: #E1E5E7; // override bootstrap default of #eee
+@gray-lightest: #f8f8f9;
+@label-gray: darken(@gray-light, 10%);  // between @gray and @gray-light
 
-@body-bg: hsl(223,30%,97%);
+@body-bg: hsl(223,30%,97%);  // override bootstrap default, #333, same as @gray-dark, used for the button bar, body default bg colour from bootstrap scaffolding
+
 @card-border-color: mix(black, @body-bg, 7%);
-
-@font-family-sans-serif: "myriad-pro-1", Helvetica, Arial, sans-serif;
 
 /* Colors in pattern lab */
 .brand-primary {
@@ -54,3 +54,13 @@
 @state-accent-text:             @accent-500;
 @state-accent-bg:               @accent-30;
 @state-accent-border:           darken(spin(@state-accent-bg, -10), 5%);
+
+
+// Create path variables for fonts and images
+
+@br-core-path-font: '../fonts';
+@br-core-path-img: '../img';
+// Override the font-awesome path to use our custom one
+@fa-font-path: @br-core-path-font;
+
+@font-family-sans-serif: "myriad-pro-1", Helvetica, Arial, sans-serif;
