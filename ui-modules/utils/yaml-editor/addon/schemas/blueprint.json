@@ -22,7 +22,6 @@
   "title": "Blueprint",
   "description": "A blueprint that is composed of one or more entities",
   "type": "object",
-  "required": [ "services" ],
   "properties": {
     "name": {
       "title": "Blueprint name",
