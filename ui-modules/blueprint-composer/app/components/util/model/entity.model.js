@@ -272,6 +272,7 @@ export class Entity {
      */
     set location(location) {
         LOCATIONS.set(this, location);
+        this.miscData.delete('locationRemoved');
         this.touch();
     }
 
@@ -281,6 +282,13 @@ export class Entity {
      */
     removeLocation() {
         LOCATIONS.delete(this);
+        this.miscData.delete('locationName');
+        this.miscData.delete('locationIcon');
+        
+        // this field provides a way for consumers to detect if the location was explicitly removed;
+        // this can be useful to prevent default locations from being applied
+        this.miscData.set('locationRemoved', true);
+        
         this.touch();
     }
 

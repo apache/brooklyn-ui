@@ -265,15 +265,28 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         return deferred.promise;
     }
 
+    function locationType(location) {
+        if (!location || typeof location === 'string') return location;
+        if (typeof location === 'object' && Object.keys(location).length==1) return Object.keys(location)[0];
+        return null;
+    }
+    
     function refreshLocationMetadata(entity) {
         let deferred = $q.defer();
 
         if (entity.hasLocation()) {
-            paletteApi.getLocation(entity.location).then((location)=> {
-                deferred.resolve(populateLocationFromApiSuccess(entity, location.catalog || location));
-            }).catch(function () {
-                deferred.resolve(populateLocationFromApiError(entity));
-            });
+            let type = locationType(entity.location);
+            if (type.startsWith("jclouds:")) {
+                // types eg jclouds:aws-ec2 are low-level, not in the catalog
+                deferred.resolve(populateLocationFromApiSuccess(entity, { yamlHere: entity.location }));
+            } else {
+                paletteApi.getLocation(locationType(entity.location)).then((location)=> {
+                    let loc = Object.assign({}, location.catalog || location, { yamlHere: entity.location });
+                    deferred.resolve(populateLocationFromApiSuccess(entity, loc));
+                }).catch(function () {
+                    deferred.resolve(populateLocationFromApiError(entity));
+                });
+            }
         } else {
             deferred.resolve(entity);
         }
@@ -603,16 +616,24 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
 
     function populateLocationFromApiSuccess(entity, data) {
         entity.clearIssues({group: 'location'});
-        entity.location = data.symbolicName;
-        entity.miscData.set('locationName', data.name);
-        entity.miscData.set('locationIcon', data.iconUrl || iconGenerator(data.symbolicName));
+        entity.location = data.yamlHere || data.symbolicName;
+        
+        let name = data.name || data.displayName;
+        if (!name && data.yamlHere) {
+            name = typeof data.yamlHere === 'object' ? Object.keys(data.yamlHere)[0] : data.yamlHere;
+        }
+        if (!name) name =  data.symbolicName;
+        entity.miscData.set('locationName', name);
+        
+        // use icon on item, but if none then generate using *yaml* to distinguish when someone has changed it
+        // (especially for things like jclouds:aws-ec2 -- the config is more interesting than the type name)
+        entity.miscData.set('locationIcon', data==null ? null : data.iconUrl || iconGenerator(data.yamlHere ? JSON.stringify(data.yamlHere) : data.symbolicName));
         return entity;
     }
 
     function populateLocationFromApiError(entity) {
-        entity.clearIssues({group: 'location'});
+        populateLocationFromApiSuccess(entity, { yamlHere: entity.location });
         entity.addIssue(Issue.builder().level(ISSUE_LEVEL.WARN).group('location').message($sce.trustAsHtml(`Location <samp>${!(entity.location instanceof String) ? JSON.stringify(entity.location) : entity.location}</samp> does not exist in your local catalog. Deployment might fail.`)).build());
-        entity.miscData.set('locationName', entity.location);
         entity.miscData.set('locationIcon', typeNotFoundIcon);
         return entity;
     }

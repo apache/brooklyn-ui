@@ -362,7 +362,12 @@
             <p ng-repeat="issue in state.issues | filter:{group:'location'}" class="alert alert-{{issue.severity}}">
                 <em ng-bind-html="issue.message"></em>
             </p>
-            <p>Will be deployed to: <strong>{{model.miscData.get('locationName')}}</strong></p>
+            <p>
+                Targeted at: 
+                <strong ng-if="specEditor.isInstance(model.location, 'string')">{{ model.miscData.get('locationName') }}</strong>
+                <pre ng-if="!specEditor.isInstance(model.location, 'string')">{{ specEditor.json(model.location) }}</pre>
+            </p>
+            <br/>
             <a class="btn btn-default" ui-sref="main.graphical.edit.add({entityId: model._id, family: 'location'})">Change location</a>
             <button class="btn btn-danger btn-link" ng-click="model.clearIssues({group: 'location'}).removeLocation()">Remove</button>
         </div>
