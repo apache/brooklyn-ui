@@ -46,21 +46,28 @@ export function suggestionDropdownDirective($rootScope) {
     };
 
     function link(scope, element, attrs, specEditor) {
-        scope.specEditor = specEditor;
-        scope.defined = specEditor.defined;
-        scope.getSuggestions = () => {
-            var result = [];
-            if (scope.params['suggestion-values']) {
-                scope.params['suggestion-values'].forEach( (v) => {
-                    if (v["value"]) {
-                        result.push(v);
-                    } else {
-                        result.push({value: v});
-                    }
-                });
-                return result;
+        try {
+            scope.specEditor = specEditor;
+            scope.defined = specEditor.defined;
+            scope.getSuggestions = () => {
+                var result = [];
+                if (scope.params['suggestion-values']) {
+                    scope.params['suggestion-values'].forEach( (v) => {
+                        if (v["value"]) {
+                            result.push(v);
+                        } else {
+                            result.push({value: v});
+                        }
+                    });
+                    return result;
+                }
+            };
+        } catch (e) {
+            if ($scope.params) {
+                $scope.params.error = e;
             }
-        };
+            throw e;
+        }
     }
 }
 
