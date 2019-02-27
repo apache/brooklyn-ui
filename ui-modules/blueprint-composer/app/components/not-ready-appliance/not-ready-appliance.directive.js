@@ -44,13 +44,15 @@ function link($scope) {
     $scope.warningIconClicked = false;
 
     $scope.$on('destroy', () => {
-        angular.element(window).off('click', toto);
+        angular.element(window).off('click', onClickWindow);
+        angular.element(window).off('scroll', closePopover);
+        angular.element(window).off('dragstart', closePopover);
     });
 
     let onClickWindow = (event) => {
-        let quickInfo = document.getElementsByClassName('iconInfoWidget').item(0);
-        if ($scope.warningIconClicked && quickInfo
-            && !quickInfo.contains(event.target) && !event.target.classList.contains("node-warning")) {
+        let warningIcon = document.getElementsByClassName('warningWidget').item(0);
+        if ($scope.warningIconClicked && warningIcon
+            && !warningIcon.contains(event.target) && !event.target.classList.contains("node-warning")) {
             $scope.warningIconClicked = false;
             $scope.$apply();
         }
@@ -63,18 +65,20 @@ function link($scope) {
 
     $scope.$on('scroll-svg', closePopover);
     $scope.$on('dragstart-svg', closePopover);
+    $scope.$on('click-entity', closePopover);
+    $scope.$on('click-catalog-selector', closePopover);
     angular.element(window).on('click', onClickWindow);
     angular.element(window).on('scroll', closePopover);
     angular.element(window).on('dragstart', closePopover);
 
-    $scope.$on("iconInfoInteractiveAppliance", function(event, x,y, applianceName, warningMessage) {
+    $scope.$on("iconWarningInteractiveAppliance", function(event, x,y, applianceName) {
         $scope.position = {top: y + "px", left: x + "px", position: "fixed"};
         $scope.warningIconClicked = true;
-        $scope.warningMessage = "This appliance has an interactive profile. Please edit it.";
+        $scope.warningMessage = "Requires additional user interactions at startup. Please edit install profile.";
         $scope.applianceName = applianceName;
     });
 
-    $scope.$on("iconInfoNoOsProfile", function(event, x,y, applianceName, warningMessage) {
+    $scope.$on("iconWarningNoOsProfile", function(event, x,y, applianceName) {
         $scope.position = {top: y + "px", left: x + "px", position: "fixed"};
         $scope.warningIconClicked = true;
         $scope.warningMessage = "This appliance has no OS profile. Please edit it.";

@@ -289,6 +289,7 @@ export function D3Blueprint(container, $scope) {
             }
         });
         container.dispatchEvent(event);
+        $scope.$root.$broadcast("click-entity");
     }
 
     function warningFunction(node) {
@@ -296,9 +297,9 @@ export function D3Blueprint(container, $scope) {
         let y = d3.event.pageY;
         let applianceName = node.data.miscData.get('typeName');
         if(interactiveAppliances.includes(applianceName)) {
-            $scope.$root.$broadcast("iconInfoInteractiveAppliance", x, y, applianceName);
+            $scope.$root.$broadcast("iconWarningInteractiveAppliance", x, y, applianceName);
         } else if (noOsProfileAppliances.includes(applianceName)) {
-            $scope.$root.$broadcast("iconInfoNoOsProfile", x, y, applianceName);
+            $scope.$root.$broadcast("iconWarningNoOsProfile", x, y, applianceName);
         }
     }
 
