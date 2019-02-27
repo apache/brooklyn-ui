@@ -49,7 +49,7 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
     };
 
     function link($scope, $element) {
-        let blueprintGraph = new D3Blueprint($element[0]).center();
+        let blueprintGraph = new D3Blueprint($element[0], $scope).center();
 
         $scope.blueprint = blueprintService.get();
         $scope.$watch('blueprint', ()=> {

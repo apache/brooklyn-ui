@@ -19,9 +19,10 @@
 import * as d3 from 'd3';
 import {PREDICATE_MEMBERSPEC} from './model/entity.model';
 import addIcon from '../../img/icon-add.svg';
+import warningIcon from '../../img/icon-warning.svg';
 import {ISSUE_LEVEL} from './model/issue.model';
 
-export function D3Blueprint(container) {
+export function D3Blueprint(container, $scope) {
     let _svg = d3.select(container).append('svg').attr('class', 'blueprint-canvas');
     let _mirror = _svg.append('path').style('display', 'none');
     let _zoomGroup = _svg.append('g').attr('class', 'zoom-group');
@@ -32,6 +33,8 @@ export function D3Blueprint(container) {
     let _dropZoneGroup = _parentGroup.append('g').attr('class', 'dropzone-group');
     let _nodeGroup = _parentGroup.append('g').attr('class', 'node-group');
     let _cloneGroup = _parentGroup.append('g').attr('class', 'clone-group');
+    let interactiveAppliances;
+    let noOsProfileAppliances;
 
     let _dragState = {
         dragInProgress: false,
@@ -72,6 +75,16 @@ export function D3Blueprint(container) {
                     x: -32,
                     y: -32,
                     opacity: 0
+                }
+            },
+        warning: {
+            image: {
+                class: 'node-warning',
+                width: 24,
+                height: 24,
+                x: -65,
+                y: 15,
+                'xlink:href': warningIcon
                 }
             },
             location: {
@@ -226,6 +239,7 @@ export function D3Blueprint(container) {
      */
     function onSvgZoom() {
         _zoomGroup.attr('transform', d3.event.transform);
+        $scope.$root.$broadcast("scroll-svg");
     }
 
     /**
@@ -275,6 +289,17 @@ export function D3Blueprint(container) {
             }
         });
         container.dispatchEvent(event);
+    }
+
+    function warningFunction(node) {
+        let x = d3.event.pageX;
+        let y = d3.event.pageY;
+        let applianceName = node.data.miscData.get('typeName');
+        if(interactiveAppliances.includes(applianceName)) {
+            $scope.$root.$broadcast("iconInfoInteractiveAppliance", x, y, applianceName);
+        } else if (noOsProfileAppliances.includes(applianceName)) {
+            $scope.$root.$broadcast("iconInfoNoOsProfile", x, y, applianceName);
+        }
     }
 
     /**
@@ -512,6 +537,8 @@ export function D3Blueprint(container) {
      * Redraw the graph
      */
     function draw() {
+        interactiveAppliances = [];
+        noOsProfileAppliances = [];
         drawLinks();
         drawRelationships();
         drawNodeGroup();
@@ -577,7 +604,22 @@ export function D3Blueprint(container) {
 
         // Draw child nodes
         appendElement(entity.filter(isChildNode).selectAll('circle').data([2, 1, 0]).enter(), 'circle', _configHolder.nodes.child.circle);
-        appendElement(entity.filter(isChildNode), 'image', _configHolder.nodes.child.image);
+        appendElement(entity.filter(isChildNode), 'image', _configHolder.nodes.child.image); //removing this line removes the image
+
+        // Draw warning
+        let warning = nodeGroup.append('g')
+            .attr('class', 'node-warning')
+        nodeData.select('g.node-warning')
+            .each(function(d) {
+                if((d.data.miscData.get("config") != null && d.data.miscData.get("config")[0] != null && d.data.miscData.get("config")[0].interactiveProfile)) {
+                    interactiveAppliances.push(d.data.miscData.get('typeName'));
+                } else if(d.data.miscData.get("config") != null && d.data.miscData.get("config")[0] != null && d.data.miscData.get("config")[0].noOsProfile) {
+                    noOsProfileAppliances.push(d.data.miscData.get('typeName'));
+                }
+            })
+            .classed('hidden', (d)=>(((d.data.miscData.get("config") != null && d.data.miscData.get("config")[0] != null) && (d.data.miscData.get("config")[0].interactiveProfile || d.data.miscData.get("config")[0].noOsProfile)) ? 0 : 1))
+            .on("click", warningFunction)
+        appendElements(warning, _configHolder.nodes.warning);
 
         // Draw location
         // -----------------------------------------------------
