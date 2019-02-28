@@ -365,7 +365,7 @@
             <p>
                 Targeted at: 
                 <strong ng-if="specEditor.isInstance(model.location, 'string')">{{ model.miscData.get('locationName') }}</strong>
-                <pre ng-if="!specEditor.isInstance(model.location, 'string')">{{ specEditor.json(model.location) }}</pre>
+                <pre ng-if="!specEditor.isInstance(model.location, 'string')">{{ model.location | json }}</pre>
             </p>
             <br/>
             <a class="btn btn-default" ui-sref="main.graphical.edit.add({entityId: model._id, family: 'location'})">Change location</a>
