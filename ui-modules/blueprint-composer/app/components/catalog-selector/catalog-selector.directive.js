@@ -181,6 +181,7 @@ export function catalogSelectorDirective() {
             }
         };
         $scope.onClickItem = (item, isInfoIcon, $event) => {
+            $scope.$root.$broadcast("click-catalog-selector");
             if (!isInfoIcon && $scope.iconSelects) {
                 $scope.onSelectItem(item);
             } else if ($scope.popoverModal && $scope.popoverVisible && $scope.popover == item) {
