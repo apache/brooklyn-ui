@@ -296,11 +296,13 @@ export function D3Blueprint(container, $scope) {
         let x = d3.event.pageX;
         let y = d3.event.pageY;
         let applianceName = node.data.miscData.get('typeName');
+        let warningMessage;
         if(interactiveAppliances.includes(applianceName)) {
-            $scope.$root.$broadcast("iconWarningInteractiveAppliance", x, y, applianceName);
+            warningMessage = "Requires additional user interactions at startup. Please edit the install profile.";
         } else if (noOsProfileAppliances.includes(applianceName)) {
-            $scope.$root.$broadcast("iconWarningNoOsProfile", x, y, applianceName);
+            warningMessage = "This appliance has no OS profile. Please edit it.";
         }
+        $scope.$root.$broadcast("iconWarningClick", x, y, applianceName, warningMessage);
     }
 
     /**

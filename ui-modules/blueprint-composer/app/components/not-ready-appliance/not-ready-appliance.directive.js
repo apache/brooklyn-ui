@@ -50,11 +50,8 @@ function link($scope) {
     });
 
     let onClickWindow = (event) => {
-        let warningIcon = document.getElementsByClassName('warningWidget').item(0);
-        if ($scope.warningIconClicked && warningIcon
-            && !warningIcon.contains(event.target) && !event.target.classList.contains("node-warning")) {
-            $scope.warningIconClicked = false;
-            $scope.$apply();
+        if ($scope.warningIconClicked && !event.target.classList.contains("node-warning")) {
+            closePopover();
         }
     }
 
@@ -71,17 +68,10 @@ function link($scope) {
     angular.element(window).on('scroll', closePopover);
     angular.element(window).on('dragstart', closePopover);
 
-    $scope.$on("iconWarningInteractiveAppliance", function(event, x,y, applianceName) {
+    $scope.$on("iconWarningClick", function(event, x,y, applianceName, warningMessage) {
         $scope.position = {top: y + "px", left: x + "px", position: "fixed"};
         $scope.warningIconClicked = true;
-        $scope.warningMessage = "Requires additional user interactions at startup. Please edit install profile.";
-        $scope.applianceName = applianceName;
-    });
-
-    $scope.$on("iconWarningNoOsProfile", function(event, x,y, applianceName) {
-        $scope.position = {top: y + "px", left: x + "px", position: "fixed"};
-        $scope.warningIconClicked = true;
-        $scope.warningMessage = "This appliance has no OS profile. Please edit it.";
+        $scope.warningMessage = warningMessage;
         $scope.applianceName = applianceName;
     });
 }
