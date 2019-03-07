@@ -103,6 +103,7 @@ export function brTableDirective($log) {
         link: link,
         controller: ['$templateCache', 'brUtilsGeneral', controller],
         controllerAs: 'ctrl',
+        scope: true,
         templateUrl: function(element, attrs) {
             return attrs.templateUrl || TEMPLATE_CONTAINER_URL;
         }
