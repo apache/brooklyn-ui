@@ -173,7 +173,7 @@ export function D3Blueprint(container) {
         relationships: [],
     };
 
-    let zoom = d3.zoom().scaleExtent([0.1, 1]).on('zoom', onSvgZoom);
+    let zoom = d3.zoom().scaleExtent([0.1, 1.3]).on('zoom', onSvgZoom);
     _svg
         .attr('preserveAspectRatio', 'xMinYMin meet')
         .attr('viewBox', () => {
