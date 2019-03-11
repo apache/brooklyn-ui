@@ -614,7 +614,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         return entity;
     }
 
-    function populateLocationFromApiSuccess(entity, data) {
+    function populateLocationFromApiCommon(entity, data) {
         entity.clearIssues({group: 'location'});
         entity.location = data.yamlHere || data.symbolicName;
         
@@ -630,9 +630,13 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         entity.miscData.set('locationIcon', data==null ? null : data.iconUrl || iconGenerator(data.yamlHere ? JSON.stringify(data.yamlHere) : data.symbolicName));
         return entity;
     }
+    
+    function populateLocationFromApiSuccess(entity, data) {
+        populateLocationFromApiCommon(entity, data);
+    }
 
     function populateLocationFromApiError(entity) {
-        populateLocationFromApiSuccess(entity, { yamlHere: entity.location });
+        populateLocationFromApiCommon(entity, { yamlHere: entity.location });
         entity.addIssue(Issue.builder().level(ISSUE_LEVEL.WARN).group('location').message($sce.trustAsHtml(`Location <samp>${!(entity.location instanceof String) ? JSON.stringify(entity.location) : entity.location}</samp> does not exist in your local catalog. Deployment might fail.`)).build());
         entity.miscData.set('locationIcon', typeNotFoundIcon);
         return entity;
