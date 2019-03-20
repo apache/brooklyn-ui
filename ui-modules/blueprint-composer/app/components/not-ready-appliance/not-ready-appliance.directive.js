@@ -56,8 +56,13 @@ function link($scope) {
     }
 
     let closePopover = (event) => {
-        $scope.warningIconClicked = false;
-        $scope.$apply();
+        if($scope.warningIconClicked) {
+            $scope.warningIconClicked = false;
+            var phase = $scope.$root.$$phase;
+            if(phase != '$apply' && phase != '$digest') {
+                $scope.$apply();
+            }
+        }
     }
 
     $scope.$on('scroll-svg', closePopover);

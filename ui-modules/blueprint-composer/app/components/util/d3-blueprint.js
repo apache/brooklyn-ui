@@ -35,6 +35,8 @@ export function D3Blueprint(container, $scope) {
     let _cloneGroup = _parentGroup.append('g').attr('class', 'clone-group');
     let interactiveAppliances;
     let noOsProfileAppliances;
+    let correctAppliances;
+    let enableDeployButton = false;
 
     let _dragState = {
         dragInProgress: false,
@@ -305,6 +307,36 @@ export function D3Blueprint(container, $scope) {
         $scope.$root.$broadcast("iconWarningClick", x, y, applianceName, warningMessage);
     }
 
+    function removeElementFromList(list, element) {
+        if(list.includes(element)) {
+            list.splice(list.indexOf(element), 1);
+        }
+    }
+
+    function addInteractiveAppliance(applianceName) {
+        if(!interactiveAppliances.includes(applianceName)) {
+            interactiveAppliances.push(applianceName);
+        }
+        removeElementFromList(noOsProfileAppliances, applianceName);
+        removeElementFromList(correctAppliances, applianceName);
+    }
+
+    function addNoOsProfileAppliance(applianceName) {
+        if(!noOsProfileAppliances.includes(applianceName)) {
+            noOsProfileAppliances.push(applianceName);
+        }
+        removeElementFromList(interactiveAppliances, applianceName);
+        removeElementFromList(correctAppliances, applianceName);
+    }
+
+    function addCorrectAppliance(applianceName) {
+        if(!correctAppliances.includes(applianceName)) {
+            correctAppliances.push(applianceName);
+        }
+        removeElementFromList(interactiveAppliances, applianceName);
+        removeElementFromList(noOsProfileAppliances, applianceName);
+    }
+
     /**
      * Fires a custom event "click-add-child" when the plus button is clicked.
      *
@@ -536,15 +568,27 @@ export function D3Blueprint(container, $scope) {
         return this;
     }
 
+    function updateDeployButtonStatus() {
+        if((interactiveAppliances.length > 0 || noOsProfileAppliances.length > 0) && enableDeployButton) {
+            enableDeployButton = false;
+            $scope.$root.$broadcast("disableDeployButton");
+        } else if(interactiveAppliances.length == 0 && noOsProfileAppliances.length == 0 && !enableDeployButton) {
+            enableDeployButton = true;
+            $scope.$root.$broadcast("enableDeployButton");
+        }
+    }
+
     /**
      * Redraw the graph
      */
     function draw() {
         interactiveAppliances = [];
         noOsProfileAppliances = [];
+        correctAppliances = [];
         drawLinks();
         drawRelationships();
         drawNodeGroup();
+        updateDeployButtonStatus();
         drawSpecNodeGroup();
         drawDropZoneGroup();
         return this;
@@ -615,9 +659,11 @@ export function D3Blueprint(container, $scope) {
         nodeData.select('g.node-warning')
             .each(function(d) {
                 if((d.data.miscData.get("config") != null && d.data.miscData.get("config")[0] != null && d.data.miscData.get("config")[0].interactiveProfile)) {
-                    interactiveAppliances.push(d.data.miscData.get('typeName'));
+                    addInteractiveAppliance(d.data.miscData.get('typeName'));
                 } else if(d.data.miscData.get("config") != null && d.data.miscData.get("config")[0] != null && d.data.miscData.get("config")[0].noOsProfile) {
-                    noOsProfileAppliances.push(d.data.miscData.get('typeName'));
+                    addNoOsProfileAppliance(d.data.miscData.get('typeName'));
+                } else if(d.data.miscData.get('typeName') != null){
+                    addCorrectAppliance(d.data.miscData.get('typeName'));
                 }
             })
             .classed('hidden', (d)=>(((d.data.miscData.get("config") != null && d.data.miscData.get("config")[0] != null) && (d.data.miscData.get("config")[0].interactiveProfile || d.data.miscData.get("config")[0].noOsProfile)) ? 0 : 1))
