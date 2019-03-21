@@ -68,6 +68,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         populateEntityFromApi: populateEntityFromApiSuccess,
         populateLocationFromApi: populateLocationFromApiSuccess,
         addConfigKeyDefinition: addConfigKeyDefinition,
+        addParameterDefinition: addParameterDefinition,
         getRelationships: getRelationships,
     };
 
@@ -516,13 +517,23 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
 
     function addConfigKeyDefinition(config, key) {
         config.push({
-            "constraints": [],
-            "description": "",
             "name": key,
             "label": key,
+            "description": "",
             "priority": 1,
             "pinned": true,
             "type": "java.lang.String",
+            "constraints": [],
+        });
+    }
+
+    function addParameterDefinition(params, key) {
+        params.push({
+            "name": key,
+            "description": "",
+            "type": "string",
+            "default": "",
+            "constraints": [],
         });
     }
 
