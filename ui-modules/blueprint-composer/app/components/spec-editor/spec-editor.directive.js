@@ -664,7 +664,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                         JSON.parse(value);
                     } catch (notJson) {
                         // if not parseable or not a string, then convert to json
-                        value = JSON.stringify(value);
+                        // (as with other stringify, this loses any comments etc)
+                        value = JSON.stringify(value, null, "  ");
                     }
                     if (value != null) {
                         scope.state.parameters.edit.value = value;

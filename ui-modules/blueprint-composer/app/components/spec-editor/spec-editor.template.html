@@ -101,7 +101,7 @@
         </div>
     </fieldset>
 
-    <div class="spec-configuration">
+    <div class="spec-configuration parameters">
         <div class="spec-empty-state" ng-if="filteredItems.length === 0">
             <div ng-if="parameters.length === 0">
                 <h4>No parameters</h4>
@@ -152,12 +152,17 @@
                             </span>
                         </span>
 
-                        <div class="input-group" ng-if="state.parameters.codeModeActive[item.name]">
+                        <div class="control-value" ng-class="{ 'code-mode-active': state.parameters.codeModeActive[item.name] }">
+                          <div class="input-group hide-when-collapsed" ng-if="state.parameters.codeModeActive[item.name]">
                             <span class="main-control span-for-rounded-edge">
                                 <textarea ng-model="state.parameters.edit.value" class="form-control rounded-edge" name="{{item.name}}" id="{{item.name}}"
                                           auto-grow placeholder="(empty)" ng-focus="specEditor.recordParameterFocus(item)"
                                           on-enter="specEditor.advanceOutToFormGroupInPanel"></textarea>
                             </span>
+                          </div>
+                          
+                          <div class="input-group" ng-if="!state.parameters.codeModeActive[item.name]">
+                          </div>
                         </div>
 
                         <small ng-repeat="issue in model.issues | filter:{ref: item.name}:true" class="help-block issue" ng-bind-html="issue.message"></small>
@@ -226,7 +231,7 @@
         </div>
     </fieldset>
 
-    <div class="spec-configuration">
+    <div class="spec-configuration config">
         <div class="spec-empty-state" ng-if="filteredItems.length === 0">
           <div ng-if="model.miscData.get('config').length === 0">
             <h4>No configuration</h4>
