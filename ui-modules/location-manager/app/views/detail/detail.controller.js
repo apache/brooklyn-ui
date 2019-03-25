@@ -86,7 +86,7 @@ export function detailController($scope, $filter, $state, $stateParams, brSnackb
             $state.go('locations');
             brSnackbar.create('Location "' + $filter('locationName')(vm.location) + '" deleted successfully');
         }).catch(error => {
-            brSnackbar.create('Could not delete this location: ' + error.message);
+            brSnackbar.create('Could not delete this location: ' + error.error.message);
         });
     };
     vm.editLocation = function () {

@@ -95,7 +95,7 @@ export function wizardByonController($element, $state, brSnackbar, location, cat
         catalogApi.create(payload).then(data => {
             $state.go('detail', {symbolicName: vm.id, version: vm.version});
         }).catch(error => {
-            brSnackbar.create('Could not save location: ' + error.data.message ? error.data.message : error.data);
+            brSnackbar.create('Could not save location: ' + error.error.message ? error.error.message : error.error);
         });
     };
 
