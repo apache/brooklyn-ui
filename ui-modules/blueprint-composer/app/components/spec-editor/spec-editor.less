@@ -456,6 +456,30 @@ spec-editor {
             }
         }
     }
+    .param-fields {
+        width: 100%;
+        margin-top: 8px;
+        margin-bottom: 3px;
+        display: flex;
+        flex-direction: column;
+    }
+    .param-field {
+        display: flex;
+        margin-top: 2px;
+        flex-direction: row;
+        .param-field-label {
+            color: @gray-light;
+            width: 9em;
+            font-size: 90%;
+            padding-top: 3px;
+        }
+        .param-field-value {
+            width: 100%;
+            textarea.code {
+                .monospace();
+            }
+        }
+    }
     .form-group:hover, .form-group:focus, .form-group:focus-within {
         .control-label .info-spec-configuration {
             visibility: visible;
@@ -837,9 +861,14 @@ spec-editor {
   a.open-entity-spec {
     cursor: alias;
   }
-  &.parameters {
+  .parameters {
+   .form-group:focus-within, .form-group:focus {
     .control-value {
+        border-top: solid #aaaaaa 1px;   // TODO pull #aaaaaa out into shared colours file (follow-on PR)
+        padding-top: 1px;
+        margin-top: 6px;
     }
+   }
   }
 }
 

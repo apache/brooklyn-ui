@@ -205,6 +205,10 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             blueprintService.refreshAllRelationships();
         });
 
+        scope.$watch('state.parameters', (newVal, oldVal) => {
+            setModelFromLocalParameters();
+        }, true);
+
         // Parameters
         scope.$watch('parameters', (newVal, oldVal) => {
             setModelFromLocalParameters();
@@ -375,6 +379,12 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         };
         scope.recordParameterFocus = specEditor.recordParameterFocus = ($item) => {
             scope.state.parameters.focus = $item.name;
+            scope.state.parameters.edit = {
+                item: $item,
+                newName: $item.name,
+                constraints: $item.constraints ? JSON.stringify($item.constraints) : '',
+                json: JSON.stringify($item, null, "  "),
+            };
         };
 
         scope.removeAdjunct = ($event, adjunct) => {
@@ -634,13 +644,11 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             }
         };
         scope.parameterCodeModeClick = (item) => {
-            let oldMode = !!(scope.state.parameters.codeModeActive[item.name]);
+            let oldMode = !!(item && scope.state.parameters.codeModeActive[item.name]);
             let value = null;
             if (oldMode) {
                 // leaving code mode
-                value = scope.state.parameters.edit.value;
-                scope.state.parameters.edit.name = '';
-                scope.state.parameters.edit.open = false;
+                value = scope.state.parameters.edit.json;
                 try {
                     value = JSON.parse(value);
                     let i = scope.parameters.findIndex(p => p.name === item.name);
@@ -652,13 +660,11 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             } else {
                 // entering code mode
                 // leave code mode for other parameter if set
-                if (scope.state.parameters.edit.name !== '') {
-                    scope.parameterCodeModeClick(getParameter(scope.state.parameters.edit.name));
+                if (scope.state.parameters.edit.newName && scope.state.parameters.edit.newName!=item.name) {
+                    scope.parameterCodeModeClick(getParameter(scope.state.parameters.edit.newName));
                 }
                 // convert local parameter from json to non-json or vice-versa
                 value = item;
-                scope.state.parameters.edit.name = item.name;
-                scope.state.parameters.edit.open = true;
                 if (value != null) {
                     try {
                         JSON.parse(value);
@@ -668,7 +674,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                         value = JSON.stringify(value, null, "  ");
                     }
                     if (value != null) {
-                        scope.state.parameters.edit.value = value;
+                        scope.state.parameters.edit.json = value;
                     }
                 }
             }
@@ -693,6 +699,9 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             if (widgetMetadata.manualToggleAfterError && widgetMetadata.enabled) {
                 // show the error if manually enabled
                 return widgetMetadata["error"];
+            }
+            if (scope.state.parameters && scope.state.parameters.edit && scope.state.parameters.edit.item === item && scope.state.parameters.edit.errors) {
+                return scope.state.parameters.edit.errors;
             }
             return null;
         };
@@ -1041,7 +1050,54 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             return scope.parameters.find(p => p.name === name);
         }
 
+        function checkNameChange(oldName, newName) {
+            if (oldName && oldName!=newName) {
+                scope.state.parameters.codeModeActive[newName] = scope.state.parameters.codeModeActive[oldName];
+                scope.state.parameters.codeModeError[newName] = scope.state.parameters.codeModeError[oldName]; 
+                delete scope.state.parameters.codeModeActive[oldName]; 
+                delete scope.state.parameters.codeModeError[oldName];
+                return true;
+            }
+            return false;            
+        }
         function setModelFromLocalParameters() {
+            if (scope.state.parameters && scope.state.parameters.edit && scope.state.parameters.edit.item) {
+                let item = scope.state.parameters.edit.item;
+                scope.state.parameters.edit.errors = [];
+                if (scope.state.parameters.codeModeActive[item.name]) {
+                    try {
+                        let parsed = JSON.parse(scope.state.parameters.edit.json);
+                        checkNameChange(item.name, parsed.name);
+                        if (JSON.stringify(item)==JSON.stringify(parsed)) {
+                            // no change; don't change else we get a digest cycle
+                        } else {
+                            Object.keys(item).forEach((k) => delete item[k]);
+                            Object.assign(item, parsed);
+                        }
+                        
+                    } catch (e) {
+                        // $log.warn("ERROR parsing json", scope.state.parameters.edit.json, e);
+                        scope.state.parameters.edit.errors.push({ message: "Invalid JSON for parameter" });
+                    }
+                    
+                } else {
+                    if (scope.state.parameters.edit.newName) {
+                        if (checkNameChange(item.name, scope.state.parameters.edit.newName)) {
+                            item.name = scope.state.parameters.edit.newName;
+                        }
+                    } else {
+                        scope.state.parameters.edit.errors.push({ message: "Name must not be blank" });
+                    }
+                     
+                    try {
+                        item.constraints = JSON.parse(scope.state.parameters.edit.constraints);
+                    } catch (e) {
+                        // $log.warn("ERROR parsing constraints", scope.state.parameters.edit.constraints, e);
+                        scope.state.parameters.edit.errors.push({ message: "Invalid constraint JSON" });
+                    }
+                }
+            }
+            
             let localParams = scope.parameters;
             let result = [];
             for (let paramRef of localParams) {

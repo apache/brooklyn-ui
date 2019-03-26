@@ -102,7 +102,7 @@
     </fieldset>
 
     <div class="spec-configuration parameters">
-        <div class="spec-empty-state" ng-if="filteredItems.length === 0">
+        <div class="spec-empty-state" ng-if="filteredParams.length === 0">
             <div ng-if="parameters.length === 0">
                 <h4>No parameters</h4>
             </div>
@@ -118,8 +118,8 @@
         </div>
 
         <form name="formSpecParameter" novalidate class="lightweight">
-            <div ng-repeat="item in (filteredItems = (model.parameters | filter:{name:state.parameters.search} | orderBy:+priority)) track by item.name ">
-                <div class="form-group" ng-class="{'has-error': (model.issues | filter:{ref: item.name}:true).length > 0, 'used': getParameter(item.name) !== undefined}"
+            <div ng-repeat="item in (filteredParams = (model.parameters | filter:{name:state.parameters.search} | orderBy:+priority)) track by item.name">
+                <div class="form-group" ng-class="{'has-error': ((model.issues | filter:{ref: item.name}:true).length > 0) || (specEditor.customConfigWidgetError(item)), 'used': getParameter(item.name) !== undefined}"
                      ng-switch="getParameterWidgetMode(item)"
                      tabindex="1"
                      auto-focus="state.parameters.focus === item.name"
@@ -155,16 +155,70 @@
                         <div class="control-value" ng-class="{ 'code-mode-active': state.parameters.codeModeActive[item.name] }">
                           <div class="input-group hide-when-collapsed" ng-if="state.parameters.codeModeActive[item.name]">
                             <span class="main-control span-for-rounded-edge">
-                                <textarea ng-model="state.parameters.edit.value" class="form-control rounded-edge" name="{{item.name}}" id="{{item.name}}"
+                                <textarea ng-model="state.parameters.edit.json" class="form-control rounded-edge" name="{{item.name}}" id="json-{{item.name}}"
                                           auto-grow placeholder="(empty)" ng-focus="specEditor.recordParameterFocus(item)"
                                           on-enter="specEditor.advanceOutToFormGroupInPanel"></textarea>
                             </span>
                           </div>
                           
-                          <div class="input-group" ng-if="!state.parameters.codeModeActive[item.name]">
+                          <div class="param-fields input-group hide-when-collapsed" ng-if="!state.parameters.codeModeActive[item.name]">
+                            <div class="param-field"> <span class="param-field-label">Key</span> 
+                                <span class="param-field-value">
+                                    <textarea ng-model="state.parameters.edit.newName" class="form-control rounded-edge" id="name-{{item.name}}"
+                                          auto-grow placeholder="(empty)" ng-focus="specEditor.recordParameterFocus(item)"
+                                          on-enter="specEditor.advanceOutToFormGroupInPanel">
+                                    </textarea>
+                                </span>
+                            </div>
+                            <div class="param-field"> <span class="param-field-label">Type</span> 
+                                <span class="param-field-value">
+                                    <textarea ng-model="filteredParams[$index].type" class="form-control rounded-edge" id="type-{{item.name}}"
+                                          auto-grow placeholder="(empty)" ng-focus="specEditor.recordParameterFocus(item)"
+                                          on-enter="specEditor.advanceOutToFormGroupInPanel">
+                                    </textarea>
+                                </span>
+                            </div>
+                            <div class="param-field"> <span class="param-field-label">Default value</span> 
+                                <span class="param-field-value">
+                                    <textarea ng-model="filteredParams[$index].default" class="form-control rounded-edge" id="default-{{item.name}}"
+                                          auto-grow placeholder="(empty)" ng-focus="specEditor.recordParameterFocus(item)"
+                                          on-enter="specEditor.advanceOutToFormGroupInPanel">
+                                    </textarea>
+                                </span>
+                            </div>
+                            <div class="param-field"> <span class="param-field-label">Display name</span> 
+                                <span class="param-field-value">
+                                    <textarea ng-model="filteredParams[$index].label" class="form-control rounded-edge" id="label-{{item.name}}"
+                                          auto-grow placeholder="(empty)" ng-focus="specEditor.recordParameterFocus(item)"
+                                          on-enter="specEditor.advanceOutToFormGroupInPanel">
+                                    </textarea>
+                                </span>
+                            </div>
+                            <div class="param-field"> <span class="param-field-label">Description</span> 
+                                <span class="param-field-value">
+                                    <textarea ng-model="filteredParams[$index].description" class="form-control rounded-edge" id="description-{{item.name}}"
+                                          auto-grow placeholder="(empty)" ng-focus="specEditor.recordParameterFocus(item)"
+                                          on-enter="specEditor.advanceOutToFormGroupInPanel">
+                                    </textarea>
+                                </span>
+                            </div>
+                            <div class="param-field"> <span class="param-field-label">Constraints
+                                    <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                                           uib-popover="Constraints such as required or forbiddenUnless(otherKey), expressed as a JSON list (wrapped in brackets)"
+                                           x-popover-class="spec-editor-popover" 
+                                           popover-placement="top-left" popover-append-to-body="true"></i>
+                                </span> 
+                                <span class="param-field-value">
+                                    <textarea ng-model="state.parameters.edit.constraints" class="form-control rounded-edge code" id="constraints-{{item.name}}"
+                                          auto-grow placeholder="(empty)" ng-focus="specEditor.recordParameterFocus(item)"
+                                          on-enter="specEditor.advanceOutToFormGroupInPanel">
+                                    </textarea>
+                                </span>
+                            </div>
                           </div>
                         </div>
 
+                        <small ng-if="state.parameters.edit.item === item" ng-repeat="issue in state.parameters.edit.errors" class="help-block issue" ng-bind-html="issue.message"></small>
                         <small ng-repeat="issue in model.issues | filter:{ref: item.name}:true" class="help-block issue" ng-bind-html="issue.message"></small>
                     </div>
                 </div>
