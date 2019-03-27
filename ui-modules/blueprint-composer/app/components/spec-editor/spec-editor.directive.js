@@ -99,7 +99,6 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
 
     function link(scope, element, attrs, specEditor) {
         scope.specEditor = specEditor;
-        scope.addConfigKey = addConfigKey;
         scope.FAMILIES = EntityFamily;
         scope.RESERVED_KEYS = RESERVED_KEYS;
         scope.REPLACED_DSL_ENTITYSPEC = REPLACED_DSL_ENTITYSPEC;
@@ -783,6 +782,11 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 return config;
             });
         }
+        specEditor.getConfig = getConfig;
+        function getConfig(name) {
+            return scope.model.miscData.get('config').find(p => p.name === name);
+        }
+        
 
         function loadCustomConfigWidgetMetadata(model) {
             let customConfigWidgets = (scope.model.miscData.get('ui-composer-hints') || {})['config-widgets'] || [];
@@ -995,8 +999,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             scope.model.setConfigFromJson(result);
         }
 
-        function addConfigKey() {
-            let name = scope.state.config.add.value;
+        specEditor.addConfigKey = addConfigKey;
+        function addConfigKey(name) {
             if (name) {
                 let allConfig = scope.model.miscData.get('config');
                 blueprintService.addConfigKeyDefinition(allConfig, name);

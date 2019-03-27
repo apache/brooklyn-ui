@@ -224,8 +224,7 @@
         Configuration
         <span ng-if="getConfigIssues().length> 0" class="badge" ng-class="getBadgeClass(getConfigIssues())">{{getConfigIssues().length}}</span>
         <span class="pull-right" ng-show="$parent.stateWrapped.state">
-            <span class="spec-toolbar-action" ng-class="{'active': state.config.filter.open}"><i class="fa fa-filter collapsible-action" title="Filter configuration" ng-click="$event.stopPropagation(); $event.preventDefault(); state.config.filter.open = !state.config.filter.open" ng-class="{'text-info': state.config.search.length > 0}"></i></span>
-            <span class="spec-toolbar-action"><i class="fa fa-plus collapsible-action" title="Add configuration" ng-click="$event.stopPropagation(); $event.preventDefault(); state.config.add.open = !state.config.add.open"></i></span>
+            <span class="spec-toolbar-action" ng-class="{'active': state.config.filter.open}"><i class="fa fa-search-plus collapsible-action" title="Filter configuration" ng-click="$event.stopPropagation(); $event.preventDefault(); state.config.filter.open = !state.config.filter.open" ng-class="{'text-info': state.config.search.length > 0}"></i></span>
         </span>
     </heading>
 
@@ -245,37 +244,6 @@
         </div>
     </fieldset>
 
-    <fieldset uib-collapse="!state.config.add.open" class="spec-configuration-add">
-        <input auto-focus="state.config.add.open"
-             type="text"
-             autocomplete="off"
-             ng-model="state.config.add.value"
-             placeholder="Add a new configuration key or open existing"
-             class="form-control"
-             uib-typeahead="config.name for config in state.config.add.list | filter:{name:$viewValue}"
-             typeahead-template-url="blueprint-composer/component/spec-editor/config-item.html"
-             typeahead-editable="true"
-             typeahead-show-hint="true"
-             typeahead-min-length="0"
-             typeahead-select-on-blur="true"
-             typeahead-on-select="onFocusOnConfig($item, $model, $label, $event)"
-             typeahead-no-results="noResults"
-             blur-on-enter />
-
-        <div ng-if="state.config.add.value.length > 0 && noResults" uib-dropdown uib-dropdown-toggle auto-close="disabled" is-open="true">
-            <ul class="dropdown-menu">
-                <!-- mimic real dropdown if nothing found -->
-                <li class="uib-typeahead-match"><a ng-click="addConfigKey()">
-                    <div class="dropdown-item" ng-init="item = match.model">
-                        <div class="dropdown-row">
-                        <span ng-bind-html="state.config.add.value | uibTypeaheadHighlight:query" class="config-name"></span>
-                        <i class="fa fa-fw fa-plus-square-o"></i>
-                    </div>
-                </a></li>
-            </ul>
-        </div>
-    </fieldset>
-
     <div class="spec-configuration config">
         <div class="spec-empty-state" ng-if="filteredItems.length === 0">
           <div ng-if="model.miscData.get('config').length === 0">
@@ -285,8 +253,11 @@
             <h4>No matching configuration</h4>
             <p class="buttons">
                 <button class="btn btn-sm btn-default" ng-if="state.config.search.length > 0" ng-click="state.config.search = ''">Clear search</button>
+                <button class="btn btn-sm btn-default" ng-click="specEditor.addConfigKey(state.config.search)" ng-if="!specEditor.getConfig(state.config.search)">
+                        <i class="fa fa-plus"></i> Add '{{state.config.search}}'
+                </button>
                 <button class="btn btn-sm btn-success" ng-if="!state.config.filter.values.all" ng-click="state.config.filter.values.all = true">
-                    <i class="fa fa-filter"></i> Display all config options
+                    <i class="fa fa-filter"></i> Clear filters
                 </button>
             </p>
           </div>
@@ -508,6 +479,15 @@
                 </div>
             </div>
         </form>
+        
+        <div class="config-add-button" ng-if="filteredItems.length > 0 && state.config.search && !specEditor.getConfig(state.config.search)">
+                <p class="buttons">
+                    <button class="btn btn-sm btn-success" ng-click="specEditor.addConfigKey(state.config.search)">
+                        <i class="fa fa-plus"></i> Add '{{state.config.search}}'
+                    </button>
+                </p>
+        </div>
+        
     </div>
 </br-collapsible>
 
