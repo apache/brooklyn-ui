@@ -53,10 +53,10 @@
 
 
 <!-- ENTITY PARAMETERS -->
-<br-collapsible ng-if="true" state="state.parameters.open">  <!-- the ng-if is needed to make state update?! -->
+<br-collapsible state="state.parameters.open" ng-if="!model.parent">  <!-- the ng-if is needed to make state update?! -->
     <heading>
         Parameters
-        <span ng-if="getParameterIssues().length> 0" class="badge" ng-class="getBadgeClass(getParameterIssues())">{{getParameterIssues().length}}</span>
+        <span ng-if="specEditor.getParameterIssues().length> 0" class="badge" ng-class="getBadgeClass(specEditor.getParameterIssues())">{{specEditor.getParameterIssues().length}}</span>
         <span class="pull-right" ng-show="$parent.stateWrapped.state">
             <span class="spec-toolbar-action" ng-class="{'active': state.parameters.filter.open}"><i class="fa fa-filter collapsible-action" title="Filter parameters" ng-click="$event.stopPropagation(); $event.preventDefault(); state.parameters.filter.open = !state.parameters.filter.open" ng-class="{'text-info': state.parameters.search.length > 0}"></i></span>
             <span class="spec-toolbar-action"><i class="fa fa-plus collapsible-action" title="Add parameter" ng-click="$event.stopPropagation(); $event.preventDefault(); state.parameters.add.open = !state.parameters.add.open"></i></span>
@@ -89,7 +89,7 @@
         <div ng-if="state.parameters.add.value.length > 0 && noResults" uib-dropdown uib-dropdown-toggle auto-close="disabled" is-open="true">
             <ul class="dropdown-menu">
                 <!-- mimic real dropdown if nothing found -->
-                <li class="uib-typeahead-match"><a ng-click="addParameter()">
+                <li class="uib-typeahead-match"><a ng-click="specEditor.addParameter(state.parameters.add.value)">
                     <div class="dropdown-item" ng-init="item = match.model">
                         <div class="dropdown-row">
                             <span ng-bind-html="state.parameters.add.value | uibTypeaheadHighlight:query" class="config-name"></span>
@@ -105,22 +105,27 @@
         <div class="spec-empty-state" ng-if="filteredParams.length === 0">
             <div ng-if="parameters.length === 0">
                 <h4>No parameters</h4>
+                <p class="buttons">
+                    <button class="btn btn-sm btn-success" ng-click="specEditor.addParameter(state.parameters.search)">
+                        <i class="fa fa-plus"></i> Add parameter
+                    </button>
+                </p>
             </div>
             <div ng-if="parameters.length > 0">
                 <h4>No matching parameters</h4>
                 <p class="buttons">
                     <button class="btn btn-sm btn-default" ng-if="state.parameters.search.length > 0" ng-click="state.parameters.search = ''">Clear search</button>
-                    <button class="btn btn-sm btn-success" ng-if="!state.parameters.filter.values.all" ng-click="state.parameters.filter.values.all = true">
-                        <i class="fa fa-filter"></i> Display all parameter options
+                    <button class="btn btn-sm btn-success" ng-click="specEditor.addParameter(state.parameters.search)">
+                        <i class="fa fa-plus"></i> Add '{{state.parameters.search}}'
                     </button>
                 </p>
             </div>
         </div>
 
         <form name="formSpecParameter" novalidate class="lightweight">
-            <div ng-repeat="item in (filteredParams = (model.parameters | filter:{name:state.parameters.search} | orderBy:+priority)) track by item.name">
-                <div class="form-group" ng-class="{'has-error': ((model.issues | filter:{ref: item.name}:true).length > 0) || (specEditor.customConfigWidgetError(item)), 'used': getParameter(item.name) !== undefined}"
-                     ng-switch="getParameterWidgetMode(item)"
+            <div ng-repeat="item in (filteredParams = (model.parameters | filter:{name:state.parameters.search})) track by item.name">
+                <div class="form-group"
+                     ng-switch="specEditor.getParameterWidgetMode(item)"
                      tabindex="1"
                      auto-focus="state.parameters.focus === item.name"
                      auto-focus-listen-to-window="true"
@@ -146,8 +151,8 @@
                                    title="{{state.parameters.codeModeActive[item.name] ? 'Set' : 'Edit'}} value as a JSON-encoded object [{{item.name}}]"></i>
                                 <span class="sr-only">Edit value as a JSON-encoded object [{{item.name}}]</span>
                             </span>
-                            <span class="remove-spec-configuration" ng-if="getParameter(item.name) !== undefined">
-                                <i class="fa fa-fw fa-trash" ng-click="removeParameter(item.name)" aria-hidden="true" title="Remove parameter {{item.name}}"></i>
+                            <span class="remove-spec-configuration" ng-if="specEditor.getParameter(item.name) !== undefined">
+                                <i class="fa fa-fw fa-trash" ng-click="specEditor.removeParameter(item.name)" aria-hidden="true" title="Remove parameter {{item.name}}"></i>
                                 <span class="sr-only">Remove parameter {{item.name}}</span>
                             </span>
                         </span>
@@ -218,8 +223,10 @@
                           </div>
                         </div>
 
-                        <small ng-if="state.parameters.edit.item === item" ng-repeat="issue in state.parameters.edit.errors" class="help-block issue" ng-bind-html="issue.message"></small>
-                        <small ng-repeat="issue in model.issues | filter:{ref: item.name}:true" class="help-block issue" ng-bind-html="issue.message"></small>
+                        <div class="has-error param-error-footer">
+                            <small ng-if="state.parameters.edit.item === item" ng-repeat="issue in state.parameters.edit.errors" class="help-block issue" ng-bind-html="issue.message"></small>
+                            <small ng-repeat="issue in model.issues | filter:{ref: item.name}:true | filter:{group: 'parameter'}:true" class="help-block issue" ng-bind-html="issue.message"></small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -303,7 +310,7 @@
 
         <form name="formSpecConfig" novalidate class="lightweight">
             <div ng-repeat="item in (filteredItems = (model.miscData.get('config') | specEditorConfig:state.config.filter.values:model | filter:{name:state.config.search} | orderBy:+priority)) track by item.name ">
-                <div class="form-group" ng-class="{'has-error': ((model.issues | filter:{ref: item.name}:true).length > 0) || (specEditor.customConfigWidgetError(item)), 'used': config[item.name] !== undefined}" 
+                <div class="form-group" ng-class="{'has-error': ((model.issues | filter:{ref: item.name}:true | filter:{group: 'config'}:true).length > 0) || (specEditor.customConfigWidgetError(item)), 'used': config[item.name] !== undefined}" 
                         ng-switch="getConfigWidgetMode(item)" 
                         tabindex="1"
                         auto-focus="state.config.focus === item.name"
@@ -507,7 +514,7 @@
                         
                     </div>
                     
-                    <small ng-repeat="issue in model.issues | filter:{ref: item.name}:true" class="help-block issue" ng-bind-html="issue.message"></small>
+                    <small ng-repeat="issue in model.issues | filter:{ref: item.name}:true | filter:{group: 'config'}:true" class="help-block issue" ng-bind-html="issue.message"></small>
                     <small ng-if="specEditor.customConfigWidgetError(item)" class="help-block issue">
                             Custom widget unavailable:
                             {{ specEditor.customConfigWidgetError(item) }}

@@ -99,15 +99,16 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
 
     function link(scope, element, attrs, specEditor) {
         scope.specEditor = specEditor;
-        scope.getParameter = getParameter;
-        scope.addParameter = addParameter;
-        scope.removeParameter = removeParameter;
         scope.addConfigKey = addConfigKey;
         scope.FAMILIES = EntityFamily;
         scope.RESERVED_KEYS = RESERVED_KEYS;
         scope.REPLACED_DSL_ENTITYSPEC = REPLACED_DSL_ENTITYSPEC;
         scope.parameters = [];
         scope.config = {};
+
+        specEditor.getParameter = getParameter;
+        specEditor.addParameter = addParameter;
+        specEditor.removeParameter = removeParameter;
 
         let defaultState = {
             parameters: {
@@ -415,7 +416,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             $state.go(graphicalState.name);
         };
 
-        scope.getParameterIssues = specEditor.getParameterIssues = () => {
+        specEditor.getParameterIssues = () => {
             return scope.model.issues
                 .filter((issue) => (issue.group === 'parameters'))
                 .concat(Object.values(scope.model.getClusterMemberspecEntities())
@@ -520,7 +521,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             }
             return item.widgetMode;
         };
-        scope.getParameterWidgetMode = (item) => {
+        specEditor.getParameterWidgetMode = (item) => {
             let type = item.type || item.typeName;
 
             if (type === 'java.lang.Boolean') type = 'boolean';
@@ -700,10 +701,13 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 // show the error if manually enabled
                 return widgetMetadata["error"];
             }
+            return null;
+        };
+        specEditor.customParameterErrors = (item) => {
             if (scope.state.parameters && scope.state.parameters.edit && scope.state.parameters.edit.item === item && scope.state.parameters.edit.errors) {
                 return scope.state.parameters.edit.errors;
             }
-            return null;
+            return [];
         };
         specEditor.toggleCustomConfigWidgetMode = (item, newval) => {
             let widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];
@@ -1051,6 +1055,9 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         }
 
         function checkNameChange(oldName, newName) {
+            if (!oldName) {
+                return true;
+            }
             if (oldName && oldName!=newName) {
                 scope.state.parameters.codeModeActive[newName] = scope.state.parameters.codeModeActive[oldName];
                 scope.state.parameters.codeModeError[newName] = scope.state.parameters.codeModeError[oldName]; 
@@ -1109,18 +1116,15 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             scope.model.setParametersFromJson(result);
         }
 
-        function addParameter() {
-            let name = scope.state.parameters.add.value;
-            if (name) {
-                let allParams = scope.model.miscData.get('parameters');
-                blueprintService.addParameterDefinition(allParams, name);
-                let param = allParams.find(p => p.name === name);
-                scope.model.addParameter(param);
-                loadLocalParametersFromModel();
-                scope.state.parameters.add.value = '';
-                scope.state.parameters.add.open = false;
-                scope.state.parameters.focus = name;
-            }
+        function addParameter(name) {
+            let allParams = scope.model.miscData.get('parameters');
+            blueprintService.addParameterDefinition(allParams, name);
+            let param = allParams.find(p => p.name === name);
+            scope.model.addParameter(param);
+            loadLocalParametersFromModel();
+            scope.state.parameters.add.value = '';
+            scope.state.parameters.add.open = false;
+            scope.state.parameters.focus = name;
         }
 
         function removeParameter(name) {
