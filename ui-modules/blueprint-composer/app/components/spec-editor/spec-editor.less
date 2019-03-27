@@ -833,22 +833,28 @@ spec-editor {
 
     .spec-configuration-filters-categories {
       overflow: hidden;
-      list-style: none;
       padding: 0;
-      li {
+      display: flex;
+      div.filter {
         cursor: pointer;
+        margin-top: 4px;
+        margin-bottom: 4px;
         &:not(:first-child) {
-          margin-left: 1.5em;
+          margin-left: 1em;
         }
-        .filter-checkbox {
-          width: 1em;
+        &:last-child {
+          flex-grow: 1;
+          text-align: right;
         }
-        &.disabled {
-          color: @gray-light;
-          cursor: inherit;
+        .filter-icon {
+          width: 2ex;
+          text-align: left;
+        }
+        label {
+          padding-left: 1em;
+          padding-right: 1em;
         }
       }
-      color: @gray;
     }
   }
   .spec-configuration-filters .form-group, .spec-parameter-filters .form-group {

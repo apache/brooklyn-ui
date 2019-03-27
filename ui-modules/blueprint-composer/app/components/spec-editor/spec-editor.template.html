@@ -233,14 +233,18 @@
             <input ng-model="state.config.search" type="text" class="form-control" placeholder="Search for config key by name" auto-focus="state.config.filter.open" blur-on-enter />
         </div>
         <div class="form-group">
-            <ul class="spec-configuration-filters-categories">
-                <li ng-repeat="filter in filters.config track by filter.id"
+            <div class="spec-configuration-filters-categories">
+                <div ng-repeat="filter in filters.config track by filter.id"
                     ng-class="{ 'disabled': isFilterDisabled(filter) }"
                     ng-click="onFilterClicked(filter)"
-                    class="pull-left">
-                    <i class="filter-checkbox fa" ng-class="{'fa-check-square-o': state.config.filter.values[ filter.id ], 'fa-square-o': !state.config.filter.values[ filter.id ]}"></i> {{filter.label}}
-                </li>
-            </ul>
+                    class="filter">
+                    
+                    <span title="{{ filter.hoverText }}" class="label" ng-class="{'label-primary': state.config.filter.values[ filter.id ], 'label-default': !state.config.filter.values[ filter.id ] }">
+                        <i class="filter-icon fa fa-{{ filter.icon }}" ng-if="filter.icon"></i>
+                        <span class="filter-label" ng-if="filter.label">{{ filter.label }}</span>
+                    </span>
+                </div>
+            </div>
         </div>
     </fieldset>
 

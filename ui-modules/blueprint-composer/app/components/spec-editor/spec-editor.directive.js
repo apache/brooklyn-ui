@@ -47,6 +47,8 @@ export const CONFIG_FILTERS = [
     {
         id: 'suggested',
         label: 'Suggested',
+        icon: 'plus-circle',
+        hoverText: 'Show config keys that marked as pinned or priority',
         filter: (item)=> {
             return item.pinned && item.priority > -1;
         }
@@ -54,6 +56,8 @@ export const CONFIG_FILTERS = [
     {
         id: 'required',
         label: 'Required',
+        icon: 'times-circle',
+        hoverText: 'Show config keys that are required or have an issue',
         filter: (item, model)=> {
             return (item.constraints && item.constraints.required) ||
                 (model && model.issues && model.issues.some((issue)=>(issue.group === 'config' && issue.ref === item.name)) );
@@ -62,6 +66,8 @@ export const CONFIG_FILTERS = [
     {
         id: 'inuse',
         label: 'In Use',
+        icon: 'check-circle',
+        hoverText: 'Show config keys that are in use',
         filter: (item, model)=> {
             return model && model.config && model.config.has(item.name);
         }
@@ -69,6 +75,8 @@ export const CONFIG_FILTERS = [
     {
         id: 'all',
         label: 'All',
+        icon: 'th-list',
+        hoverText: 'Show all config keys',
         filter: (item)=> {
             return item;
         }
