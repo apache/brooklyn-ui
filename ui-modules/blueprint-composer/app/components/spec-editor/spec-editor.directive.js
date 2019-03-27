@@ -391,6 +391,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 item: $item,
                 newName: $item.name,
                 constraints: $item.constraints ? JSON.stringify($item.constraints) : '',
+                original: Object.assign({}, $item),
                 json: JSON.stringify($item, null, "  "),
             };
         };
@@ -1109,10 +1110,34 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     }
                      
                     try {
-                        item.constraints = JSON.parse(scope.state.parameters.edit.constraints);
+                        let c = scope.state.parameters.edit.constraints ? JSON.parse(scope.state.parameters.edit.constraints) : [];
+                        if (Array.isArray(c)) {
+                            if (c.length==0) { 
+                                delete item['constraints'];
+                            } else {
+                                item.constraints = c;
+                            }
+                        } else {
+                            scope.state.parameters.edit.errors.push({ message: "Constraint JSON must be a list" });
+                        }
                     } catch (e) {
                         // $log.warn("ERROR parsing constraints", scope.state.parameters.edit.constraints, e);
                         scope.state.parameters.edit.errors.push({ message: "Invalid constraint JSON" });
+                    }
+                    
+                    // empty values are removed
+                    if (item.description == '') {
+                        delete item['description'];
+                    } 
+                    if (item.label == '') {
+                        delete item['label'];
+                    } 
+                    if (item.default == '') {
+                        if (scope.state.parameters.edit.original.default!=='') {
+                            // don't delete if default was explicitly set in yaml as "";
+                            // this allows empty string defaults to be used (although you can't set them in the visual ui)
+                            delete item['default'];
+                        }
                     }
                 }
             }

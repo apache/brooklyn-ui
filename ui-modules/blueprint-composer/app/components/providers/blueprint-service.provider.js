@@ -530,10 +530,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
     function addParameterDefinition(params, key) {
         params.push({
             "name": key,
-            "description": "",
             "type": "string",
-            "default": "",
-            "constraints": [],
         });
     }
 

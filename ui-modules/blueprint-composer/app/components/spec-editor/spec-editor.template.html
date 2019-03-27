@@ -136,7 +136,9 @@
                           <div class="input-group hide-when-collapsed" ng-if="state.parameters.codeModeActive[item.name]">
                             <span class="main-control span-for-rounded-edge">
                                 <textarea ng-model="state.parameters.edit.json" class="form-control rounded-edge" name="{{item.name}}" id="json-{{item.name}}"
-                                          auto-grow placeholder="(empty)" ng-focus="specEditor.recordParameterFocus(item)"
+                                          auto-grow 
+                                          placeholder="(required)" 
+                                          ng-focus="specEditor.recordParameterFocus(item)"
                                           on-enter="specEditor.advanceOutToFormGroupInPanel"></textarea>
                             </span>
                           </div>
@@ -145,7 +147,9 @@
                             <div class="param-field"> <span class="param-field-label">Key</span> 
                                 <span class="param-field-value">
                                     <textarea ng-model="state.parameters.edit.newName" class="form-control rounded-edge" id="name-{{item.name}}"
-                                          auto-grow placeholder="(empty)" ng-focus="specEditor.recordParameterFocus(item)"
+                                          auto-grow 
+                                          placeholder="(required)" 
+                                          ng-focus="specEditor.recordParameterFocus(item)"
                                           on-enter="specEditor.advanceOutToFormGroupInPanel">
                                     </textarea>
                                 </span>
@@ -153,7 +157,9 @@
                             <div class="param-field"> <span class="param-field-label">Type</span> 
                                 <span class="param-field-value">
                                     <textarea ng-model="filteredParams[$index].type" class="form-control rounded-edge" id="type-{{item.name}}"
-                                          auto-grow placeholder="(empty)" ng-focus="specEditor.recordParameterFocus(item)"
+                                          auto-grow 
+                                          placeholder="(required)" 
+                                          ng-focus="specEditor.recordParameterFocus(item)"
                                           on-enter="specEditor.advanceOutToFormGroupInPanel">
                                     </textarea>
                                 </span>
@@ -161,7 +167,9 @@
                             <div class="param-field"> <span class="param-field-label">Default value</span> 
                                 <span class="param-field-value">
                                     <textarea ng-model="filteredParams[$index].default" class="form-control rounded-edge" id="default-{{item.name}}"
-                                          auto-grow placeholder="(empty)" ng-focus="specEditor.recordParameterFocus(item)"
+                                          auto-grow 
+                                          placeholder="{{ state.parameters.edit.original.default == '' ? '(empty)' : '(not set)' }}" 
+                                          ng-focus="specEditor.recordParameterFocus(item)"
                                           on-enter="specEditor.advanceOutToFormGroupInPanel">
                                     </textarea>
                                 </span>
@@ -169,7 +177,9 @@
                             <div class="param-field"> <span class="param-field-label">Display name</span> 
                                 <span class="param-field-value">
                                     <textarea ng-model="filteredParams[$index].label" class="form-control rounded-edge" id="label-{{item.name}}"
-                                          auto-grow placeholder="(empty)" ng-focus="specEditor.recordParameterFocus(item)"
+                                          auto-grow 
+                                          placeholder="(not set)" 
+                                          ng-focus="specEditor.recordParameterFocus(item)"
                                           on-enter="specEditor.advanceOutToFormGroupInPanel">
                                     </textarea>
                                 </span>
@@ -177,20 +187,24 @@
                             <div class="param-field"> <span class="param-field-label">Description</span> 
                                 <span class="param-field-value">
                                     <textarea ng-model="filteredParams[$index].description" class="form-control rounded-edge" id="description-{{item.name}}"
-                                          auto-grow placeholder="(empty)" ng-focus="specEditor.recordParameterFocus(item)"
+                                          auto-grow 
+                                          placeholder="(not set)" 
+                                          ng-focus="specEditor.recordParameterFocus(item)"
                                           on-enter="specEditor.advanceOutToFormGroupInPanel">
                                     </textarea>
                                 </span>
                             </div>
                             <div class="param-field"> <span class="param-field-label">Constraints
                                     <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
-                                           uib-popover="Constraints such as required or forbiddenUnless(otherKey), expressed as a JSON list (wrapped in brackets)"
+                                           uib-popover="Constraints such as &quot;required&quot; or &quot;forbiddenUnless(otherKey)&quot;, expressed as a JSON list (wrapped in square brackets)"
                                            x-popover-class="spec-editor-popover" 
                                            popover-placement="top-left" popover-append-to-body="true"></i>
                                 </span> 
                                 <span class="param-field-value">
                                     <textarea ng-model="state.parameters.edit.constraints" class="form-control rounded-edge code" id="constraints-{{item.name}}"
-                                          auto-grow placeholder="(empty)" ng-focus="specEditor.recordParameterFocus(item)"
+                                          auto-grow 
+                                          placeholder="(none)"
+                                          ng-focus="specEditor.recordParameterFocus(item)"
                                           on-enter="specEditor.advanceOutToFormGroupInPanel">
                                     </textarea>
                                 </span>
