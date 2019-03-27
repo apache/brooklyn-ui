@@ -58,50 +58,25 @@
         Parameters
         <span ng-if="specEditor.getParameterIssues().length> 0" class="badge" ng-class="getBadgeClass(specEditor.getParameterIssues())">{{specEditor.getParameterIssues().length}}</span>
         <span class="pull-right" ng-show="$parent.stateWrapped.state">
-            <span class="spec-toolbar-action" ng-class="{'active': state.parameters.filter.open}"><i class="fa fa-filter collapsible-action" title="Filter parameters" ng-click="$event.stopPropagation(); $event.preventDefault(); state.parameters.filter.open = !state.parameters.filter.open" ng-class="{'text-info': state.parameters.search.length > 0}"></i></span>
-            <span class="spec-toolbar-action"><i class="fa fa-plus collapsible-action" title="Add parameter" ng-click="$event.stopPropagation(); $event.preventDefault(); state.parameters.add.open = !state.parameters.add.open"></i></span>
+            <span class="spec-toolbar-action" ng-class="{'active': state.parameters.filter.open}"><i class="fa fa-search-plus collapsible-action" title="Search or add a parameter" ng-click="$event.stopPropagation(); $event.preventDefault(); state.parameters.filter.open = !state.parameters.filter.open" ng-class="{'text-info': state.parameters.search.length > 0}"></i></span>
         </span>
     </heading>
 
-    <fieldset uib-collapse="!state.parameters.filter.open" class="spec-configuration-filters">
+    <fieldset uib-collapse="!state.parameters.filter.open" class="spec-parameter-filters">
         <div class="form-group">
-            <input ng-model="state.parameters.search" type="text" class="form-control" placeholder="Search for parameter by name" auto-focus="state.parameters.filter.open" blur-on-enter />
-        </div>
-    </fieldset>
-
-    <fieldset uib-collapse="!state.parameters.add.open" class="spec-configuration-add">
-        <input auto-focus="state.parameters.add.open"
-               type="text"
-               autocomplete="off"
-               ng-model="state.parameters.add.value"
-               placeholder="Add a new parameter or open existing"
-               class="form-control"
-               uib-typeahead="parameter.name for parameter in state.parameters.add.list | filter:{name:$viewValue}"
-               typeahead-template-url="blueprint-composer/component/spec-editor/parameter-item.html"
-               typeahead-editable="true"
-               typeahead-show-hint="true"
-               typeahead-min-length="0"
-               typeahead-select-on-blur="true"
-               typeahead-on-select="onFocusOnParameter($item, $model, $label, $event)"
-               typeahead-no-results="noResults"
-               blur-on-enter />
-
-        <div ng-if="state.parameters.add.value.length > 0 && noResults" uib-dropdown uib-dropdown-toggle auto-close="disabled" is-open="true">
-            <ul class="dropdown-menu">
-                <!-- mimic real dropdown if nothing found -->
-                <li class="uib-typeahead-match"><a ng-click="specEditor.addParameter(state.parameters.add.value)">
-                    <div class="dropdown-item" ng-init="item = match.model">
-                        <div class="dropdown-row">
-                            <span ng-bind-html="state.parameters.add.value | uibTypeaheadHighlight:query" class="config-name"></span>
-                            <i class="fa fa-fw fa-plus-square-o"></i>
-                        </div>
-                    </div>
-                </a></li>
-            </ul>
+            <input auto-focus="state.parameters.filter.open" 
+                type="text"
+                autocomplete="off" 
+                ng-model="state.parameters.search" 
+                placeholder="Search or add a parameter" 
+                class="form-control"
+                blur-on-enter 
+                />
         </div>
     </fieldset>
 
     <div class="spec-configuration parameters">
+
         <div class="spec-empty-state" ng-if="filteredParams.length === 0">
             <div ng-if="parameters.length === 0">
                 <h4>No parameters</h4>
@@ -121,7 +96,7 @@
                 </p>
             </div>
         </div>
-
+    
         <form name="formSpecParameter" novalidate class="lightweight">
             <div ng-repeat="item in (filteredParams = (model.parameters | filter:{name:state.parameters.search})) track by item.name">
                 <div class="form-group"
@@ -231,6 +206,15 @@
                 </div>
             </div>
         </form>
+        
+        <div class="spec-add-button" ng-if="filteredParams.length > 0 && state.parameters.search && !specEditor.getParameter(state.parameters.search)">
+                <p class="buttons">
+                    <button class="btn btn-sm btn-success" ng-click="specEditor.addParameter(state.parameters.search)">
+                        <i class="fa fa-plus"></i> Add '{{state.parameters.search}}'
+                    </button>
+                </p>
+        </div>
+        
     </div>
 </br-collapsible>
 

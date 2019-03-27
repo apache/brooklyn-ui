@@ -241,10 +241,13 @@ spec-editor {
       padding-top: 10px;
       border-top: 1px solid @gray-lighter;
 
-      &:first-child {
+      &:first-child, &.spec-add-button, &.config-add-button {
         margin-top: 0;
         padding-top: 0;
         border: none;
+      }
+      &.spec-add-button, &.config-add-button {
+        text-align: right;
       }
     }
 
@@ -799,14 +802,15 @@ spec-editor {
     }
   }
   
+  .spec-parameter-filters,
   .spec-configuration-filters,
   .spec-configuration-add {
     background: @gray-lighter;
     border: 1px solid @gray-light;
     transition: 0.15s ease all;
     padding: 0.5em;
-    margin-top: -12px;
-    margin-bottom: 24px;
+    margin-top: -4px;
+    margin-bottom: 16px;
     .dropdown-menu li a {
         // quite a lot of padding in normal dropdown, in the ul and in the a
         padding: 0;
@@ -847,7 +851,7 @@ spec-editor {
       color: @gray;
     }
   }
-  .spec-configuration-filters .form-group {
+  .spec-configuration-filters .form-group, .spec-parameter-filters .form-group {
     margin-bottom: 5px;
     &:last-child {
       margin-bottom: 0;  // get padding from parent
