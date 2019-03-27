@@ -252,6 +252,11 @@
         <div class="spec-empty-state" ng-if="filteredItems.length === 0">
           <div ng-if="model.miscData.get('config').length === 0">
             <h4>No configuration</h4>
+            <p class="buttons">
+                <button class="btn btn-sm btn-success" ng-click="specEditor.addConfigKey(state.config.search)" ng-if="state.config.search">
+                        <i class="fa fa-plus"></i> Add '{{state.config.search}}'
+                </button>
+            </p>
           </div>
           <div ng-if="model.miscData.get('config').length > 0">
             <h4>No matching configuration</h4>
