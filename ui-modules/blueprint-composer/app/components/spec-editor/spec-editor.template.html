@@ -144,7 +144,12 @@
                           </div>
                           
                           <div class="param-fields input-group hide-when-collapsed" ng-if="!state.parameters.codeModeActive[item.name]">
-                            <div class="param-field"> <span class="param-field-label">Key</span> 
+                            <div class="param-field"> <span class="param-field-label">Key
+                                    <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                                           uib-popover="The internal name of this parameter and of the config key it becomes on deployment."
+                                           x-popover-class="spec-editor-popover" 
+                                           popover-placement="top-left" popover-append-to-body="true"></i>
+                                </span> 
                                 <span class="param-field-value">
                                     <textarea ng-model="state.parameters.edit.newName" class="form-control rounded-edge" id="name-{{item.name}}"
                                           auto-grow 
@@ -154,17 +159,29 @@
                                     </textarea>
                                 </span>
                             </div>
-                            <div class="param-field"> <span class="param-field-label">Type</span> 
+                            <div class="param-field"> <span class="param-field-label">Type
+                                    <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                                           uib-popover="The type of the value this key takes, such as 'integer' or 'double' for numbers or 'string' for freeform text."
+                                           x-popover-class="spec-editor-popover" 
+                                           popover-placement="top-left" popover-append-to-body="true"></i>
+                                </span> 
                                 <span class="param-field-value">
                                     <textarea ng-model="filteredParams[$index].type" class="form-control rounded-edge" id="type-{{item.name}}"
                                           auto-grow 
                                           placeholder="(required)" 
+                                          uib-typeahead="t for t in specEditor.paramTypes | filter:$viewValue"
+                                          typeahead-min-length="0"
                                           ng-focus="specEditor.recordParameterFocus(item)"
                                           on-enter="specEditor.advanceOutToFormGroupInPanel">
                                     </textarea>
                                 </span>
                             </div>
-                            <div class="param-field"> <span class="param-field-label">Default value</span> 
+                            <div class="param-field"> <span class="param-field-label">Default value
+                                    <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                                           uib-popover="Optionally a value can be given here to use for this parameter if one is not supplied by the user. An empty string supplied here will cause the default to be removed. (Empty strings can be set explicitly in the underlying YAML code if required.)"
+                                           x-popover-class="spec-editor-popover" 
+                                           popover-placement="top-left" popover-append-to-body="true"></i>
+                                </span> 
                                 <span class="param-field-value">
                                     <textarea ng-model="filteredParams[$index].default" class="form-control rounded-edge" id="default-{{item.name}}"
                                           auto-grow 
@@ -174,7 +191,12 @@
                                     </textarea>
                                 </span>
                             </div>
-                            <div class="param-field"> <span class="param-field-label">Display name</span> 
+                            <div class="param-field"> <span class="param-field-label">Display name
+                                    <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                                           uib-popover="Optional label displayed in places to be more user-friendly than the parameter/key name. This can have spaces whereas the name should not."
+                                           x-popover-class="spec-editor-popover" 
+                                           popover-placement="top-left" popover-append-to-body="true"></i>
+                                </span> 
                                 <span class="param-field-value">
                                     <textarea ng-model="filteredParams[$index].label" class="form-control rounded-edge" id="label-{{item.name}}"
                                           auto-grow 
@@ -184,7 +206,12 @@
                                     </textarea>
                                 </span>
                             </div>
-                            <div class="param-field"> <span class="param-field-label">Description</span> 
+                            <div class="param-field"> <span class="param-field-label">Description
+                                    <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                                           uib-popover="Optional information on what this parameter is for, displayed to the user in the UI"
+                                           x-popover-class="spec-editor-popover" 
+                                           popover-placement="top-left" popover-append-to-body="true"></i>
+                                </span> 
                                 <span class="param-field-value">
                                     <textarea ng-model="filteredParams[$index].description" class="form-control rounded-edge" id="description-{{item.name}}"
                                           auto-grow 

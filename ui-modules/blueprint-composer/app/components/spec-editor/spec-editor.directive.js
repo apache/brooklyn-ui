@@ -83,6 +83,11 @@ export const CONFIG_FILTERS = [
     }
 ];
 
+export const PARAM_TYPES = [
+    // cut-down list from BasicSpecParameter.ParseYamlInputs
+    'string', 'boolean', 'integer', 'double', 'duration', ' port'
+    ];
+
 export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, $state, $compile, blueprintService, composerOverrides) {
     return {
         restrict: 'E',
@@ -112,6 +117,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope.REPLACED_DSL_ENTITYSPEC = REPLACED_DSL_ENTITYSPEC;
         scope.parameters = [];
         scope.config = {};
+        specEditor.paramTypes = PARAM_TYPES;
 
         specEditor.getParameter = getParameter;
         specEditor.addParameter = addParameter;

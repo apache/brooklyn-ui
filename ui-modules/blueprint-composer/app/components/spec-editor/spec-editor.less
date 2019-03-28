@@ -472,9 +472,14 @@ spec-editor {
         flex-direction: row;
         .param-field-label {
             color: @gray-light;
-            width: 9em;
+            width: 10em;
             font-size: 90%;
             padding-top: 3px;
+            > i.fa-info-circle {
+                float: right;
+                margin-top: 4px;
+                margin-right: 4px;
+            }
         }
         .param-field-value {
             width: 100%;
@@ -803,14 +808,9 @@ spec-editor {
   }
   
   .spec-parameter-filters,
+  .spec-configuration.parameters,
   .spec-configuration-filters,
   .spec-configuration-add {
-    background: @gray-lighter;
-    border: 1px solid @gray-light;
-    transition: 0.15s ease all;
-    padding: 0.5em;
-    margin-top: -4px;
-    margin-bottom: 16px;
     .dropdown-menu li a {
         // quite a lot of padding in normal dropdown, in the ul and in the a
         padding: 0;
@@ -821,6 +821,17 @@ spec-editor {
             margin-right: 1ex;
         }
     }
+  }
+  
+  .spec-parameter-filters,
+  .spec-configuration-filters,
+  .spec-configuration-add {
+    background: @gray-lighter;
+    border: 1px solid @gray-light;
+    transition: 0.15s ease all;
+    padding: 0.5em;
+    margin-top: -4px;
+    margin-bottom: 16px;
 
     legend {
       color: @gray;
