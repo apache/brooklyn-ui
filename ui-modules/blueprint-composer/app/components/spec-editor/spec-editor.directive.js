@@ -837,6 +837,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             let result = {};
             for (let [key, value] of modelConfig) {
                 if (blueprintService.isReservedKey(key)) {
+                    $log.warn("skipping reserved word used as config key", key);
                     continue; // skip
                 }
                 result[key] = getLocalConfigValueFromModelValue(key, value);
@@ -1061,9 +1062,6 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             let modelParams = scope.model.parameters;
             let result = [];
             for (let paramRef of modelParams) {
-                if (blueprintService.isReservedKey(paramRef.name)) {
-                    continue; // skip
-                }
                 result.push(paramRef);
             }
             scope.parameters = result;
@@ -1108,11 +1106,13 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     
                 } else {
                     if (scope.state.parameters.edit.newName) {
-                        if (checkNameChange(item.name, scope.state.parameters.edit.newName)) {
+                        if (blueprintService.isReservedKey(scope.state.parameters.edit.newName)) {
+                            scope.state.parameters.edit.errors.push({ message: "Illegal key name" });
+                        } else if (checkNameChange(item.name, scope.state.parameters.edit.newName)) {
                             item.name = scope.state.parameters.edit.newName;
                         }
                     } else {
-                        scope.state.parameters.edit.errors.push({ message: "Name must not be blank" });
+                        scope.state.parameters.edit.errors.push({ message: "Key name must not be blank" });
                     }
                      
                     try {
@@ -1161,10 +1161,15 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
 
         function addParameter(name) {
             let allParams = scope.model.miscData.get('parameters');
+            if (!allParams) {
+                allParams = [];
+                scope.model.miscData.set('parameters', allParams);
+            }
             blueprintService.addParameterDefinition(allParams, name);
             let param = allParams.find(p => p.name === name);
             scope.model.addParameter(param);
             loadLocalParametersFromModel();
+            scope.state.parameters.search = '';
             scope.state.parameters.add.value = '';
             scope.state.parameters.add.open = false;
             scope.state.parameters.focus = name;
