@@ -167,7 +167,7 @@ function EntityApi($http, $q) {
         return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/adjuncts/' + adjunctId + '/stop');
     }
     function destroyEntityAdjunct(applicationId, entityId, adjunctId) {
-        return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/adjuncts/' + adjunctId + '/destroy');
+        return $http.delete('/v1/applications/'+ applicationId +'/entities/' + entityId + '/adjuncts/' + adjunctId);
     }
     function updateEntityAdjunctConfig(applicationId, entityId, adjunctId, configId, data) {
         return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/adjuncts/' + adjunctId + '/config/' + configId, data);

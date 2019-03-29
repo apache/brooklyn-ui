@@ -77,7 +77,8 @@ export function bundleController($scope, $state, $stateParams, brSnackbar, brUti
         catalogApi.deleteBundle($scope.bundle.symbolicName, $scope.bundle.version).then(data => {
             $state.go(catalogState);
         }).catch(error => {
-            brSnackbar.create('Could not delete this bundle: ' + error.message);
+            let errorMessage= ('undefined' === typeof error.message)? error.error.message: error.message;
+            brSnackbar.create('Could not delete this bundle: ' + errorMessage);
         }).finally(() => {
             $scope.state.deleting = false;
         });
@@ -103,7 +104,8 @@ export function bundleController($scope, $state, $stateParams, brSnackbar, brUti
         $scope.bundleVersions = bundleVersions.map(bundleVersion => bundleVersion.version);
         $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
     }).catch(error => {
-        brSnackbar.create(`Could not load bundle ${$stateParams.bundleId}:${$stateParams.bundleVersion}: ${error.status === 404 ? 'Not found' : error.message}`);
+        let errorMessage= ('undefined' === typeof error.message)? error.error.message: error.message;
+        brSnackbar.create(`Could not load bundle ${$stateParams.bundleId}:${$stateParams.bundleVersion}: ${error.status === 404 ? 'Not found' : errorMessage}`);
         $state.go(catalogState);
     });
 }

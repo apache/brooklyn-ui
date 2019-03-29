@@ -188,7 +188,8 @@ export function summaryController($scope, $state, $stateParams, $q, $http, brSna
             entityApi.updateEntityName(applicationId, entityId, this.name).then((response)=> {
                 vm.entity.name = vm.name;
             }).catch((error)=> {
-                brSnackbar.create('Cannot update entity name: the entity [' + entityId + '] is undefined');
+                let errorMessage= ('undefined' === typeof error.message)? error.error.message: error.message;
+                brSnackbar.create('Cannot update entity name: ' + errorMessage);
                 vm.name = vm.entity.name;
             });
         }
