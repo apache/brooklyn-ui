@@ -18,7 +18,7 @@
  */
 import angular from 'angular';
 import angularSanitize from 'angular-sanitize';
-import {Dsl, KIND} from '../util/model/dsl.model';
+import {Dsl, DslParser, KIND} from '../util/model/dsl.model';
 import template from './dsl-editor.template.html';
 import brAutoFocus from 'brooklyn-ui-utils/autofocus/autofocus';
 import brUtils from 'brooklyn-ui-utils/utils/general';
@@ -166,7 +166,7 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
             newValue.forEach((argument, index) => {
                 let dsl;
                 try {
-                    dsl = dslService.parse(argument, scope.entity, blueprintService.get());
+                    dsl = new DslParser().parseString(argument, scope.entity, blueprintService.get());
                     scope.dsl.params.splice(index + 1, 1, dsl);
                 } catch (ex) {
                     $log.debug(`Argument ${index} is not a DSL. Defaulting to string`, ex);
@@ -271,7 +271,7 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
             }
 
             try {
-                dsl = dslService.parse(dsl.toString(), scope.entity, blueprintService.get());
+                dsl = new DslParser().parseString(dsl.toString(), scope.entity, blueprintService.get());
             } catch (ex) {
                 $log.debug(`Cannot get DSL relationship for DSL "${dsl}`, ex);
             }

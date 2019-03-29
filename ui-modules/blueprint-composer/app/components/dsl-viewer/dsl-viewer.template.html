@@ -16,36 +16,75 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<span ng-if="isTargetDsl(dsl)">
-    <span ng-if="dsl.getRoot().relationships.length === 0" class="label label-primary">{{dsl.params[0].name}}</span>
-    <a ng-if="dsl.getRoot().relationships.length > 0" ui-sref="main.graphical.edit.entity({entityId: getRelatedEntity()._id})"><span class="label label-primary">{{(getRelatedEntity() | entityName) || 'New application'}}</span></a>
+<span ng-switch="mode">
+
+  <span ng-switch-when="target">
+    <span ng-if="dsl.getRoot().relationships.length === 0" class="label label-primary">
+        <span ng-if="!dsl.params[0] || !dsl.params[0].name || (dsl.name!='component' && dsl.name!='entity')">
+            {{dsl.name}}
+        </span>
+        {{dsl.params[0].name}}
+    </span>
+    <a ng-if="dsl.getRoot().relationships.length > 0" ui-sref="main.graphical.edit.entity({entityId: relatedEntity._id})"><span class="label label-primary">{{relatedEntity ? (relatedEntity | entityName) || 'Application' : dsl.name}}</span></a>
     <span ng-if="dsl.next">
         ⇒
         <dsl-viewer dsl="dsl.next"></dsl-viewer>
     </span>
-</span>
-
-<span ng-if="isMethodDsl(dsl) && !isFormatStringDsl(dsl)">
+  </span>
+  
+  <span ng-switch-when="method">
     <span class="label label-default">
-        <i class="fa" ng-class="{'fa-cog': dsl.name === 'config', 'fa-rss': dsl.name === 'sensor', 'fa-pause': dsl.name === 'attributeWhenReady'}"></i>
+        <i class="fa" ng-class="icon"></i>
         {{dsl.name}}
     </span>
-    →
-    <dsl-viewer dsl="dsl.params[0]"></dsl-viewer>
-</span>
-
-<span ng-if="isFormatStringDsl(dsl)">
-    <span class="label label-info">
-        <i class="fa fa-qrcode"></i>
-        pattern
+    
+    <span ng-if="dsl.params.length == 1">
+        →
+        <dsl-viewer dsl="dsl.params[0]"></dsl-viewer>
     </span>
-    →
-    {{dsl.params[0].name}}
-    <ol ng-if="dsl.params.length > 0">
+    <ul ng-if="dsl.params.length > 1">
+        <li ng-repeat="argument in dsl.params | limitTo:dsl.params.length">
+            <dsl-viewer dsl="argument"></dsl-viewer>
+        </li>
+    </ul>
+    
+    <span ng-if="dsl.next">
+        ⇒
+        <dsl-viewer dsl="dsl.next"></dsl-viewer>
+    </span>
+  </span>
+  
+  <span ng-switch-when="utility">
+    <span class="label label-info">
+        <i class="fa" ng-class="icon"></i>
+        {{dsl.name}}
+    </span>
+    
+    <span ng-if="dsl.params.length >= 1">
+        →
+        <dsl-viewer dsl="dsl.params[0]"></dsl-viewer>
+    </span>
+    <ul ng-if="dsl.params.length > 1">
         <li ng-repeat="argument in dsl.params | limitTo:dsl.params.length:1">
             <dsl-viewer dsl="argument"></dsl-viewer>
         </li>
-    </ol>
-</span>
+    </ul>
+  </span>
 
-<span ng-if="isLiteralDsl(dsl)">{{dsl.name}}</span>
+  <span ng-switch-when="constant">
+    <span class="dsl-constant">
+        <samp>{{dsl.name}}</samp>
+    </span>
+  </span>
+
+  <span ng-switch-when="reference">
+    <span class="label label-primary">
+        {{dsl.name}}
+    </span>
+  </span>
+
+  <span ng-switch-default>
+    {{ !mode || mode==='unknown' ? '' : mode }}: {{ dsl.name }}
+  </span>
+  
+</span>
