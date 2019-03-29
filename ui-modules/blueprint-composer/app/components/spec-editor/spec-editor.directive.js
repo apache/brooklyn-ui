@@ -254,6 +254,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         }
         scope.nonempty = (o) => o && Object.keys(o).length;
         scope.defined = specEditor.defined = (o) => (typeof o !== 'undefined');
+        specEditor.isInstance = (x, type) => (typeof x === type);
+                
         specEditor.advanceOutToFormGroupInPanel = (element, event) => {
             focusIfPossible(event, findAncestor(element, "form-group", "panel-body")) || element[0].blur();
         };
