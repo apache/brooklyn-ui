@@ -56,7 +56,7 @@ export const CONFIG_FILTERS = [
     {
         id: 'required',
         label: 'Required',
-        icon: 'times-circle',
+        icon: 'stop-circle',
         hoverText: 'Show config keys that are required or have an issue',
         filter: (item, model)=> {
             return (item.constraints && item.constraints.required) ||
@@ -241,7 +241,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         }, true);
 
         scope.getObjectSize = (object) => {
-            return specEditor.defined(object) && object != null ? Object.keys(object).length : 0;
+            return specEditor.defined(object) && object !== null ? Object.keys(object).length : 0;
         };
 
         function findNext(element, clazz, stopClazz) {
@@ -542,8 +542,6 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             else if (type === 'java.util.Map') type = 'map';
             else if (type === 'java.util.Set' || type === 'java.util.List' || type === 'java.util.Collection' || type.startsWith('List<')) type = 'array';
 
-            if (type.startsWith('AWS::')) type = 'unknown';
-
             return type;
         };
         scope.isCodeModeAvailable = (item) => {
@@ -559,7 +557,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             scope.state.config.codeModeForced[item.name] = false;
             // otherwise true if the text entered is json
             if (!specEditor.defined(val)) return false;
-            if (typeof val == 'string') {
+            if (typeof val === 'string') {
                 try {
                     // a YAML parse would be nicer, but JSON is simpler, and sufficient
                     // (esp as we export a JSON stringify; preferable would be to export the exact YAML from model,
@@ -593,7 +591,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             if (!specEditor.defined(value)) {
                 value = null;
             }
-            if (value != null) {
+            if (value !== null) {
                 if (oldMode) {
                     // leaving code mode
                     try {
@@ -638,12 +636,12 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                         value = JSON.stringify(value);
                     }
                 }
-                if (value != null) {
+                if (value !== null) {
                     scope.config[item.name] = value;
                 }
             }
             scope.state.config.codeModeActive[item.name] = !oldMode;
-            if (value != null) {
+            if (value !== null) {
                 // local config changed, make sure model is updated too
                 setModelFromLocalConfig();
             }
@@ -680,7 +678,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 }
                 // convert local parameter from json to non-json or vice-versa
                 value = item;
-                if (value != null) {
+                if (value !== null) {
                     try {
                         JSON.parse(value);
                     } catch (notJson) {
@@ -688,13 +686,13 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                         // (as with other stringify, this loses any comments etc)
                         value = JSON.stringify(value, null, "  ");
                     }
-                    if (value != null) {
+                    if (value !== null) {
                         scope.state.parameters.edit.json = value;
                     }
                 }
             }
             scope.state.parameters.codeModeActive[item.name] = !oldMode;
-            if (value != null) {
+            if (value !== null) {
                 // local parameters changed, make sure model is updated too
                 setModelFromLocalParameters();
             }
@@ -768,16 +766,16 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         };
         specEditor.isDsl = (key, index) => {
             let val = scope.model.config.get(key);
-            if (specEditor.defined(val) && specEditor.defined(index) && index != null) val = val[index];
+            if (specEditor.defined(val) && specEditor.defined(index) && index !== null) val = val[index];
             return specEditor.isDslVal(val);
         };
         specEditor.isDslVal = (val) => {
             // don't treat constants as DSL (not helpful, and the DSL editor doesn't support it)
-            return (val instanceof Dsl) && val.kind && val.kind.family != 'constant';
+            return (val instanceof Dsl) && val.kind && val.kind.family !== 'constant';
         };
         specEditor.isDslWizardButtonAllowed = (key, index, nonModelValue) => {
             let val = scope.model.config.get(key);
-            if (specEditor.defined(val) && specEditor.defined(index) && index != null) val = val[index];
+            if (specEditor.defined(val) && specEditor.defined(index) && index !== null) val = val[index];
             if (!specEditor.defined(val) || val === null || val === '') val = nonModelValue;
             if (!specEditor.defined(val) || val === null || val === '') return true;
             if (specEditor.isDslVal(val)) {
@@ -846,7 +844,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         }
 
         function getLocalConfigValueFromModelValue(key, value) {
-            if (!specEditor.defined(value) || value == null) {
+            if (!specEditor.defined(value) || value === null) {
                 return value;
             }
 
@@ -942,7 +940,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         }
 
         function getModelValueFromString(val) {
-            if (!specEditor.defined(val) || val == null || typeof val !== 'string') {
+            if (!specEditor.defined(val) || val === null || typeof val !== 'string') {
                 // only strings will have primitive inference applied
                 // (and this is only invoked when not in code mode)
                 return val;
@@ -1061,7 +1059,17 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         function loadLocalParametersFromModel() {
             let modelParams = scope.model.parameters;
             let result = [];
+            let dups = {};
             for (let paramRef of modelParams) {
+                if (dups[paramRef.name]) {
+                    var i=2;
+                    while (dups[paramRef.name+''+i]) i++;
+                    // users won't see this message (unless they have the console open) so it might be surprising
+                    // but other behaviours (like the UI breaking) are worse, and not sure of a simple better way to handle 
+                    $log.warn("Duplicate parameter '"+paramRef.name+"' found; changing to '"+paramRef.name+''+i+"'");
+                    paramRef.name = paramRef.name+''+i;
+                }
+                dups[paramRef.name] = true;
                 result.push(paramRef);
             }
             scope.parameters = result;
@@ -1075,7 +1083,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             if (!oldName) {
                 return true;
             }
-            if (oldName && oldName!=newName) {
+            if (oldName && oldName!==newName) {
                 scope.state.parameters.codeModeActive[newName] = scope.state.parameters.codeModeActive[oldName];
                 scope.state.parameters.codeModeError[newName] = scope.state.parameters.codeModeError[oldName]; 
                 delete scope.state.parameters.codeModeActive[oldName]; 
@@ -1127,18 +1135,18 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                             scope.state.parameters.edit.errors.push({ message: "Constraint JSON must be a list" });
                         }
                     } catch (e) {
-                        // $log.warn("ERROR parsing constraints", scope.state.parameters.edit.constraints, e);
+                        $log.warn("ERROR parsing constraints", scope.state.parameters.edit.constraints, e);
                         scope.state.parameters.edit.errors.push({ message: "Invalid constraint JSON" });
                     }
                     
                     // empty values are removed
-                    if (item.description == '') {
+                    if (item.description === '') {
                         delete item['description'];
                     } 
-                    if (item.label == '') {
+                    if (item.label === '') {
                         delete item['label'];
                     } 
-                    if (item.default == '') {
+                    if (item.default === '') {
                         if (scope.state.parameters.edit.original.default!=='') {
                             // don't delete if default was explicitly set in yaml as "";
                             // this allows empty string defaults to be used (although you can't set them in the visual ui)
