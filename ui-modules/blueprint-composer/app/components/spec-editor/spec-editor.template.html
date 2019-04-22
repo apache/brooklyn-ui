@@ -51,14 +51,221 @@
   </div>
 </section>
 
+
+<!-- ENTITY PARAMETERS -->
+<br-collapsible state="state.parameters.open" ng-if="!model.parent">  <!-- the ng-if is needed to make state update?! -->
+    <heading>
+        Parameters
+        <span ng-if="specEditor.getParameterIssues().length> 0" class="badge" ng-class="getBadgeClass(specEditor.getParameterIssues())">{{specEditor.getParameterIssues().length}}</span>
+        <span class="pull-right" ng-show="$parent.stateWrapped.state">
+            <span class="spec-toolbar-action" ng-class="{'active': state.parameters.filter.open}"><i class="fa fa-search-plus collapsible-action" title="Search or add a parameter" ng-click="$event.stopPropagation(); $event.preventDefault(); state.parameters.filter.open = !state.parameters.filter.open" ng-class="{'text-info': state.parameters.search.length > 0}"></i></span>
+        </span>
+    </heading>
+
+    <fieldset uib-collapse="!state.parameters.filter.open" class="spec-parameter-filters">
+        <div class="form-group">
+            <input auto-focus="state.parameters.filter.open" 
+                type="text"
+                autocomplete="off" 
+                ng-model="state.parameters.search" 
+                placeholder="Search or add a parameter" 
+                class="form-control"
+                blur-on-enter 
+                />
+        </div>
+    </fieldset>
+
+    <div class="spec-configuration parameters">
+
+        <div class="spec-empty-state" ng-if="filteredParams.length === 0">
+            <div ng-if="parameters.length === 0">
+                <h4>No parameters</h4>
+                <p class="buttons">
+                    <button class="btn btn-sm btn-success" ng-click="specEditor.addParameter(state.parameters.search)">
+                        <i class="fa fa-plus"></i> Add parameter
+                    </button>
+                </p>
+            </div>
+            <div ng-if="parameters.length > 0">
+                <h4>No matching parameters</h4>
+                <p class="buttons">
+                    <button class="btn btn-sm btn-default" ng-if="state.parameters.search.length > 0" ng-click="state.parameters.search = ''">Clear search</button>
+                    <button class="btn btn-sm btn-success" ng-click="specEditor.addParameter(state.parameters.search)">
+                        <i class="fa fa-plus"></i> Add '{{state.parameters.search}}'
+                    </button>
+                </p>
+            </div>
+        </div>
+    
+        <form name="formSpecParameter" novalidate class="lightweight">
+            <div ng-repeat="item in (filteredParams = (model.parameters | filter:{name:state.parameters.search})) track by item.name">
+                <div class="form-group"
+                     ng-switch="specEditor.getParameterWidgetMode(item)"
+                     tabindex="1"
+                     auto-focus="state.parameters.focus === item.name"
+                     auto-focus-listen-to-window="true"
+                     auto-focus-not-if-within="true"
+                     ng-focus="specEditor.recordParameterFocus(item)"
+                     on-enter="specEditor.advanceControlInFormGroup">
+
+                    <div class="config-flex-row">
+                        <label class="control-label" for="{{item.name}}">
+                            <span class="label-spec-configuration">{{item.label || item.name}}</span>
+                            <span class="info-spec-configuration">
+                                <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                                   popover-title="{{item.label || item.name}}"
+                                   uib-popover-template="'blueprint-composer/component/spec-editor/parameter-info.html'"
+                                   popover-class="spec-editor-popover" popover-placement="top-left" popover-append-to-body="true"></i>
+                            </span>
+                        </label>
+
+                        <span class="label-rhs-buttons">
+                            <span class="spacer"> </span>
+                            <span class="json-config" ng-class="{'code-mode-active': state.parameters.codeModeActive[item.name]}">
+                                <i class="fa fa-fw fa-code" ng-click="parameterCodeModeClick(item)" aria-hidden="true"
+                                   title="{{state.parameters.codeModeActive[item.name] ? 'Set' : 'Edit'}} value as a JSON-encoded object [{{item.name}}]"></i>
+                                <span class="sr-only">Edit value as a JSON-encoded object [{{item.name}}]</span>
+                            </span>
+                            <span class="remove-spec-configuration" ng-if="specEditor.getParameter(item.name) !== undefined">
+                                <i class="fa fa-fw fa-trash" ng-click="specEditor.removeParameter(item.name)" aria-hidden="true" title="Remove parameter {{item.name}}"></i>
+                                <span class="sr-only">Remove parameter {{item.name}}</span>
+                            </span>
+                        </span>
+
+                        <div class="control-value" ng-class="{ 'code-mode-active': state.parameters.codeModeActive[item.name] }">
+                          <div class="input-group hide-when-collapsed" ng-if="state.parameters.codeModeActive[item.name]">
+                            <span class="main-control span-for-rounded-edge">
+                                <textarea ng-model="state.parameters.edit.json" class="form-control rounded-edge" name="{{item.name}}" id="json-{{item.name}}"
+                                          auto-grow 
+                                          placeholder="(required)" 
+                                          ng-focus="specEditor.recordParameterFocus(item)"
+                                          on-enter="specEditor.advanceOutToFormGroupInPanel"></textarea>
+                            </span>
+                          </div>
+                          
+                          <div class="param-fields input-group hide-when-collapsed" ng-if="!state.parameters.codeModeActive[item.name]">
+                            <div class="param-field"> <span class="param-field-label">Key
+                                    <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                                           uib-popover="The internal name of this parameter and of the config key it becomes on deployment."
+                                           x-popover-class="spec-editor-popover" 
+                                           popover-placement="top-left" popover-append-to-body="true"></i>
+                                </span> 
+                                <span class="param-field-value">
+                                    <textarea ng-model="state.parameters.edit.newName" class="form-control rounded-edge" id="name-{{item.name}}"
+                                          auto-grow 
+                                          placeholder="(required)" 
+                                          ng-focus="specEditor.recordParameterFocus(item)"
+                                          on-enter="specEditor.advanceOutToFormGroupInPanel">
+                                    </textarea>
+                                </span>
+                            </div>
+                            <div class="param-field"> <span class="param-field-label">Type
+                                    <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                                           uib-popover="The type of the value this key takes, such as 'integer' or 'double' for numbers or 'string' for freeform text."
+                                           x-popover-class="spec-editor-popover" 
+                                           popover-placement="top-left" popover-append-to-body="true"></i>
+                                </span> 
+                                <span class="param-field-value">
+                                    <textarea ng-model="filteredParams[$index].type" class="form-control rounded-edge" id="type-{{item.name}}"
+                                          auto-grow 
+                                          placeholder="(required)" 
+                                          uib-typeahead="t for t in specEditor.paramTypes | filter:$viewValue"
+                                          typeahead-min-length="0"
+                                          ng-focus="specEditor.recordParameterFocus(item)"
+                                          on-enter="specEditor.advanceOutToFormGroupInPanel">
+                                    </textarea>
+                                </span>
+                            </div>
+                            <div class="param-field"> <span class="param-field-label">Default value
+                                    <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                                           uib-popover="Optionally a value can be given here to use for this parameter if one is not supplied by the user. An empty string supplied here will cause the default to be removed. (Empty strings can be set explicitly in the underlying YAML code if required.)"
+                                           x-popover-class="spec-editor-popover" 
+                                           popover-placement="top-left" popover-append-to-body="true"></i>
+                                </span> 
+                                <span class="param-field-value">
+                                    <textarea ng-model="filteredParams[$index].default" class="form-control rounded-edge" id="default-{{item.name}}"
+                                          auto-grow 
+                                          placeholder="{{ state.parameters.edit.original.default == '' ? '(empty)' : '(not set)' }}" 
+                                          ng-focus="specEditor.recordParameterFocus(item)"
+                                          on-enter="specEditor.advanceOutToFormGroupInPanel">
+                                    </textarea>
+                                </span>
+                            </div>
+                            <div class="param-field"> <span class="param-field-label">Display name
+                                    <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                                           uib-popover="Optional label displayed in places to be more user-friendly than the parameter/key name. This can have spaces whereas the name should not."
+                                           x-popover-class="spec-editor-popover" 
+                                           popover-placement="top-left" popover-append-to-body="true"></i>
+                                </span> 
+                                <span class="param-field-value">
+                                    <textarea ng-model="filteredParams[$index].label" class="form-control rounded-edge" id="label-{{item.name}}"
+                                          auto-grow 
+                                          placeholder="(not set)" 
+                                          ng-focus="specEditor.recordParameterFocus(item)"
+                                          on-enter="specEditor.advanceOutToFormGroupInPanel">
+                                    </textarea>
+                                </span>
+                            </div>
+                            <div class="param-field"> <span class="param-field-label">Description
+                                    <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                                           uib-popover="Optional information on what this parameter is for, displayed to the user in the UI"
+                                           x-popover-class="spec-editor-popover" 
+                                           popover-placement="top-left" popover-append-to-body="true"></i>
+                                </span> 
+                                <span class="param-field-value">
+                                    <textarea ng-model="filteredParams[$index].description" class="form-control rounded-edge" id="description-{{item.name}}"
+                                          auto-grow 
+                                          placeholder="(not set)" 
+                                          ng-focus="specEditor.recordParameterFocus(item)"
+                                          on-enter="specEditor.advanceOutToFormGroupInPanel">
+                                    </textarea>
+                                </span>
+                            </div>
+                            <div class="param-field"> <span class="param-field-label">Constraints
+                                    <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                                           uib-popover="Constraints such as &quot;required&quot; or &quot;forbiddenUnless(otherKey)&quot;, expressed as a JSON list (wrapped in square brackets and double quotes)"
+                                           x-popover-class="spec-editor-popover" 
+                                           popover-placement="top-left" popover-append-to-body="true"></i>
+                                </span> 
+                                <span class="param-field-value">
+                                    <textarea ng-model="state.parameters.edit.constraints" class="form-control rounded-edge code" id="constraints-{{item.name}}"
+                                          auto-grow 
+                                          placeholder="(none)"
+                                          ng-focus="specEditor.recordParameterFocus(item)"
+                                          on-enter="specEditor.advanceOutToFormGroupInPanel">
+                                    </textarea>
+                                </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="has-error param-error-footer">
+                            <small ng-if="state.parameters.edit.item === item" ng-repeat="issue in state.parameters.edit.errors" class="help-block issue" ng-bind-html="issue.message"></small>
+                            <small ng-repeat="issue in model.issues | filter:{ref: item.name}:true | filter:{group: 'parameter'}:true" class="help-block issue" ng-bind-html="issue.message"></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        
+        <div class="spec-add-button" ng-if="filteredParams.length > 0 && state.parameters.search && !specEditor.getParameter(state.parameters.search)">
+                <p class="buttons">
+                    <button class="btn btn-sm btn-success" ng-click="specEditor.addParameter(state.parameters.search)">
+                        <i class="fa fa-plus"></i> Add '{{state.parameters.search}}'
+                    </button>
+                </p>
+        </div>
+        
+    </div>
+</br-collapsible>
+
 <!-- ENTITY CONFIGURATION -->
 <br-collapsible ng-if="true" state="state.config.open">  <!-- the ng-if is needed to make state update?! -->
     <heading>
         Configuration
         <span ng-if="getConfigIssues().length> 0" class="badge" ng-class="getBadgeClass(getConfigIssues())">{{getConfigIssues().length}}</span>
         <span class="pull-right" ng-show="$parent.stateWrapped.state">
-            <span class="spec-toolbar-action" ng-class="{'active': state.config.filter.open}"><i class="fa fa-filter collapsible-action" title="Filter configuration" ng-click="$event.stopPropagation(); $event.preventDefault(); state.config.filter.open = !state.config.filter.open" ng-class="{'text-info': state.config.search.length > 0}"></i></span>
-            <span class="spec-toolbar-action"><i class="fa fa-plus collapsible-action" title="Add configuration" ng-click="$event.stopPropagation(); $event.preventDefault(); state.config.add.open = !state.config.add.open"></i></span>
+            <span class="spec-toolbar-action" ng-class="{'active': state.config.filter.open}"><i class="fa fa-search-plus collapsible-action" title="Filter configuration" ng-click="$event.stopPropagation(); $event.preventDefault(); state.config.filter.open = !state.config.filter.open" ng-class="{'text-info': state.config.search.length > 0}"></i></span>
         </span>
     </heading>
 
@@ -67,59 +274,40 @@
             <input ng-model="state.config.search" type="text" class="form-control" placeholder="Search for config key by name" auto-focus="state.config.filter.open" blur-on-enter />
         </div>
         <div class="form-group">
-            <ul class="spec-configuration-filters-categories">
-                <li ng-repeat="filter in filters.config track by filter.id"
+            <div class="spec-configuration-filters-categories">
+                <div ng-repeat="filter in filters.config track by filter.id"
                     ng-class="{ 'disabled': isFilterDisabled(filter) }"
                     ng-click="onFilterClicked(filter)"
-                    class="pull-left">
-                    <i class="filter-checkbox fa" ng-class="{'fa-check-square-o': state.config.filter.values[ filter.id ], 'fa-square-o': !state.config.filter.values[ filter.id ]}"></i> {{filter.label}}
-                </li>
-            </ul>
+                    class="filter">
+                    
+                    <span title="{{ filter.hoverText }}" class="label" ng-class="{'label-primary': state.config.filter.values[ filter.id ], 'label-default': !state.config.filter.values[ filter.id ] }">
+                        <i class="filter-icon fa fa-{{ filter.icon }}" ng-if="filter.icon"></i>
+                        <span class="filter-label" ng-if="filter.label">{{ filter.label }}</span>
+                    </span>
+                </div>
+            </div>
         </div>
     </fieldset>
 
-    <fieldset uib-collapse="!state.config.add.open" class="spec-configuration-add">
-        <input auto-focus="state.config.add.open"
-             type="text"
-             autocomplete="off"
-             ng-model="state.config.add.value"
-             placeholder="Add a new configuration key or open existing"
-             class="form-control"
-             uib-typeahead="config.name for config in state.config.add.list | filter:{name:$viewValue}"
-             typeahead-template-url="blueprint-composer/component/spec-editor/config-item.html"
-             typeahead-editable="true"
-             typeahead-show-hint="true"
-             typeahead-min-length="0"
-             typeahead-select-on-blur="true"
-             typeahead-on-select="onFocusOnConfig($item, $model, $label, $event)"
-             typeahead-no-results="noResults"
-             blur-on-enter />
-
-        <div ng-if="state.config.add.value.length > 0 && noResults" uib-dropdown uib-dropdown-toggle auto-close="disabled" is-open="true">
-            <ul class="dropdown-menu">
-                <!-- mimic real dropdown if nothing found -->
-                <li class="uib-typeahead-match"><a ng-click="addConfigKey()">
-                    <div class="dropdown-item" ng-init="item = match.model">
-                        <div class="dropdown-row">
-                        <span ng-bind-html="state.config.add.value | uibTypeaheadHighlight:query" class="config-name"></span>
-                        <i class="fa fa-fw fa-plus-square-o"></i>
-                    </div>
-                </a></li>
-            </ul>
-        </div>
-    </fieldset>
-
-    <div class="spec-configuration">
+    <div class="spec-configuration config">
         <div class="spec-empty-state" ng-if="filteredItems.length === 0">
           <div ng-if="model.miscData.get('config').length === 0">
             <h4>No configuration</h4>
+            <p class="buttons">
+                <button class="btn btn-sm btn-success" ng-click="specEditor.addConfigKey(state.config.search)" ng-if="state.config.search">
+                        <i class="fa fa-plus"></i> Add '{{state.config.search}}'
+                </button>
+            </p>
           </div>
           <div ng-if="model.miscData.get('config').length > 0">
             <h4>No matching configuration</h4>
             <p class="buttons">
                 <button class="btn btn-sm btn-default" ng-if="state.config.search.length > 0" ng-click="state.config.search = ''">Clear search</button>
+                <button class="btn btn-sm btn-default" ng-click="specEditor.addConfigKey(state.config.search)" ng-if="!specEditor.getConfig(state.config.search)">
+                        <i class="fa fa-plus"></i> Add '{{state.config.search}}'
+                </button>
                 <button class="btn btn-sm btn-success" ng-if="!state.config.filter.values.all" ng-click="state.config.filter.values.all = true">
-                    <i class="fa fa-filter"></i> Display all config options
+                    <i class="fa fa-filter"></i> Clear filters
                 </button>
             </p>
           </div>
@@ -127,13 +315,13 @@
 
         <form name="formSpecConfig" novalidate class="lightweight">
             <div ng-repeat="item in (filteredItems = (model.miscData.get('config') | specEditorConfig:state.config.filter.values:model | filter:{name:state.config.search} | orderBy:+priority)) track by item.name ">
-                <div class="form-group" ng-class="{'has-error': ((model.issues | filter:{ref: item.name}:true).length > 0) || (specEditor.customConfigWidgetError(item)), 'used': config[item.name] !== undefined}" 
+                <div class="form-group" ng-class="{'has-error': ((model.issues | filter:{ref: item.name}:true | filter:{group: 'config'}:true).length > 0) || (specEditor.customConfigWidgetError(item)), 'used': config[item.name] !== undefined}" 
                         ng-switch="getConfigWidgetMode(item)" 
                         tabindex="1"
                         auto-focus="state.config.focus === item.name"
                         auto-focus-listen-to-window="true"
                         auto-focus-not-if-within="true"
-                        ng-focus="specEditor.recordFocus(item)"
+                        ng-focus="specEditor.recordConfigFocus(item)"
                         on-enter="specEditor.advanceControlInFormGroup">
                   <div ng-if="specEditor.getCustomConfigWidgetMode(item) === 'enabled'" class="custom-config-widget">
                     <ng-include src="specEditor.getCustomConfigWidgetTemplate(item)" class="custom-config-widget"/>
@@ -180,10 +368,10 @@
                     <div class="control-value" ng-class="{ 'inline-control': item.widgetMode==='boolean', 'unset': !defined(config[item.name]), 'has-default': defined(item.defaultValue) && item.defaultValue!=null, 'code-mode-active': state.config.codeModeActive[item.name] }">
                         <div ng-switch-when="boolean" class="boolean">
                             <div class="btn-group btn-block" role="group">
-                                <button type="button" class="btn btn-xs btn-default" ng-class="{'btn-success active': config[item.name] === false, 'active': config[item.name] === undefined && item.defaultValue === false}" ng-click="config[item.name] = false" ng-focus="specEditor.recordFocus(item)">false</button>
-                                <button type="button" class="btn btn-xs btn-default" ng-class="{'btn-success active': config[item.name] === true, 'active': config[item.name] === undefined && item.defaultValue === true}" ng-click="config[item.name] = true" ng-focus="specEditor.recordFocus(item)">true</button>
+                                <button type="button" class="btn btn-xs btn-default" ng-class="{'btn-success active': config[item.name] === false, 'active': config[item.name] === undefined && item.defaultValue === false}" ng-click="config[item.name] = false" ng-focus="specEditor.recordConfigFocus(item)">false</button>
+                                <button type="button" class="btn btn-xs btn-default" ng-class="{'btn-success active': config[item.name] === true, 'active': config[item.name] === undefined && item.defaultValue === true}" ng-click="config[item.name] = true" ng-focus="specEditor.recordConfigFocus(item)">true</button>
                                 <span class="input-group-btn dsl-wizard-button" ng-if="specEditor.isDslWizardButtonAllowed(item.name)">
-                                    <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" class="btn btn-xs btn-default" ng-class="{'btn-success active': config[item.name].length > 0}" title="Open in DSL editor" ng-focus="specEditor.recordFocus(item)"><i class="fa fa-bolt"></i></a>
+                                    <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" class="btn btn-xs btn-default" ng-class="{'btn-success active': config[item.name].length > 0}" title="Open in DSL editor" ng-focus="specEditor.recordConfigFocus(item)"><i class="fa fa-bolt"></i></a>
                                 </span>
                             </div>
                         </div>
@@ -192,7 +380,7 @@
                             <select ng-switch-when="java.lang.Enum"
                                 ng-model="config[item.name]"
                                 ng-options="s.value as (s.description + (item.defaultValue === s.value ? ' --- default' : '')) for s in item.possibleValues"
-                                ng-focus="specEditor.recordFocus(item)"
+                                ng-focus="specEditor.recordConfigFocus(item)"
                                 class="form-control rounded-edge"
                                 name="{{item.name}}"
                                 id="{{item.name}}"></select>
@@ -201,7 +389,7 @@
                         <div ng-switch-when="map" 
                                 ng-init="expandMode = 'default'" class="collection"
                                 ng-class="{ 'open-when-unfocused': expandMode=='open' }">
-                            <p class="collection-toggle" ng-click="expandMode = cycleExpandMode(expandMode, 'map', item, state)" ng-focus="specEditor.recordFocus(item)"
+                            <p class="collection-toggle" ng-click="expandMode = cycleExpandMode(expandMode, 'map', item, state)" ng-focus="specEditor.recordConfigFocus(item)"
                                     ng-class="{ 'has-default': item.defaultValue && getObjectSize(item.defaultValue) }">
                                 <i class="fa collection-caret" ng-class="{'fa-caret-square-o-down': expandMode=='closed', 'fa-caret-square-o-up': expandMode=='open', 'caret-default': expandMode=='default' }" aria-hidden="true" title="{{expandMode=='closed' ? 'Unpin' : expandMode=='open' ? 'Close (pin)' : 'Open (pin)'}} map"></i>
                                 <span class="sr-only">{{expandMode=='closed' ? 'Unpin' : expandMode=='open' ? 'Close (pin)' : 'Open (pin)'}} map</span>
@@ -228,7 +416,7 @@
                                         <span class="input-group">
                                             <span class="main-control span-for-rounded-edge">
                                                 <input type="text" ng-model="config[item.name][mapKey]" class="form-control rounded-edge" placeholder="(empty)" 
-                                                    ng-focus="specEditor.recordFocus(item)"
+                                                    ng-focus="specEditor.recordConfigFocus(item)"
                                                     on-enter="specEditor.advanceControlInFormGroup" />
                                             </span>
                                             <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name, mapKey)">
@@ -240,7 +428,7 @@
                                 <li class="collection-item collection-add input-group" ng-class="{'nonempty': nonempty(config[item.name])}">
                                     <span class="main-control span-for-rounded-edge">
                                       <input ng-model="newKey" type="text" placeholder="Add property key" class="form-control rounded-edge" 
-                                        ng-focus="specEditor.recordFocus(item)"
+                                        ng-focus="specEditor.recordConfigFocus(item)"
                                         on-enter="specEditor.advanceOutToFormGroupInPanel" ng-blur="onAddMapProperty(item.name, newKey, $event); newKey = '';" required />
                                     </span>
                                     <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name, null, newKey)">
@@ -253,7 +441,7 @@
                         <div ng-switch-when="array" ng-switch-when-separator="|" 
                                 ng-init="expandMode = 'default'" class="collection"
                                 ng-class="{ 'open-when-unfocused': expandMode=='open' }">
-                            <p class="collection-toggle" ng-click="expandMode = cycleExpandMode(expandMode, 'map', item, state)" ng-focus="specEditor.recordFocus(item)"
+                            <p class="collection-toggle" ng-click="expandMode = cycleExpandMode(expandMode, 'map', item, state)" ng-focus="specEditor.recordConfigFocus(item)"
                                     ng-class="{ 'has-default': item.defaultValue && item.defaultValue.length }">
                                 <i class="fa collection-caret" ng-class="{'fa-caret-square-o-down': expandMode=='closed', 'fa-caret-square-o-up': expandMode=='open', 'caret-default': expandMode=='default' }" aria-hidden="true" title="{{expandMode=='closed' ? 'Unpin' : expandMode=='open' ? 'Close (pin)' : 'Open (pin)'}} list"></i>
                                 <span class="sr-only">{{expandMode=='closed' ? 'Unpin' : expandMode=='open' ? 'Close (pin)' : 'Open (pin)'}} list</span>
@@ -279,10 +467,10 @@
                                         <span class="input-group">
                                             <span class="main-control span-for-rounded-edge">
                                                 <input type="text" ng-model="config[item.name][$index]" class="form-control rounded-edge" placeholder="(empty)" 
-                                                    ng-focus="specEditor.recordFocus(item)"
+                                                    ng-focus="specEditor.recordConfigFocus(item)"
                                                     on-enter="specEditor.advanceControlInFormGroup" />
                                             </span>
-                                            <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name, $index)" ng-focus="specEditor.recordFocus(item)">
+                                            <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name, $index)" ng-focus="specEditor.recordConfigFocus(item)">
                                                 <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name, index: $index})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
                                             </span>
                                         </span>
@@ -292,7 +480,7 @@
                                     <span class="input-group">
                                         <span class="main-control span-for-rounded-edge">
                                           <input ng-model="newItem" type="text" placeholder="Add item" class="form-control rounded-edge" auto-focus="expandMode != 'closed'" 
-                                            ng-focus="specEditor.recordFocus(item)"
+                                            ng-focus="specEditor.recordConfigFocus(item)"
                                             on-enter="specEditor.advanceOutToFormGroupInPanel" ng-blur="onAddListItem(item.name, newItem, $event, $element); newItem = '';" required />
                                         </span>
                                         <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name, -1, newItem)">
@@ -308,7 +496,7 @@
                                 <a ui-sref="main.graphical.edit.spec({entityId: model._id, specId: adjunct._id})"
                                             class="open-entity-spec"
                                             title="Open in spec editor"
-                                            ng-focus="specEditor.recordFocus(item)"></a>
+                                            ng-focus="specEditor.recordConfigFocus(item)"></a>
                                 <ng-include src="'blueprint-composer/component/spec-editor/adjunct.html'"></ng-include>
                             </div>
                             <a ng-if="!config[item.name][REPLACED_DSL_ENTITYSPEC]" ui-sref="main.graphical.edit.add({entityId: model._id, family: 'spec', configKey: item.name})" class="no-spec">
@@ -320,7 +508,7 @@
                             <span class="main-control span-for-rounded-edge">
                                 <textarea ng-model="config[item.name]" class="form-control rounded-edge" name="{{item.name}}" id="{{item.name}}" auto-grow
                                       placeholder="{{defined(config[item.name]) ? null : item.defaultValue=='' || item.defaultValue==null ? '(empty)' : item.defaultValue}}"
-                                      ng-focus="specEditor.recordFocus(item)" on-enter="specEditor.advanceOutToFormGroupInPanel"></textarea>
+                                      ng-focus="specEditor.recordConfigFocus(item)" on-enter="specEditor.advanceOutToFormGroupInPanel"></textarea>
                             </span>
                             <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name)">
                                 <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" class="btn btn-default" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
@@ -331,7 +519,7 @@
                         
                     </div>
                     
-                    <small ng-repeat="issue in model.issues | filter:{ref: item.name}:true" class="help-block issue" ng-bind-html="issue.message"></small>
+                    <small ng-repeat="issue in model.issues | filter:{ref: item.name}:true | filter:{group: 'config'}:true" class="help-block issue" ng-bind-html="issue.message"></small>
                     <small ng-if="specEditor.customConfigWidgetError(item)" class="help-block issue">
                             Custom widget unavailable:
                             {{ specEditor.customConfigWidgetError(item) }}
@@ -341,6 +529,15 @@
                 </div>
             </div>
         </form>
+        
+        <div class="config-add-button" ng-if="filteredItems.length > 0 && state.config.search && !specEditor.getConfig(state.config.search)">
+                <p class="buttons">
+                    <button class="btn btn-sm btn-success" ng-click="specEditor.addConfigKey(state.config.search)">
+                        <i class="fa fa-plus"></i> Add '{{state.config.search}}'
+                    </button>
+                </p>
+        </div>
+        
     </div>
 </br-collapsible>
 
@@ -455,6 +652,20 @@
 <script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-others.html" defer-to-preexisting-id="true">
 </script>
 
+
+<!-- PARAMETER INFO TEMPLATE :: START -->
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/parameter-info.html" defer-to-preexisting-id="true">
+    <div class="config-item-quick-info">
+        <div class="quick-info-metadata">
+            <p><i class="mini-icon fa fa-fw fa-cog"></i> <samp class="type-symbolic-name">{{item.name}}</samp>
+                <span class="config-type label-color column-for-type oneline label label-success">{{item.type}}</span></p>
+        </div>
+        <p class="quick-info-description" ng-if="item.description" ng-bind-html="specEditor.descriptionHtml(item.description)"></p>
+        <div class="quick-info-metadata config-default" ng-if="item.defaultValue"></i>Default value: <samp>{{item.defaultValue}}</samp></div>
+    </div>
+
+</script>
+<!-- PARAMETER INFO TEMPLATE :: START-->
 
 <!-- CONFIG INFO TEMPLATE :: START -->
 <script type="text/ng-template" id="blueprint-composer/component/spec-editor/config-info.html" defer-to-preexisting-id="true">

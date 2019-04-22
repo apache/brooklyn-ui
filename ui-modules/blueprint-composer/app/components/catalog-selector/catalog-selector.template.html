@@ -52,7 +52,7 @@
              
               <div class="spacer" ng-repeat-start="filter in filters" ng-if="filter.spacerBefore"></div>
               <div class="nav-row-item" ng-repeat-end ng-click="filter.enabled = !filter.enabled">
-                <span title="{{ filter.hoverTest }}" class="label" ng-class="{'label-primary': filter.enabled, 'label-default': !filter.enabled }">
+                <span title="{{ filter.hoverText }}" class="label" ng-class="{'label-primary': filter.enabled, 'label-default': !filter.enabled }">
                     <i class="fa fa-{{ filter.icon }}" ng-if="filter.icon"></i>
                     <span ng-if="filter.label">{{ filter.label }}</span>
                 </span>

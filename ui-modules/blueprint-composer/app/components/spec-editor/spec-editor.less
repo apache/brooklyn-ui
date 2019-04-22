@@ -238,10 +238,13 @@ spec-editor {
       padding-top: 10px;
       border-top: 1px solid @gray-lighter;
 
-      &:first-child {
+      &:first-child, &.spec-add-button, &.config-add-button {
         margin-top: 0;
         padding-top: 0;
         border: none;
+      }
+      &.spec-add-button, &.config-add-button {
+        text-align: right;
       }
     }
 
@@ -450,6 +453,35 @@ spec-editor {
                     width: 0;
                     max-width: 0;
                 }
+            }
+        }
+    }
+    .param-fields {
+        width: 100%;
+        margin-top: 8px;
+        margin-bottom: 3px;
+        display: flex;
+        flex-direction: column;
+    }
+    .param-field {
+        display: flex;
+        margin-top: 2px;
+        flex-direction: row;
+        .param-field-label {
+            color: @gray-light;
+            width: 10em;
+            font-size: 90%;
+            padding-top: 3px;
+            > i.fa-info-circle {
+                float: right;
+                margin-top: 4px;
+                margin-right: 4px;
+            }
+        }
+        .param-field-value {
+            width: 100%;
+            textarea.code {
+                .monospace();
             }
         }
     }
@@ -772,14 +804,10 @@ spec-editor {
     }
   }
   
+  .spec-parameter-filters,
+  .spec-configuration.parameters,
   .spec-configuration-filters,
   .spec-configuration-add {
-    background: @gray-lighter;
-    border: 1px solid @gray-light;
-    transition: 0.15s ease all;
-    padding: 0.5em;
-    margin-top: -12px;
-    margin-bottom: 24px;
     .dropdown-menu li a {
         // quite a lot of padding in normal dropdown, in the ul and in the a
         padding: 0;
@@ -790,6 +818,17 @@ spec-editor {
             margin-right: 1ex;
         }
     }
+  }
+  
+  .spec-parameter-filters,
+  .spec-configuration-filters,
+  .spec-configuration-add {
+    background: @gray-lighter;
+    border: 1px solid @gray-light;
+    transition: 0.15s ease all;
+    padding: 0.5em;
+    margin-top: -4px;
+    margin-bottom: 16px;
 
     legend {
       color: @gray;
@@ -802,25 +841,31 @@ spec-editor {
 
     .spec-configuration-filters-categories {
       overflow: hidden;
-      list-style: none;
       padding: 0;
-      li {
+      display: flex;
+      div.filter {
         cursor: pointer;
+        margin-top: 4px;
+        margin-bottom: 4px;
         &:not(:first-child) {
-          margin-left: 1.5em;
+          margin-left: 1em;
         }
-        .filter-checkbox {
-          width: 1em;
+        &:last-child {
+          flex-grow: 1;
+          text-align: right;
         }
-        &.disabled {
-          color: @gray-light;
-          cursor: inherit;
+        .filter-icon {
+          width: 2ex;
+          text-align: left;
+        }
+        label {
+          padding-left: 1em;
+          padding-right: 1em;
         }
       }
-      color: @gray;
     }
   }
-  .spec-configuration-filters .form-group {
+  .spec-configuration-filters .form-group, .spec-parameter-filters .form-group {
     margin-bottom: 5px;
     &:last-child {
       margin-bottom: 0;  // get padding from parent
@@ -833,6 +878,19 @@ spec-editor {
   }
   a.open-entity-spec {
     cursor: alias;
+  }
+  .parameters {
+   .form-group:focus-within, .form-group:focus {
+    .control-value {
+        border-top: solid #aaaaaa 1px;   // TODO pull #aaaaaa out into shared colours file (follow-on PR)
+        padding-top: 1px;
+        margin-top: 6px;
+    }
+   }
+   .param-error-footer {
+        width: 100%;
+        order: 99;
+   }
   }
 }
 

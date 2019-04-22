@@ -70,11 +70,11 @@ export class Entity {
     constructor() {
         ID.set(this, Math.random().toString(36).slice(2));
         CONFIG.set(this, new Map());
-        PARAMETERS.set(this, new Map());
+        PARAMETERS.set(this, []);
         METADATA.set(this, new Map());
         ENRICHERS.set(this, new Map());
         POLICIES.set(this, new Map());
-        CHILDREN.set(this, new Array());
+        CHILDREN.set(this, []);
         MISC_DATA.set(this, new Map());
         MISC_DATA.get(this).set('issues', []);
         this.family = EntityFamily.ENTITY.id;
@@ -492,7 +492,7 @@ export class Entity {
      * @returns {boolean}
      */
     hasParameters() {
-        return PARAMETERS.get(this).size > 0;
+        return PARAMETERS.get(this).length > 0;
     }
 
     /**
@@ -624,8 +624,7 @@ function addConfig(key, value) {
 }
 
 function addParameter(param) {
-    let key = param.name;
-    PARAMETERS.get(this).set(key, param);
+    PARAMETERS.get(this).push(param);
     this.touch();
     return this;
 }
@@ -654,15 +653,37 @@ function removeConfig(key) {
 
 /**
  * Remove an entry from brooklyn.parameters
- * @param {string} key
+ * @param {string} name
  * @returns {Entity}
  */
-function removeParameter(key) {
-    PARAMETERS.get(this).delete(key);
-    this.touch();
+function removeParameter(name) {
+    if (this.hasParameters()) {
+        let paramIndex = PARAMETERS.get(this).findIndex(e => e.name === name);
+        if (paramIndex != -1) {
+            PARAMETERS.get(this).splice(paramIndex, 1);
+            this.touch();
+        }
+    }
     return this;
 }
 
+
+/**
+ * Update an entry in brooklyn.parameters
+ * @param {string} name
+ * @param {object} definition
+ * @returns {Entity}
+ */
+function updateParameter(name, definition) {
+    if (this.hasParameters()) {
+        let paramIndex = PARAMETERS.get(this).findIndex(e => e.name === name);
+        if (paramIndex != -1) {
+            PARAMETERS.get(this)[paramIndex] = definition;
+            this.touch();
+        }
+    }
+    return this;
+}
 /**
  * Remove an entry from the entity metadata
  * @param {string} key
@@ -893,11 +914,11 @@ function resetEntity() {
     ID.set(this, Math.random().toString(36).slice(2));
     this.removeLocation();
     CONFIG.set(this, new Map());
-    PARAMETERS.set(this, new Map());
+    PARAMETERS.set(this, []);
     METADATA.set(this, new Map());
     ENRICHERS.set(this, new Map());
     POLICIES.set(this, new Map());
-    CHILDREN.set(this, new Array());
+    CHILDREN.set(this, []);
     MISC_DATA.set(this, new Map());
     MISC_DATA.get(this).set('issues', []);
     this.family = EntityFamily.ENTITY.id;
@@ -992,10 +1013,10 @@ function setChildrenFromJson(incomingModel) {
     if (!Array.isArray(incomingModel)) {
         throw new Error('Model parse error ... cannot add children as it must be an array')
     }
-    var children = new Array();
+    let children = [];
 
     incomingModel.reduce((self, child)=> {
-        var childEntity = new Entity();
+        let childEntity = new Entity();
         childEntity.setEntityFromJson(child);
         childEntity.parent = self;
         children.push(childEntity);
@@ -1011,7 +1032,7 @@ function setChildrenFromJson(incomingModel) {
  */
 function setConfigFromJson(incomingModel) {
     CONFIG.get(this).clear();
-    var self = this;
+    let self = this;
     Object.keys(incomingModel).forEach((key)=>(self.addConfig(key, incomingModel[key])));
     this.touch();
 }
@@ -1024,8 +1045,9 @@ function setParametersFromJson(incomingModel) {
     if (!Array.isArray(incomingModel)) {
         throw new Error('Model parse error ... cannot add parameters as it must be an array')
     }
-    PARAMETERS.get(this).clear();
-    var self = this;
+    PARAMETERS.set(this, []);
+
+    let self = this;
     incomingModel.map((param)=> {
         self.addParameter(param);
     });
@@ -1035,7 +1057,7 @@ function setParametersFromJson(incomingModel) {
 
 function setMetadataFromJson(incomingModel) {
     METADATA.get(this).clear();
-    var self = this;
+    let self = this;
     Object.keys(incomingModel).forEach((key)=> (self.addMetadata(key, incomingModel[key])));
     this.touch();
 }
@@ -1091,7 +1113,7 @@ function getConfigAsJson() {
 }
 
 function getParametersAsArray() {
-    return Array.from(PARAMETERS.get(this).values());
+    return PARAMETERS.get(this);
 }
 
 /* "cleaning" here means:  Dsl objects are toStringed, to the given depth (or infinite if depth<0);
