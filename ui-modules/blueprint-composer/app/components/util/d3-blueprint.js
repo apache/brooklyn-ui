@@ -836,7 +836,11 @@ export function D3Blueprint(container) {
                 onDragOver(d, `dropzone-self-${d.data._id}`);
             })
             .on('dragleave', (d) => (onDragLeave(d, `dropzone-self-${d.data._id}`)))
-            .on('drop', (d) => onExternalDrop(d, `dropzone-self-${d.data._id}`));
+            .on('drop', (d) => {
+                // Prevent the default to stop Firefox from navigating to the icon for the dropped entity.
+                d3.event.preventDefault();
+                onExternalDrop(d, `dropzone-self-${d.data._id}`)
+            });
     }
 
     function drawSpecNodeGroup() {
