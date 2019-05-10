@@ -294,8 +294,8 @@ export function D3Blueprint(container, $scope) {
         $scope.$root.$broadcast("click-entity");
     }
 
-    function warningFunction(node) {
-        let x = d3.event.pageX;
+    function warningFunctionClick(node) {
+        let x = d3.event.pageX + 5;
         let y = d3.event.pageY;
         let applianceName = node.data.miscData.get('typeName');
         let warningButtonLink = node.data.miscData.get('config')[0].uriOSProfile;
@@ -308,7 +308,22 @@ export function D3Blueprint(container, $scope) {
         } else if (noOsProfileAppliances.includes(applianceName)) {
             warningMessage = "This appliance has no OS profile. Please edit it.";
         }
-        $scope.$root.$broadcast("iconWarningClick", x, y, applianceName, warningMessage, warningButtonMessage, warningButtonLink);
+        $scope.$root.$broadcast("iconWarningClick", x, y, applianceName, warningMessage, node.data.miscData.nodeId, warningButtonMessage, warningButtonLink);
+    }
+
+    function warningFunctionMouseover(node) {
+        let x = d3.event.pageX + 5;
+        let y = d3.event.pageY;
+        let applianceName = node.data.miscData.get('typeName');
+        let warningButtonLink = node.data.miscData.get('config')[0].uriOSProfile;
+        let warningButtonMessage = "Choose OS Profile";
+        let warningMessage;
+        if(interactiveAppliances.includes(applianceName)) {
+            warningMessage = "Requires additional user interactions at startup. Please edit the install profile.";
+        } else if (noOsProfileAppliances.includes(applianceName)) {
+            warningMessage = "This appliance has no OS profile. Please edit it.";
+        }
+        $scope.$root.$broadcast("iconWarningClick", x, y, applianceName, warningMessage, node.data.miscData.nodeId, warningButtonMessage, warningButtonLink);
     }
 
     function removeElementFromList(list, element) {
@@ -661,17 +676,24 @@ export function D3Blueprint(container, $scope) {
         let warning = nodeGroup.append('g')
             .attr('class', 'node-warning')
         nodeData.select('g.node-warning')
-            .each(function(d) {
+            .each(function(d, i) {
                 if((d.data.miscData.get("config") != null && d.data.miscData.get("config")[0] != null && d.data.miscData.get("config")[0].interactiveProfile)) {
+                    d.data.miscData.nodeId= i;
                     addInteractiveAppliance(d.data.miscData.get('typeName'));
                 } else if(d.data.miscData.get("config") != null && d.data.miscData.get("config")[0] != null && d.data.miscData.get("config")[0].noOsProfile) {
+                    d.data.miscData.nodeId= i;
                     addNoOsProfileAppliance(d.data.miscData.get('typeName'));
                 } else if(d.data.miscData.get('typeName') != null){
+                    d.data.miscData.nodeId= i;
                     addCorrectAppliance(d.data.miscData.get('typeName'));
                 }
             })
             .classed('hidden', (d)=>(((d.data.miscData.get("config") != null && d.data.miscData.get("config")[0] != null) && (d.data.miscData.get("config")[0].interactiveProfile || d.data.miscData.get("config")[0].noOsProfile)) ? 0 : 1))
-            .on("click", warningFunction)
+            .on("click", warningFunctionClick)
+            .on("mouseover", warningFunctionMouseover)
+            .on("mouseleave", function(){
+                $scope.$root.$broadcast("closePopoverMouseleave");
+            })
         appendElements(warning, _configHolder.nodes.warning);
 
         // Draw location
