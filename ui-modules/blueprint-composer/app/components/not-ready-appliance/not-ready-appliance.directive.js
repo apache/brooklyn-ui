@@ -42,6 +42,7 @@ export function notReadyApplianceDirective() {
 
 function link($scope) {
     $scope.warningIconClicked = false;
+    $scope.warningIconMouseover = false;
 
     $scope.$on('destroy', () => {
         angular.element(window).off('click', onClickWindow);
@@ -50,20 +51,32 @@ function link($scope) {
     });
 
     let onClickWindow = (event) => {
-        if ($scope.warningIconClicked && !event.target.classList.contains("node-warning")) {
+        if (($scope.warningIconClicked || $scope.warningIconMouseover) && !event.target.classList.contains("node-warning")) {
             closePopover();
         }
     }
 
     let closePopover = (event) => {
-        if($scope.warningIconClicked) {
+        if($scope.warningIconClicked || $scope.warningIconMouseover) {
             $scope.warningIconClicked = false;
+            $scope.warningIconMouseover = false;
             var phase = $scope.$root.$$phase;
             if(phase != '$apply' && phase != '$digest') {
                 $scope.$apply();
             }
         }
     }
+
+    $scope.$on('closePopoverMouseleave', function(){
+        if(!$scope.warningIconClicked && $scope.warningIconMouseover) {
+            $scope.warningIconMouseover = false;
+            var phase = $scope.$root.$$phase;
+            if(phase != '$apply' && phase != '$digest') {
+                $scope.$apply();
+            }
+        }
+    });
+
 
     $scope.$on('scroll-svg', closePopover);
     $scope.$on('dragstart-svg', closePopover);
@@ -73,11 +86,25 @@ function link($scope) {
     angular.element(window).on('scroll', closePopover);
     angular.element(window).on('dragstart', closePopover);
 
-    $scope.$on("iconWarningClick", function(event, x,y, applianceName, warningMessage) {
+    $scope.$on("iconWarningClick", function(event, x,y, applianceName, warningMessage, nodeId) {
+        $scope.nodeId = nodeId;
         $scope.position = {top: y + "px", left: x + "px", position: "fixed"};
         $scope.warningIconClicked = true;
+        $scope.warningIconMouseover = false;
         $scope.warningMessage = warningMessage;
         $scope.applianceName = applianceName;
+    });
+
+    $scope.$on("iconWarningMouseover", function(event, x,y, applianceName, warningMessage, nodeId) {
+        if(!$scope.warningIconMouseover && !$scope.warningIconClicked || ($scope.warningIconClicked
+            && $scope.nodeId != nodeId)) {
+            $scope.position = {top: y + "px", left: x + "px", position: "fixed"};
+            $scope.warningIconMouseover = true;
+            $scope.warningIconClicked = false;
+            $scope.warningMessage = warningMessage;
+            $scope.applianceName = applianceName;
+            $scope.$apply();
+        }
     });
 }
 
