@@ -298,13 +298,17 @@ export function D3Blueprint(container, $scope) {
         let x = d3.event.pageX;
         let y = d3.event.pageY;
         let applianceName = node.data.miscData.get('typeName');
+        let warningButtonLink = node.data.miscData.get('config')[0].uriOSProfile;
+        let warningButtonMessage = "Choose OS Profile";
         let warningMessage;
         if(interactiveAppliances.includes(applianceName)) {
             warningMessage = "Requires additional user interactions at startup. Please edit the install profile.";
+            warningButtonLink = node.data.miscData.get('config')[0].uriInstallProfile;
+            warningButtonMessage = "Configure install profile";
         } else if (noOsProfileAppliances.includes(applianceName)) {
             warningMessage = "This appliance has no OS profile. Please edit it.";
         }
-        $scope.$root.$broadcast("iconWarningClick", x, y, applianceName, warningMessage);
+        $scope.$root.$broadcast("iconWarningClick", x, y, applianceName, warningMessage, warningButtonMessage, warningButtonLink);
     }
 
     function removeElementFromList(list, element) {

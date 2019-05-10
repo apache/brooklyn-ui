@@ -36,8 +36,19 @@ export function notReadyApplianceDirective() {
         templateUrl: function (tElement, tAttrs) {
             return tAttrs.templateUrl || TEMPLATE_URL;
         },
-        link: link
+        link: link,
+        controller: ['$scope','$location','blueprintSaverService',controller]
     };
+}
+
+function controller($scope, $location, blueprintSaverService) {
+    $scope.saveAndRedirect = saveAndRedirect;
+
+    function saveAndRedirect(path) {
+        blueprintSaverService.save(false);
+        $location.path( path );
+    }
+
 }
 
 function link($scope) {
@@ -73,11 +84,13 @@ function link($scope) {
     angular.element(window).on('scroll', closePopover);
     angular.element(window).on('dragstart', closePopover);
 
-    $scope.$on("iconWarningClick", function(event, x,y, applianceName, warningMessage) {
+    $scope.$on("iconWarningClick", function(event, x,y, applianceName, warningMessage, warningButtonLabel, warningButtonLink) {
         $scope.position = {top: y + "px", left: x + "px", position: "fixed"};
         $scope.warningIconClicked = true;
         $scope.warningMessage = warningMessage;
         $scope.applianceName = applianceName;
+        $scope.warningButtonLabel = warningButtonLabel;
+        $scope.warningButtonLink = warningButtonLink;
     });
 }
 
