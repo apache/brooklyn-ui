@@ -298,9 +298,7 @@ export function D3Blueprint(container, $scope) {
         let x = d3.event.pageX + 5;
         let y = d3.event.pageY;
         let applianceName = node.data.miscData.get('typeName');
-        let warningButtonLink;
-        let warningButtonMessage;
-        let warningMessage;
+        let warningButtonLink, warningButtonMessage, warningMessage;
         if(interactiveAppliances.includes(applianceName)) {
             warningMessage = "Requires additional user interactions at startup. Please edit the install profile.";
             warningButtonLink = node.data.miscData.get('config')[0].uriInstallProfile;
@@ -317,9 +315,7 @@ export function D3Blueprint(container, $scope) {
         let x = d3.event.pageX + 5;
         let y = d3.event.pageY;
         let applianceName = node.data.miscData.get('typeName');
-        let warningButtonLink = node.data.miscData.get('config')[0].uriOSProfile;
-        let warningButtonMessage;
-        let warningMessage;
+        let warningButtonLink, warningButtonMessage, warningMessage;
         if(interactiveAppliances.includes(applianceName)) {
             warningMessage = "Requires additional user interactions at startup. Please edit the install profile.";
             warningButtonLink = node.data.miscData.get('config')[0].uriInstallProfile;
