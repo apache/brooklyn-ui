@@ -46,7 +46,7 @@ function controller($scope, $location, blueprintSaverService) {
 
     function saveAndRedirect(path) {
         blueprintSaverService.save(false);
-        $location.path( path );
+        $location.path(path);
     }
 
 }
