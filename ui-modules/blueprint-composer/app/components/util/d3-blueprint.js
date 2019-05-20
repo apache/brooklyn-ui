@@ -298,26 +298,34 @@ export function D3Blueprint(container, $scope) {
         let x = d3.event.pageX + 5;
         let y = d3.event.pageY;
         let applianceName = node.data.miscData.get('typeName');
-        let warningMessage;
+        let warningButtonLink, warningButtonMessage, warningMessage;
         if(interactiveAppliances.includes(applianceName)) {
             warningMessage = "Requires additional user interactions at startup. Please edit the install profile.";
+            warningButtonLink = node.data.miscData.get('config')[0].uriInstallProfile;
+            warningButtonMessage = "Configure install profile";
         } else if (noOsProfileAppliances.includes(applianceName)) {
+            warningButtonMessage = "Choose OS Profile";
+            warningButtonLink = node.data.miscData.get('config')[0].uriOSProfile;
             warningMessage = "This appliance has no OS profile. Please edit it.";
         }
-        $scope.$root.$broadcast("iconWarningClick", x, y, applianceName, warningMessage, node.data.miscData.nodeId);
+        $scope.$root.$broadcast("iconWarningClick", x, y, applianceName, warningMessage, node.data.miscData.nodeId, warningButtonMessage, warningButtonLink);
     }
 
     function warningFunctionMouseover(node) {
         let x = d3.event.pageX + 5;
         let y = d3.event.pageY;
         let applianceName = node.data.miscData.get('typeName');
-        let warningMessage;
+        let warningButtonLink, warningButtonMessage, warningMessage;
         if(interactiveAppliances.includes(applianceName)) {
             warningMessage = "Requires additional user interactions at startup. Please edit the install profile.";
+            warningButtonLink = node.data.miscData.get('config')[0].uriInstallProfile;
+            warningButtonMessage = "Configure install profile";
         } else if (noOsProfileAppliances.includes(applianceName)) {
+            warningButtonMessage = "Choose OS Profile";
+            warningButtonLink = node.data.miscData.get('config')[0].uriOSProfile;
             warningMessage = "This appliance has no OS profile. Please edit it.";
         }
-        $scope.$root.$broadcast("iconWarningMouseover", x, y, applianceName, warningMessage, node.data.miscData.nodeId);
+        $scope.$root.$broadcast("iconWarningMouseover", x, y, applianceName, warningMessage, node.data.miscData.nodeId, warningButtonMessage, warningButtonLink);
     }
 
     function removeElementFromList(list, element) {
