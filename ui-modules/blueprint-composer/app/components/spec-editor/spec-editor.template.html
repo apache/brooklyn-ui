@@ -39,7 +39,6 @@
                         <button type="button" ng-if="model.hasType() && !allowOpenInCatalog" ng-click="removeModel()" class="btn btn-link" title="Delete">
                             <span class="fa fa-trash"></span>
                         </button>
-                        <br-svg type="close" ng-if="!specEditor.hasParentEntity" ng-click="$root.selectedSection = undefined"></br-svg>
                     </div>
                 </div>
 
@@ -451,16 +450,7 @@
 
         <script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-others.html" defer-to-preexisting-id="true"></script>
     </div>
-    <div class="toolbar" ng-if="specEditor.needToolbar">
-        <div class="list-group">
-            <a href="" class="list-group-item ng-scope" title="{{section.type.displayName}} configuration"
-               ng-repeat="section in specEditor.sections track by $index"
-               ng-class="{'active': $root.selectedSection === section}"
-               ng-click="$root.selectedSection = section">
-                <i class="fa fa-fw" ng-class="section.icon"></i>
-            </a>
-        </div>
-    </div>
+    <div class="toolbar" ng-if="specEditor.needToolbar"/>
 </div>
 
 <!-- CONFIG INFO TEMPLATE :: START -->
