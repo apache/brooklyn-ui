@@ -111,10 +111,14 @@ function lint(validator, baseSchema, text, options, cm) {
             }
             let end = err.mark.position - start;
             let errorText = err.mark.buffer.substr(start, end);
+            let errorIndex = 0;
 
+            if (typeof cm.getLine(err.mark.line) !== 'undefined') {
+                errorIndex = cm.getLine(err.mark.line).indexOf(errorText);
+            }
             issues.push({
-                from: CodeMirror.Pos(err.mark.line, cm.getLine(err.mark.line).indexOf(errorText)),
-                to: CodeMirror.Pos(err.mark.line, cm.getLine(err.mark.line).indexOf(errorText) + (errorText.length > 0 ? errorText.length : 1)),
+                from: CodeMirror.Pos(err.mark.line, errorIndex),
+                to: CodeMirror.Pos(err.mark.line, errorIndex + (errorText.length > 0 ? errorText.length : 1)),
                 message: err.reason
             });
         } else {
