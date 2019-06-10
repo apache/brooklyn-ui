@@ -37,16 +37,18 @@ const PALETTE_VIEW_ORDERS = {
     };
 
 const PALETTE_VIEW_MODES = {
-        tiny: { name: "Tiny", classes: "col-xs-2 item-compact", itemsPerRow: 6, rowHeightPx: 75, hideName: true },
-        compact: { name: "Compact", classes: "col-xs-3", itemsPerRow: 4 },
-        normal: { name: "Normal", classes: "col-xs-4", itemsPerRow: 3 },
-        large: { name: "Large", classes: "col-xs-6", itemsPerRow: 2 },
+        tiny: { name: "Tiny", classes: "col-xs-3 item-compact", itemsPerRow: 4, rowHeightPx: 75, hideName: true },
+        compact: { name: "Compact", classes: "col-xs-4", itemsPerRow: 3 },
+        normal: { name: "Normal", classes: "col-xs-6", itemsPerRow: 2 },
+        large: { name: "Large", classes: "col-xs-12", itemsPerRow: 1 },
         list: { name: "List", classes: "col-xs-12 item-full-width", itemsPerRow: 1 },
         compactList: { name: "Compact list", classes: "col-xs-12 item-compact-list", itemsPerRow: 1, rowHeightPx: 30 },
     };
 
 // fields in either bundle or type record:
 const FIELDS_TO_SEARCH = ['displayName', 'name', 'symbolicName', 'type', 'version', 'containingBundle', 'description', 'displayTags', 'tags', 'supertypes'];
+
+const LOCAL_STORAGE_VIEW_MODE_KEY = 'viewMode';
 
 angular.module(MODULE_NAME, [])
     .directive('catalogSelector', catalogSelectorDirective)
@@ -99,7 +101,36 @@ export function catalogSelectorDirective() {
         $scope.viewOrders = PALETTE_VIEW_ORDERS;
 
         if (!$scope.state) $scope.state = {};
-        if (!$scope.state.viewMode) $scope.state.viewMode = PALETTE_VIEW_MODES.normal;
+
+        if (!$scope.state.viewMode) {
+            $scope.state.viewMode = loadViewModeFromLocalStorage() || PALETTE_VIEW_MODES.normal;
+        }
+        $scope.setViewMode = function (viewMode) {
+            $scope.state.viewMode = viewMode;
+            saveViewModeInLocalStorage(viewMode);
+        }
+
+        function saveViewModeInLocalStorage(viewMode) {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_VIEW_MODE_KEY, viewMode.name);
+            } catch (ex) {
+                $log.error('Cannot save viewMode preference: ' + ex.message);
+            }
+        }
+        function loadViewModeFromLocalStorage(defaultViewMode) {
+            let viewMode = null;
+            try {
+                if (localStorage && localStorage.getItem(LOCAL_STORAGE_VIEW_MODE_KEY) !== null) {
+                    viewMode = loadViewModeByName(localStorage.getItem(LOCAL_STORAGE_VIEW_MODE_KEY));
+                }
+            } catch (ex) {
+                $log.error('Cannot load viewMode preference: ' + ex.message);
+            }
+            return viewMode;
+        }
+        function loadViewModeByName(viewModeName) {
+            return Object.values(PALETTE_VIEW_MODES).find(vm => vm.name === viewModeName);
+        }
 
         $scope.pagination = {
             page: 1,
@@ -306,10 +337,6 @@ export function catalogSelectorDirective() {
 
                 repaginate($scope, $element);
             } );
-        };
-        $scope.togglePaletteControls = () => {
-            $scope.showPaletteControls = !$scope.showPaletteControls;
-            $timeout( () => repaginate($scope, $element) );
         };
         $scope.toggleShowAllFilters = () => {
             $scope.filterSettings.showAllFilters = !$scope.filterSettings.showAllFilters;
