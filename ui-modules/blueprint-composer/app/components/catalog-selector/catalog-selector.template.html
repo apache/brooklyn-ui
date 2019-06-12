@@ -34,63 +34,20 @@
       <div class="catalog-palette-header">
         <div class="form-group" ng-class="{'has-error': isReserved()}">
             <div class="input-group input-group-sm">
-                <span class="input-group-btn" keyboard-nav>
-                    <button id="palette-controls-button" type="button" class="btn btn-default dropdown-toggle" ng-class="{ 'btn-primary': showPaletteControls }" id="palette-controls" aria-haspopup="true" aria-expanded="false" 
-                            ng-click="togglePaletteControls()">
-                        <i class="fa fa-cog"></i>
-                    </button>
-                </span>
                 <input ng-model="search" type="text" placeholder="{{getPlaceHolder()}}" class="form-control" auto-focus />
-                <span class="input-group-addon">
-                    <strong>{{searchedItems.length === 0 && search && allowFreeForm() ? 1 : searchedItems.length}}</strong>
-                    {{(searchedItems.length === 0 && search && allowFreeForm() ? 1 : searchedItems.length) == 1 ? 'item' : 'items'}}
-                </span>
-            </div>
-            <div class="pane-nav-row" id="palette-controls" ng-if="showPaletteControls" aria-labelledby="palette-controls-button">
-
-             <div class="filters" ng-class="{ 'multiline': filterSettings.showAllFilters }" ng-init="onFiltersShown()">
-             
-              <div class="spacer" ng-repeat-start="filter in filters" ng-if="filter.spacerBefore"></div>
-              <div class="nav-row-item" ng-repeat-end ng-click="filter.enabled = !filter.enabled">
-                <span title="{{ filter.hoverTest }}" class="label" ng-class="{'label-primary': filter.enabled, 'label-default': !filter.enabled }">
-                    <i class="fa fa-{{ filter.icon }}" ng-if="filter.icon"></i>
-                    <span ng-if="filter.label">{{ filter.label }}</span>
-                </span>
-              </div>
-             </div>
-
-              <div class="nav-row-item" ng-if="filterSettings.filtersMultilineAvailable" title="More filters available"
-                    ng-click="toggleShowAllFilters()" >
-                <span class="label" ng-class="{'label-primary': filterSettings.showAllFilters, 'label-default': !filterSettings.showAllFilters }">
-                    ...
-                </span>
-              </div>
-              
-              <div class="spacer"></div>
-                
-              <span uib-dropdown>
-                <a href id="palette-sort" uib-dropdown-toggle aria-haspopup="true" aria-expanded="false" >
-                  <div class="nav-row-item tool" title="Sort">
-                    <i class="fa fa-sort"></i></div>
-                </a>
-                <ul class="dropdown-menu right-align-icon" role="menu" uib-dropdown-menu aria-labelledby="palette-sort">
-                        <li role="menuitem" ng-repeat="order in state.currentOrderValues track by $index" class="layer">
-                            <a ng-click="sortBy(order)"><i class="fa fa-fw fa-circle"></i> {{ order.label }}</a>
-                        </li>
-                </ul>
-              </span>
-              
-              <span uib-dropdown>
-                <a href id="palette-view-mode" uib-dropdown-toggle aria-haspopup="true" aria-expanded="false" >
-                  <div class="nav-row-item tool" title="Display mode">
-                    <i class="fa fa-th"></i></div>
-                </a>
-                <ul class="dropdown-menu right-align-icon" role="menu" uib-dropdown-menu aria-labelledby="palette-view-mode">
+                <span class="input-group-btn" keyboard-nav uib-dropdown>
+                    <button id="palette-view-mode" type="button" class="btn btn-primary dropdown-toggle"
+                            aria-haspopup="true" aria-expanded="false"
+                            ng-click="togglePaletteControls()" title="Display mode" uib-dropdown-toggle>
+                        <i class="fa fa-th"></i>
+                    </button>
+                    <ul class="dropdown-menu right-align-icon-dropdown" role="menu" uib-dropdown-menu aria-labelledby="palette-view-mode">
                         <li role="menuitem" ng-repeat="view in viewModes track by $index" ng-class="{'active': state.viewMode === view}" class="layer">
-                            <a ng-click="state.viewMode = view"><i class="fa fa-fw fa-circle"></i> {{view.name}}</a>
+                            <a ng-click="setViewMode(view)"><i class="fa fa-fw fa-circle"></i> {{view.name}}</a>
                         </li>
-                </ul>
-              </span>
+                    </ul>
+                </span>
+
             </div>
             <ng-include src="templateUrls.subhead"/>
         </div>
