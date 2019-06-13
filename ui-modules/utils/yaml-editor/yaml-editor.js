@@ -180,7 +180,7 @@ export function yamlEditorDirective($rootScope, brSnackbar) {
             return textLine.text.trim()[0] == '-';
         }
 
-        function getIndentLine(line) {
+        function getLineIndent(line) {
             if (line.handle) {
                 return line.handle.stateAfter.keyCol;
             } else {
@@ -211,7 +211,7 @@ export function yamlEditorDirective($rootScope, brSnackbar) {
         function findLineNumberToFold(startLine, indentLvlMinimal, foldBlock, indexFoldBlock) {
             let entryInList = -1;
             let i = startLine;
-            while (i < $scope.cm.lineCount() && getIndentLine($scope.cm.lineInfo(i)) > indentLvlMinimal) {
+            while (i < $scope.cm.lineCount() && getLineIndent($scope.cm.lineInfo(i)) > indentLvlMinimal) {
                 if (Number.isInteger(foldBlock[indexFoldBlock])) {
                     if (isList($scope.cm.lineInfo(i))) {
                         entryInList++;
@@ -247,12 +247,12 @@ export function yamlEditorDirective($rootScope, brSnackbar) {
         * Recursive function
         */
         function findParents(line, lineNumber) {
-            let currentIndent = getIndentLine(line);
+            let currentIndent = getLineIndent(line);
             if (currentIndent > 0) {
                 let i = lineNumber;
                 let indexArray = -1;
-                while (currentIndent <= getIndentLine(line.parent.lines[i])) {
-                    if (currentIndent == getIndentLine(line.parent.lines[i]) && isList(line.parent.lines[i])) {
+                while (currentIndent <= getLineIndent(line.parent.lines[i])) {
+                    if (currentIndent == getLineIndent(line.parent.lines[i]) && isList(line.parent.lines[i])) {
                         indexArray++;   
                     }
                     i--;
