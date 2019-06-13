@@ -150,7 +150,6 @@ export function yamlEditorDirective($rootScope, brSnackbar) {
                 widget: '{ ... }'
             }
         });
-        window.cm=$scope.cm //TODO remove me
 
         function getDataFromLocalStorage(){
             if ($scope.CODE_FOLDER_STORAGE_NAME) {
@@ -166,91 +165,125 @@ export function yamlEditorDirective($rootScope, brSnackbar) {
             }
         }
 
-        function extractKey(line) {
-            line = line.split(':')[0].trim()
+        /*
+        * Extract key from yaml text, ignore list marker
+        */
+        function extractKey(textLine) {
+            let line = textLine.split(':')[0].trim();
             if (line[0] == '-') {
-                line = line.substr(1).trim()
+                line = line.substr(1).trim();
             }
-            return line
+            return line;
+        }
+
+        function isList(textLine) {
+            return textLine.text.trim()[0] == '-';
+        }
+
+        function getIndentLine(line) {
+            if (line.handle) {
+                return line.handle.stateAfter.keyCol;
+            } else {
+                return line.stateAfter.keyCol;
+            }
+        }
+
+        /*
+        * Private recursion function for findLineNumberToFold
+        */
+        function findLineNumberToFoldStep(currentLine, foldBlock, indexFoldBlock) {
+            if (indexFoldBlock+1 == foldBlock.length) {
+                return currentLine;
+            } else {
+                return findLineNumberToFold(currentLine+1, $scope.cm.lineInfo(currentLine).handle.stateAfter.keyCol, foldBlock, indexFoldBlock+1);
+            }
         }
         
-        function findLine(startLine, indentLvlMinimal, foldBlock, indexFoldBlock) {
-            let entryInArray = -1;
+        /*
+        * Get lineNumber from list of key
+        * Recursive function: search line with key describe in foldBlock (the first element)
+        * If we find, call this function with next element of foldBlock
+        * @startLine: line of begining block to find key
+        * @indentLvlMinimal: the minimal indent level of the block
+        * @foldBlock: hierarchy of key to find
+        * @indexFoldBlock: index in foldBlock
+        */
+        function findLineNumberToFold(startLine, indentLvlMinimal, foldBlock, indexFoldBlock) {
+            let entryInList = -1;
             let i = startLine;
-            while (i < $scope.cm.lineCount() && $scope.cm.lineInfo(i).handle.stateAfter.keyCol > indentLvlMinimal) {
+            while (i < $scope.cm.lineCount() && getIndentLine($scope.cm.lineInfo(i)) > indentLvlMinimal) {
                 if (Number.isInteger(foldBlock[indexFoldBlock])) {
-                    if ($scope.cm.lineInfo(i).text.trim()[0] == '-') {
-                        entryInArray++;
+                    if (isList($scope.cm.lineInfo(i))) {
+                        entryInList++;
                     }
-                    if (entryInArray == foldBlock[indexFoldBlock]) {
-                        if (indexFoldBlock+1 == foldBlock.length) {
-                            return i;
-                        } else {
-                            return findLine(i, $scope.cm.lineInfo(i).handle.stateAfter.keyCol-1, foldBlock, indexFoldBlock+1)
-                        }
+                    if (entryInList == foldBlock[indexFoldBlock]) {
+                        return findLineNumberToFoldStep(i, foldBlock, indexFoldBlock);
                     }
                 } else {
                     if (extractKey($scope.cm.lineInfo(i).text) == extractKey(foldBlock[indexFoldBlock])) {
-                        if (indexFoldBlock+1 == foldBlock.length) {
-                            return i;
-                        } else {
-                            return findLine(i+1, $scope.cm.lineInfo(i).handle.stateAfter.keyCol, foldBlock, indexFoldBlock+1)
-                        }
+                        return findLineNumberToFoldStep(i, foldBlock, indexFoldBlock);
                     }
                 }
                 i++;
             }
-            return -1
+            return -1;
         }
 
         function fold(foldBlock) {
-            let line = findLine(0, -1, foldBlock, 0)
+            let line = findLineNumberToFold(0, -1, foldBlock, 0);
             if (line != -1) {
-                $scope.cm.foldCode(line, {}, 'fold')
+                $scope.cm.foldCode(line, {}, 'fold');
             }
         }
 
         function foldAll(foldArray) {
-            console.log(foldArray)
             if (foldArray) {
-                foldArray.forEach((value) => fold(value))
+                foldArray.forEach((value) => fold(value));
             }
         }
-        foldAll(getDataFromLocalStorage())
 
+        /*
+        * Create the list of parent keys from specific line
+        * Recursive function
+        */
         function findParents(line, lineNumber) {
-            let currentIndent = line.stateAfter.keyCol
+            let currentIndent = getIndentLine(line);
             if (currentIndent > 0) {
-                let i = lineNumber
-                let indexArray = -1
-                while (currentIndent <= line.parent.lines[i].stateAfter.keyCol) {
-                    if (currentIndent == line.parent.lines[i].stateAfter.keyCol && line.parent.lines[i].text.trim()[0] == '-') {
+                let i = lineNumber;
+                let indexArray = -1;
+                while (currentIndent <= getIndentLine(line.parent.lines[i])) {
+                    if (currentIndent == getIndentLine(line.parent.lines[i]) && isList(line.parent.lines[i])) {
                         indexArray++;   
                     }
-                    i--
+                    i--;
                 }
-                let current
-                if (line.text.trim()[0] == '-') {
-                    current = indexArray
+                let current;
+                if (isList(line)) {
+                    current = indexArray;
                 } else {
-                    current = extractKey(line.text)
+                    current = extractKey(line.text);
                 }
-                let parents = findParents(line.parent.lines[i], i)
-                parents.push(current)
-                return parents
+                let parents = findParents(line.parent.lines[i], i);
+                parents.push(current);
+                return parents;
             } else {
-                return [extractKey(line.text)]
+                return [extractKey(line.text)];
             }
         }
 
+        /*
+        * Find all folded block
+        * Warning : Based, on part, on css class 'CodeMirror-foldgutter-folded'
+        */
         function findFold() {
-            let value = []
-            let i = 0
+            let value = [];
+            let i = 0;
             while (i < $scope.cm.lineCount()) {
-                let line = $scope.cm.lineInfo(i)
+                let line = $scope.cm.lineInfo(i);
                 if ($scope.cm.isFolded(line) && line.gutterMarkers && line.gutterMarkers['CodeMirror-foldgutter'] 
                     && line.gutterMarkers['CodeMirror-foldgutter'].classList.contains('CodeMirror-foldgutter-folded')) {
-                    value.push(findParents(line.handle.parent.lines[line.line], line.line))
+                    let parents = findParents(line.handle.parent.lines[i], i);
+                    value.push(parents);
                 }
                 i++;
             }
@@ -258,8 +291,10 @@ export function yamlEditorDirective($rootScope, brSnackbar) {
         }
 
         function onFoldChanged() {
-            setDataToLocalStorage(findFold())
+            setDataToLocalStorage(findFold());
         }
+
+        foldAll(getDataFromLocalStorage());
         $scope.cm.on('fold', onFoldChanged);
         $scope.cm.on('unfold', onFoldChanged);
 
