@@ -34,6 +34,10 @@
     <designer on-selection-change="vm.onCanvasSelection"></designer>
   </div>
 
+  <div class="center-button left" ng-class="{withleftpanel: vm.selectedSection != null}">
+    <div ng-click="vm.recenter()"></div>
+  </div>
+
   <div class="pane pane-palette" ng-if="vm.selectedSection">
     <div ng-repeat="section in vm.sections track by $index"
          class="palette-full-height-wrapper"

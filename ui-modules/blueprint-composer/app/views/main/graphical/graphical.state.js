@@ -28,14 +28,14 @@ export const graphicalState = {
     templateProvider: function(composerOverrides) {
         return composerOverrides.paletteGraphicalStateTemplate || template;
     },
-    controller: ['$scope', '$state', '$filter', 'blueprintService', 'paletteService', graphicalController],
+    controller: ['$rootScope', '$scope', '$state', '$filter', 'blueprintService', 'paletteService', graphicalController],
     controllerAs: 'vm',
     data: {
         label: 'Graphical Designer'
     }
 };
 
-function graphicalController($scope, $state, $filter, blueprintService, paletteService) {
+function graphicalController($rootScope, $scope, $state, $filter, blueprintService, paletteService) {
     this.EntityFamily = EntityFamily;
 
     $scope.$root.selectedSection = paletteService.getSections().entities;
@@ -79,5 +79,18 @@ function graphicalController($scope, $state, $filter, blueprintService, paletteS
             blueprintService.populateLocationFromApi(targetEntity, selectedType);
             $state.go(graphicalEditEntityState, {entityId: targetEntity._id});
         }
+    };
+
+    this.recenter = () => {
+        let left = 0;
+        let right = 0;
+        if (document.getElementsByClassName('toolbar-left').length === 1) 
+            left += document.getElementsByClassName('toolbar-left')[0].scrollWidth;
+        if (document.getElementsByClassName('pane-palette').length === 1) 
+            left += document.getElementsByClassName('pane-palette')[0].scrollWidth;
+        if (document.getElementsByClassName('pane-configuration').length === 1) 
+            right += document.getElementsByClassName('pane-configuration')[0].scrollWidth;
+
+        $rootScope.$broadcast('d3.center', left, right);
     };
 }

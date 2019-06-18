@@ -1018,10 +1018,17 @@ export function D3Blueprint(container, $scope) {
     /**
      * Center the graph in the view, considering palette
      */
-    function center() {
-        let newX = window.innerWidth/2 + (window.innerWidth > 660 ? 220 : 0);
-        let newY = _configHolder.nodes.child.circle.r + (_configHolder.nodes.child.circle.r * 2);
-        zoom.translateBy(_svg, newX, newY);
+    function center(left = 0, right = 0) {
+        let scaleHeight = _svg.node().getBoundingClientRect().height / _zoomGroup.node().getBBox().height;
+        let scaleWidth = (_svg.node().getBoundingClientRect().width - left - right) / _zoomGroup.node().getBBox().width;
+        let scale = Math.min(scaleHeight, scaleWidth) > 1 ? 1 : Math.min(scaleHeight, scaleWidth);
+        zoom.scaleTo(_svg,  Math.min(scaleHeight, scaleWidth));
+
+        let space = 150*scale;
+        let pixelToTranslationFactor = 0.7;
+        let top = (_svg.node().getBoundingClientRect().height-space)/2;
+        zoom.translateTo(_svg, (right - left) * pixelToTranslationFactor, top/scale);
+
         return this;
     }
 

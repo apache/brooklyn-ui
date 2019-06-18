@@ -58,6 +58,38 @@
     box-shadow: -5px 0 10px 5px @navbar-default-border;
   }
   
+  .center-button {
+    position: absolute;
+    bottom: 8px;
+    z-index: 1;
+    color: transparent;
+    background-color: transparent;
+    cursor: pointer;
+
+    div {
+      background: transparent;
+      border: none;
+      
+      &:after{
+        content: '\f05b';
+        font-family: FontAwesome;
+        font-size: x-large;
+        color: @gray-light;
+        transition: color 0.3s ease;
+
+      }
+    }
+
+  }
+
+  .left {
+    left: 60px;
+  }
+
+  .withleftpanel {
+    left: 330px;
+  }
+
   #palette-controls-button {
     margin-right: -2px;  // not sure why the default -1px doesn't work to merge the borders?
   }

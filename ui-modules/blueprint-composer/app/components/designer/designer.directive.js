@@ -73,6 +73,10 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
             });
         });
 
+        $scope.$on('d3.center', (event, left, right) => {
+            blueprintGraph.center(left, right);
+        });
+
         $scope.$on('d3.remove', (event, entity)=> {
             $log.debug(TAG + `Delete ${entity.family.displayName} ${entity._id}`, entity);
 
