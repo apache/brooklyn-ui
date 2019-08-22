@@ -97,6 +97,18 @@ cd /path/to/brooklyn_ui
 find ./ -type d -name "node_modules" -exec rm -rf {} \+
 ```
 
+### Errors with libpng
+
+On many systems the `imagemin` dependency of JS shows errors during install, often due to `libpng` missing
+or the `jpeg` compilation failing (note this one can be a non-fatal error at the time, but the build will then fail).
+
+Consult the list above of dependencies to install, and make sure you wipe the `node_modules` dirs.
+
+If it still fails, try installing `nvm` (curl-to-bash`) then `nvm ls-remote` and `nvm ls-install v12.9.0` (or other latest).
+Then retry the `mvn` build; even though `mvn` uses a different version of `node` and `npm`, simply installing the latest
+node version sometimes sorts out errors.
+
+
 ### Docker Build Failure (Dependencies for Wrong Architecture)
 
 When the build is run locally, it will download executables such as `phantomjs`, for the
