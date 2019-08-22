@@ -45,7 +45,8 @@ You will need the following binaries installed first:
   * `libpng-dev` for Debian/Ubuntu (also requires `libpng12`)
   * `libpng` for MacOS
 
-_Optional, only if the `libpng` cannot be found_
+_Optional, if the `libpng` cannot be found when building (package names may vary; often these are not required):_
+* `libpng` (or `libpng-devel` on CentOS, `libpng-dev` on Debian/Ubuntu, `libpng12` sometimes)
 * _`automake (opt)`_    
 * _`autoconf`_
 * _`libtool`_
@@ -53,6 +54,10 @@ _Optional, only if the `libpng` cannot be found_
 * _`pkgconfig`_
 * _`nasm`_
 * _`gcc`_
+* _`build-essential`_
+* `bzip2`
+* _`pngquant`_
+* _`libfontconfig1-dev`_
 
 With this, simply run:
 
@@ -96,6 +101,18 @@ The fix is to delete the auto-generated `node_modules` directories:
 cd /path/to/brooklyn_ui
 find ./ -type d -name "node_modules" -exec rm -rf {} \+
 ```
+
+### Errors with libpng
+
+On many systems the `imagemin` dependency of JS shows errors during install, often due to `libpng` missing
+or the `jpeg` compilation failing (note this one can be a non-fatal error at the time, but the build will then fail).
+
+Consult the list above of dependencies to install, and make sure you wipe the `node_modules` dirs.
+
+If it still fails, try installing `nvm` (curl-to-bash) then `nvm ls-remote` and `nvm install v12.9.0` (or other latest).
+Then retry the `mvn` build; even though `mvn` uses a different version of `node` and `npm`, simply installing the latest
+node version sometimes sorts out errors.
+
 
 ### Docker Build Failure (Dependencies for Wrong Architecture)
 
