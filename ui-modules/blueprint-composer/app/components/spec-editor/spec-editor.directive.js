@@ -836,10 +836,6 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             let modelConfig = scope.model.config;
             let result = {};
             for (let [key, value] of modelConfig) {
-                if (blueprintService.isReservedKey(key)) {
-                    $log.warn("skipping reserved word used as config key", key);
-                    continue; // skip
-                }
                 result[key] = getLocalConfigValueFromModelValue(key, value);
             }
             scope.config = result;
