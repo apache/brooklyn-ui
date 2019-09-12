@@ -45,7 +45,7 @@ angular.module('app', [ngAnimate, ngCookies, ngResource, brCore, brServerStatus,
 
 
 function applicationConfig($logProvider, $compileProvider) {
-    $logProvider.debugEnabled(IS_PRODUCTION);
+    $logProvider.debugEnabled(!IS_PRODUCTION);
     $compileProvider.debugInfoEnabled(!IS_PRODUCTION);
 }
 

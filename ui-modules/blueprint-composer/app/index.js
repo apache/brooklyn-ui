@@ -71,6 +71,8 @@ import stackViewer from 'angular-java-stack-viewer';
 import {EntityFamily} from "./components/util/model/entity.model";
 import scriptTagDecorator from 'brooklyn-ui-utils/script-tag-non-overwrite/script-tag-non-overwrite';
 
+const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
+
 angular.module('app', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 'ui.router.state.events', brCore,
     brServerStatus, brAutoFocus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement,
     brYamlEditor, brUtils, brSpecEditor, brooklynCatalogSaver, brooklynApi, bottomSheet, stackViewer, brDragndrop,
@@ -79,14 +81,15 @@ angular.module('app', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 
     dslService, paletteDragAndDropService, recentlyUsedService, scriptTagDecorator])
     .provider('composerOverrides', composerOverridesProvider)
     .filter('dslParamLabel', ['$filter', dslParamLabelFilter])
-    .config(['$urlRouterProvider', '$stateProvider', '$logProvider', applicationConfig])
+    .config(['$urlRouterProvider', '$stateProvider', '$logProvider', '$compileProvider', applicationConfig])
     .config(['actionServiceProvider', actionConfig])
     .config(['paletteServiceProvider', paletteConfig])
     .run(['$rootScope', '$state', 'brSnackbar', errorHandler])
     .run(['$http', httpConfig]);
 
-function applicationConfig($urlRouterProvider, $stateProvider, $logProvider) {
-    $logProvider.debugEnabled(false);
+function applicationConfig($urlRouterProvider, $stateProvider, $logProvider, $compileProvider) {
+    $logProvider.debugEnabled(!IS_PRODUCTION);
+    $compileProvider.debugInfoEnabled(!IS_PRODUCTION);
     $urlRouterProvider
         .otherwise(graphicalState.url);
     $stateProvider

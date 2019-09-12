@@ -30,12 +30,15 @@ import brServerStatus from 'brooklyn-ui-utils/server-status/server-status';
 
 import mainState from './views/main/main.controller';
 
+const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
+
 angular.module('app', [ngAnimate, ngCookies, uiRouter, brCore, brInterstitialSpinner, brServerStatus, brooklynModuleLinks, brooklynUserManagement, mainState])
-    .config(['$urlRouterProvider', '$logProvider', applicationConfig])
+    .config(['$urlRouterProvider', '$logProvider', '$compileProvider', applicationConfig])
     .run(['$http', httpConfig]);
 
-function applicationConfig($urlRouterProvider, $logProvider) {
-    $logProvider.debugEnabled(false);
+function applicationConfig($urlRouterProvider, $logProvider, $compileProvider) {
+    $logProvider.debugEnabled(!IS_PRODUCTION);
+    $compileProvider.debugInfoEnabled(!IS_PRODUCTION);
     $urlRouterProvider.otherwise('/');
 }
 

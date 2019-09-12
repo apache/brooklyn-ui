@@ -60,15 +60,18 @@ import {streamState} from "views/main/inspect/activities/detail/stream/stream.co
 import {catalogApiProvider} from "brooklyn-ui-utils/providers/catalog-api.provider";
 import {apiObserverInterceptorProvider} from "brooklyn-ui-utils/providers/api-observer-interceptor.provider";
 
+const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
+
 angular.module('app', [ngResource, ngCookies, ngSanitize, uiRouter, brCore, brUtilsGeneral, brServerStatus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brSensitiveField, brooklynUserManagement, brYamlEditor, brWebNotifications, brExpandablePanel, 'xeditable', apiProvider, entityTree, loadingState, configSensorTable, entityEffector, entityPolicy, breadcrumbNavigation, taskList, taskSunburst, stream, adjunctsList, managementDetail])
     .provider('catalogApi', catalogApiProvider)
     .provider('apiObserverInterceptor', apiObserverInterceptorProvider)
     .filter('specToLabel', specToLabelFilter)
-    .config(['$urlRouterProvider', '$stateProvider', '$logProvider', '$httpProvider', 'apiObserverInterceptorProvider', applicationConfig])
+    .config(['$urlRouterProvider', '$stateProvider', '$logProvider', '$compileProvider', '$httpProvider', 'apiObserverInterceptorProvider', applicationConfig])
     .run(['editableOptions', 'editableThemes', applicationInitialization]);
 
-function applicationConfig($urlRouterProvider, $stateProvider, $logProvider, $httpProvider, apiObserverInterceptorProvider) {
-    $logProvider.debugEnabled(false);
+function applicationConfig($urlRouterProvider, $stateProvider, $logProvider, $compileProvider, $httpProvider, apiObserverInterceptorProvider) {
+    $logProvider.debugEnabled(!IS_PRODUCTION);
+    $compileProvider.debugInfoEnabled(!IS_PRODUCTION);
     $urlRouterProvider
         .otherwise('/');
     $stateProvider

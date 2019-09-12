@@ -35,11 +35,12 @@ import mainDeployState from 'views/main/deploy/deploy.controller';
 import aboutState from 'views/about/about.controller.js';
 
 angular.module('app', [ngAnimate, ngCookies, uiRouter, brCore, brServerStatus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, brooklynQuickLaunch, mainState, mainDeployState, aboutState])
-    .config(['$urlRouterProvider', '$logProvider', applicationConfig])
+    .config(['$urlRouterProvider', '$logProvider', '$compileProvider', applicationConfig])
     .run(['$http', httpConfig]);
 
-function applicationConfig($urlRouterProvider, $logProvider) {
-    $logProvider.debugEnabled(false);
+function applicationConfig($urlRouterProvider, $logProvider, $compileProvider) {
+    $logProvider.debugEnabled(!IS_PRODUCTION);
+    $compileProvider.debugInfoEnabled(!IS_PRODUCTION);
     $urlRouterProvider.otherwise('/');
 }
 
