@@ -105,7 +105,6 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
 
     vm.saveToCatalogConfig = {};
     if (edit) {
-        console.log("edit", edit);
         vm.saveToCatalogConfig = Object.assign(vm.saveToCatalogConfig, {
             version: edit.type.version,
             template: edit.type.template || false,
