@@ -224,7 +224,6 @@ if (ENV === 'development') {
             mangle: false,
             compress: {
                 dead_code: true,
-                drop_console: true,
                 unused: true,
                 warnings: false
             }
