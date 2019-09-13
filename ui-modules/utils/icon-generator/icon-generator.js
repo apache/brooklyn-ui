@@ -63,17 +63,30 @@ export function iconGeneratorProvider() {
 }
 
 export function iconGeneratorPipe(iconGenerator) {
-    return function (input, field) {
+    return function (input, opts) {
+        let field, doNotAutogenerate=false;
+        if (opts) {
+            if (typeof opts === 'string') {
+                field = opts;
+            } else {
+                field = opts.field;
+                doNotAutogenerate = opts.doNotAutogenerate;
+            }
+        }
+        let generateFrom = input;
         if (typeof(input) === 'object') {
             if (input.hasOwnProperty('iconUrl') && input.iconUrl) {
                 return input.iconUrl;
             } else if (input.hasOwnProperty('links') && input.links.hasOwnProperty('iconUrl') && input.links.iconUrl) {
                 return input.links.iconUrl;
             } else if (input.hasOwnProperty(field || 'id')) {
-                return iconGenerator(input[field || 'id'])
+                generateFrom = input[field || 'id'];
             }
         }
-        return iconGenerator(input);
+        if (doNotAutogenerate) {
+            return null;
+        }
+        return iconGenerator(generateFrom);
     }
 }
 

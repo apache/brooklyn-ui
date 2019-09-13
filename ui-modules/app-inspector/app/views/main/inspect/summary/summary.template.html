@@ -19,8 +19,11 @@
 <div class="entity-summary" ng-init="show = { status: true, mostRecentActivityInError: true, policies: true };">
     <div class="tab-header">
         <div class="entity-header">
-            <h2 ng-if="!vm.entity" class="entity-name"><loading-state error="vm.error.entity"></loading-state></h2>
-            <h2 ng-if="vm.entity" class="entity-name" editable-text="vm.name" blur="submit" buttons="no" blur="submit" onaftersave="vm.updateEntityName()">{{ vm.entity.name }}</h2>
+            <h2 ng-if="!vm.entity" class="entity-name loading"><loading-state error="vm.error.entity"></loading-state></h2>
+            <h2 ng-if="vm.entity" class="entity-name">
+              <span class="node-icon"><img ng-src="{{ vm.entity | iconGeneratorPipe:{doNotAutogenerate: true} }}"/></span>
+              <span class="node-name" editable-text="vm.name" blur="submit" buttons="no" blur="submit" onaftersave="vm.updateEntityName()">{{ vm.entity.name }}</span>
+            </h2>
         </div>
         <p ng-if="vm.sensors['main.uri']">
             <a ng-href="{{vm.sensors['main.uri']}}">{{vm.sensors['main.uri']}}</a>
