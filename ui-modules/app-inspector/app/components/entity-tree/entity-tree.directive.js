@@ -78,11 +78,7 @@ export function entityTreeDirective() {
                 vm.applications = response.data;
 
                 function spawnNotification(app, opts) {
-                    let baseType = app.type;
-                    if (baseType === 'org.apache.brooklyn.entity.stock.BasicApplication' && app.children.length === 1) {
-                        baseType = app.children[0].catalogItemId || app.children[0].type;
-                    }
-                    iconService.get(baseType).then((icon)=> {
+                    iconService.get(app).then((icon)=> {
                         let options = Object.assign({
                             icon: app.iconUrl || icon,
                         }, opts);
@@ -101,7 +97,7 @@ export function entityTreeDirective() {
     }
 }
 
-export function entityNodeDirective() {
+export function entityNodeDirective($log, iconService) {
     return {
         restrict: 'E',
         template: entityNodeTemplate,
@@ -191,3 +187,4 @@ export function entityNodeDirective() {
 
     }
 }
+entityNodeDirective.$inject = ['$log', 'iconService'];
