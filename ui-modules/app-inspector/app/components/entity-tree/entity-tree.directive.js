@@ -106,7 +106,7 @@ export function entityNodeDirective($log, iconService) {
             applicationId: '<',
         },
         link: link,
-        controller: ['$scope', '$state', '$stateParams', controller]
+        controller: ['$scope', '$state', '$stateParams', 'iconService', controller]
     };
 
     function link($scope) {
@@ -126,9 +126,10 @@ export function entityNodeDirective($log, iconService) {
         });
     }
 
-    function controller ($scope, $state, $stateParams) {
+    function controller ($scope, $state, $stateParams, iconService) {
         $scope.isOpen = true;
-
+        iconService.get($scope.entity, true).then(value => $scope.iconUrl = value);
+        
         if ($stateParams.entityId === $scope.entity.id) {
             $scope.$emit('notifyEntity', {
                 message: 'expandChildren',

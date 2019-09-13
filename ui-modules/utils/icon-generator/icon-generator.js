@@ -74,7 +74,7 @@ export function iconGeneratorPipe(iconGenerator) {
             }
         }
         let generateFrom = input;
-        if (typeof(input) === 'object') {
+        if (input && typeof(input) === 'object') {
             if (input.hasOwnProperty('iconUrl') && input.iconUrl) {
                 return input.iconUrl;
             } else if (input.hasOwnProperty('links') && input.links.hasOwnProperty('iconUrl') && input.links.iconUrl) {
@@ -134,6 +134,10 @@ function IconService($q, $http, iconGenerator, $log, cache) {
         } else if (typeof entityOrTypeId === 'object') {
             if (entityOrTypeId.iconUrl) {
                 deferred.resolve(entityOrTypeId.iconUrl);
+                return deferred.promise;
+            }
+            if (entityOrTypeId.links && entityOrTypeId.links.iconUrl) {
+                deferred.resolve(entityOrTypeId.links.iconUrl);
                 return deferred.promise;
             }
             if (entityOrTypeId.catalogItemId) {

@@ -25,11 +25,11 @@ export const summaryState = {
     name: 'main.inspect.summary',
     url: '/summary',
     template: template,
-    controller: ['$scope', '$state', '$stateParams', '$q', '$http', 'brSnackbar', 'entityApi', 'locationApi', summaryController],
+    controller: ['$scope', '$state', '$stateParams', '$q', '$http', 'brSnackbar', 'entityApi', 'locationApi', 'iconService', summaryController],
     controllerAs: 'vm'
 };
 
-export function summaryController($scope, $state, $stateParams, $q, $http, brSnackbar, entityApi, locationApi) {
+export function summaryController($scope, $state, $stateParams, $q, $http, brSnackbar, entityApi, locationApi, iconService) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
     const {
@@ -51,14 +51,14 @@ export function summaryController($scope, $state, $stateParams, $q, $http, brSna
     let observers = [];
 
     entityApi.entity(applicationId, entityId).then((response)=> {
-        vm.entity = response.data;
-        vm.name = response.data.name;
-        vm.error.entity = undefined;
-        observers.push(response.subscribe((response)=> {
+        let set = (response) => {
             vm.entity = response.data;
             vm.name = response.data.name;
             vm.error.entity = undefined;
-        }));
+            iconService.get(response.data, true).then(value => vm.iconUrl = value);
+        };
+        set(response);
+        observers.push(response.subscribe(set));
     }).catch((error)=> {
         vm.error.entity = 'Cannot load entity with ID: ' + entityId;
     });

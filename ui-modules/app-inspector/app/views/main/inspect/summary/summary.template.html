@@ -21,7 +21,7 @@
         <div class="entity-header">
             <h2 ng-if="!vm.entity" class="entity-name loading"><loading-state error="vm.error.entity"></loading-state></h2>
             <h2 ng-if="vm.entity" class="entity-name">
-              <span class="node-icon"><img ng-src="{{ vm.entity | iconGeneratorPipe:{doNotAutogenerate: true} }}"/></span>
+              <span class="node-icon"><img ng-src="{{ vm.iconUrl }}"/></span>
               <span class="node-name" editable-text="vm.name" blur="submit" buttons="no" blur="submit" onaftersave="vm.updateEntityName()">{{ vm.entity.name }}</span>
             </h2>
         </div>
