@@ -34,6 +34,8 @@ import mainState from 'views/main/main.controller';
 import mainDeployState from 'views/main/deploy/deploy.controller';
 import aboutState from 'views/about/about.controller.js';
 
+const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
+
 angular.module('app', [ngAnimate, ngCookies, uiRouter, brCore, brServerStatus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, brooklynQuickLaunch, mainState, mainDeployState, aboutState])
     .config(['$urlRouterProvider', '$logProvider', '$compileProvider', applicationConfig])
     .run(['$http', httpConfig]);
