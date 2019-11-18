@@ -39,17 +39,18 @@ export function quickLaunchDirective() {
             app: '=',
             locations: '=',
             args: '=?',
-            callback: '=?'
+            callback: '=?',
         },
-        controller: ['$scope', '$http', 'brSnackbar', controller]
+        controller: ['$scope', '$http', '$location', 'brSnackbar', controller]
     };
 
-    function controller($scope, $http, brSnackbar) {
+    function controller($scope, $http, $location, brSnackbar) {
         $scope.deploying = false;
         $scope.model = {
             newConfigFormOpen: false
         };
-        if ($scope.args && $scope.args.location) {
+        $scope.args = $scope.args || {};
+        if ($scope.args.location) {
             $scope.model.location = $scope.args.location;
         }
         $scope.toggleNewConfigForm = toggleNewConfigForm;
@@ -57,14 +58,21 @@ export function quickLaunchDirective() {
         $scope.deleteConfigField = deleteConfigField;
         $scope.deployApp = deployApp;
         $scope.showEditor = showEditor;
+        $scope.openComposer = openComposer;
         $scope.hideEditor = hideEditor;
         $scope.clearError = clearError;
 
         $scope.$watch('app', () => {
             $scope.clearError();
-            $scope.appHasWizard = !checkForLocationTags($scope.app.plan.data);
-            $scope.yamlViewDisplayed = !$scope.appHasWizard;
             $scope.editorYaml = $scope.app.plan.data;
+            var parsedPlan = null;
+            try {
+                parsedPlan = yaml.safeLoad($scope.editorYaml);
+            } catch (e) { /* ignore, it's an unparseable template */ }
+            // enable wizard if it's parseble and doesn't specify a location
+            // (if it's not parseable, or it specifies a location, then the YAML view is displayed)
+            $scope.appHasWizard = parsedPlan!=null && !checkForLocationTags(parsedPlan);
+            $scope.yamlViewDisplayed = !$scope.appHasWizard;
             $scope.entityToDeploy = {
                 type: $scope.app.symbolicName
             };
@@ -169,6 +177,24 @@ export function quickLaunchDirective() {
             return yaml.safeDump(newApp);
         }
 
+        function buildComposerYaml() {
+            if ($scope.yamlViewDisplayed) {
+                return angular.copy($scope.editorYaml);
+            } else {
+                let newApp = {
+                    name: $scope.model.name || $scope.app.displayName,
+                };
+                if ($scope.model.location) {
+                    newApp.location = $scope.model.location;
+                }
+                if ($scope.entityToDeploy[BROOKLYN_CONFIG]) {
+                    newApp[BROOKLYN_CONFIG] = $scope.entityToDeploy[BROOKLYN_CONFIG]
+                }
+                // TODO if plan data has config in the root (unlikely) this will have errors
+                return yaml.safeDump(newApp) + "\n" + $scope.app.plan.data;
+            }
+        }
+
         function showEditor() {
             $scope.editorYaml = buildYaml();
             $scope.yamlViewDisplayed = true;
@@ -178,13 +204,18 @@ export function quickLaunchDirective() {
             $scope.yamlViewDisplayed = false;
         }
 
+        function openComposer() {
+            window.location.href = '/brooklyn-ui-blueprint-composer/#!/graphical?'+
+                'yaml='+encodeURIComponent(buildComposerYaml());
+        }
+
         function clearError() {
             delete $scope.model.deployError;
         }
     }
 
-    function checkForLocationTags(planYaml) {
-        return reduceFunction(false, yaml.safeLoad(planYaml));
+    function checkForLocationTags(parsedPlan) {
+        return reduceFunction(false, parsedPlan);
 
         function reduceFunction(locationFound, entity) {
             if (entity.hasOwnProperty('location') || entity.hasOwnProperty('location')) {
