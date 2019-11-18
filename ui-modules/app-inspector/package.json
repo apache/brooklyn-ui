@@ -73,7 +73,7 @@
     "ejs": "^2.5.2",
     "ejs-html-loader": "^2.0.2",
     "ejs-loader": "^0.3.0",
-    "eslint": "^3.8.1",
+    "eslint": "^6.6.0",
     "exports-loader": "^0.6.3",
     "expose-loader": "^0.7.1",
     "express": "^4.14.0",
