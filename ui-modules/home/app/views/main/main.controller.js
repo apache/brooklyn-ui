@@ -42,6 +42,13 @@ export const mainState = {
         }],
         catalogApps: ['catalogApi', (catalogApi) => {
             return catalogApi.getTypes({params: {supertype: 'org.apache.brooklyn.api.entity.Application'}}).then(applications => {
+                // optionally tag things with 'catalog_quick_launch': if any apps are so tagged, 
+                // then only apps with such tags will be shown;
+                // in all cases only show those marked as templates
+                var appsWithTag = applications.filter(application => application.tags && application.tags.indexOf("catalog_quick_launch")>=0);
+                if (appsWithTag.length) {
+                    applications = appsWithTag;
+                }
                 return applications.filter(application => application.template);
             });
         }]
