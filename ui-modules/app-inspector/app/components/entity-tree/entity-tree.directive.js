@@ -97,7 +97,7 @@ export function entityTreeDirective() {
     }
 }
 
-export function entityNodeDirective($log, iconService) {
+export function entityNodeDirective() {
     return {
         restrict: 'E',
         template: entityNodeTemplate,
@@ -188,4 +188,3 @@ export function entityNodeDirective($log, iconService) {
 
     }
 }
-entityNodeDirective.$inject = ['$log', 'iconService'];

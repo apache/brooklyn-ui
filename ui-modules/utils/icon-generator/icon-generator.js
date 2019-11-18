@@ -147,7 +147,7 @@ function IconService($q, $http, iconGenerator, $log, cache) {
             } else if (entityOrTypeId.type) {
                 let entity = entityOrTypeId;
                 id = entity.type;
-                    if (id === 'org.apache.brooklyn.entity.stock.BasicApplication' && entity.children.length === 1) {
+                if (id === 'org.apache.brooklyn.entity.stock.BasicApplication' && entity.children && entity.children.length === 1) {
                     id = entity.children[0].catalogItemId || entity.children[0].type;
                 }
             }
