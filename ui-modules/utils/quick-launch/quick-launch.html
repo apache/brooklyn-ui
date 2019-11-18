@@ -136,7 +136,8 @@
 
 <div class="quick-launch-actions">
     <button class="btn btn-lg btn-default" ng-if="yamlViewDisplayed && appHasWizard" ng-disabled="deploying" ng-click="hideEditor()">Back</button>
-    <button class="btn btn-lg btn-default" ng-if="!yamlViewDisplayed" ng-disabled="deploying" ng-click="showEditor()">Open in Editor</button>
+    <button class="btn btn-lg btn-default" ng-if="!yamlViewDisplayed && !args.noEditButton" ng-disabled="deploying" ng-click="showEditor()">YAML</button>
+    <button class="btn btn-lg btn-default" ng-if="!args.noComposerButton" ng-disabled="deploying" ng-click="openComposer()">Open in Composer</button>
     <button class="btn btn-lg btn-success pull-right" ng-disabled="(deploy.$invalid || deploying) && !yamlViewDisplayed" ng-click="deployApp()">{{deploying ? 'Deploying&hellip;' : 'Deploy'}}</button>
 </div>
 

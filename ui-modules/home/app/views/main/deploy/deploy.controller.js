@@ -81,7 +81,8 @@ export function deployStateController($scope, $state, $stateParams, $uibModal, b
     function modalController($scope, $location, entitySpec, locations) {
         $scope.app = entitySpec;
         $scope.locations = locations;
-        $scope.args = $location.search();
+        // can optionally add: { noEditButton: true, noComposerButton: true }, or pass in URL
+        $scope.args = angular.extend({}, $location.search());
     }
 }
 

@@ -39,17 +39,18 @@ export function quickLaunchDirective() {
             app: '=',
             locations: '=',
             args: '=?',
-            callback: '=?'
+            callback: '=?',
         },
-        controller: ['$scope', '$http', 'brSnackbar', controller]
+        controller: ['$scope', '$http', '$location', 'brSnackbar', controller]
     };
 
-    function controller($scope, $http, brSnackbar) {
+    function controller($scope, $http, $location, brSnackbar) {
         $scope.deploying = false;
         $scope.model = {
             newConfigFormOpen: false
         };
-        if ($scope.args && $scope.args.location) {
+        $scope.args = $scope.args || {};
+        if ($scope.args.location) {
             $scope.model.location = $scope.args.location;
         }
         $scope.toggleNewConfigForm = toggleNewConfigForm;
@@ -57,6 +58,7 @@ export function quickLaunchDirective() {
         $scope.deleteConfigField = deleteConfigField;
         $scope.deployApp = deployApp;
         $scope.showEditor = showEditor;
+        $scope.openComposer = openComposer;
         $scope.hideEditor = hideEditor;
         $scope.clearError = clearError;
 
@@ -169,6 +171,19 @@ export function quickLaunchDirective() {
             return yaml.safeDump(newApp);
         }
 
+        function buildComposerYaml() {
+            let newApp = {
+                name: $scope.model.name || $scope.app.displayName,
+            };
+            if ($scope.model.location) {
+                newApp.location = $scope.model.location;
+            }
+            if ($scope.entityToDeploy[BROOKLYN_CONFIG]) {
+                newApp[BROOKLYN_CONFIG] = $scope.entityToDeploy[BROOKLYN_CONFIG]
+            }
+            return yaml.safeDump(newApp) + "\n" + $scope.app.plan.data;
+        }
+
         function showEditor() {
             $scope.editorYaml = buildYaml();
             $scope.yamlViewDisplayed = true;
@@ -176,6 +191,11 @@ export function quickLaunchDirective() {
 
         function hideEditor() {
             $scope.yamlViewDisplayed = false;
+        }
+
+        function openComposer() {
+            window.location.href = '/brooklyn-ui-blueprint-composer/#!/graphical?'+
+                'yaml='+encodeURIComponent(buildComposerYaml());
         }
 
         function clearError() {
