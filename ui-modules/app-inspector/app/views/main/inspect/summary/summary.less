@@ -20,14 +20,38 @@
 
   .entity-header {
 
+    
     .entity-name {
+      display: flex;
       border: none;
       -webkit-font-smoothing: antialiased;
+      align-items: center;
+      
+      .node-icon {
+        flex: 0 1 0px;
+        margin-left: 3px;
+        img[src] {
+          .make-icon(80px);
+          margin-right: 18px;
+        }
+      }
+      
+      .node-name {
+        flex: 1 0 200px;
+        border: none;
+      }
+      .editable-wrap {
+        flex: 1 0 200px;
+        width: auto;
+      }
+      
+      &.loading {
+        margin-left: 5px;
+        margin-top: 16px;
+        margin-bottom: 16px;
+      }
     }
-    .editable-wrap {
-      width: 100%;
-    }
-
+    
     .editable {
       color: @primary-500;
       height: 34px;

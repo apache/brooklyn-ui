@@ -78,11 +78,7 @@ export function entityTreeDirective() {
                 vm.applications = response.data;
 
                 function spawnNotification(app, opts) {
-                    let baseType = app.type;
-                    if (baseType === 'org.apache.brooklyn.entity.stock.BasicApplication' && app.children.length === 1) {
-                        baseType = app.children[0].catalogItemId || app.children[0].type;
-                    }
-                    iconService.get(baseType).then((icon)=> {
+                    iconService.get(app).then((icon)=> {
                         let options = Object.assign({
                             icon: app.iconUrl || icon,
                         }, opts);
@@ -110,7 +106,7 @@ export function entityNodeDirective() {
             applicationId: '<',
         },
         link: link,
-        controller: ['$scope', '$state', '$stateParams', controller]
+        controller: ['$scope', '$state', '$stateParams', 'iconService', controller]
     };
 
     function link($scope) {
@@ -130,9 +126,10 @@ export function entityNodeDirective() {
         });
     }
 
-    function controller ($scope, $state, $stateParams) {
+    function controller ($scope, $state, $stateParams, iconService) {
         $scope.isOpen = true;
-
+        iconService.get($scope.entity, true).then(value => $scope.iconUrl = value);
+        
         if ($stateParams.entityId === $scope.entity.id) {
             $scope.$emit('notifyEntity', {
                 message: 'expandChildren',

@@ -75,10 +75,27 @@
         margin-left: 10px;
       }
     }
+    .entity-node-toggle-wrapper {
+      width: 38px;      
+      flex-grow: 0;
+    }
     .entity-node-toggle {
-      flex-shrink: 1;
+      width: 38px;      
       padding: 12px;
       cursor: row-resize;
+    }
+  }
+  .node-icon {
+    flex-grow: 0 !important;
+    max-height: 20px; //let it extend above and below span's boundaries
+    overflow: visible !important;
+    margin-top: -8px;
+    margin-left: 0 !important;
+    img {
+      .make-icon(36px);
+    }
+    img[src] {
+      margin-left: 10px;
     }
   }
 }

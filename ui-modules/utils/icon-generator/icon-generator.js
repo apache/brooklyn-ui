@@ -63,17 +63,30 @@ export function iconGeneratorProvider() {
 }
 
 export function iconGeneratorPipe(iconGenerator) {
-    return function (input, field) {
-        if (typeof(input) === 'object') {
+    return function (input, opts) {
+        let field, doNotAutogenerate=false;
+        if (opts) {
+            if (typeof opts === 'string') {
+                field = opts;
+            } else {
+                field = opts.field;
+                doNotAutogenerate = opts.doNotAutogenerate;
+            }
+        }
+        let generateFrom = input;
+        if (input && typeof(input) === 'object') {
             if (input.hasOwnProperty('iconUrl') && input.iconUrl) {
                 return input.iconUrl;
             } else if (input.hasOwnProperty('links') && input.links.hasOwnProperty('iconUrl') && input.links.iconUrl) {
                 return input.links.iconUrl;
             } else if (input.hasOwnProperty(field || 'id')) {
-                return iconGenerator(input[field || 'id'])
+                generateFrom = input[field || 'id'];
             }
         }
-        return iconGenerator(input);
+        if (doNotAutogenerate) {
+            return null;
+        }
+        return iconGenerator(generateFrom);
     }
 }
 
@@ -104,21 +117,49 @@ function IconGenerator(cache, background, margin, size) {
 
 export function iconServiceProvider() {
     return {
-        $get: ['$q', '$http', 'iconGenerator', function ($q, $http, iconGenerator) {
-            return new IconService($q, $http, iconGenerator, new SessionsStorageWrapper(CACHE_NAME));
+        $get: ['$q', '$http', 'iconGenerator', '$log', function ($q, $http, iconGenerator, $log) {
+            return new IconService($q, $http, iconGenerator, $log, new SessionsStorageWrapper(CACHE_NAME));
         }]
     }
 }
 
-function IconService($q, $http, iconGenerator, cache) {
+function IconService($q, $http, iconGenerator, $log, cache) {
     this.get = getIcon;
-    function getIcon(id) {
+    function getIcon(entityOrTypeId, doNotAutogenerate) {
         let deferred = $q.defer();
+
+        let id;
+        if (typeof entityOrTypeId === 'string') {
+            id = entityOrTypeId;
+        } else if (typeof entityOrTypeId === 'object') {
+            if (entityOrTypeId.iconUrl) {
+                deferred.resolve(entityOrTypeId.iconUrl);
+                return deferred.promise;
+            }
+            if (entityOrTypeId.links && entityOrTypeId.links.iconUrl) {
+                deferred.resolve(entityOrTypeId.links.iconUrl);
+                return deferred.promise;
+            }
+            if (entityOrTypeId.catalogItemId) {
+                id = entity.catalogItemId;
+            } else if (entityOrTypeId.symbolicName) {
+                id = entity.symbolicName;
+            } else if (entityOrTypeId.type) {
+                let entity = entityOrTypeId;
+                id = entity.type;
+                if (id === 'org.apache.brooklyn.entity.stock.BasicApplication' && entity.children && entity.children.length === 1) {
+                    id = entity.children[0].catalogItemId || entity.children[0].type;
+                }
+            }
+        }
+        
         let icon;
         if (angular.isDefined(id)) {
             icon = cache.get(id);
         } else {
-            deferred.reject('Icon ID no defined');
+            $log.warn('No ID found for item, cannot make icon - '+entityOrTypeId, entityOrTypeId);
+            deferred.reject('No ID found for item, cannot make icon - '+entityOrTypeId);
+            return deferred.promise;
         }
         if (angular.isUndefined(icon)) {
             let path = id.split(':');
@@ -130,6 +171,8 @@ function IconService($q, $http, iconGenerator, cache) {
                 if (response.data.hasOwnProperty('iconUrl')) {
                     icon = response.data.iconUrl;
                     cache.put(id, icon);
+                } else if (doNotAutogenerate) {
+                    icon = null;
                 } else {
                     icon = iconGenerator(id);
                 }

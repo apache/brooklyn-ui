@@ -55,3 +55,15 @@
     font-size: 95%;
 }
 
+.make-icon(@size) {
+  // this won't _increase_ size, that's more complicated.  but it will cap both sizes while
+  // keeping aspect ratio.  if width or height are set they can interfere with the maxes to screw up aspect ratio.
+  // https://stackoverflow.com/questions/12912048/how-to-maintain-aspect-ratio-using-html-img-tag
+  width: auto;
+  height: auto;
+  max-width: @size;
+  max-height: @size;
+  // and center
+  margin: auto;
+}
+

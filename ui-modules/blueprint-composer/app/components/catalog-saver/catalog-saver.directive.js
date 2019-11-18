@@ -225,7 +225,6 @@ function composerBlueprintNameValidatorDirective() {
         link: function(scope, element, attr, ngModel) {
             ngModel.$validators.composerBlueprintNameValidator = function(modelValue, viewValue) {
                 scope.updateDefaults(modelValue);
-                console.log("valildating", scope.config.bundle, scope.config.symbolicName);
                 if (!ngModel.$isEmpty(modelValue)) {
                     // anything set is valid
                     return true;

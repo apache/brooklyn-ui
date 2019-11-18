@@ -22,9 +22,12 @@
             <brooklyn-status-icon value="{{entity.serviceState}}" ng-if="entity.serviceState || entity.applicationId"></brooklyn-status-icon>
             <i class="fa fa-2x fa-external-link" ng-if="!entity.serviceState && !entity.applicationId"></i>
             <span>{{entity.name}}</span>
+            <span class="node-icon"><img ng-src="{{ iconUrl }}"/></span>
         </a>
-        <div class="entity-node-toggle" ng-if="entity.children.length > 0 || entity.members.length > 0" ng-click="onToggle($event)" >
+        <div class="entity-node-toggle-wrapper">
+          <div class="entity-node-toggle" ng-if="entity.children.length > 0 || entity.members.length > 0" ng-click="onToggle($event)" >
             <span class="glyphicon" ng-class="isChildrenOpen ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'"></span>
+          </div>
         </div>
     </div>
     <div class="entity-node-children" ng-show="isChildrenOpen">
