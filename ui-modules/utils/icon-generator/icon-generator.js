@@ -141,9 +141,9 @@ function IconService($q, $http, iconGenerator, $log, cache) {
                 return deferred.promise;
             }
             if (entityOrTypeId.catalogItemId) {
-                id = entity.catalogItemId;
+                id = entityOrTypeId.catalogItemId;
             } else if (entityOrTypeId.symbolicName) {
-                id = entity.symbolicName;
+                id = entityOrTypeId.symbolicName;
             } else if (entityOrTypeId.type) {
                 let entity = entityOrTypeId;
                 id = entity.type;
