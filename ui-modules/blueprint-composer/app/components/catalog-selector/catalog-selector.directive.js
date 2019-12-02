@@ -345,7 +345,7 @@ export function catalogSelectorDirective() {
         let rowsPerPage = $scope.rowsPerPage;
         if (!rowsPerPage) {
             let palette = angular.element(document.querySelector(".page-main-area"));
-            let toolbar = angular.element(document.querySelector(".navbar"));
+            let toolbar = angular.element(document.querySelector(".navbar-default"));
             let header = angular.element($element[0].querySelector(".catalog-palette-header"));
             let footer = angular.element($element[0].querySelector(".catalog-palette-footer"));
             rowsPerPage = Math.max(MIN_ROWS_PER_PAGE, Math.floor((palette[0].offsetHeight - (toolbar[0].offsetHeight + header[0].offsetHeight + footer[0].offsetHeight + 16)) / ($scope.state.viewMode.rowHeightPx || 96)));
