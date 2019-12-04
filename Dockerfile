@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y git-core \
     dpkg \
     pkg-config \
     nasm \
-    gcc \
+    gcc
 
 RUN mkdir -p /var/maven/.m2/ && chmod -R 777 /var/maven/
 ENV MAVEN_CONFIG=/var/maven/.m2
