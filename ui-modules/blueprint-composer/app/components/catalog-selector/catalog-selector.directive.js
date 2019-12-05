@@ -97,7 +97,6 @@ export function catalogSelectorDirective() {
 
         $scope.viewModes = PALETTE_VIEW_MODES;
         $scope.viewOrders = PALETTE_VIEW_ORDERS;
-
         if (!$scope.state) $scope.state = {};
         if (!$scope.state.viewMode) $scope.state.viewMode = PALETTE_VIEW_MODES.normal;
 
@@ -345,14 +344,11 @@ export function catalogSelectorDirective() {
     function repaginate($scope, $element) {
         let rowsPerPage = $scope.rowsPerPage;
         if (!rowsPerPage) {
-            let main = angular.element($element[0].querySelector(".catalog-palette-main"));
-            if (!main || main[0].offsetHeight == 0) {
-                // no main, or hidden, or items per page fixed
-                return;
-            }
-            let header = angular.element(main[0].querySelector(".catalog-palette-header"));
-            let footer = angular.element(main[0].querySelector(".catalog-palette-footer"));
-            rowsPerPage = Math.max(MIN_ROWS_PER_PAGE, Math.floor((main[0].offsetHeight - header[0].offsetHeight - footer[0].offsetHeight - 16) / ($scope.state.viewMode.rowHeightPx || 96)));
+            let palette = angular.element(document.querySelector(".page-main-area"));
+            let toolbar = angular.element(document.querySelector(".navbar-mode"));
+            let header = angular.element($element[0].querySelector(".catalog-palette-header"));
+            let footer = angular.element($element[0].querySelector(".catalog-palette-footer"));
+            rowsPerPage = Math.max(MIN_ROWS_PER_PAGE, Math.floor((palette[0].offsetHeight - (toolbar[0].offsetHeight + header[0].offsetHeight + footer[0].offsetHeight + 16)) / ($scope.state.viewMode.rowHeightPx || 96)));
         }
         $scope.$apply(() => $scope.pagination.itemsPerPage = rowsPerPage * $scope.state.viewMode.itemsPerRow);
     }
