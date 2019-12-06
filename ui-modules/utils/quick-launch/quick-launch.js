@@ -177,21 +177,87 @@ export function quickLaunchDirective() {
             return yaml.safeDump(newApp);
         }
 
-        function buildComposerYaml() {
+        function buildComposerYaml(validate) {
             if ($scope.yamlViewDisplayed) {
                 return angular.copy($scope.editorYaml);
             } else {
-                let newApp = {
-                    name: $scope.model.name || $scope.app.displayName,
-                };
-                if ($scope.model.location) {
-                    newApp.location = $scope.model.location;
+                let planText = $scope.app.plan.data || "{}";
+                let result = {};
+                
+                // this is set if we're able to parse the plan's text definition, and then:
+                // - we've had to override a field from the plan's text definition, because a value is set _and_ different; or
+                // - the plan's text definition is indented or JSON rather than YAML (not outdented yaml)
+                // and in either case we use the result _object_ ... 
+                // unless we didn't actually change anything, in which case this is ignored
+                let cannotUsePlanText = false;
+                
+                if (validate) {
+                    result = yaml.safeLoad(planText);
+                    if (typeof result !== 'object') {
+                        throw "The plan is not a YAML map, but of type "+(typeof result);
+                    }
+                    if (!result.services) {
+                        throw "The plan does not have any services.";
+                    }
+                    for (const [k,v] of Object.entries(result) ) {
+                       if (planText.indexOf(k)!=0 && planText.indexOf('\n'+k+':')<0) {
+                          // plan is not outdented yaml, can't use its text mode
+                          cannotUsePlanText = true;
+                          break;
+                       }
+                    }
                 }
-                if ($scope.entityToDeploy[BROOKLYN_CONFIG]) {
-                    newApp[BROOKLYN_CONFIG] = $scope.entityToDeploy[BROOKLYN_CONFIG]
+                
+                let newApp = {};
+                
+                let newName = $scope.model.name || $scope.app.displayName;
+                if (newName && newName != result.name) {
+                    newApp.name = newName;
+                    if (result.name) {
+                        delete result.name;
+                        cannotUsePlanText = true;
+                    }
                 }
-                // TODO if plan data has config in the root (unlikely) this will have errors
-                return yaml.safeDump(newApp) + "\n" + $scope.app.plan.data;
+                
+                let newLocation = $scope.model.location;
+                if (newLocation && newLocation != result.location) {
+                    newApp.location = newLocation;
+                    if (result.location) {
+                        delete result.location;
+                        cannotUsePlanText = true;
+                    }
+                }
+
+                let newConfig = $scope.entityToDeploy[BROOKLYN_CONFIG];
+                if (newConfig) {
+                    if (result[BROOKLYN_CONFIG]) {
+                        let oldConfig = result[BROOKLYN_CONFIG];
+                        let mergedConfig = angular.copy(oldConfig);
+                        for (const [k,v] of Object.entries(newConfig) ) {
+                            if (mergedConfig[k] != v) {
+                                cannotUsePlanText = true;
+                                mergedConfig[k] = v;
+                            }
+                        }
+                        if (cannotUsePlanText) {
+                            newApp[BROOKLYN_CONFIG] = mergedConfig;
+                            delete result[BROOKLYN_CONFIG];
+                        }
+                    } else {
+                        newApp[BROOKLYN_CONFIG] = newConfig;
+                    }
+                }
+                
+                // prefer to use the actual yaml input, but if it's not possible
+                let tryMergeByConcatenate = 
+                    Object.keys(newApp).length ?
+                        (yaml.safeDump(newApp) + "\n" + ((validate && cannotUsePlanText) ? yaml.safeDump(result) : planText))
+                        : planText;
+                if (validate) {
+                    // don't think there's any way we'd wind up with invalid yaml but check to be sure
+                    yaml.safeLoad(tryMergeByConcatenate);
+                }
+                return tryMergeByConcatenate;
             }
         }
 
@@ -205,8 +271,19 @@ export function quickLaunchDirective() {
         }
 
         function openComposer() {
-            window.location.href = '/brooklyn-ui-blueprint-composer/#!/graphical?'+
-                'yaml='+encodeURIComponent(buildComposerYaml());
+            try {
+              window.location.href = '/brooklyn-ui-blueprint-composer/#!/graphical?'+
+                'yaml='+encodeURIComponent(buildComposerYaml(true));
+            } catch (error) {
+              console.warn("Opening composer in YAML text editor mode because we cannot generate a model for this configuration:", error);
+              window.location.href = '/brooklyn-ui-blueprint-composer/#!/yaml?'+
+                'yaml='+encodeURIComponent(
+                    "# This plan may have items which require attention so is being opened in YAML text editor mode.\n"+
+                    "# The YAML was autogenerated by merging the plan with any values provided in UI, but issues were\n"+
+                    "# detected that mean it might not be correct. Please check the blueprint below carefully.\n"+
+                    "\n"+
+                    buildComposerYaml(false));
+            }
         }
 
         function clearError() {
