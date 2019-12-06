@@ -27,11 +27,16 @@ export const mainState = {
     controllerAs: 'ctrl'
 };
 
+const savedSortReverse = 'app-inspector-sort-reverse';
+
 export function mainController($scope, $q, brWebNotifications) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
     let ctrl = this;
 
+    ctrl.sortReverse = localStorage && localStorage.getItem(savedSortReverse) !== null ?
+        JSON.parse(localStorage.getItem(savedSortReverse)) :
+        true;
     brWebNotifications.supported.then(() => {
         ctrl.isNotificationsSupported = true;
     }).catch(() => {
@@ -47,6 +52,17 @@ export function mainController($scope, $q, brWebNotifications) {
     brWebNotifications.getPermission().then(permission => {
         ctrl.isNotificationsBlocked = permission === 'denied';
     });
+
+    ctrl.toggleSortOrder = () => {
+        ctrl.sortReverse = !ctrl.sortReverse;
+        if (localStorage) {
+            try {
+                localStorage.setItem(savedSortReverse, JSON.stringify(ctrl.sortReverse));
+            } catch (ex) {
+                $log.error('Cannot save app sort preferences: ' + ex.message);
+            }
+        }
+    }
 
     ctrl.toggleNotifications = () => {
         brWebNotifications.isEnabled().then(() => {

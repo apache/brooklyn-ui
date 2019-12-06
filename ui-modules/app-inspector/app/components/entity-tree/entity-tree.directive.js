@@ -43,6 +43,9 @@ export function entityTreeDirective() {
     return {
         restrict: 'E',
         template: entityTreeTemplate,
+        scope: {
+           sortReverse: '=',
+        },
         controller: ['$scope', '$state', 'applicationApi', 'entityApi', 'iconService', 'brWebNotifications', controller],
         controllerAs: 'vm'
     };

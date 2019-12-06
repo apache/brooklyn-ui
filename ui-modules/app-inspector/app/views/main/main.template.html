@@ -24,6 +24,11 @@
                     <div class="entity-tree-header">
                         <h2 class="entity-tree-title">Applications</h2>
 
+                        <button class="entity-sort-action" >
+                            <div class="entity-sort-action-toggle" ng-click="ctrl.toggleSortOrder($event)" >
+                                <span class="glyphicon" ng-class="ctrl.sortReverse ? 'fa fa-sort-amount-desc' : 'fa fa-sort-amount-asc'"></span>
+                            </div>
+                        </button>
                         <button class="btn btn-link entity-tree-action"
                                 ng-class="{'btn-sm': !ctrl.isNotificationsBlocked, 'btn-xs': ctrl.isNotificationsBlocked}"
                                 ng-if="ctrl.isNotificationsSupported"
@@ -44,7 +49,7 @@
                         </a>
                     </div>
 
-                    <entity-tree></entity-tree>
+                    <entity-tree sort-reverse="ctrl.sortReverse"></entity-tree>
                 </br-card-content>
             </br-card>
 
