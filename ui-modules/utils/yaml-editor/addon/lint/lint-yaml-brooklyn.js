@@ -45,6 +45,10 @@ CodeMirror.registerGlobalHelper('lint', 'yamlCatalog', (mode, cm) => (mode.name 
     validator.addSchema(JSON.parse(catalogItemReferenceSchema), '/Catalog/Item/Reference');
     validator.addSchema(JSON.parse(catalogItemInlineSchema), '/Catalog/Item/Inline');
     validator.addSchema(JSON.parse(catalogVersionSchema), '/Catalog/Version');
+    // below are needed for catalog items
+    validator.addSchema(JSON.parse(blueprintSchema), '/Blueprint');
+    validator.addSchema(JSON.parse(blueprintEntitySchema), '/Blueprint/Entity');
+    validator.addSchema(JSON.parse(blueprintLocationSchema), '/Blueprint/Location');
 
     return lint(validator, catalogSchema, text, options, cm);
 });
