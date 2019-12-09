@@ -33,6 +33,7 @@ const MODULE_NAME = 'brooklyn.components.catalog-uploader';
  */
 angular.module(MODULE_NAME, [catalogApi])
     .service('brooklynCatalogUploader', ['$q', 'catalogApi', catalogUploaderService])
+    .directive('customOnChange', customOnChangeDirective)
     .directive('brooklynCatalogUploader', ['$compile', 'brooklynCatalogUploader', catalogUploaderDirective]);
 
 export default MODULE_NAME;
@@ -98,8 +99,8 @@ export function catalogUploaderDirective($compile, brooklynCatalogUploader) {
             element.removeClass('br-drag-active');
         };
 
-        scope.filesChanged = (target)=> {
-            scope.upload(target.files);
+        scope.filesChanged = (event)=> {
+            scope.upload(event.target.files);
         };
 
         scope.upload = (files)=> {
@@ -120,7 +121,9 @@ export function catalogUploaderDirective($compile, brooklynCatalogUploader) {
         };
 
         scope.getCatalogItemUrl = (item)=> {
-            return item.supertypes.includes('org.apache.brooklyn.api.location.Location')
+            let itemTraits = item.tags? item.tags.find(item => item.hasOwnProperty("traits")) : {"traits":[]};
+            return (item.supertypes ? item.supertypes : itemTraits.traits)
+                .includes('org.apache.brooklyn.api.location.Location')
                 ? `/brooklyn-ui-location-manager/#!/location?symbolicName=${item.symbolicName}&version=${item.version}`
                 : `/brooklyn-ui-catalog/#!/bundles/${item.containingBundle.split(':')[0]}/${item.containingBundle.split(':')[1]}/types/${item.symbolicName}/${item.version}`;
         };
@@ -207,4 +210,21 @@ export function catalogUploaderService($q, catalogApi) {
 
         return defer.promise;
     }
+}
+
+export function customOnChangeDirective() {
+    return {
+        restrict: 'A',
+        link: function (scope, element, attrs) {
+            element.on('change', x => {
+                var onChangeHandler = scope.$eval(attrs.customOnChange);
+                onChangeHandler(x);
+            });
+            element.on('$destroy', function() {
+                element.off();
+            });
+
+
+        }
+    };
 }
