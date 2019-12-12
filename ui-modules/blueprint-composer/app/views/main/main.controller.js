@@ -131,9 +131,28 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
         
         yaml = edit.type.plan.data;
     }
+    
+    vm.isGraphicalMode = () => {
+        return $state.includes(graphicalState.name);
+    };
+    vm.isYamlMode = () => {
+        return $state.includes(yamlState.name);
+    };
 
     if (yaml) {
-        blueprintService.setFromYaml(yaml);
+        if (vm.isYamlMode()) {
+            // don't set blueprint; yaml mode will take from "initial yaml" 
+            blueprintService.reset();
+            $scope.initialYaml = yaml;
+        } else {
+            try {
+                blueprintService.setFromYaml(yaml);
+            } catch (e) {
+                console.warn("YAML supplied for editing is not valid for a blueprint. It will be ignored unless opened in the YAML editor:", e);
+                blueprintService.reset();
+                $scope.initialYaml = yaml;
+            }
+        }
     } else {
         blueprintService.reset();
     }
@@ -145,10 +164,6 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
         }
 
         deployApplication();
-    };
-
-    vm.isGraphicalMode = () => {
-        return $state.includes(graphicalState.name);
     };
 
     vm.getAllActions = () => {

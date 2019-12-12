@@ -39,6 +39,11 @@ function yamlStateController($scope, $rootScope, $timeout, blueprintService, brS
         brSnackbar.create(`Cannot load blueprint: ${ex.message}`);
         vm.yaml = '';
     }
+    if ($scope.initialYaml && !vm.yaml) {
+        // either yaml was supplied and yaml mode requested, skipping blueprint setup,
+        // or the yaml was invalid, an error logged, and this was recorded
+        vm.yaml = $scope.initialYaml; 
+    }
 
     if (!CodeMirror.lint.hasOwnProperty('yaml-composer')) {
         CodeMirror.registerGlobalHelper('lint', 'yaml-composer', mode => mode.name === 'yaml', (text, options, cm) => {
