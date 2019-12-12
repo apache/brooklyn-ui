@@ -29,38 +29,31 @@ import catalogItemInlineSchema from '../schemas/catalog-item-inline.json';
 import catalogVersionSchema from '../schemas/catalog-version.json';
 import rootSchema from '../schemas/root.json';
 
-CodeMirror.registerGlobalHelper('lint', 'yamlBlueprint', (mode, cm) => (mode.name === 'yaml' && mode.type === 'blueprint'), (text, options, cm) => {
-    let validator = new Validator();
+let blueprintValidator = new Validator();
+let catalogValidator = new Validator();
+let rootValidator = new Validator();
 
+[ blueprintValidator, catalogValidator, rootValidator ].forEach(validator => {
     validator.addSchema(JSON.parse(blueprintSchema), '/Blueprint');
     validator.addSchema(JSON.parse(blueprintEntitySchema), '/Blueprint/Entity');
     validator.addSchema(JSON.parse(blueprintLocationSchema), '/Blueprint/Location');
-
-    return lint(validator, blueprintSchema, text, options, cm);
 });
-CodeMirror.registerGlobalHelper('lint', 'yamlCatalog', (mode, cm) => (mode.name === 'yaml' && mode.type === 'catalog'), (text, options, cm) => {
-    let validator = new Validator();
 
+[ catalogValidator, rootValidator ].forEach(validator => {
     validator.addSchema(JSON.parse(catalogSchema), '/Catalog');
     validator.addSchema(JSON.parse(catalogItemReferenceSchema), '/Catalog/Item/Reference');
     validator.addSchema(JSON.parse(catalogItemInlineSchema), '/Catalog/Item/Inline');
     validator.addSchema(JSON.parse(catalogVersionSchema), '/Catalog/Version');
-
-    return lint(validator, catalogSchema, text, options, cm);
 });
-CodeMirror.registerGlobalHelper('lint', 'yamlBrooklyn', (mode, cm) => (mode.name === 'yaml' && mode.type === 'brooklyn'), (text, options, cm) => {
-    let validator = new Validator();
 
-    validator.addSchema(JSON.parse(blueprintSchema), '/Blueprint');
-    validator.addSchema(JSON.parse(blueprintEntitySchema), '/Blueprint/Entity');
-    validator.addSchema(JSON.parse(blueprintLocationSchema), '/Blueprint/Location');
-    validator.addSchema(JSON.parse(catalogSchema), '/Catalog');
-    validator.addSchema(JSON.parse(catalogItemReferenceSchema), '/Catalog/Item/Reference');
-    validator.addSchema(JSON.parse(catalogItemInlineSchema), '/Catalog/Item/Inline');
-    validator.addSchema(JSON.parse(catalogVersionSchema), '/Catalog/Version');
-
-    return lint(validator, rootSchema, text, options, cm);
-});
+CodeMirror.registerGlobalHelper('lint', 'yamlBlueprint', (mode, cm) => (mode.name === 'yaml' && mode.type === 'blueprint'), 
+    (text, options, cm) => lint(blueprintValidator, blueprintSchema, text, options, cm));
+    
+CodeMirror.registerGlobalHelper('lint', 'yamlCatalog', (mode, cm) => (mode.name === 'yaml' && mode.type === 'catalog'), 
+    (text, options, cm) => lint(catalogValidator, catalogSchema, text, options, cm));
+    
+CodeMirror.registerGlobalHelper('lint', 'yamlBrooklyn', (mode, cm) => (mode.name === 'yaml' && mode.type === 'brooklyn'), 
+    (text, options, cm) => lint(rootValidator, rootSchema, text, options, cm));
 
 function lint(validator, baseSchema, text, options, cm) {
     let issues = [];
