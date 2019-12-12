@@ -223,8 +223,6 @@ export function customOnChangeDirective() {
             element.on('$destroy', function() {
                 element.off();
             });
-
-
         }
     };
 }
