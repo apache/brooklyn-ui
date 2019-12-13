@@ -91,6 +91,9 @@ spec-editor {
     .entity-type-header {
       font-size: 105%;
       margin-right: 1em;
+      // allow this to wrap, as it's important to be able to read it;
+      // break anywhere in case it's of the form my.type.HasGotAVeryVeryVeryLongName
+      word-break: break-all;
     }
     .label.version {
       vertical-align: 2px;
