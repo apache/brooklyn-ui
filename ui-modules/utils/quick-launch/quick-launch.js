@@ -74,7 +74,7 @@ export function quickLaunchDirective() {
             $scope.appHasWizard = parsedPlan!=null && !checkForLocationTags(parsedPlan);
             $scope.yamlViewDisplayed = !$scope.appHasWizard;
             $scope.entityToDeploy = {
-                type: $scope.app.symbolicName
+                type: $scope.app.symbolicName + ($scope.app.version ? ':' + $scope.app.version : ''),
             };
             if ($scope.app.config) {
                 $scope.configMap = $scope.app.config.reduce((result, config) => {
