@@ -23,7 +23,7 @@
             <div class="col-sm-12 text-center">
                 <p><i class="fa fa-3x fa-upload"></i></p>
                 <p>
-                    <input type="file" name="files" id="files" multiple onchange="angular.element(this).scope().filesChanged(this)" />
+                    <input type="file" name="files" id="files" multiple custom-on-change="filesChanged" />
                     <label for="files" ng-click="choose()"><strong>Choose files</strong><span class="drag-upload"> or drag & drop them here</span>.</label>
                 </p>
             </div>
