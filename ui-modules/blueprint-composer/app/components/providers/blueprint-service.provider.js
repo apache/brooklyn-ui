@@ -700,7 +700,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         });
 
         relationships = Array.from(entity.config.values())
-            .filter(config => config[DSL_ENTITY_SPEC] && config[DSL_ENTITY_SPEC] instanceof Entity)
+            .filter(config => config && config[DSL_ENTITY_SPEC] && config[DSL_ENTITY_SPEC] instanceof Entity)
             .map(config => config[DSL_ENTITY_SPEC])
             .reduce((relationships, spec) => {
             return relationships.concat(getRelationships(spec));
