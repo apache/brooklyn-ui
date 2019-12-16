@@ -57,14 +57,8 @@ export function entityTreeDirective() {
 
         let observers = [];
 
-        let timeData = [];
-
         applicationApi.applicationsTree().then((response)=> {
             vm.applications = response.data;
-            vm.applications.forEach(app => {
-                getTimeData(app);
-            });
-
 
             observers.push(response.subscribe((response)=> {
                 response.data
@@ -84,17 +78,7 @@ export function entityTreeDirective() {
                         });
                     });
 
-                //Unless an app has just been loaded the start time information will be held locally in 'timeData'
-                vm.applications = response.data.map(app => {
-                    const appStartData = timeData.find( item => item.applicationId === app.applicationId);
-                    if (!appStartData) {
-                        getTimeData (app)
-                    }
-                    return {
-                        ...app,
-                        startTimeUtc: appStartData ? appStartData.startTimeUtc : Date.now()
-                    }
-                });
+                vm.applications = response.data;
 
                 function spawnNotification(app, opts) {
                     iconService.get(app).then((icon)=> {
@@ -106,24 +90,6 @@ export function entityTreeDirective() {
                     });
                 }
             }));
-            
-        //retrieves start time of the app from the entity api.
-        function getTimeData(app) {
-            //remove entries from timeData relating to apps that have been undeployed
-            timeData = timeData.filter(item => vm.applications.find(app => app.applicationId === item.applicationId))
-            entityApi.entityActivities(app.applicationId, app.applicationId).then( response => {
-                if ((response.data.length === 0) || (timeData.find(item => item.applicationId === app.applicationId))) {
-                    return;
-                };
-                timeData.push({
-                    applicationId: app.applicationId,
-                    startTimeUtc: response.data[0].startTimeUtc
-                });
-                app.startTimeUtc = response.data[0].startTimeUtc
-            }).catch((error) => {
-                console.log(error);
-            });
-            }
         });
 
         $scope.$on('$destroy', ()=> {
