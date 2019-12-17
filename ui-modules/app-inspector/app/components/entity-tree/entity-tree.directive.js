@@ -43,11 +43,14 @@ export function entityTreeDirective() {
     return {
         restrict: 'E',
         template: entityTreeTemplate,
-        controller: ['$scope', '$state', 'applicationApi', 'iconService', 'brWebNotifications', controller],
+        scope: {
+           sortReverse: '=',
+        },
+        controller: ['$scope', '$state', 'applicationApi', 'entityApi', 'iconService', 'brWebNotifications', controller],
         controllerAs: 'vm'
     };
 
-    function controller($scope, $state, applicationApi, iconService, brWebNotifications) {
+    function controller($scope, $state, applicationApi, entityApi, iconService, brWebNotifications) {
         $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
         let vm = this;

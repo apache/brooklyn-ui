@@ -22,29 +22,36 @@
             <br-card>
                 <br-card-content class="entity-tree">
                     <div class="entity-tree-header">
-                        <h2 class="entity-tree-title">Applications</h2>
-
-                        <button class="btn btn-link entity-tree-action"
+                        <div class="entity-tree-header-section">
+                            <h2 class="entity-tree-title">Applications</h2>
+                            <button class="btn btn-sm btn-default entity-tree-sort-action" ng-click="ctrl.toggleSortOrder($event)">
+                                <div>
+                                    <span class="glyphicon" ng-class="ctrl.sortReverse ? 'fa fa-sort-amount-desc' : 'fa fa-sort-amount-asc'"></span>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="entity-tree-header-section">
+                            <button class="btn btn-link entity-tree-action"
                                 ng-class="{'btn-sm': !ctrl.isNotificationsBlocked, 'btn-xs': ctrl.isNotificationsBlocked}"
                                 ng-if="ctrl.isNotificationsSupported"
                                 ng-disabled="ctrl.isNotificationsBlocked"
                                 ng-click="ctrl.toggleNotifications()">
-                            <i class="fa fa-bell notifications" ng-if="!ctrl.isNotificationsBlocked"
-                                ng-class="{'active': ctrl.isNotificationsEnabled}"></i>
-                            <span class="fa-stack" ng-if="ctrl.isNotificationsBlocked"
-                                  uib-tooltip="Notifications are currently blocked. You can allow them in your browser settings"
-                                  tooltip-placement="left">
-                                <i class="fa fa-bell fa-stack-1x"></i>
-                                <i class="fa fa-ban fa-stack-2x text-danger"></i>
-                            </span>
-                        </button>
-
-                        <a href="/brooklyn-ui-blueprint-composer" class="btn btn-sm btn-default entity-tree-action">
-                            <i class="fa fa-plus"></i>
-                        </a>
+                                <i class="fa fa-bell notifications" ng-if="!ctrl.isNotificationsBlocked"
+                                   ng-class="{'active': ctrl.isNotificationsEnabled}"></i>
+                                <span class="fa-stack" ng-if="ctrl.isNotificationsBlocked"
+                                      uib-tooltip="Notifications are currently blocked. You can allow them in your browser settings"
+                                      tooltip-placement="left">
+                                    <i class="fa fa-bell fa-stack-1x"></i>
+                                    <i class="fa fa-ban fa-stack-2x text-danger"></i>
+                                </span>
+                            </button>
+                            <a href="/brooklyn-ui-blueprint-composer" class="btn btn-sm btn-default entity-tree-action">
+                                <i class="fa fa-plus"></i>
+                            </a>
+                        </div>
                     </div>
 
-                    <entity-tree></entity-tree>
+                    <entity-tree sort-reverse="ctrl.sortReverse"></entity-tree>
                 </br-card-content>
             </br-card>
 
