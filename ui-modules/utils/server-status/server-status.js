@@ -55,7 +55,21 @@ export function BrServerStatusDirective() {
             let state = BrServerStatusModalController.STATES.OK;
             let stateData = null;
             if (error) {
-                state = BrServerStatusModalController.STATES.NO_CONNECTION;
+                console.log(error);
+                stateData = response.data;
+
+                if (stateData && stateData.SESSION_AGE_EXCEEDED) {
+                    state = BrServerStatusModalController.STATES.SESSION_AGE_EXCEEDED;
+                } else if (stateData && stateData.SESSION_INVALIDATED) {
+                    state = BrServerStatusModalController.STATES.SESSION_INVALIDATED;
+                }else if(response.status === 404) {
+                    state = BrServerStatusModalController.STATES.NO_CONNECTION;
+                }else if(response.status === 401 || response.status === 403 ) {
+                    state = BrServerStatusModalController.STATES.USER_NOT_AUTHORIZED;
+                }else {
+                    state = BrServerStatusModalController.STATES.OTHER_ERROR;
+                }
+
                 stateData = response;
             } else {
                 stateData = response.data;
@@ -114,7 +128,11 @@ export function BrServerStatusDirective() {
                 STOPPING: 'STOPPING',
                 NOT_HA_MASTER: 'NOT-HA-MASTER',
                 NO_CONNECTION: 'NO-CONNECTION',
-                UNHEALTHY: 'UNHEALTHY'
+                UNHEALTHY: 'UNHEALTHY',
+                SESSION_INVALIDATED: 'SESSION_INVALIDATED',
+                SESSION_AGE_EXCEEDED: 'SESSION_AGE_EXCEEDED',
+                OTHER_ERROR: 'OTHER_ERROR',
+                USER_NOT_AUTHORIZED: 'USER_NOT_AUTHORIZED'
             };
             static $inject = ['$scope', '$uibModalInstance', 'state', 'stateData'];
 
