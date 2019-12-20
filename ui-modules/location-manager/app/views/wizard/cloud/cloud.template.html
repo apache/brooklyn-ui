@@ -67,7 +67,10 @@
 
                     <div class="form-group" ng-class="{'has-error': form.endpoint.$invalid && form.endpoint.$touched}">
                         <label class="control-label" for="endpoint">Cloud endpoint</label>
-                        <input ng-model="vm.endpoint" type="text" class="form-control" id="endpoint" name="endpoint" ng-disabled="vm.isEndpointDisabled()" placeholder="If using a private cloud, the URL to connect to it is required">
+                        <input ng-model="vm.endpoint" type="text" class="form-control" id="endpoint" name="endpoint" ng-required="vm.isEndpointRequired()" ng-disabled="vm.isEndpointDisabled()" placeholder="If using a private cloud, the URL to connect to it is required">
+                        <p class="help-block" ng-show="form.$submitted || form.endpoint.$touched">
+                            <span ng-show="form.endpoint.$error.required">You must specify an endpoint with this provider</span>
+                        </p>
                     </div>
 
                     <div class="form-group" ng-class="{'has-error': form.identity.$invalid && form.identity.$touched}">

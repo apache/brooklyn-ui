@@ -71,6 +71,11 @@ export function wizardCloudController($element, $state, brSnackbar, locationSpec
         return disabled.indexOf(vm.provider) > -1;
     };
 
+    vm.isEndpointRequired = function () {
+        let required = ['jclouds:azurecompute-arm'];
+        return required.indexOf(vm.provider) > -1;
+    }
+
     vm.save = function () {
         let config = angular.copy(vm.config);
         if (vm.region) {
