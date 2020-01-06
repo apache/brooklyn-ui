@@ -70,7 +70,7 @@
             </tbody>
         </table>
     </div>
-    <div ng-switch-when="NO-CONNECTION">
+    <div ng-switch-when="NO-CONNECTION|OTHER_ERROR" ng-switch-when-separator="|">
         <p>Cannot connect to API server. Please check your network connection. Try closing and re-opening the window and login again in the app. If the problem persists, please contact your administrator.</p>
     </div>
     <div ng-switch-when="UNHEALTHY">
@@ -82,7 +82,6 @@
         <form action="/brooklyn-ui-logout" method="post">
             <button type="submit" class="btn btn-success"><i class="fa fa-sign-out fa-fw"></i> Logout</button>
         </form>
-    </div>
     </div>
     <div ng-switch-when="SESSION_INVALIDATED|SESSION_AGE_EXCEEDED" ng-switch-when-separator="|">
         <p>Your last session has expired.</p>
