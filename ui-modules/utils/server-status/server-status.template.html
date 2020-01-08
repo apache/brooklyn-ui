@@ -79,16 +79,10 @@
     </div>
     <div ng-switch-when="USER_NOT_AUTHORIZED">
         <p>The current user is not authorized.</p>
-        <form action="/brooklyn-ui-logout" method="post">
-            <button type="submit" class="btn btn-success"><i class="fa fa-sign-out fa-fw"></i> Logout</button>
-        </form>
     </div>
     <div ng-switch-when="SESSION_INVALIDATED|SESSION_AGE_EXCEEDED" ng-switch-when-separator="|">
         <p>Your last session has expired.</p>
         <p>Please login again.</p>
-        <form action="/brooklyn-ui-logout" method="post">
-            <button type="submit" class="btn btn-success"><i class="fa fa-sign-out fa-fw"></i> Logout</button>
-        </form>
     </div>
     <div ng-switch-when="OTHER_ERROR">
         <p>An unexpected error has occurred.</p>
