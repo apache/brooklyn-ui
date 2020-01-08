@@ -41,19 +41,28 @@ export const mainState = {
             return brooklynUiModulesApi.getUiModules();
         }],
         catalogApps: ['catalogApi', (catalogApi) => {
-            return catalogApi.getTypes({params: {supertype: 'org.apache.brooklyn.api.entity.Application'}}).then(applications => {
-                // optionally tag things with 'catalog_quick_launch': if any apps are so tagged, 
-                // then only apps with such tags will be shown;
-                // in all cases only show those marked as templates
-                var appsWithTag = applications.filter(application => application.tags && application.tags.indexOf("catalog_quick_launch")>=0);
-                if (appsWithTag.length) {
-                    applications = appsWithTag;
-                }
-                return applications.filter(application => application.template);
-            });
+            return catalogApi.getTypes({params: {supertype: 'org.apache.brooklyn.api.entity.Application'}}).then(
+                applications => filterCatalogQuickLaunch(applications.filter(application => application.template))
+            );
         }]
     }
 };
+
+export function filterCatalogQuickLaunch(list, callbackForFiltered) {
+    // optionally tag things with 'catalog_quick_launch': if any apps are so tagged, 
+    // then only apps with such tags will be shown;
+    // in all cases only show those marked as templates.
+    // the callback is used for clients who wish to adjust their behaviour if tags are used,
+    // eg in deploy.controller where noCreateLocationLink is set on the quick launch if there are tagged locations
+    if (!list) { 
+        list = [];
+    }
+    let tagged = list.filter(i => i && i.tags && i.tags.indexOf("catalog_quick_launch")>=0);
+    if (callbackForFiltered) {
+        callbackForFiltered(tagged, list);
+    }
+    return tagged.length ? tagged : list;
+}
 
 export function mainStateConfig($stateProvider) {
     $stateProvider.state(mainState);

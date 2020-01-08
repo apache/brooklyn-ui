@@ -22,6 +22,7 @@ import uiRouter from 'angular-ui-router';
 import brooklynApi from 'brooklyn-ui-utils/brooklyn.api/brooklyn.api';
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import modalTemplate from './modal.template.html';
+import {filterCatalogQuickLaunch} from '../main.controller.js';
 
 const MODULE_NAME = 'states.main.deploy';
 
@@ -54,9 +55,7 @@ export function deployStateController($scope, $state, $stateParams, $uibModal, b
             entitySpec: ['catalogApi', (catalogApi) => {
                 return catalogApi.getBundleType($stateParams.bundleSymbolicName, $stateParams.bundleVersion, $stateParams.typeSymbolicName, $stateParams.typeVersion);
             }],
-            locations: ['locationApi', (locationApi) => {
-                return locationApi.getLocations();
-            }]
+            locations: ['locationApi', locationApi => locationApi.getLocations()],
         }
     });
 
@@ -80,9 +79,17 @@ export function deployStateController($scope, $state, $stateParams, $uibModal, b
 
     function modalController($scope, $location, entitySpec, locations) {
         $scope.app = entitySpec;
-        $scope.locations = locations;
-        // can optionally add: { noEditButton: true, noComposerButton: true }, or pass in URL
-        $scope.args = angular.extend({}, $location.search());
+        $scope.locations = filterCatalogQuickLaunch(locations, (t) => {
+                $scope.usingCatalogQuickLaunchTags = t.length > 0;
+            });
+        
+        // also supports { noEditButton: true, noComposerButton: true }
+        // see quick-launch.js for more info
+        $scope.args = angular.extend({
+                noCreateLocationLink: $scope.usingCatalogQuickLaunchTags
+            },
+            $location.search());
+        
     }
 }
 

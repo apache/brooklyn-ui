@@ -39,7 +39,8 @@
             <h3 class="quick-launch-section-title">Name</h3>
             <div class="quick-launch-section-content">
                 <div class="form-group">
-                    <input class="form-control" type="text" ng-model="model.name" ng-disabled="deploying" name="name" placeholder="Choose a name for this application (Optional)" autofocus />
+                    <input class="form-control" type="text" ng-model="model.name" ng-disabled="deploying" name="name" 
+                        placeholder="{{ 'Choose a name for this application (Optional)' }}" />
                 </div>
             </div>
         </section>
@@ -55,7 +56,7 @@
                            required />
                     <small class="help-block">
                         <span ng-if="deploy.location.$error.required && (deploy.$submitted || deploy.location.$touched)">You must select a location.</span>
-                        <span>Alternatively, you can <a href="/brooklyn-ui-location-manager/#!/wizard">create a new location</a></span>
+                        <span ng-if="!args.noCreateLocationLink">Alternatively, you can <a href="/brooklyn-ui-location-manager/#!/wizard">create a new location</a></span>
                     </small>
                 </div>
             </div>
