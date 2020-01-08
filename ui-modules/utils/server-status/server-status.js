@@ -44,6 +44,7 @@ export function BrServerStatusDirective() {
         let intervalId = $interval(checkStatus, REFRESH_INTERVAL);
         $scope.$on('$destroy', () => ($interval.cancel(intervalId)));
         let modalInstance = null;
+        var previousState = null;
 
         function checkStatus() {
             cookie = $cookies.getObject(COOKIE_KEY) || DEFAULT_COOKIE;
@@ -55,7 +56,6 @@ export function BrServerStatusDirective() {
             let state = BrServerStatusModalController.STATES.OK;
             let stateData = null;
             if (error) {
-                console.log(error);
                 stateData = response.data;
 
                 if (stateData && stateData.SESSION_AGE_EXCEEDED) {
@@ -67,9 +67,17 @@ export function BrServerStatusDirective() {
                 }else if(response.status === 401 || response.status === 403 ) {
                     state = BrServerStatusModalController.STATES.USER_NOT_AUTHORIZED;
                 }else {
-                    state = BrServerStatusModalController.STATES.OTHER_ERROR;
+                    if (previousState === null || previousState == BrServerStatusModalController.STATES.OK){
+                        state = BrServerStatusModalController.STATES.OTHER_ERROR;
+                    } else {
+                        // we're now getting a new server error, possibly because the old error has expired
+                        // but changing the message for the user would be confusing so don't do that!
+                        // eg we get a 405 after a 307 (which the browser handles automatically) if redirected to Google for login
+                        console.log("Server responded \"" + stateData + "\" after previous problem \"" + previousState + "\"");
+                        // no update
+                        state = previousState;
+                    }
                 }
-
                 stateData = response;
             } else {
                 stateData = response.data;
@@ -83,6 +91,7 @@ export function BrServerStatusDirective() {
                     state = BrServerStatusModalController.STATES.UNHEALTHY;
                 }
             }
+            previousState = state;
             $rootScope.$broadcast('br-server-state-update', {state: state, stateData: stateData});
             if (state !== BrServerStatusModalController.STATES.OK && !cookie.dismissed && cookie.dismissedSate !== state) {
                 openModal(state, stateData);
