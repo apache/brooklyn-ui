@@ -36,7 +36,7 @@ export default MODULE_NAME;
 export function BrServerStatusDirective() {
     return {
         restrict: 'A',
-        controller: ['$rootScope', '$scope', '$http', '$cookies', '$interval', '$uibModal', controller]
+        controller: ['$rootScope', '$scope', '$http', '$cookies', '$interval', '$uibModal', '$log', controller]
     };
 
     function controller($rootScope, $scope, $http, $cookies, $interval, $uibModal) {
@@ -73,7 +73,7 @@ export function BrServerStatusDirective() {
                         // we're now getting a new server error, possibly because the old error has expired
                         // but changing the message for the user would be confusing so don't do that!
                         // eg we get a 405 after a 307 (which the browser handles automatically) if redirected to Google for login
-                        console.log("Server responded \"" + stateData + "\" after previous problem \"" + previousState + "\"");
+                        $log.info("Server responded \"" + stateData + "\" after previous problem \"" + previousState + "\"");
                         // no update
                         state = previousState;
                     }
