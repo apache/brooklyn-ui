@@ -39,7 +39,7 @@ export function BrServerStatusDirective() {
         controller: ['$rootScope', '$scope', '$http', '$cookies', '$interval', '$uibModal', '$log', controller]
     };
 
-    function controller($rootScope, $scope, $http, $cookies, $interval, $uibModal) {
+    function controller($rootScope, $scope, $http, $cookies, $interval, $uibModal, $log) {
         let cookie = DEFAULT_COOKIE;
         let intervalId = $interval(checkStatus, REFRESH_INTERVAL);
         $scope.$on('$destroy', () => ($interval.cancel(intervalId)));
