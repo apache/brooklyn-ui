@@ -38,7 +38,7 @@ export function quickLaunchDirective() {
         scope: {
             app: '=',
             locations: '=',
-            args: '=?',
+            args: '=?', // default behaviour of code is: { noEditButton: false, noComposerButton: false, noCreateLocationLink: false, location: null }
             callback: '=?',
         },
         controller: ['$scope', '$http', '$location', 'brSnackbar', controller]
@@ -47,11 +47,21 @@ export function quickLaunchDirective() {
     function controller($scope, $http, $location, brSnackbar) {
         $scope.deploying = false;
         $scope.model = {
-            newConfigFormOpen: false
+            newConfigFormOpen: false,
+            
+            // should never be null, so the placeholder in UI for model.name will never be used;
+            // hence autofocus is disabled
+            name: ($scope.app && ($scope.app.name || $scope.app.symbolicName)) || null, 
         };
         $scope.args = $scope.args || {};
         if ($scope.args.location) {
             $scope.model.location = $scope.args.location;
+        } else {
+            if ($scope.locations) {
+                if ($scope.locations.length == 1) {
+                    $scope.model.location = $scope.locations[0];
+                }
+            } 
         }
         $scope.toggleNewConfigForm = toggleNewConfigForm;
         $scope.addNewConfigKey = addNewConfigKey;
