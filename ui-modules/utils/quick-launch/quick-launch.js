@@ -38,7 +38,7 @@ export function quickLaunchDirective() {
         scope: {
             app: '=',
             locations: '=',
-            args: '=?', // default: { noEditButton: false, noComposerButton: false, noCreateLocationLink: false, location: null }
+            args: '=?', // default behaviour of code is: { noEditButton: false, noComposerButton: false, noCreateLocationLink: false, location: null }
             callback: '=?',
         },
         controller: ['$scope', '$http', '$location', 'brSnackbar', controller]

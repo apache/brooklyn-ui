@@ -50,10 +50,11 @@ export const mainState = {
 
 export function filterCatalogQuickLaunch(list, callbackForFiltered) {
     // optionally tag things with 'catalog_quick_launch': if any apps are so tagged, 
-    // then only apps with such tags will be shown;
-    // in all cases only show those marked as templates.
+    // then only apps with such tags will be shown; otherwise show all marked as templates.
+    
     // the callback is used for clients who wish to adjust their behaviour if tags are used,
     // eg in deploy.controller where noCreateLocationLink is set on the quick launch if there are tagged locations
+    
     if (!list) { 
         list = [];
     }
