@@ -21,7 +21,9 @@
     <h3 class="modal-title" ng-switch-when="STARTING">Server starting up&hellip;</h3>
     <h3 class="modal-title" ng-switch-when="STOPPING">Server shutting down&hellip;</h3>
     <h3 class="modal-title" ng-switch-when="NOT-HA-MASTER">This server is not the high availability master</h3>
-    <h3 class="modal-title" ng-switch-when="NO-CONNECTION">Connecting to server&hellip;</h3>
+    <h3 class="modal-title" ng-switch-when="NO-CONNECTION|OTHER_ERROR" ng-switch-when-separator="|">Connecting to server&hellip;</h3>
+    <h3 class="modal-title" ng-switch-when="SESSION_INVALIDATED|SESSION_AGE_EXCEEDED" ng-switch-when-separator="|">Session invalid</h3>
+    <h3 class="modal-title" ng-switch-when="USER_NOT_AUTHORIZED">User not authorized</h3>
     <h3 class="modal-title" ng-switch-when="OK">Server up and running</h3>
     <h3 class="modal-title" ng-switch-default>This server has errors</h3>
 </div>
@@ -68,12 +70,26 @@
             </tbody>
         </table>
     </div>
-    <div ng-switch-when="NO-CONNECTION">
+    <div ng-switch-when="NO-CONNECTION|OTHER_ERROR" ng-switch-when-separator="|">
         <p>Cannot connect to API server. Please check your network connection. Try closing and re-opening the window and login again in the app. If the problem persists, please contact your administrator.</p>
     </div>
     <div ng-switch-when="UNHEALTHY">
         <p>Your server has errors and is not healthy.</p>
         <p>Please check with your system administrator.</p>
+    </div>
+    <div ng-switch-when="USER_NOT_AUTHORIZED">
+        <p>The current user is not authorized.</p>
+    </div>
+    <div ng-switch-when="SESSION_INVALIDATED|SESSION_AGE_EXCEEDED" ng-switch-when-separator="|">
+        <p>Your last session has expired.</p>
+        <p>Please login again.</p>
+    </div>
+    <div ng-switch-when="OTHER_ERROR">
+        <p>An unexpected error has occurred.</p>
+        <p>Please try to login again and if the problem persists, please check with your system administrator.</p>
+        <form action="/brooklyn-ui-logout" method="post">
+            <button type="submit" class="btn btn-success"><i class="fa fa-sign-out fa-fw"></i> Logout</button>
+        </form>
     </div>
     <div ng-switch-when="OK">
         <p>The server is now ready to use.</p>

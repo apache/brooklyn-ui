@@ -36,14 +36,15 @@ export default MODULE_NAME;
 export function BrServerStatusDirective() {
     return {
         restrict: 'A',
-        controller: ['$rootScope', '$scope', '$http', '$cookies', '$interval', '$uibModal', controller]
+        controller: ['$rootScope', '$scope', '$http', '$cookies', '$interval', '$uibModal', '$log', controller]
     };
 
-    function controller($rootScope, $scope, $http, $cookies, $interval, $uibModal) {
+    function controller($rootScope, $scope, $http, $cookies, $interval, $uibModal, $log) {
         let cookie = DEFAULT_COOKIE;
         let intervalId = $interval(checkStatus, REFRESH_INTERVAL);
         $scope.$on('$destroy', () => ($interval.cancel(intervalId)));
         let modalInstance = null;
+        var previousState = null;
 
         function checkStatus() {
             cookie = $cookies.getObject(COOKIE_KEY) || DEFAULT_COOKIE;
@@ -55,7 +56,28 @@ export function BrServerStatusDirective() {
             let state = BrServerStatusModalController.STATES.OK;
             let stateData = null;
             if (error) {
-                state = BrServerStatusModalController.STATES.NO_CONNECTION;
+                stateData = response.data;
+
+                if (stateData && stateData.SESSION_AGE_EXCEEDED) {
+                    state = BrServerStatusModalController.STATES.SESSION_AGE_EXCEEDED;
+                } else if (stateData && stateData.SESSION_INVALIDATED) {
+                    state = BrServerStatusModalController.STATES.SESSION_INVALIDATED;
+                }else if(response.status === 404) {
+                    state = BrServerStatusModalController.STATES.NO_CONNECTION;
+                }else if(response.status === 401 || response.status === 403 ) {
+                    state = BrServerStatusModalController.STATES.USER_NOT_AUTHORIZED;
+                }else {
+                    if (previousState === null || previousState == BrServerStatusModalController.STATES.OK){
+                        state = BrServerStatusModalController.STATES.OTHER_ERROR;
+                    } else {
+                        // we're now getting a new server error, possibly because the old error has expired
+                        // but changing the message for the user would be confusing so don't do that!
+                        // eg we get a 405 after a 307 (which the browser handles automatically) if redirected to Google for login
+                        $log.info("Server responded \"" + stateData + "\" after previous problem \"" + previousState + "\"");
+                        // no update
+                        state = previousState;
+                    }
+                }
                 stateData = response;
             } else {
                 stateData = response.data;
@@ -69,6 +91,7 @@ export function BrServerStatusDirective() {
                     state = BrServerStatusModalController.STATES.UNHEALTHY;
                 }
             }
+            previousState = state;
             $rootScope.$broadcast('br-server-state-update', {state: state, stateData: stateData});
             if (state !== BrServerStatusModalController.STATES.OK && !cookie.dismissed && cookie.dismissedSate !== state) {
                 openModal(state, stateData);
@@ -114,7 +137,11 @@ export function BrServerStatusDirective() {
                 STOPPING: 'STOPPING',
                 NOT_HA_MASTER: 'NOT-HA-MASTER',
                 NO_CONNECTION: 'NO-CONNECTION',
-                UNHEALTHY: 'UNHEALTHY'
+                UNHEALTHY: 'UNHEALTHY',
+                SESSION_INVALIDATED: 'SESSION_INVALIDATED',
+                SESSION_AGE_EXCEEDED: 'SESSION_AGE_EXCEEDED',
+                OTHER_ERROR: 'OTHER_ERROR',
+                USER_NOT_AUTHORIZED: 'USER_NOT_AUTHORIZED'
             };
             static $inject = ['$scope', '$uibModalInstance', 'state', 'stateData'];
 
