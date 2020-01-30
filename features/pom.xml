@@ -30,7 +30,7 @@
     
     <artifactId>brooklyn-ui-features</artifactId>
     <name>Brooklyn UI :: Features</name>
-    <packaging>feature</packaging>
+    <packaging>pom</packaging>
 
     <dependencies>
         <dependency>
@@ -59,16 +59,56 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/feature</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
-                <groupId>org.apache.karaf.tooling</groupId>
-                <artifactId>karaf-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
                 <configuration>
-                    <startLevel>100</startLevel>
-                    <aggregateFeatures>true</aggregateFeatures>		
-                    <resolver>(obr)</resolver>
+                    <useDefaultDelimiters>false</useDefaultDelimiters>
+                    <delimiters>
+                        <delimiter>${*}</delimiter>
+                    </delimiters>
                 </configuration>
-                <!-- TODO would be nice to verify this -->
+                <executions>
+                    <execution>
+                        <id>filter</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>target/classes/feature.xml</file>
+                                    <classifier>features</classifier>
+                                    <type>xml</type>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
