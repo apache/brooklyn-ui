@@ -33,7 +33,7 @@ If you have a Karaf distribution, you can install the Brooklyn UI simply by runn
 
 ```
 # use the correct BROOKLYN_VERSION_BELOW
-feature:repo-add mvn:org.apache.brooklyn.ui/brooklyn-ui-features/1.0.0-SNAPSHOT/xml/features
+feature:repo-add mvn:org.apache.brooklyn.ui/brooklyn-ui-features/1.1.0-SNAPSHOT/xml/features
 
 feature:install brooklyn-ui
 ```
