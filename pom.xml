@@ -323,11 +323,13 @@
                         <exclude>**/dist/**</exclude>
                         <!-- trivial config files, which contain comments so we can't insert the license header -->
                         <exclude>**/.babelrc</exclude>
-                        <exclude>.mvn/jvm.config</exclude>
+                        <exclude>**/.mvn/jvm.config</exclude>
                         <!-- maven cache -->
                         <exclude>**/.m2/**</exclude>
                         <!-- travis config file -->
-                        <exclude>.travis.yml</exclude>
+                        <exclude>**/.travis.yml</exclude>
+                        <!-- should be excluded by children but isn't always -->
+                        <exclude>**/test/fixtures/brooklyn-api/v1/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
