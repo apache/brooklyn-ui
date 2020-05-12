@@ -20,9 +20,9 @@ Runtime dependencies:
   # This artifact depends on additional third-party components at runtime.
   # These are not bundled here but may be included as part of a build.
 
-  angular-animate@1.7.2: 
+  angular-animate@1.7.8: 
     Project:      angular-animate (NodeJS module)
-    Version:      1.7.2
+    Version:      1.7.8
     Available at: 
       - http://angularjs.org
       - https://github.com/angular/angular.js
@@ -30,9 +30,9 @@ Runtime dependencies:
     License name: MIT License
     Notice:       Copyright (c) 2016 Angular
   
-  angular-cookies@1.7.2: 
+  angular-cookies@1.7.8: 
     Project:      angular-cookies (NodeJS module)
-    Version:      1.7.2
+    Version:      1.7.8
     Available at: 
       - http://angularjs.org
       - https://github.com/angular/angular.js
@@ -66,9 +66,9 @@ Runtime dependencies:
     License name: MIT License
     Notice:       Copyright (c) 2013-2015 The AngularUI Team, Karsten Sperling
   
-  angular@1.7.2: 
+  angular@1.7.8: 
     Project:      angular (NodeJS module)
-    Version:      1.7.2
+    Version:      1.7.8
     Available at: 
       - http://angularjs.org
       - https://github.com/angular/angular.js
@@ -83,22 +83,23 @@ Runtime dependencies:
     License name: MIT License
     Notice:       Copyright (C) 2012 by Vitaly Puzrin
   
-  bootstrap@3.3.7: 
+  bootstrap@3.4.1: 
     Project:      bootstrap (NodeJS module)
-    Version:      3.3.7
+    Version:      3.4.1
     Available at: 
-      - http://getbootstrap.com
+      - https://getbootstrap.com/
       - https://github.com/twbs/bootstrap
     Developed by: Twitter, Inc.
     License name: MIT License
-    Notice:       Copyright (c) 2011-2016 Twitter, Inc.
+    Notice:       Copyright (c) 2011-2019 Twitter, Inc.
   
-  codemirror@5.39.2: 
+  codemirror@5.49.2: 
     Project:      codemirror (NodeJS module)
-    Version:      5.39.2
+    Version:      5.49.2
     Available at: 
-      - http://codemirror.net
+      - https://codemirror.net
       - https://github.com/codemirror/CodeMirror
+    Developed by: Marijn Haverbeke (http://marijnhaverbeke.nl)
     License name: MIT License
     Notice:       Copyright (C) 2017 by Marijn Haverbeke <marijnh@gmail.com> and others
   
@@ -110,9 +111,9 @@ Runtime dependencies:
     License name: MIT License
     Notice:       Copyright (c) 2012-2014 Andris Reinman
   
-  es6-promise@4.2.4: 
+  es6-promise@4.2.8: 
     Project:      es6-promise (NodeJS module)
-    Version:      4.2.4
+    Version:      4.2.8
     Available at: https://github.com/stefanpenner/es6-promise
     Developed by: Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
     License name: MIT License
@@ -137,9 +138,9 @@ Runtime dependencies:
     Developed by: Dave Gandy (http://twitter.com/davegandy)
     License name: Font Awesome License
   
-  iconv-lite@0.4.23: 
+  iconv-lite@0.4.24: 
     Project:      iconv-lite (NodeJS module)
-    Version:      0.4.23
+    Version:      0.4.24
     Available at: https://github.com/ashtuchkin/iconv-lite
     Developed by: Alexander Shtuchkin (ashtuchkin@gmail.com)
     License name: MIT License
@@ -171,9 +172,9 @@ Runtime dependencies:
     License name: MIT License
     Notice:       Copyright (c) 2015 Matt Andrews
   
-  js-yaml@3.12.0: 
+  js-yaml@3.13.1: 
     Project:      js-yaml (NodeJS module)
-    Version:      3.12.0
+    Version:      3.13.1
     Available at: https://github.com/nodeca/js-yaml
     Developed by: Vladimir Zapparov (dervus.grim@gmail.com)
     License name: MIT License
@@ -195,15 +196,15 @@ Runtime dependencies:
     License name: BSD 3-Clause (New BSD) License
     Notice:       Copyright (c) 2008-2017, Brian Turek. All rights reserved.*
   
-  lodash@4.17.10: 
+  lodash@4.17.15: 
     Project:      lodash (NodeJS module)
-    Version:      4.17.10
+    Version:      4.17.15
     Available at: 
       - https://github.com/lodash/lodash
       - https://lodash.com/
-    Developed by: John-David Dalton (http://allyoucanleet.com/)
+    Developed by: John-David Dalton (john.david.dalton@gmail.com)
     License name: MIT License
-    Notice:       Copyright JS Foundation and other contributors <https://js.foundation/>
+    Notice:       Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
   
   node-fetch@1.7.3: 
     Project:      node-fetch (NodeJS module)
@@ -221,9 +222,9 @@ Runtime dependencies:
     License name: MIT License
     Notice:       Copyright (c) 2014 Dan Abramov
   
-  rxjs@5.5.11: 
+  rxjs@5.5.12: 
     Project:      rxjs (NodeJS module)
-    Version:      5.5.11
+    Version:      5.5.12
     Available at: https://github.com/ReactiveX/RxJS
     Developed by: Ben Lesh (ben@benlesh.com)
     License name: Apache License, version 2.0
@@ -252,9 +253,9 @@ Runtime dependencies:
     License name: MIT License
     Notice:       Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com). Copyright (c) Ben Lesh <ben@benlesh.com>
   
-  whatwg-fetch@2.0.4: 
+  whatwg-fetch@3.0.0: 
     Project:      whatwg-fetch (NodeJS module)
-    Version:      2.0.4
+    Version:      3.0.0
     Available at: https://github.com/github/fetch
     License name: MIT License
     Notice:       Copyright (c) 2014-2016 GitHub, Inc.
