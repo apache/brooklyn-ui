@@ -78,17 +78,26 @@ export function catalogController($scope, $rootScope, catalogApi, brUtilsGeneral
         label: 'Bundle'
     }];
 
+    const savedOrderByKey = 'catalog-order-by';
+
+    const savedOrderBy = localStorage && localStorage.getItem(savedOrderByKey) !== null ?
+        JSON.parse(localStorage.getItem(savedOrderByKey))
+        : {
+            orderBy: 'bundles',
+            sortBy: 0
+        }
+
     $scope.pagination = {
         page: 1,
         itemsPerPage: 20
     };
     $scope.config = {
-        orderBy: orderBysBundles
+        orderBy: savedOrderBy.orderBy === 'bundles' ? orderBysBundles : orderBysTypes
     };
     $scope.state = {
-        view: 'bundles',
+        view: savedOrderBy.orderBy,
         versions: [],
-        orderBy: $scope.config.orderBy[0],
+        orderBy: $scope.config.orderBy.length > savedOrderBy.sortBy ? $scope.config.orderBy[savedOrderBy.sortBy] : 0,
         search: {}
     };
 
@@ -96,6 +105,20 @@ export function catalogController($scope, $rootScope, catalogApi, brUtilsGeneral
         if (newView && oldView && !angular.equals(newView, oldView)) {
             $scope.config.orderBy = newView === 'types' ? orderBysTypes : orderBysBundles;
             $scope.state.orderBy = $scope.config.orderBy[0]
+            savedOrderBy.orderBy = newView;
+            savedOrderBy.sortBy = 0;
+            if (localStorage) {
+                localStorage.setItem(savedOrderByKey, JSON.stringify(savedOrderBy));
+            }
+        }
+    });
+
+    $scope.$watch('state.orderBy', (newOrderBy, oldOrderBy) => {
+        if(newOrderBy && oldOrderBy && !angular.equals(newOrderBy, oldOrderBy)) {
+            savedOrderBy.sortBy = $scope.config.orderBy.indexOf(newOrderBy);
+            if (localStorage) {
+                localStorage.setItem(savedOrderByKey, JSON.stringify(savedOrderBy));
+            }
         }
     });
 
