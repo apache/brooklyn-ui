@@ -206,6 +206,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             scope.state.config.add.list = getAddListConfig();
         });
 
+        removeFilterIfAllItemsHidden();
+
         loadCustomConfigWidgetMetadata(scope);
 
         // Model
@@ -811,6 +813,14 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     scope.state.config.customConfigWidgetMetadata[k] = angular.extend({enabled: true}, scope.state.config.customConfigWidgetMetadata[k], wd);
                 });
             });
+        }
+
+        function removeFilterIfAllItemsHidden() {
+            let filteredItems = getAddListConfig();
+            if (filteredItems.length > 0 && filteredItems.filter(item => !item.isHidden).length === 0) {
+                scope.state.config.filter.values['all'] = true;
+                console.log(scope.state.config.filter);
+            }
         }
 
         /**
