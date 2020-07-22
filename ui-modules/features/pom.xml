@@ -36,9 +36,7 @@
         <dependency>
             <groupId>org.apache.karaf.features</groupId>
             <artifactId>framework</artifactId>
-            <version>${karaf.version}</version>
             <type>kar</type>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.karaf.features</groupId>
@@ -46,7 +44,6 @@
             <classifier>features</classifier>
             <version>${karaf.version}</version>
             <type>xml</type>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.brooklyn</groupId>
@@ -54,7 +51,6 @@
             <version>${brooklyn.version}</version>
             <type>xml</type>
             <classifier>features</classifier>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.brooklyn.ui.modularity</groupId>
@@ -62,7 +58,68 @@
             <version>${brooklyn.ui.modularity.version}</version>
             <type>xml</type>
             <classifier>features</classifier>
-            <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+            <!-- ensure this version, not karaf's version -->
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>${cxf.javax.annotation-api.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.apache.brooklyn.ui.modules</groupId>
+            <artifactId>brooklyn-ui-home</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.brooklyn.ui.modules</groupId>
+            <artifactId>brooklyn-ui-logout</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.brooklyn.ui.modules</groupId>
+            <artifactId>brooklyn-ui-app-inspector</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.brooklyn.ui.modules</groupId>
+            <artifactId>brooklyn-ui-blueprint-composer</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.brooklyn.ui.modules</groupId>
+            <artifactId>brooklyn-ui-blueprint-importer</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.brooklyn.ui.modules</groupId>
+            <artifactId>brooklyn-ui-catalog</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.brooklyn.ui.modules</groupId>
+            <artifactId>brooklyn-ui-groovy-console</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.brooklyn.ui.modules</groupId>
+            <artifactId>brooklyn-ui-location-manager</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.brooklyn.ui.modules</groupId>
+            <artifactId>brooklyn-ui-rest-api-docs</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
         </dependency>
     </dependencies>
 

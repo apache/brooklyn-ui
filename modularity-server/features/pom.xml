@@ -56,6 +56,26 @@
             <classifier>features</classifier>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.brooklyn.ui.modularity</groupId>
+            <artifactId>brooklyn-ui-module-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.brooklyn.ui.modularity</groupId>
+            <artifactId>brooklyn-ui-module-registry</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.brooklyn.ui.modularity</groupId>
+            <artifactId>brooklyn-ui-metadata-registry</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.brooklyn.ui.modularity</groupId>
+            <artifactId>brooklyn-ui-external-modules</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

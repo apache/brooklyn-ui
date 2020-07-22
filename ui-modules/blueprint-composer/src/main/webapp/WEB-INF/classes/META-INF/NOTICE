@@ -1,7 +1,7 @@
 Notice: |
 
   Apache Brooklyn
-  Copyright 2014-2018 The Apache Software Foundation
+  Copyright 2014-2020 The Apache Software Foundation
 
   This product includes software developed at
   The Apache Software Foundation (http://www.apache.org/).
@@ -9,11 +9,11 @@ Notice: |
 
 Bundled dependencies:
 
-  # This software includes the following bundled third-party components.
+  # This software distribution includes the following bundled third-party components.
   # Referenced licenses can be found in the accompanying LICENSE file.
 
-  @uirouter/core@5.0.20: 
-    Project:      @uirouter/core (NodeJS module)
+  "@uirouter/core@5.0.20": 
+    Project:      "@uirouter/core (NodeJS module)"
     Version:      5.0.20
     Available at: 
       - https://github.com/ui-router/core

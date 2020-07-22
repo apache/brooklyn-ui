@@ -1,3 +1,195 @@
+Notice: |
+
+  Apache Brooklyn
+  Copyright 2014-2020 The Apache Software Foundation
+
+  This product includes software developed at
+  The Apache Software Foundation (http://www.apache.org/).
+
+  This software is released under the Apache Software License, verison 2.0.
+  This license and the licenses for all dependencies are included below
+  following the dependencies and their notices.
+
+Source dependencies:
+
+  # This software includes the following third-party components in its source code.
+  # Additional runtime dependencies are required when built and are listed in the subsequent section.
+
+  # No such dependencies
+
+
+Runtime dependencies:
+
+  # This software depends on additional third-party components at runtime.
+  # These are not bundled here but may be included as part of a build.
+
+  angular-animate@1.7.2: 
+    Project:      angular-animate (NodeJS module)
+    Version:      1.7.2
+    Available at: 
+      - http://angularjs.org
+      - https://github.com/angular/angular.js
+    Developed by: Angular Core Team (angular-core+npm@google.com)
+    License name: MIT License
+    Notice:       Copyright (c) 2016 Angular
+  
+  angular-cookies@1.7.2: 
+    Project:      angular-cookies (NodeJS module)
+    Version:      1.7.2
+    Available at: 
+      - http://angularjs.org
+      - https://github.com/angular/angular.js
+    Developed by: Angular Core Team (angular-core+npm@google.com)
+    License name: MIT License
+    Notice:       Copyright (c) 2016 Angular
+  
+  angular-multiple-transclusion@1.0.0: 
+    Project:      angular-multiple-transclusion (NodeJS module)
+    Version:      1.0.0
+    Available at: https://github.com/mcasimir/angular-multiple-transclusion
+    Developed by: mcasimir (https://github.com/mcasimir)
+    License name: MIT License
+  
+  angular-ui-bootstrap@2.5.6: 
+    Project:      angular-ui-bootstrap (NodeJS module)
+    Version:      2.5.6
+    Available at: 
+      - http://angular-ui.github.io/bootstrap/
+      - https://github.com/angular-ui/bootstrap
+    Developed by: https://github.com/angular-ui/bootstrap/graphs/contributors
+    License name: MIT License
+    Notice:       Copyright (c) 2012-2017 the AngularUI Team, https://github.com/organizations/angular-ui/teams/291112
+  
+  angular-ui-router@0.3.2: 
+    Project:      angular-ui-router (NodeJS module)
+    Version:      0.3.2
+    Available at: 
+      - http://angular-ui.github.com/
+      - https://github.com/angular-ui/ui-router
+    License name: MIT License
+    Notice:       Copyright (c) 2013-2015 The AngularUI Team, Karsten Sperling
+  
+  angular@1.7.2: 
+    Project:      angular (NodeJS module)
+    Version:      1.7.2
+    Available at: 
+      - http://angularjs.org
+      - https://github.com/angular/angular.js
+    Developed by: Angular Core Team (angular-core+npm@google.com)
+    License name: MIT License
+    Notice:       Copyright (c) 2016 Angular
+  
+  argparse@1.0.10: 
+    Project:      argparse (NodeJS module)
+    Version:      1.0.10
+    Available at: https://github.com/nodeca/argparse
+    License name: MIT License
+    Notice:       Copyright (C) 2012 by Vitaly Puzrin
+  
+  bootstrap@3.3.7: 
+    Project:      bootstrap (NodeJS module)
+    Version:      3.3.7
+    Available at: 
+      - http://getbootstrap.com
+      - https://github.com/twbs/bootstrap
+    Developed by: Twitter, Inc.
+    License name: MIT License
+    Notice:       Copyright (c) 2011-2016 Twitter, Inc.
+  
+  codemirror@5.39.2: 
+    Project:      codemirror (NodeJS module)
+    Version:      5.39.2
+    Available at: 
+      - http://codemirror.net
+      - https://github.com/codemirror/CodeMirror
+    License name: MIT License
+    Notice:       Copyright (C) 2017 by Marijn Haverbeke <marijnh@gmail.com> and others
+  
+  esprima@4.0.1: 
+    Project:      esprima (NodeJS module)
+    Version:      4.0.1
+    Available at: 
+      - http://esprima.org
+      - https://github.com/jquery/esprima
+    Developed by: Ariya Hidayat (ariya.hidayat@gmail.com)
+    License name: BSD 2-Clause (Simplified or FreeBSD) License
+    Notice:       Copyright JS Foundation and other contributors, https://js.foundation/
+  
+  font-awesome@4.7.0: 
+    Project:      font-awesome (NodeJS module)
+    Version:      4.7.0
+    Available at: 
+      - http://fontawesome.io/
+      - https://github.com/FortAwesome/Font-Awesome
+    Developed by: Dave Gandy (http://twitter.com/davegandy)
+    License name: Font Awesome License
+  
+  identicon.js@1.3.0: 
+    Project:      identicon.js (NodeJS module)
+    Version:      1.3.0
+    Available at: https://github.com/stewartlord/identicon.js
+    Developed by: stewardlord
+    License name: BSD 2-Clause (Simplified or FreeBSD) License
+    Notice:       Copyright (c) 2013, Stewart Lord. All rights reserved.
+  
+  js-yaml@3.12.0: 
+    Project:      js-yaml (NodeJS module)
+    Version:      3.12.0
+    Available at: https://github.com/nodeca/js-yaml
+    Developed by: Vladimir Zapparov (dervus.grim@gmail.com)
+    License name: MIT License
+    Notice:       Copyright (C) 2011-2015 by Vitaly Puzrin
+  
+  jsonschema@1.2.4: 
+    Project:      jsonschema (NodeJS module)
+    Version:      1.2.4
+    Available at: https://github.com/tdegrunt/jsonschema
+    Developed by: Tom de Grunt (tom@degrunt.nl)
+    License name: MIT License
+    Notice:       Copyright (C) 2012-2015 Tom de Grunt <tom@degrunt.nl>
+  
+  jssha@2.3.1: 
+    Project:      jssha (NodeJS module)
+    Version:      2.3.1
+    Available at: https://github.com/Caligatio/jsSHA
+    Developed by: Brian Turek (brian.turek@gmail.com)
+    License name: BSD 3-Clause (New BSD) License
+    Notice:       Copyright (c) 2008-2017, Brian Turek. All rights reserved.*
+  
+  lodash@4.17.10: 
+    Project:      lodash (NodeJS module)
+    Version:      4.17.10
+    Available at: 
+      - https://github.com/lodash/lodash
+      - https://lodash.com/
+    Developed by: John-David Dalton (http://allyoucanleet.com/)
+    License name: MIT License
+    Notice:       Copyright JS Foundation and other contributors <https://js.foundation/>
+  
+  rxjs@5.5.11: 
+    Project:      rxjs (NodeJS module)
+    Version:      5.5.11
+    Available at: https://github.com/ReactiveX/RxJS
+    Developed by: Ben Lesh (ben@benlesh.com)
+    License name: Apache License, version 2.0
+  
+  sprintf-js@1.0.3: 
+    Project:      sprintf-js (NodeJS module)
+    Version:      1.0.3
+    Available at: https://github.com/alexei/sprintf.js
+    Developed by: Alexandru Marasteanu (http://alexei.ro/)
+    License name: BSD 3-Clause (New BSD) License
+    Notice:       Copyright (c) 2007-2014, Alexandru Marasteanu <hello [at) alexei (dot] ro>. All rights reserved.
+  
+  symbol-observable@1.0.1: 
+    Project:      symbol-observable (NodeJS module)
+    Version:      1.0.1
+    Available at: https://github.com/blesh/symbol-observable
+    Developed by: Ben Lesh (ben@benlesh.com)
+    License name: MIT License
+    Notice:       Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com). Copyright (c) Ben Lesh <ben@benlesh.com>
+  
+
 Apache License: |
 
    Apache License
@@ -205,10 +397,7 @@ Apache License: |
    
 Dependency licenses:
 
-   # This software includes third-party code under their licenses.
-   # These licenses are compatible with the Apache License above.
-   # Details of these dependencies can be found in the accompanying NOTICE file.
-   # These licenses are included below with their full text.
+   # Licenses of the source and binary dependencies of this software are included below.
 
   Apache License, version 2.0: |
     # from https://www.apache.org/licenses/LICENSE-2.0
