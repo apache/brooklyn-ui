@@ -84,6 +84,10 @@ export function bundleController($scope, $state, $stateParams, brSnackbar, brUti
         });
     };
 
+    $scope.downloadBundle = () => {
+        return catalogApi.downloadBundle($scope.bundle.symbolicName, $scope.bundle.version, {urlOnly: true});
+    }
+
     $scope.isNonEmpty = (o) => {
         return brUtilsGeneral.isNonEmpty(o);
     };
