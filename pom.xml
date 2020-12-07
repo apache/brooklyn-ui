@@ -98,7 +98,7 @@
         <maven-resources-plugin.version>3.0.1</maven-resources-plugin.version>
         <maven-war-plugin.version>3.0.0</maven-war-plugin.version>
         <frontend-maven-plugin.version>1.9.0</frontend-maven-plugin.version>
-        <pax-web.version>7.2.3</pax-web.version>
+        <pax-web.version>7.3.9</pax-web.version>
         <pax-web-extender-whiteboard.version>${pax-web.version}</pax-web-extender-whiteboard.version>
 
         <!-- new deps not used in brooklyn-server -->
