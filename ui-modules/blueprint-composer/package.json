@@ -40,7 +40,6 @@
     "appname": "Blueprint composer"
   },
   "dependencies": {
-    "brooklyn-ui-utils": "file:../utils",
     "angular": "^1.7.2",
     "angular-animate": "^1.7.2",
     "angular-cookies": "^1.7.2",
@@ -51,6 +50,7 @@
     "angular-ui-router": "^1.0.18",
     "angular-xeditable": "^0.4.0",
     "bootstrap": "^3.3.7",
+    "brooklyn-ui-utils": "file:../utils",
     "codemirror": "^5.19.0",
     "d3": "4.10.0",
     "date-fns": "^1.29.0",
