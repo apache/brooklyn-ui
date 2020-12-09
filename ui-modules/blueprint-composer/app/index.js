@@ -72,14 +72,16 @@ import stackViewer from 'angular-java-stack-viewer';
 import {EntityFamily} from "./components/util/model/entity.model";
 import scriptTagDecorator from 'brooklyn-ui-utils/script-tag-non-overwrite/script-tag-non-overwrite';
 
+import brandAngularJs from 'brand-angular-js';
+
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
-angular.module('app', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 'ui.router.state.events', brCore,
+angular.module('brooklynBlueprintComposer', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 'ui.router.state.events', brCore,
     brServerStatus, brAutoFocus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement,
     brYamlEditor, brUtils, brSpecEditor, brooklynCatalogSaver, brooklynApi, bottomSheet, stackViewer, brDragndrop,
     customActionDirective, customConfigSuggestionDropdown, paletteApiProvider, paletteServiceProvider, blueprintLoaderApiProvider,
     breadcrumbs, catalogSelector, designer, objectCache, entityFilters, locationFilter, actionService, tabService, blueprintService,
-    dslService, paletteDragAndDropService, recentlyUsedService, scriptTagDecorator])
+    dslService, paletteDragAndDropService, recentlyUsedService, scriptTagDecorator, brandAngularJs])
     .provider('composerOverrides', composerOverridesProvider)
     .filter('dslParamLabel', ['$filter', dslParamLabelFilter])
     .config(['$urlRouterProvider', '$stateProvider', '$logProvider', '$compileProvider', applicationConfig])

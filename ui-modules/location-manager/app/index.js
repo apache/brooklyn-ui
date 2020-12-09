@@ -38,9 +38,11 @@ import wizardAdvancedState from 'views/wizard/advanced/advanced.controller';
 import wizardByonState from 'views/wizard/byon/byon.controller';
 import wizardCloudState from 'views/wizard/cloud/cloud.controller';
 
+import brandAngularJs from 'brand-angular-js';
+
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
-angular.module('app', [ngAnimate, ngCookies, uiRouter, brCore, brServerStatus, brAutoFocus, brInterstitialSpinner, brooklynModuleLinks, brSensitiveField, brooklynUserManagement, brooklynApi, locationsState, detailState, wizardState, wizardAdvancedState, wizardByonState, wizardCloudState])
+angular.module('brooklynLocationManager', [ngAnimate, ngCookies, uiRouter, brCore, brServerStatus, brAutoFocus, brInterstitialSpinner, brooklynModuleLinks, brSensitiveField, brooklynUserManagement, brooklynApi, locationsState, detailState, wizardState, wizardAdvancedState, wizardByonState, wizardCloudState, brandAngularJs])
     .config(['$urlRouterProvider', '$logProvider', '$compileProvider', applicationConfig])
     .run(['$rootScope', '$state', 'brSnackbar', errorHandler])
     .run(['$http', httpConfig]);

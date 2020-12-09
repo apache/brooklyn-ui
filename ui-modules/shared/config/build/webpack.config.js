@@ -140,6 +140,7 @@ const config = {
             'brand-fallback': BRAND_FALLBACK_DIR,
             // brand-supplied JS definitions
             'brand-js': fs.existsSync(pj(BRAND_DIR, 'brand.js')) ? pj(BRAND_DIR, 'brand.js') : pj(BRAND_FALLBACK_DIR, 'brand.js'),
+            'brand-angular-js': fs.existsSync(pj(BRAND_DIR, 'brand-angular.js')) ? pj(BRAND_DIR, 'brand-angular.js') : pj(BRAND_FALLBACK_DIR, 'brand-angular.js'),
         },
         root: SRC_DIR,
         extensions: ['', '.js'],
