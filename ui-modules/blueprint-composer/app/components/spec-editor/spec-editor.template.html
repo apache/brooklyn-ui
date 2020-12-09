@@ -507,7 +507,7 @@
                         <div class="input-group" ng-switch-default>
                             <span class="main-control span-for-rounded-edge">
                                 <textarea ng-model="config[item.name]" class="form-control rounded-edge" name="{{item.name}}" id="{{item.name}}" auto-grow
-                                      placeholder="{{defined(config[item.name]) ? null : item.defaultValue=='' || item.defaultValue==null ? '(empty)' : item.defaultValue}}"
+                                      placeholder="{{defined(config[item.name]) ? null : item.defaultValue === '' || item.defaultValue === null ? '(empty)' : item.defaultValue}}"
                                       ng-focus="specEditor.recordConfigFocus(item)" on-enter="specEditor.advanceOutToFormGroupInPanel"></textarea>
                             </span>
                             <span class="input-group-btn dsl-wizard-button rounded-edge" ng-if="specEditor.isDslWizardButtonAllowed(item.name)">
