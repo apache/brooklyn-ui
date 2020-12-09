@@ -32,9 +32,11 @@ import uiRouter from 'angular-ui-router';
 
 import mainState from 'views/main/main.controller.js';
 
+import brandAngularJs from 'brand-angular-js';
+
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
-angular.module('app', [ngAnimate, ngCookies, ngResource, brCore, brServerStatus, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, uiRouter, mainState])
+angular.module('brooklynBlueprintImporter', [ngAnimate, ngCookies, ngResource, brCore, brServerStatus, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, uiRouter, mainState, brandAngularJs])
     .config(['$logProvider', '$compileProvider', appConfig])
     .config(['$urlRouterProvider', routerConfig])
     .run(['$rootScope', '$state', 'brSnackbar', errorHandler])

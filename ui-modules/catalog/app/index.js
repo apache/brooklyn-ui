@@ -35,9 +35,11 @@ import catalogState from './views/catalog/catalog.state';
 import catalogBundleState from './views/bundle/bundle.state';
 import catalogBundleTypeState from './views/bundle/type/type.state';
 
+import brandAngularJs from 'brand-angular-js';
+
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
-angular.module('app', [ngAnimate, ngCookies, ngResource, brCore, brServerStatus, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, brooklynCatalogUpdater, uiRouter, catalogState, catalogBundleState, catalogBundleTypeState])
+angular.module('brooklynCatalog', [ngAnimate, ngCookies, ngResource, brCore, brServerStatus, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, brooklynCatalogUpdater, uiRouter, catalogState, catalogBundleState, catalogBundleTypeState, brandAngularJs])
     .config(['$logProvider', '$compileProvider', applicationConfig])
     .config(['$urlRouterProvider', routerConfig])
     .run(['$rootScope', '$state', 'brSnackbar', errorHandler])

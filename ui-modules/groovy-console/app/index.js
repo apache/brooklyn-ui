@@ -30,9 +30,11 @@ import brooklynUserManagement from 'brooklyn-ui-utils/user-management/user-manag
 
 import mainState from 'views/main/main.controller';
 
+import brandAngularJs from 'brand-angular-js';
+
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
-angular.module('app', [ngAnimate, ngCookies, uiRouter, brCore, brServerStatus, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, mainState])
+angular.module('brooklynGroovyConsole', [ngAnimate, ngCookies, uiRouter, brCore, brServerStatus, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, mainState, brandAngularJs])
     .config(['$logProvider', '$compileProvider', appConfig])
     .config(['$urlRouterProvider', '$stateProvider', routerConfig])
     .run(['$rootScope', '$state', 'brSnackbar', errorHandler])
