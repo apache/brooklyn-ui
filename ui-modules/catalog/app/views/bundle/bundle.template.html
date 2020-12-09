@@ -37,6 +37,9 @@
                                     </li>
                                 </ul>
                             </div>
+                            <a class="btn btn-sm btn-default" ng-href="{{downloadBundle()}}">
+                                <i class="fa fa-fw fa-download"></i> Download
+                            </a>
                         </h4>
                         <p class="media-auto-wrap text-muted" ng-if="bundle.symbolicName.startsWith('brooklyn-catalog-bom')"><small>
                             <i class="fa fa-fw fa-info-circle"></i> Bundle auto-generated from an uploaded BOM file
