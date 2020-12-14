@@ -349,12 +349,11 @@ spec-editor {
             order: 10;
             padding-top: 3px;
         }
-        .label-rhs-buttons {
+        .label-rhs-buttons, .label-rhs-buttons-sensitive-hidden {
             flex: 1 0 auto;
             align-items: center;
             text-align: right;
             order: 20;
-            display: none;
             .spacer {
                 flex: 1 0 auto;
             }
@@ -364,6 +363,9 @@ spec-editor {
             .dsl-active:not(.dsl-viewer-manual-override) button.btn {
                 color: @brand-primary;
             }
+        }
+        .label-rhs-buttons {
+          display: none;
         }
         .control-value {
             flex: 1 0 auto;
@@ -457,6 +459,12 @@ spec-editor {
                     max-width: 0;
                 }
             }
+        }
+        .hide-masked-sensitive-value {
+          display: none !important;
+        }
+        .sensitive-field-hidden .sensitive-field-hidden-icon {
+          margin-top: 5px;  //align with icons when expanded
         }
     }
     .param-fields {
