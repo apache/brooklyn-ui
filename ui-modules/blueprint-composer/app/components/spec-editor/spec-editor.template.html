@@ -339,7 +339,7 @@
                         </span>
                     </label>
                     
-                    <span class="label-rhs-buttons">
+                    <span class="label-rhs-buttons" ng-if="!specEditor.isHiddenSensitiveField(item)">
                         <span class="spacer"> </span>
                         <span class="custom-widget-enable-button" ng-if="specEditor.getCustomConfigWidgetMode(item) !== null">
                             <i class="fa fa-fw fa-sun-o" ng-click="specEditor.toggleCustomConfigWidgetMode(item)" aria-hidden="true" title="{{specEditor.getCustomConfigWidgetModeTitle(item)}} [{{item.name}}]"></i>
@@ -363,9 +363,21 @@
                             <i class="fa fa-fw fa-eraser" ng-click="model.removeConfig(item.name)" aria-hidden="true" title="Clear configuration [{{item.name}}]"></i>
                             <span class="sr-only">Clear configuration [{{item.name}}]</span>
                         </span>
+                        <span class="sensitive-field-visible" ng-if="specEditor.isSensitiveField(item) && !specEditor.isHiddenSensitiveField(item)">
+                            <i class="fa fa-fw fa-eye" ng-click="specEditor.setSensitiveFieldUnmasked(item, false)" aria-hidden="true" title="Hide sensitive field value [{{item.name}}]"></i>
+                            <span class="sr-only">Hide sensitive field value [{{item.name}}]</span>
+                        </span>
                     </span>
-                    
-                    <div class="control-value" ng-class="{ 'inline-control': item.widgetMode==='boolean', 'unset': !defined(config[item.name]), 'has-default': defined(item.defaultValue) && item.defaultValue!=null, 'code-mode-active': state.config.codeModeActive[item.name] }">
+
+                    <span class="label-rhs-buttons-sensitive-hidden" ng-if="specEditor.isHiddenSensitiveField(item)">
+                        <span class="spacer"> </span>
+                        <span class="sensitive-field-hidden">
+                            <i class="fa fa-fw fa-eye-slash sensitive-field-hidden-icon" ng-click="specEditor.setSensitiveFieldUnmasked(item, true)" aria-hidden="true" title="Reveal masked sensitive field value [{{item.name}}]"></i>
+                            <span class="sr-only">Reveal masked sensitive field value [{{item.name}}]</span>
+                        </span>
+                    </span>
+
+                    <div class="control-value" ng-class="{ 'inline-control': item.widgetMode==='boolean', 'unset': !defined(config[item.name]), 'has-default': defined(item.defaultValue) && item.defaultValue!=null, 'code-mode-active': state.config.codeModeActive[item.name], 'hide-masked-sensitive-value': specEditor.isHiddenSensitiveField(item) }">
                         <div ng-switch-when="boolean" class="boolean">
                             <div class="btn-group btn-block" role="group">
                                 <button type="button" class="btn btn-xs btn-default" ng-class="{'btn-success active': config[item.name] === false, 'active': config[item.name] === undefined && item.defaultValue === false}" ng-click="config[item.name] = false" ng-focus="specEditor.recordConfigFocus(item)">false</button>
