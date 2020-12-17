@@ -177,5 +177,11 @@ export function yamlEditorDirective($rootScope, brSnackbar) {
                 $scope.cm.refresh();
             });
         });
+
+        $scope.$on(`${MODULE_NAME}.cm`, callback => {
+            if (angular.isFunction(callback)) {
+                callback.apply(null, [$scope.cm]);
+            }
+        });
     }
 }
