@@ -59,13 +59,17 @@ export function yamlEditorDirective($rootScope, brSnackbar) {
             type: $scope.type
         });
 
-        let lint = (text, options, cm) => {
-            let issues = cm.getHelpers(CodeMirror.Pos(0, 0), 'lint').reduce((issues, helper) => issues.concat(helper(text, options, cm)), []);
+        let lint = (text, cb, options, cm) => {
+            let promises = cm.getHelpers(CodeMirror.Pos(0, 0), 'lint').reduce((issues, helper) => issues.concat(helper(text, options, cm)), []);
 
-            $rootScope.$broadcast('yaml.lint', issues.some(issue => !issue.severity || issue.severity === 'error'), cm.getValue());
-
-            return issues;
-        };
+            Promise.all(promises).then(issues => {
+                $rootScope.$broadcast('yaml.lint', issues.some(issue => !issue.severity || issue.severity === 'error'), cm.getValue());
+                cb(cm, issues.reduce((acc, arr) => {
+                    acc.push(...arr);
+                    return acc;
+                }, []));
+            });
+        }
         let hint = (cm, callback, options) => {
             let loadingState = createLoadingState();
             let removeLoadingState = () => {
@@ -127,7 +131,11 @@ export function yamlEditorDirective($rootScope, brSnackbar) {
                 name: 'yaml',
                 globalVars: true
             },
-            lint: lint,
+            lint: {
+                getAnnotations: lint,
+                async: true,
+                timeout: 1000
+            },
             extraKeys: {
                 'Ctrl-Space': 'autocomplete',
                 'Tab': cm => {
@@ -178,9 +186,9 @@ export function yamlEditorDirective($rootScope, brSnackbar) {
             });
         });
 
-        $scope.$on(`${MODULE_NAME}.cm`, callback => {
+        $scope.$on(`${MODULE_NAME}.cm`, (event, callback) => {
             if (angular.isFunction(callback)) {
-                callback.apply(null, [$scope.cm]);
+                callback.apply(null, [CodeMirror, $scope.cm]);
             }
         });
     }

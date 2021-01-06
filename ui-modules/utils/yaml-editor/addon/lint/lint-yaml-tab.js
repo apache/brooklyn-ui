@@ -19,22 +19,24 @@
 const CodeMirror = require('codemirror');
 
 CodeMirror.registerGlobalHelper('lint', 'yaml-tab', mode => mode.name === 'yaml', (text, options, cm) => {
-    let issues = [];
+    return new Promise(resolve => {
+        let issues = [];
 
-    for (let index = 0; index < cm.lineCount(); index++) {
-        cm.getLine(index)
-            .split('')
-            .map((c, i) => ({c: c, i: i}))
-            .filter(item => item.c === '\t')
-            .forEach(item => {
-                issues.push({
-                    from: CodeMirror.Pos(index, item.i),
-                    to: CodeMirror.Pos(index, item.i + 1),
-                    message: 'Tab character detected. We strongly recommend you to use spaces instead to avoid indentation issues',
-                    severity: 'warning'
+        for (let index = 0; index < cm.lineCount(); index++) {
+            cm.getLine(index)
+                .split('')
+                .map((c, i) => ({c: c, i: i}))
+                .filter(item => item.c === '\t')
+                .forEach(item => {
+                    issues.push({
+                        from: CodeMirror.Pos(index, item.i),
+                        to: CodeMirror.Pos(index, item.i + 1),
+                        message: 'Tab character detected. We strongly recommend you to use spaces instead to avoid indentation issues',
+                        severity: 'warning'
+                    });
                 });
-            });
-    }
+        }
 
-    return issues;
+        resolve(issues);
+    });
 });
