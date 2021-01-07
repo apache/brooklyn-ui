@@ -94,7 +94,7 @@ export function quickLaunchDirective() {
                             $scope.entityToDeploy[BROOKLYN_CONFIG] = {};
                         }
 
-                        $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = config.defaultValue || null;
+                        $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = config.defaultValue === "undefined" ? null : config.defaultValue;
                     }
                     return result;
                 }, {});
