@@ -40,7 +40,6 @@
     "appname": "App inspector"
   },
   "dependencies": {
-    "brooklyn-ui-utils": "file:../utils",
     "angular": "^1.6.1",
     "angular-animate": "^1.6.1",
     "angular-cookies": "^1.6.1",
@@ -50,6 +49,7 @@
     "angular-ui-router": "^0.3.1",
     "angular-xeditable": "^0.4.0",
     "bootstrap": "^3.3.7",
+    "brooklyn-ui-utils": "file:../utils",
     "d3": "4.10.0",
     "es6-promise": "^4.0.5",
     "font-awesome": "^4.6.3",

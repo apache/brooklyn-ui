@@ -25,7 +25,7 @@
         <link rel="icon" type="image/png" href="${require('!!file-loader!<%= brand.product.favicon %>')}"/>
         <title><%= getBrandedText('product.name' )%> - <%= app.appname %></title>
     </head>
-    <body ng-app="app" br-server-status ng-strict-di>
+    <body ng-app="brooklynHome" br-server-status ng-strict-di>
         ${require('ejs-html!brooklyn-shared/partials/header-hero.html')}
 
         <main class="page-main-area" id="main-content" ui-view ng-cloak></main>

@@ -30,9 +30,11 @@ import brServerStatus from 'brooklyn-ui-utils/server-status/server-status';
 
 import mainState from './views/main/main.controller';
 
+import brandAngularJs from 'brand-angular-js';
+
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
-angular.module('app', [ngAnimate, ngCookies, uiRouter, brCore, brInterstitialSpinner, brServerStatus, brooklynModuleLinks, brooklynUserManagement, mainState])
+angular.module('brooklynLogout', [ngAnimate, ngCookies, uiRouter, brCore, brInterstitialSpinner, brServerStatus, brooklynModuleLinks, brooklynUserManagement, mainState, brandAngularJs])
     .config(['$urlRouterProvider', '$logProvider', '$compileProvider', applicationConfig])
     .run(['$http', httpConfig]);
 

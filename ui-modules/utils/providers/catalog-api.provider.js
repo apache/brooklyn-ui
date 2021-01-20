@@ -188,4 +188,11 @@ class CatalogApiProvider extends CatalogApi {
             .catch(new ErrorHandler(deferred));
         return deferred.promise;
     }
+
+    downloadBundle(bundleSymbolicName, bundleVersion, config) {
+        const url = `${this.host}/v1/catalog/bundles/${bundleSymbolicName}/${bundleVersion}/download`;
+        return config.urlOnly === true
+            ? url
+            : this.$http.get(`${this.host}/v1/catalog/bundles/${bundleSymbolicName}/${bundleVersion}/download`, angular.extend({}, config));
+    }
 }

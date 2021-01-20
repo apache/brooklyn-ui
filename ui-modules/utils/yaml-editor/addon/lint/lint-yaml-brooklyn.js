@@ -56,70 +56,72 @@ CodeMirror.registerGlobalHelper('lint', 'yamlBrooklyn', (mode, cm) => (mode.name
     (text, options, cm) => lint(rootValidator, rootSchema, text, options, cm));
 
 function lint(validator, baseSchema, text, options, cm) {
-    let issues = [];
-    let parser = new JsYamlParser();
+    return new Promise((resolve, reject) =>  {
+        let issues = [];
+        let parser = new JsYamlParser();
 
-    try {
-        let root = parser.parse(text);
+        try {
+            let root = parser.parse(text);
 
-        if (root) {
-            validator.validate(root.result, JSON.parse(baseSchema), {propertyName: 'blueprint', nestedErrors: true}).errors.forEach(error => {
-                let from = CodeMirror.Pos(0, 0);
-                let to = CodeMirror.Pos(0, 0);
-                let yamlNode = findYamlNode(root, error.instance);
+            if (root) {
+                validator.validate(root.result, JSON.parse(baseSchema), {propertyName: 'blueprint', nestedErrors: true}).errors.forEach(error => {
+                    let from = CodeMirror.Pos(0, 0);
+                    let to = CodeMirror.Pos(0, 0);
+                    let yamlNode = findYamlNode(root, error.instance);
 
-                if (yamlNode) {
-                    switch (error.name) {
-                        case 'anyOf':
-                        case 'oneOf':
-                        case 'allOf':
-                        case 'not':
-                        case 'required':
-                            from = to = getPostFromIndex(yamlNode.start, cm);
-                            break;
-                        case 'additionalProperties':
-                            let childNode = yamlNode.children.find(child => child.result === error.argument);
-                            from = getPostFromIndex(childNode.start, cm);
-                            to = getPostFromIndex(childNode.end, cm);
-                            break;
-                        default:
-                            from = getPostFromIndex(yamlNode.start, cm);
-                            to = getPostFromIndex(yamlNode.end, cm);
-                            break;
+                    if (yamlNode) {
+                        switch (error.name) {
+                            case 'anyOf':
+                            case 'oneOf':
+                            case 'allOf':
+                            case 'not':
+                            case 'required':
+                                from = to = getPostFromIndex(yamlNode.start, cm);
+                                break;
+                            case 'additionalProperties':
+                                let childNode = yamlNode.children.find(child => child.result === error.argument);
+                                from = getPostFromIndex(childNode.start, cm);
+                                to = getPostFromIndex(childNode.end, cm);
+                                break;
+                            default:
+                                from = getPostFromIndex(yamlNode.start, cm);
+                                to = getPostFromIndex(yamlNode.end, cm);
+                                break;
+                        }
                     }
-                }
-                issues.push({
-                    from: from,
-                    to: to,
-                    message: error.stack
+                    issues.push({
+                        from: from,
+                        to: to,
+                        message: error.stack
+                    });
                 });
-            });
-        }
-    } catch (err) {
-        if (err instanceof YAMLException) {
-            // Inspire by the Mark.getSnippet() code: https://github.com/nodeca/js-yaml/blob/master/lib/js-yaml/mark.js#L16-L52
-            let start = err.mark.position;
-            while (start > 0 && '\x00\r\n\x85\u2028\u2029'.indexOf(err.mark.buffer.charAt(start - 1)) === -1) {
-                start--;
             }
-            let end = err.mark.position - start;
-            let errorText = err.mark.buffer.substr(start, end);
+        } catch (err) {
+            if (err instanceof YAMLException) {
+                // Inspire by the Mark.getSnippet() code: https://github.com/nodeca/js-yaml/blob/master/lib/js-yaml/mark.js#L16-L52
+                let start = err.mark.position;
+                while (start > 0 && '\x00\r\n\x85\u2028\u2029'.indexOf(err.mark.buffer.charAt(start - 1)) === -1) {
+                    start--;
+                }
+                let end = err.mark.position - start;
+                let errorText = err.mark.buffer.substr(start, end);
 
-            issues.push({
-                from: CodeMirror.Pos(err.mark.line, cm.getLine(err.mark.line).indexOf(errorText)),
-                to: CodeMirror.Pos(err.mark.line, cm.getLine(err.mark.line).indexOf(errorText) + (errorText.length > 0 ? errorText.length : 1)),
-                message: err.reason
-            });
-        } else {
-            issues.push({
-                from: CodeMirror.Pos(0, 0),
-                to: CodeMirror.Pos(0, 0),
-                message: err.message
-            });
+                issues.push({
+                    from: CodeMirror.Pos(err.mark.line, cm.getLine(err.mark.line-1).indexOf(errorText)),
+                    to: CodeMirror.Pos(err.mark.line, cm.getLine(err.mark.line-1).indexOf(errorText) + (errorText.length > 0 ? errorText.length : 1)),
+                    message: err.reason
+                });
+            } else {
+                issues.push({
+                    from: CodeMirror.Pos(0, 0),
+                    to: CodeMirror.Pos(0, 0),
+                    message: err.message
+                });
+            }
         }
-    }
 
-    return issues;
+        return resolve(issues);
+    });
 }
 
 function findYamlNode(node, search) {

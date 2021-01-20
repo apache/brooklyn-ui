@@ -28,6 +28,7 @@ import brooklynDslEditor from '../dsl-editor/dsl-editor';
 import brooklynDslViewer from '../dsl-viewer/dsl-viewer';
 import template from './spec-editor.template.html';
 import {graphicalState} from '../../views/main/graphical/graphical.state';
+import {SENSITIVE_FIELD_REGEX} from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
 
 const MODULE_NAME = 'brooklyn.components.spec-editor';
 const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
@@ -707,6 +708,17 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 return "disabled";
             }
             return widgetMetadata["enabled"] ? 'enabled' : 'disabled';
+        };
+        specEditor.isSensitiveField = (item) => {
+            // should the field support masking
+            return SENSITIVE_FIELD_REGEX.test(item.name);
+        };
+        specEditor.isHiddenSensitiveField = (item) => {
+            // is the field currently in a masked state
+            return specEditor.isSensitiveField(item) && !item.isHiddenSensitiveFieldUnmasked;
+        };
+        specEditor.setSensitiveFieldUnmasked = (item, val) => {
+            item.isHiddenSensitiveFieldUnmasked = val;
         };
         specEditor.customConfigWidgetError = (item) => {
             var widgetMetadata = scope.state.config.customConfigWidgetMetadata[item.name];

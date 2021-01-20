@@ -56,6 +56,7 @@ import recentlyUsedService from "./components/providers/recently-used-service.pr
 import dslService from "./components/providers/dsl-service.provider";
 import paletteDragAndDropService from "./components/providers/palette-dragndrop.provider";
 import actionService from "./components/providers/action-service.provider";
+import tabService from "./components/providers/tab-service.provider";
 import {mainState} from "./views/main/main.controller";
 import {yamlState} from "./views/main/yaml/yaml.state";
 import {graphicalState} from "./views/main/graphical/graphical.state";
@@ -71,18 +72,21 @@ import stackViewer from 'angular-java-stack-viewer';
 import {EntityFamily} from "./components/util/model/entity.model";
 import scriptTagDecorator from 'brooklyn-ui-utils/script-tag-non-overwrite/script-tag-non-overwrite';
 
+import brandAngularJs from 'brand-angular-js';
+
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
-angular.module('app', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 'ui.router.state.events', brCore,
+angular.module('brooklynBlueprintComposer', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 'ui.router.state.events', brCore,
     brServerStatus, brAutoFocus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement,
     brYamlEditor, brUtils, brSpecEditor, brooklynCatalogSaver, brooklynApi, bottomSheet, stackViewer, brDragndrop,
     customActionDirective, customConfigSuggestionDropdown, paletteApiProvider, paletteServiceProvider, blueprintLoaderApiProvider,
-    breadcrumbs, catalogSelector, designer, objectCache, entityFilters, locationFilter, actionService, blueprintService,
-    dslService, paletteDragAndDropService, recentlyUsedService, scriptTagDecorator])
+    breadcrumbs, catalogSelector, designer, objectCache, entityFilters, locationFilter, actionService, tabService, blueprintService,
+    dslService, paletteDragAndDropService, recentlyUsedService, scriptTagDecorator, brandAngularJs])
     .provider('composerOverrides', composerOverridesProvider)
     .filter('dslParamLabel', ['$filter', dslParamLabelFilter])
     .config(['$urlRouterProvider', '$stateProvider', '$logProvider', '$compileProvider', applicationConfig])
     .config(['actionServiceProvider', actionConfig])
+    .config(['tabServiceProvider', tabConfig])
     .config(['paletteServiceProvider', paletteConfig])
     .run(['$rootScope', '$state', 'brSnackbar', errorHandler])
     .run(['$http', httpConfig]);
@@ -118,6 +122,19 @@ function composerOverridesProvider() {
 function actionConfig(actionServiceProvider) {
     actionServiceProvider.addAction("deploy", {html: '<button class="btn btn-outline btn-success" ng-click="vm.deployApplication()" ng-disabled="vm.deploying">Deploy</button>'});
     actionServiceProvider.addAction("add", {html: '<catalog-saver config="vm.saveToCatalogConfig"></catalog-saver>'});
+}
+
+function tabConfig(tabServiceProvider) {
+    tabServiceProvider.addTab('graphical', {
+        title: 'Graphical Designer',
+        icon: 'fa-object-group',
+        stateKey: 'main.graphical'
+    });
+    tabServiceProvider.addTab('yaml', {
+        title: 'YAML Editor',
+        icon: 'fa-pencil',
+        stateKey: 'main.yaml',
+    });
 }
 
 function paletteConfig(paletteServiceProvider) {

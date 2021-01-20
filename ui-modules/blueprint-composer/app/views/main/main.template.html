@@ -21,14 +21,9 @@
     <nav class="navbar navbar-mode">
         <div class="container-fluid flush-left">
             <ul class="nav navbar-nav navbar-nav-mode">
-                <li ng-class="{'active': vm.isGraphicalMode()}">
-                    <a ui-sref="main.graphical" ng-disabled="vm.parseError">
-                        <i class="fa fa-fw fa-object-group"></i> Graphical Designer
-                    </a>
-                </li>
-                <li ng-class="{'active': !vm.isGraphicalMode()}">
-                    <a ui-sref="main.yaml">
-                        <i class="fa fa-fw fa-pencil"></i> YAML Editor
+                <li ng-repeat="tab in vm.getAllTabs() track by tab.id" ng-class="{'active': vm.isTabActive(tab.stateKey)}">
+                    <a ui-sref="{{tab.stateKey}}">
+                        <i ng-if="tab.icon" class="fa fa-fw {{tab.icon}}"></i> {{tab.title}}
                     </a>
                 </li>
             </ul>
