@@ -20,7 +20,7 @@ import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-sp
 import template from './main.template.html';
 import {EntityFamily} from '../../components/util/model/entity.model';
 import {graphicalState} from './graphical/graphical.state';
-import {yamlState} from './yaml/yaml.state';
+import {yamlAutodetectState} from './yaml/yaml.state';
 import {graphicalEditEntityState} from './graphical/edit/entity/edit.entity.controller';
 import {graphicalEditPolicyState} from './graphical/edit/policy/edit.policy.controller';
 import {graphicalEditEnricherState} from './graphical/edit/enricher/edit.enricher.controller';
@@ -97,7 +97,7 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
     $scope.$on('blueprint.reset', () => {
         vm.saveToCatalogConfig = {};
         blueprintService.reset();
-        $state.go($state.includes(yamlState) ? yamlState : graphicalState, {}, {inherit: false, reload: true});
+        $state.go(vm.isYamlMode() ? $state : graphicalState, {}, {inherit: false, reload: true});
     });
     $scope.$on('blueprint.deploy', () => {
         vm.deployApplication();
@@ -134,6 +134,9 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
 
     vm.isTabActive = stateKey => {
         return $state.is(stateKey);
+    }
+    vm.isYamlMode = () => {
+        return $state.includes(yamlAutodetectState.name);
     }
 
     if (yaml) {

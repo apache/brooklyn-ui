@@ -58,7 +58,7 @@ import paletteDragAndDropService from "./components/providers/palette-dragndrop.
 import actionService from "./components/providers/action-service.provider";
 import tabService from "./components/providers/tab-service.provider";
 import {mainState} from "./views/main/main.controller";
-import {yamlState} from "./views/main/yaml/yaml.state";
+import {yamlAutodetectState, yamlCampState, yamlState} from "./views/main/yaml/yaml.state";
 import {graphicalState} from "./views/main/graphical/graphical.state";
 import {graphicalEditState} from "./views/main/graphical/edit/edit.controller";
 import {graphicalEditAddState} from "./views/main/graphical/edit/add/add";
@@ -98,7 +98,8 @@ function applicationConfig($urlRouterProvider, $stateProvider, $logProvider, $co
         .otherwise(graphicalState.url);
     $stateProvider
         .state(mainState)
-        .state(yamlState)
+        .state(yamlAutodetectState)
+        .state(yamlCampState)
         .state(graphicalState)
         .state(graphicalEditAddState)
         .state(graphicalEditState)
@@ -163,7 +164,7 @@ function paletteConfig(paletteServiceProvider) {
 function errorHandler($rootScope, $state, brSnackbar) {
     $rootScope.$on('$stateChangeError', (event, toState, toParams, fromState, fromParams, error) => {
         brSnackbar.create(error.detail);
-        if (toState === yamlState) {
+        if (toState && toState.name && toState.name.startsWith(yamlAutodetectState.name)) {
             $state.go(toState);
         } else {
             $state.go(graphicalState);

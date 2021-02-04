@@ -19,9 +19,21 @@
 import CodeMirror from 'codemirror';
 import {YAMLException} from 'js-yaml';
 
-export const yamlState = {
+
+export const yamlAutodetectState = {
+    // TODO make this do auto-detect
     name: 'main.yaml',
     url: 'yaml',
+    template: '<br-yaml-editor value="vm.yaml" type="blueprint"></br-yaml-editor>',
+    controller: ['$scope', '$rootScope', '$timeout', 'blueprintService', 'brSnackbar', yamlStateController],
+    controllerAs: 'vm',
+    data: {
+        label: 'YAML Editor'
+    }
+}
+export const yamlCampState = {
+    name: 'main.yaml.camp',
+    url: 'camp',
     template: '<br-yaml-editor value="vm.yaml" type="blueprint"></br-yaml-editor>',
     controller: ['$scope', '$rootScope', '$timeout', 'blueprintService', 'brSnackbar', yamlStateController],
     controllerAs: 'vm',
