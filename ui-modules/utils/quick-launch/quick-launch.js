@@ -307,14 +307,7 @@ export function quickLaunchDirective() {
     }
 
     function configInPlan(parsedPlan, configName) {
-        if (parsedPlan.hasOwnProperty('services')) {
-            if (parsedPlan['services'][0].hasOwnProperty(BROOKLYN_CONFIG)) {
-                if (parsedPlan['services'][0][BROOKLYN_CONFIG].hasOwnProperty(configName)) {
-                    return parsedPlan['services'][0][BROOKLYN_CONFIG][configName];
-                }
-            }
-        }
-        return '';
+        return (((((parsedPlan || {})['services'] || {})[0] || {})[BROOKLYN_CONFIG] || {})[configName] || '');
     }
 
     function checkForLocationTags(parsedPlan) {
