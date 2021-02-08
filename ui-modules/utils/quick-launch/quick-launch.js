@@ -89,12 +89,17 @@ export function quickLaunchDirective() {
             if ($scope.app.config) {
                 $scope.configMap = $scope.app.config.reduce((result, config) => {
                     result[config.name] = config;
-                    if (config.pinned || (angular.isArray(config.contraints) && config.constraints.indexOf('required') > -1 && (!config.defaultValue === undefined || config.defaultValue === ''))) {
+                    let configValue = configInPlan(parsedPlan, config.name);
+
+                    if (configValue !== '' || config.pinned || (angular.isArray(config.contraints) && config.constraints.indexOf('required') > -1 && (!config.defaultValue === undefined || config.defaultValue === ''))) {
                         if (!$scope.entityToDeploy.hasOwnProperty(BROOKLYN_CONFIG)) {
                             $scope.entityToDeploy[BROOKLYN_CONFIG] = {};
                         }
-
-                        $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = config.defaultValue === "undefined" ? null : config.defaultValue;
+                        if (configValue !== '') {
+                            $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = configValue;
+                        } else {
+                            $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = config.defaultValue === "undefined" ? null : config.defaultValue;
+                        }
                     }
                     return result;
                 }, {});
@@ -299,6 +304,10 @@ export function quickLaunchDirective() {
         function clearError() {
             delete $scope.model.deployError;
         }
+    }
+
+    function configInPlan(parsedPlan, configName) {
+        return (((((parsedPlan || {})['services'] || {})[0] || {})[BROOKLYN_CONFIG] || {})[configName] || '');
     }
 
     function checkForLocationTags(parsedPlan) {
