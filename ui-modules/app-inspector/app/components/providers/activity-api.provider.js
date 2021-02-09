@@ -56,7 +56,7 @@ function ActivityApi($http) {
             (maxDepth ? '?maxDepth='+maxDepth : ''), {observable: true, ignoreLoadingBar: true});
     }
     function getActivityStream(activityId, streamType) {
-        return $http.get('/v1/activities/' + activityId + '/stream/' + streamType, {observable: true, ignoreLoadingBar: true, transformResponse: (data)=> {
+        return $http.get('/v1/activities/' + activityId + '/stream/' + encodeURIComponent(streamType), {observable: true, ignoreLoadingBar: true, transformResponse: (data)=> {
             try {
                 return angular.fromJson(data);
             } catch (e) {
