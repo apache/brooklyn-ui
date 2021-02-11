@@ -56,7 +56,7 @@ const layers = [
 ];
 const layerCacheKey = 'blueprint-composer.layers';
 
-export function MainController($scope, $element, $log, $state, $stateParams, brBrandInfo, blueprintService, actionService, tabService, catalogApi, applicationApi, brSnackbar, brBottomSheet, edit, yaml, composerOverrides) {
+export function MainController($scope, $element, $log, $state, $stateParams, brBrandInfo, blueprintService, actionService, tabService, catalogApi, applicationApi, brSnackbar, brBottomSheet, composerOverrides, edit, yaml) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
     let vm = this;
 
@@ -130,6 +130,7 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
         }
         
         yaml = edit.type.plan.data;
+        $scope.initialYamlFormat = edit.type.plan.format;
     }
 
     vm.isTabActive = stateKey => {
@@ -140,6 +141,8 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
     }
 
     if (yaml) {
+        $scope.initialYamlFormat = $stateParams.format;
+
         if (vm.isYamlMode()) {
             // don't set blueprint; yaml mode will take from "initial yaml" 
             blueprintService.reset();
@@ -278,10 +281,10 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
 
 export const mainState = {
     name: 'main',
-    url: '/?bundleSymbolicName&bundleVersion&typeSymbolicName&typeVersion&yaml',
+    url: '?bundleSymbolicName&bundleVersion&typeSymbolicName&typeVersion&yaml&format',
     abstract: true,
     template: template,
-    controller: ['$scope', '$element', '$log', '$state', '$stateParams', 'brBrandInfo', 'blueprintService', 'actionService', 'tabService', 'catalogApi', 'applicationApi', 'brSnackbar', 'brBottomSheet', 'edit', 'yaml', 'composerOverrides', MainController],
+    controller: ['$scope', '$element', '$log', '$state', '$stateParams', 'brBrandInfo', 'blueprintService', 'actionService', 'tabService', 'catalogApi', 'applicationApi', 'brSnackbar', 'brBottomSheet', 'composerOverrides', 'edit', 'yaml', MainController],
     controllerAs: 'vm',
     resolve: {
         edit: ['$stateParams', 'blueprintLoaderApi', ($stateParams, blueprintLoaderApi) => blueprintLoaderApi.loadBlueprint($stateParams)],

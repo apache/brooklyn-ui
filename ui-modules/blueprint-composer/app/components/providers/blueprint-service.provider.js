@@ -277,16 +277,20 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
 
         if (entity.hasLocation()) {
             let type = locationType(entity.location);
-            if (type.startsWith("jclouds:")) {
-                // types eg jclouds:aws-ec2 are low-level, not in the catalog
-                deferred.resolve(populateLocationFromApiSuccess(entity, { yamlHere: entity.location }));
+            if (type && type.startsWith) {
+                if (type.startsWith("jclouds:")) {
+                    // types eg jclouds:aws-ec2 are low-level, not in the catalog
+                    deferred.resolve(populateLocationFromApiSuccess(entity, { yamlHere: entity.location }));
+                } else {
+                    paletteApi.getLocation(locationType(entity.location)).then((location) => {
+                        let loc = Object.assign({}, location.catalog || location, {yamlHere: entity.location});
+                        deferred.resolve(populateLocationFromApiSuccess(entity, loc));
+                    }).catch(function () {
+                        deferred.resolve(populateLocationFromApiError(entity));
+                    });
+                }
             } else {
-                paletteApi.getLocation(locationType(entity.location)).then((location)=> {
-                    let loc = Object.assign({}, location.catalog || location, { yamlHere: entity.location });
-                    deferred.resolve(populateLocationFromApiSuccess(entity, loc));
-                }).catch(function () {
-                    deferred.resolve(populateLocationFromApiError(entity));
-                });
+                deferred.resolve(entity);
             }
         } else {
             deferred.resolve(entity);

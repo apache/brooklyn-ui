@@ -24,7 +24,7 @@ import template from './graphical.state.html';
 
 export const graphicalState = {
     name: 'main.graphical',
-    url: 'graphical',
+    url: '/graphical',
     templateProvider: function(composerOverrides) {
         return composerOverrides.paletteGraphicalStateTemplate || template;
     },

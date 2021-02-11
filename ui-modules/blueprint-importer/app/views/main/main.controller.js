@@ -123,7 +123,7 @@ function bottomSheetController($log, brBrandInfo, brBottomSheetInstance, catalog
                         type: item.symbolicName + ':' + item.version
                     }]
                 };
-                return '/brooklyn-ui-blueprint-composer/#!/graphical?yaml=' + JSON.stringify(yaml);
+                return '/brooklyn-ui-blueprint-composer/#!/graphical?format=brooklyn-camp&yaml=' + JSON.stringify(yaml);
             default:
                 return;
         }

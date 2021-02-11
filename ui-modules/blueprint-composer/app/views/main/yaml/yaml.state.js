@@ -21,28 +21,53 @@ import {YAMLException} from 'js-yaml';
 
 
 export const yamlAutodetectState = {
-    // TODO make this do auto-detect
     name: 'main.yaml',
-    url: 'yaml',
-    template: '<br-yaml-editor value="vm.yaml" type="blueprint"></br-yaml-editor>',
-    controller: ['$scope', '$rootScope', '$timeout', 'blueprintService', 'brSnackbar', yamlStateController],
+    url: '/yaml',
+    controller: ['$scope', '$state', '$timeout', 'blueprintService', 'brSnackbar', 'composerOverrides', yamlStateController],
     controllerAs: 'vm',
-    data: {
-        label: 'YAML Editor'
-    }
 }
 export const yamlCampState = {
-    name: 'main.yaml.camp',
-    url: 'camp',
+    name: 'main.yaml_camp',
+    url: '/yaml/camp',
     template: '<br-yaml-editor value="vm.yaml" type="blueprint"></br-yaml-editor>',
-    controller: ['$scope', '$rootScope', '$timeout', 'blueprintService', 'brSnackbar', yamlStateController],
+    controller: ['$scope', 'blueprintService', 'brSnackbar', yamlCampStateController],
     controllerAs: 'vm',
     data: {
         label: 'YAML Editor'
     }
 };
 
-function yamlStateController($scope, $rootScope, $timeout, blueprintService, brSnackbar) {
+function yamlStateController($scope, $state, $timeout, blueprintService, brSnackbar, composerOverrides) {
+    let vm = this;
+
+    try {
+        vm.yaml = blueprintService.getAsYaml();
+    } catch (ex) {
+        brSnackbar.create(`Cannot load blueprint: ${ex.message}`);
+        vm.yaml = '';
+    }
+    if ($scope.initialYaml && !vm.yaml) {
+        // either yaml was supplied and yaml mode requested, skipping blueprint setup,
+        // or the yaml was invalid, an error logged, and this was recorded
+        vm.yaml = $scope.initialYaml;
+    }
+
+    $timeout(() => $state.go( getYamlStateNameForBlueprint($scope, vm.yaml, composerOverrides) ));
+}
+
+export function getYamlStateNameForBlueprint($scope, yaml, composerOverrides) {
+    if ($scope.initialYamlFormat == "brooklyn-camp") return yamlCampState.name;
+
+    let state = (composerOverrides.getYamlStateNameForBlueprint || (() => null))($scope, yaml, composerOverrides);
+    if (state) return state;
+
+    if ($scope.initialYamlFormat && $scope.initialYamlFormat.indexOf("camp")>=0) return yamlCampState.name;
+    if (yaml && yaml.indexOf("services:")>=0) return yamlCampState.name;
+
+    return composerOverrides.yamlDefaultStateName || yamlCampState.name;
+}
+
+function yamlCampStateController($scope, blueprintService, brSnackbar) {
     let vm = this;
 
     try {

@@ -57,6 +57,7 @@ import dslService from "./components/providers/dsl-service.provider";
 import paletteDragAndDropService from "./components/providers/palette-dragndrop.provider";
 import actionService from "./components/providers/action-service.provider";
 import tabService from "./components/providers/tab-service.provider";
+import composerOverrides from "./components/providers/composer-overrides.provider";
 import {mainState} from "./views/main/main.controller";
 import {yamlAutodetectState, yamlCampState, yamlState} from "./views/main/yaml/yaml.state";
 import {graphicalState} from "./views/main/graphical/graphical.state";
@@ -80,13 +81,12 @@ angular.module('brooklynBlueprintComposer', [ngAnimate, ngResource, ngCookies, n
     brServerStatus, brAutoFocus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement,
     brYamlEditor, brUtils, brSpecEditor, brooklynCatalogSaver, brooklynApi, bottomSheet, stackViewer, brDragndrop,
     customActionDirective, customConfigSuggestionDropdown, paletteApiProvider, paletteServiceProvider, blueprintLoaderApiProvider,
-    breadcrumbs, catalogSelector, designer, objectCache, entityFilters, locationFilter, actionService, tabService, blueprintService,
+    breadcrumbs, catalogSelector, designer, objectCache, entityFilters, locationFilter, actionService, tabService, composerOverrides, blueprintService,
     dslService, paletteDragAndDropService, recentlyUsedService, scriptTagDecorator, brandAngularJs])
-    .provider('composerOverrides', composerOverridesProvider)
     .filter('dslParamLabel', ['$filter', dslParamLabelFilter])
     .config(['$urlRouterProvider', '$stateProvider', '$logProvider', '$compileProvider', applicationConfig])
     .config(['actionServiceProvider', actionConfig])
-    .config(['tabServiceProvider', tabConfig])
+    .config(['tabServiceProvider', 'composerOverridesProvider', tabConfig])
     .config(['paletteServiceProvider', paletteConfig])
     .run(['$rootScope', '$state', 'brSnackbar', errorHandler])
     .run(['$http', httpConfig]);
@@ -110,22 +110,12 @@ function applicationConfig($urlRouterProvider, $stateProvider, $logProvider, $co
         .state(graphicalEditDslState);
 }
 
-function composerOverridesProvider() {
-    // callers can do angular.config(['composerOverridesProvider', function (provider) { provider.add({ ... }) })
-    // to set various configuration. to see what configuration is supported, grep for composerOverrides in this project.
-    var result = {};
-    return {
-        $get: () => result,
-        add: (props) => angular.extend(result, props),
-    };
-}
-
 function actionConfig(actionServiceProvider) {
     actionServiceProvider.addAction("deploy", {html: '<button class="btn btn-outline btn-success" ng-click="vm.deployApplication()" ng-disabled="vm.deploying">Deploy</button>'});
     actionServiceProvider.addAction("add", {html: '<catalog-saver config="vm.saveToCatalogConfig"></catalog-saver>'});
 }
 
-function tabConfig(tabServiceProvider) {
+function tabConfig(tabServiceProvider, composerOverridesProvider) {
     tabServiceProvider.addTab('graphical', {
         title: 'Graphical Designer',
         icon: 'fa-object-group',
@@ -134,8 +124,10 @@ function tabConfig(tabServiceProvider) {
     tabServiceProvider.addTab('yaml', {
         title: 'YAML Editor',
         icon: 'fa-pencil',
-        stateKey: 'main.yaml',
+        stateKey: 'main.yaml_camp',
     });
+
+    (composerOverridesProvider.$get().tabServiceProviderCustomization || (()=>{}))(tabServiceProvider);
 }
 
 function paletteConfig(paletteServiceProvider) {
