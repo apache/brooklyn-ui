@@ -37,7 +37,7 @@ export function locationConfigProvider() {
     function LocationConfigFactory() {
         return {
             'minCore': {
-                description: 'Minimum number of core for the generated VM',
+                description: 'Minimum number of cores for the generated VM',
                 type: 'number'
             },
             'minRam': {
@@ -51,7 +51,8 @@ export function locationConfigProvider() {
                 options: {
                     'ubuntu': 'Ubuntu',
                     'centos': 'CentOS',
-                    'redhat': 'Red Hat'
+                    'redhat': 'Red Hat',
+                    'windows': 'Windows',
                 }
             },
             'osVersionRegex': {
@@ -59,7 +60,7 @@ export function locationConfigProvider() {
                 type: 'text'
             },
             'os64Bit': {
-                description: 'Use a 64 bits operating system',
+                description: 'Use a 64-bit operating system',
                 type: 'checkbox'
             },
             'imageId': {
@@ -75,11 +76,11 @@ export function locationConfigProvider() {
                 type: 'text'
             },
             'inboundPorts': {
-                description: 'Ports to open for inbound connections, separated by a coma',
+                description: 'Ports to open for inbound connections, separated by a comma',
                 type: 'text'
             },
             'securityGroups': {
-                description: 'Security groups to use the generated VM, separated by a coma',
+                description: 'Security groups to use the generated VM, separated by a comma',
                 type: 'text'
             },
             'domainName': {
@@ -87,15 +88,15 @@ export function locationConfigProvider() {
                 type: 'text'
             },
             'userMetadata': {
-                description: 'Metadatas to set on the generated VM',
+                description: 'Metadata to set on the generated VM',
                 type: 'text'
             },
             'machineCreateAttempts': {
-                description: 'Number of retry to create a VM',
+                description: 'Maximum number of retries when attemting to create a VM',
                 type: 'number'
             },
             'destroyOnFailure': {
-                description: 'Whether or not to destroy the VM if the provisioning fails',
+                description: 'Whether or not to destroy the VM if provisioning fails',
                 type: 'checkbox'
             },
             'user': {
