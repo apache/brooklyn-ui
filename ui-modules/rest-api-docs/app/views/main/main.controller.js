@@ -57,7 +57,9 @@ export function mainStateController($scope, $log, $cookies) {
         defaultModelRendering: 'schema',
         showRequestHeaders: false,
         showOperationIds: false,
-        validatorUrl: null
+        validatorUrl: null,
+        apisSorter: 'alpha',
+        operationsSorters: 'alpha',
     });
 
     swaggerUi.load();
