@@ -41,9 +41,8 @@ export function locationConfigProvider() {
                 type: 'number'
             },
             'minRam': {
-                description: 'Minimum amount of RAM for the generated VM',
-                type: 'number',
-                unit: 'Mb'
+                description: 'Minimum amount of RAM for the generated VM, e.g. "16 gb"; defaults to "mb" if no units specified',
+                type: 'text',
             },
             'osFamily': {
                 description: 'Operating system to use for the generated VM',
