@@ -132,15 +132,15 @@ export function findTask(x) {
 }
 
 export function hash(x) {
-  if (!x) return 0;
-  if (typeof x !== "string") return hash(x.toString());
-  var hash = 0, i;
-  if (x.length === 0) return hash;
-  for (i = 0; i < x.length; i++) {
-    hash  = ((hash << 5) - hash) + x.charCodeAt(i) + 8765;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return hash;
+    if (!x) return 0;
+    if (typeof x !== "string") return hash(x.toString());
+    var result = 0, i;
+    if (x.length === 0) return result;
+    for (i = 0; i < x.length; i++) {
+        result  = ((result << 5) - result) + x.charCodeAt(i) + 8765;
+        result |= 0; // Convert to 32bit integer
+    }
+    return result;
 }
 
 /* returns a function which generates an arc for a d3 data object */
