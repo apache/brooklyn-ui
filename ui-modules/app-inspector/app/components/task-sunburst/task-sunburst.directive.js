@@ -338,22 +338,45 @@ function initVisualization($scope, $element, $state) {
       g.select("text.arc-label")
           .attr("class", function(d) { return util.taskClasses(d, ["arc-label"]).join(" "); })
           .text(function(d) {
-              // only display if arc is big enough 
-              if (d.x1 - d.x0 < 0.07) return "";
+              // only display if arc is big enough
+              if (shouldTextBeHorizontal(d)) {
+                  if (d.y1 - d.y0 < 0.07) return "";
+              } else {
+                  if (d.x1 - d.x0 < 0.07) return "";
+              }
               var display = d.data.name || "";
               if (display.length>25) display = display.substr(0, 23)+"...";
               return display; })
-          .attr("transform", function(d) { return "rotate(" + computeTextRotation(d) + ")"; })
-          .attr("x", function(d) { return scaling.fy(d.depth-1); })
+          .attr("transform", function(d) {
+              return "rotate(" + computeTextRotation(d) + ")" +
+                (shouldTextBeHorizontal(d) ? " rotate(-90,"+xPosOfText(d)+",0) " : "");
+              })
+          .attr("x", function(d) { return xPosOfText(d); })
+          .attr("text-anchor", function(d) { return shouldTextBeHorizontal(d) ? "middle" : ""; })
           .attr("dx", function(d) {
             // margin - slightly greater on inner arcs, and if it's a cross-entity
-            return "" + ((d.depth > 3 ? 2 : 4 - d.depth/2) + (util.isNewEntity(d) ? 1.5 : 0));
+            return (shouldTextBeHorizontal(d) ? "0" : "" + ((d.depth > 3 ? 2 : 4 - d.depth/2) + (util.isNewEntity(d) ? 1.5 : 0)));
           })
           .transition().duration(600).style("opacity", 1);
     }
 
+    function xPosOfText(d) {
+        return scaling.fy(d.depth- (shouldTextBeHorizontal(d) ? 0.5 : 1) );
+    }
+
+    function shouldTextBeHorizontal(d) {
+        return false;
+
+        //// there is placeholder logic in the above code to support horizontal e.g. in this case:
+        //
+        //return d.y1 - d.y0 > d.x1 - d.x0;
+        //
+        //// but it doesn't look very good; it would need to follow the arc, and prevent overlap,
+        //// and consider other squares too ideally because some horiz and some vert looks really bad
+    }
+
     function computeTextRotation(d) {
-      return ( (scaling.fx((d.x0 + d.x1)/2)) * sizing.visible_arc_length 
+      return ( (scaling.fx((d.x0 + d.x1)/2)) * sizing.visible_arc_length
             + sizing.visible_arc_start_fn(sizing.visible_arc_length) * 2 * Math.PI 
             - Math.PI / 2)
         * 360 / (2 * Math.PI) ;

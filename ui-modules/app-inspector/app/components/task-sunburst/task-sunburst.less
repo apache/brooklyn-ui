@@ -50,15 +50,15 @@ task-sunburst {
     height: 4.5em;
     overflow: hidden;
     max-width: 100%;
-    margin: 6px 0px;
+    margin: 4px 0 6px 0;
   }
-  .detail-line {
-    // prevent wrapping
+  .detail-line div, #detail1 {
+    // prevent wrapping, truncate with ellipsis
     white-space: nowrap;
     overflow: hidden;
-    div {
-        display: inline-block;
-    }
+    min-width: 0;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
   }
   .detail {
     #detail2 { 
