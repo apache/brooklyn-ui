@@ -43,11 +43,11 @@
             <artifactId>javax.servlet-api</artifactId>
             <version>${servlet-api.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.ops4j.pax.web</groupId>
-            <artifactId>pax-web-extender-whiteboard</artifactId>
-            <version>${pax-web-extender-whiteboard.version}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.ops4j.pax.web</groupId>-->
+<!--            <artifactId>pax-web-extender-whiteboard</artifactId>-->
+<!--            <version>${pax-web-extender-whiteboard.version}</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>osgi.cmpn</artifactId>
