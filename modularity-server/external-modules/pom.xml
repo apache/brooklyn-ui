@@ -99,6 +99,7 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <exportScr>true</exportScr>
                     <instructions>
                         <Import-Package>
                             org.slf4j,
