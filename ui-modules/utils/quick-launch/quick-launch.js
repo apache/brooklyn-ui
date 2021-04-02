@@ -71,6 +71,7 @@ export function quickLaunchDirective() {
         $scope.openComposer = openComposer;
         $scope.hideEditor = hideEditor;
         $scope.clearError = clearError;
+        $scope.isRequired = isRequired;
 
         $scope.$watch('app', () => {
             $scope.clearError();
@@ -91,7 +92,7 @@ export function quickLaunchDirective() {
                     result[config.name] = config;
                     let configValue = configInPlan(parsedPlan, config.name);
 
-                    if (configValue !== '' || config.pinned || (angular.isArray(config.contraints) && config.constraints.indexOf('required') > -1 && (!config.defaultValue === undefined || config.defaultValue === ''))) {
+                    if (configValue !== '' || config.pinned || (isRequired(config) && (!config.defaultValue === undefined || config.defaultValue === ''))) {
                         if (!$scope.entityToDeploy.hasOwnProperty(BROOKLYN_CONFIG)) {
                             $scope.entityToDeploy[BROOKLYN_CONFIG] = {};
                         }
@@ -305,6 +306,10 @@ export function quickLaunchDirective() {
 
         function clearError() {
             delete $scope.model.deployError;
+        }
+
+        function isRequired(config) {
+            return angular.isArray(config.contraints) && config.constraints.indexOf('required') > -1;
         }
     }
 
