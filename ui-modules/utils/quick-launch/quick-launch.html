@@ -80,7 +80,7 @@
                         <select class="form-control" id="{{key}}" name="{{key}}"
                                 ng-options="s.value as s.description for s in configMap[key].possibleValues"
                                 ng-model="entityToDeploy['brooklyn.config'][key]"
-                                ng-required="configMap[key].priority > 0"
+                                ng-required="isRequired(configMap[key])"
                                 ng-disabled="deploying"
                                 auto-focus="focus === key"></select>
                         <small class="help-block" ng-show="deploy.$submitted || deploy[key].$touched">
@@ -89,14 +89,14 @@
                     </div>
                     <div class="form-group" ng-class="{'has-error': deploy[key].$invalid && deploy[key].$touched}" ng-switch-when="java.lang.Integer">
                         <label for="{{key}}">{{key}} <i ng-click="deleteConfigField(key)" class="fa fa-trash form-delete"></i></label>
-                        <input type="number" id="{{key}}" name="{{key}}" class="form-control" ng-model="entityToDeploy['brooklyn.config'][key]" ng-required="configMap[key].priority > 0" ng-disabled="deploying" auto-focus="focus === key" />
+                        <input type="number" id="{{key}}" name="{{key}}" class="form-control" ng-model="entityToDeploy['brooklyn.config'][key]" ng-required="isRequired(configMap[key])" ng-disabled="deploying" auto-focus="focus === key" />
                         <small class="help-block" ng-show="deploy.$submitted || deploy[key].$touched">
                             <span ng-if="deploy[key].$error.required">You must enter a value</span>
                         </small>
                     </div>
                     <div class="form-group" ng-class="{'has-error': deploy[key].$invalid && deploy[key].$touched}" ng-switch-default>
                         <label for="{{key}}">{{key}} <i ng-click="deleteConfigField(key)" class="fa fa-trash form-delete"></i></label>
-                        <input type="text" id="{{key}}" name="{{key}}" class="form-control" ng-model="entityToDeploy['brooklyn.config'][key]" ng-required="configMap[key].priority > 0" ng-disabled="deploying" auto-focus="focus === key" />
+                        <input type="text" id="{{key}}" name="{{key}}" class="form-control" ng-model="entityToDeploy['brooklyn.config'][key]" ng-required="isRequired(configMap[key])" ng-disabled="deploying" auto-focus="focus === key" />
                         <small class="help-block" ng-show="deploy.$submitted || deploy[key].$touched">
                             <span ng-if="deploy[key].$error.required">You must enter a value</span>
                         </small>
@@ -106,7 +106,7 @@
         </section>
     </form>
 
-    <section class="quick-launch-section quick-launch-add-configuration">
+    <section class="qu5ick-launch-section quick-launch-add-configuration">
         <div class="quick-launch-section-content">
             <button ng-click="toggleNewConfigForm()" class="spec-add-link">Add Config</button>
 
