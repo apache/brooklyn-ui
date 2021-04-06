@@ -26,20 +26,20 @@
      -->
 
     <feature name="brooklyn-ui-modules" version="${project.version}">
-        <feature>brooklyn-ui-home</feature>
-        <feature>brooklyn-ui-logout</feature>
+        <feature version="${project.version}">brooklyn-ui-home</feature>
+        <feature version="${project.version}">brooklyn-ui-logout</feature>
         
-        <feature>brooklyn-ui-app-inspector</feature>
-        <feature>brooklyn-ui-blueprint-composer</feature>
-        <feature>brooklyn-ui-blueprint-importer</feature>
-        <feature>brooklyn-ui-catalog</feature>
-        <feature>brooklyn-ui-groovy-console</feature>
-        <feature>brooklyn-ui-location-manager</feature>
-        <feature>brooklyn-ui-rest-api-docs</feature>
+        <feature version="${project.version}">brooklyn-ui-app-inspector</feature>
+        <feature version="${project.version}">brooklyn-ui-blueprint-composer</feature>
+        <feature version="${project.version}">brooklyn-ui-blueprint-importer</feature>
+        <feature version="${project.version}">brooklyn-ui-catalog</feature>
+        <feature version="${project.version}">brooklyn-ui-groovy-console</feature>
+        <feature version="${project.version}">brooklyn-ui-location-manager</feature>
+        <feature version="${project.version}">brooklyn-ui-rest-api-docs</feature>
     </feature>
 
     <feature name="brooklyn-ui-home" version="${project.version}">
-        <feature dependency="true">brooklyn-ui-moularity</feature>
+        <feature dependency="true">brooklyn-ui-modularity</feature>
         <bundle>mvn:${project.groupId}/brooklyn-ui-home/${project.version}/war</bundle>
     </feature>
     
