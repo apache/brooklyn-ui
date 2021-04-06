@@ -40,7 +40,6 @@
     "appname": "Catalog"
   },
   "dependencies": {
-    "brooklyn-ui-utils": "file:../utils",
     "angular": "^1.6.1",
     "angular-animate": "^1.6.1",
     "angular-cookies": "^1.6.1",
@@ -48,6 +47,7 @@
     "angular-ui-bootstrap": "^2.5.0",
     "angular-ui-router": "^0.3.1",
     "bootstrap": "^3.3.7",
+    "brooklyn-ui-utils": "file:../utils",
     "es6-promise": "^4.0.5",
     "font-awesome": "^4.6.3",
     "isomorphic-fetch": "^2.2.1",
