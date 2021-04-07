@@ -88,8 +88,8 @@ export function catalogController($scope, $rootScope, catalogApi, brUtilsGeneral
         }
 
     $scope.pagination = {
-        page: 1,
-        itemsPerPage: 20
+        page: 1, // not used
+        itemsPerPage: 20  // used as an absolute limit
     };
     $scope.config = {
         orderBy: savedOrderBy.orderBy === 'bundles' ? orderBysBundles : orderBysTypes

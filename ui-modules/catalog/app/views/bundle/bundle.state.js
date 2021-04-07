@@ -67,6 +67,10 @@ export function bundleController($scope, $state, $stateParams, brSnackbar, brUti
         search: {}
     };
 
+    $scope.pagination = {
+        maxItemsToShow: 50
+    };
+
     $scope.clearSearchFilters = () => {
         $scope.state.search = {};
         $scope.state.orderBy = orderBys[0];
@@ -84,8 +88,9 @@ export function bundleController($scope, $state, $stateParams, brSnackbar, brUti
         });
     };
 
-    $scope.downloadBundle = () => {
-        return catalogApi.downloadBundle($scope.bundle.symbolicName, $scope.bundle.version, {urlOnly: true});
+    $scope.downloadBundleUrl = () => {
+        return !$scope.bundle ? /* loading */ "" :
+            /* normal */ catalogApi.downloadBundle($scope.bundle.symbolicName, $scope.bundle.version, {urlOnly: true});
     }
 
     $scope.isNonEmpty = (o) => {
