@@ -23,16 +23,18 @@ export const mainState = {
     name: 'main',
     url: '/',
     template: template,
-    controller: ['$scope', '$q', 'brWebNotifications', mainController],
+    controller: ['$scope', '$q', 'brWebNotifications', 'brBrandInfo', mainController],
     controllerAs: 'ctrl'
 };
 
 const savedSortReverse = 'app-inspector-sort-reverse';
 
-export function mainController($scope, $q, brWebNotifications) {
+export function mainController($scope, $q, brWebNotifications, brBrandInfo) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
     let ctrl = this;
+
+    ctrl.composerUrl = brBrandInfo.blueprintComposerBaseUrl;
 
     ctrl.sortReverse = localStorage && localStorage.getItem(savedSortReverse) !== null ?
         JSON.parse(localStorage.getItem(savedSortReverse)) :

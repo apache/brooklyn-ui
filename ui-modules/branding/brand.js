@@ -55,6 +55,7 @@ export function brBrandInfoProviderDefault() {
         getAppDeployedUrl: function (appId, entityId) {
             return '/brooklyn-ui-app-inspector/#!/application/' + appId + '/entity/' + entityId + '/summary';
         },
+        blueprintComposerBaseUrl: '/brooklyn-ui-blueprint-composer/',
     };
 }
 

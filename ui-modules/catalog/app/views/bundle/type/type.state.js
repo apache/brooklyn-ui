@@ -71,6 +71,8 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
         return brUtilsGeneral.isNonEmpty(o);
     };
 
+    $scope.composerUrl = brBrandInfo.blueprintComposerBaseUrl;
+
     $scope.deploy = (event)=> {
         let instance = $uibModal.open({
             template: modalTemplate,
