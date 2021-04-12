@@ -138,6 +138,7 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
     });
     
     $scope.tables = {};
+    $scope.markdown = mdHelper.analyze;
     ['config', 'sensors', 'effectors'].forEach((t) => $scope.tables[t] = { columns: [] });
     
     function addColumn(cols, base) {
@@ -172,6 +173,7 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
             field: 'description',
             width: 150,
             colspan: 6,
+            template: '<md-field raw-data="::item[column.field]"></md-field>',
             tdClass: 'column-for-description',
         } );
         

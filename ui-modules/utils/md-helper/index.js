@@ -23,11 +23,37 @@ const MODULE_NAME = 'br.utils.md-helper';
 
 angular.module(MODULE_NAME, [])
     .factory("mdHelper", mdHelperProvider)
+    .directive('mdField', [ mdFieldDirective])
     .directive('mdFirstLine', [ mdFirstLineDirective])
     .directive('mdIfOneline', [ mdIfOnelineDirective])
     .directive('mdIfMultiline', [mdIfMultilineDirective]);
 
 export default MODULE_NAME;
+
+// displays markdown, as one-line or multi-line depending on the data
+export function mdFieldDirective() {
+    return {
+        restrict: 'E',
+        scope: {
+            data: '<',
+            rawData: '<',
+        },
+        template: `
+            <div>
+                <md-if-oneline data="data"></md-if-oneline>
+                <md-if-multiline data="data"></md-if-multiline>
+            </div>
+        `,
+        controller: ['$scope', function ($scope) {
+            if ($scope.rawData && !$scope.data) {
+                $scope.data = analyze($scope.rawData);
+            }
+        }],
+    };
+
+    function link(scope, element, attrs) {
+    }
+}
 
 // prints out one line of data -- in future could use markdown formatting, but currently does not
 export function mdFirstLineDirective() {
