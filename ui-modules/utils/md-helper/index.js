@@ -37,22 +37,16 @@ export function mdFieldDirective() {
         scope: {
             data: '<',
             rawData: '<',
+            rawItem: '<',
         },
+        controller: ['$scope', populateData],
         template: `
             <div>
                 <md-if-oneline data="data"></md-if-oneline>
                 <md-if-multiline data="data"></md-if-multiline>
             </div>
         `,
-        controller: ['$scope', function ($scope) {
-            if ($scope.rawData && !$scope.data) {
-                $scope.data = analyze($scope.rawData);
-            }
-        }],
     };
-
-    function link(scope, element, attrs) {
-    }
 }
 
 // prints out one line of data -- in future could use markdown formatting, but currently does not
@@ -61,14 +55,14 @@ export function mdFirstLineDirective() {
         restrict: 'E',
         scope: {
             data: '<',
+            rawData: '<',
+            rawItem: '<',
         },
+        controller: ['$scope', populateData],
         template: `
             <span>{{::data.oneline}}</span>
         `,
     };
-
-    function link(scope, element, attrs) {
-    }
 }
 
 // prints out full, formatted, _if_ it is one line of data
@@ -77,7 +71,10 @@ export function mdIfOnelineDirective() {
         restrict: 'E',
         scope: {
             data: '<',
+            rawData: '<',
+            rawItem: '<',
         },
+        controller: ['$scope', populateData],
         template: `
             <div ng-if="data.isNonMultiline">
                 <p ng-if="data.unformatted">{{data.unformatted}}</p>
@@ -85,9 +82,6 @@ export function mdIfOnelineDirective() {
             </div>
         `,
     };
-
-    function link(scope, element, attrs) {
-    }
 }
 
 // prints out all the data, formatted, if multiline
@@ -96,19 +90,37 @@ export function mdIfMultilineDirective() {
         restrict: 'E',
         scope: {
             data: '<',
+            rawData: '<',
+            rawItem: '<',
         },
+        controller: ['$scope', populateData],
+        // for multiline, collapse margin from children eg an <h1> first element, inserting then removing a 24px margin
         template: `
             <div ng-if="data.isMultiline">
                 <pre ng-if="data.unformatted">{{data.unformatted}}</pre>
-                <div ng-if="data.markdownFormatted" ng-bind-html="data.markdownFormatted"></div>
+                <div ng-if="data.markdownFormatted" style="margin-top: -24px;"><div style="margin-top: 24px;" ng-bind-html="data.markdownFormatted"></div></div>
             </div>
         `,
     };
 }
 
+function nameFieldValues(src) {
+    src = src || {};
+    return ['symbolicName', 'displayName', 'typeName', 'name'].map(x => src[x]);
+}
+
+function populateData($scope) {
+    if (!$scope.data) {
+        if (!$scope.rawData && $scope.rawItem) {
+            $scope.rawData = $scope.rawItem.description;
+        }
+        $scope.data = analyze($scope.rawData, nameFieldValues($scope.rawItem));
+    }
+}
+
 export function analyzeDescription(input) {
     input = input || {};
-    return analyze(input.description, [input.symbolicName, input.displayName, input.name]);
+    return analyze(input.description, nameFieldValues(input));
 }
 
 export function analyze(field, names) {
@@ -121,6 +133,7 @@ export function analyze(field, names) {
         try {
             result.markdownFormatted = marked(field);
         } catch (e) {
+            console.log("could not convert markdown; treading as unformatted", e);
             // not markdown
             result.unformatted = field;
         }

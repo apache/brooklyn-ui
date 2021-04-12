@@ -162,7 +162,9 @@
             <p><i class="mini-icon fa fa-fw fa-bookmark"></i> <samp class="type-symbolic-name">{{popover.symbolicName}}</samp></p>
             <p ng-if="popover.version"><i class="mini-icon fa fa-fw fa-code-fork"></i> {{popover.version}}</p>
         </div>
-        <p class="quick-info-description" ng-if="popover.description">{{popover.description}}</p>
+        <p class="quick-info-description">
+            <md-first-line raw-data="::popover.description" raw-item="::popover"></md-first-line>
+        </p>
         <p class="quick-info-description" ng-if="popover == freeFormTile">This is an ad hoc tile for an item entered by the user not known in the catalog.</p>
         <div class="quick-info-metadata bundle">
             <p ng-if="lastUsedText(popover)"><i class="mini-icon fa fa-clock-o"></i> {{ lastUsedText(popover) }}

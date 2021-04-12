@@ -32,7 +32,7 @@ spec-editor {
     cursor: pointer;
     transition: 0.1s ease all;
     &:hover {
-      color: @brand-primary;
+      color: @brand-primary !important;
     }
   }
   .remove-affordance() {
@@ -902,6 +902,15 @@ spec-editor {
         width: 100%;
         order: 99;
    }
+  }
+
+  .type-description {
+    .toolbar-button-affordance();
+    padding-top: 1ex;
+    float: right;
+    &.active {
+      color: @gray;
+    }
   }
 }
 
