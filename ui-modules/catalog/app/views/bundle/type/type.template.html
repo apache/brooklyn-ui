@@ -28,7 +28,7 @@
                         <i class="fa fa-star" ng-if="type.template" aria-label="This item is a template"></i>
                         {{::(type.displayName || type.symbolicName)}}
                         <div class="btn-group version-dropdown" uib-dropdown dropdown-append-to-body="true">
-                            <button uib-dropdown-toggle id="versions-dropdown" type="button" class="btn btn-sm btn-default"><span><i class="fa fa-code-fork"></i> {{::type.version}}</span> 
+                            <button uib-dropdown-toggle id="versions-dropdown" type="button" class="btn btn-sm btn-default"><span><i class="fa fa-code-fork"></i> {{::type.version}}</span>
                                 <span class="caret" ng-if="versions && versions.length > 1"></span></button>
                             <ul class="dropdown-menu dropdown-menu-right versions-dropdown-list" uib-dropdown-menu role="menu" aria-labelledby="versions-dropdown">
                                 <li role="menuitem" ng-repeat="version in versions track by (version.bundleSymbolicName + version.bundleVersion + version.typeVersion)" ng-class="{'active': version.bundleSymbolicName + ':' + version.bundleVersion === type.containingBundle && version.typeVersion === type.version}">
@@ -54,7 +54,7 @@
                         <i class="fa fa-fw fa-exclamation-circle"></i> This type has the following aliases:
                         <code ng-repeat="alias in type.aliases track by alias">{{::alias}}</code>
                     </small></p>
-                    <p class="media-description type-description">{{::type.description}}</p>
+                    <md-if-oneline data="typeDescription"></md-if-oneline>
                     <p class="media-types">
                         <span ng-repeat="supertype in type.supertypes | limitTo:state.limit track by supertype" class="label label-supertype pull-left">
                             <i class="fa fa-fw fa-puzzle-piece "></i>
@@ -92,6 +92,11 @@
                 </button>
             </div>
             <uib-tabset active="tab">
+                <uib-tab heading="Description" ng-if="typeDescription.isMultiline">
+                    <md-if-multiline data="::typeDescription"></md-if-multiline>
+                    <div style="padding-bottom: 48px;"></div>
+                </uib-tab>
+
                 <uib-tab heading="Config" ng-if="isNonEmpty(type.config)">
                     <br-table ng-model="type.config" columns="tables.config.columns" col-width="20"></br-table>
                 </uib-tab>

@@ -17,6 +17,7 @@
  * under the License.
  */
 import angular from 'angular';
+import ngSanitize from "angular-sanitize";
 import template from './type.template.html';
 import modalTemplate from './modal.template.html';
 import brooklynTypeItem from '../../../components/type-item/index';
@@ -26,11 +27,12 @@ import {locationApiProvider} from 'brooklyn-ui-utils/providers/location-api.prov
 import brooklynQuickLaunch from 'brooklyn-ui-utils/quick-launch/quick-launch';
 import brTable from 'brooklyn-ui-utils/table/index';
 import brUtils from 'brooklyn-ui-utils/utils/general';
+import mdHelper from 'brooklyn-ui-utils/md-helper';
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 
 const MODULE_NAME = 'type.state';
 
-angular.module(MODULE_NAME, [brooklynCatalogApi, brooklynQuickLaunch, brooklynTypeItem, brUtils, brTable])
+angular.module(MODULE_NAME, [ngSanitize, brooklynCatalogApi, brooklynQuickLaunch, brooklynTypeItem, brUtils, brTable, mdHelper])
     .provider('locationApi', locationApiProvider)
     .config(['$stateProvider', typeStateConfig]);
 
@@ -40,7 +42,7 @@ export const bundleState = {
     name: 'bundle.type',
     url: '/types/:typeId/:typeVersion',
     template: template,
-    controller: ['$scope', '$state', '$stateParams', '$q', '$uibModal', 'brBrandInfo', 'brUtilsGeneral', 'brSnackbar', 'catalogApi', typeController],
+    controller: ['$scope', '$state', '$stateParams', '$q', '$uibModal', 'brBrandInfo', 'brUtilsGeneral', 'brSnackbar', 'catalogApi', 'mdHelper', typeController],
     controllerAs: 'ctrl'
 };
 
@@ -48,7 +50,7 @@ export function typeStateConfig($stateProvider) {
     $stateProvider.state(bundleState);
 }
 
-export function typeController($scope, $state, $stateParams, $q, $uibModal, brBrandInfo, brUtilsGeneral, brSnackbar, catalogApi) {
+export function typeController($scope, $state, $stateParams, $q, $uibModal, brBrandInfo, brUtilsGeneral, brSnackbar, catalogApi, mdHelper) {
     $scope.state = {
         default: 2,
         limit: 2
@@ -127,6 +129,7 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
                 typeVersion: typeVersion.version
             };
         });
+        $scope.typeDescription = mdHelper.analyze( ($scope.type || {}).description );
         
         $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
     }).catch(error => {

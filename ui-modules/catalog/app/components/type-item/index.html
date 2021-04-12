@@ -36,8 +36,8 @@
             <span class="label label-default">{{::type.version}}</span>
         </h4>
         <span class="media-description">
-            <span ng-if="type.displayName"><i class="fa fa-fw fa-bookmark sym-name"></i> <samp class="sym-name">{{::type.symbolicName}}</samp>: </span>
-            {{::type.description}}
+            <span ng-if="type.displayName"><i class="fa fa-fw fa-bookmark sym-name"></i> <samp class="sym-name">{{::type.symbolicName}}</samp>{{::descriptionMarkdown.oneline ? ':' : ''}} </span>
+            <md-first-line data="descriptionMarkdown"></md-first-line>
         </span>
     </div>
 </div>
