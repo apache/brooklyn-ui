@@ -19,14 +19,38 @@
 <loading-state error="error" ng-if="stream === undefined"></loading-state>
 
 <div ng-show="stream.length >= 0">
-  <pre ng-show="stream.length > 0">{{stream}}</pre>
+  <pre ng-show="stream.length > 0 && !isFilterContent()" class="auto-scrollable">{{stream}}</pre>
+  <pre ng-show="stream.length > 0 && isFilterContent()" class="auto-scrollable"><pre ng-repeat="item in filteredStream track by item.id" ng-show="isDisplayFormattedItem(item)" class="log-section" ng-class="getFormattedItemLogLevel(item)">{{item.text}}</pre><p ng-show="!isDisplayTrace && !isDisplayDebug && !isDisplayWarning && !isDisplayError" class="text-center"><i>(select filter)</i></p></pre>
   <pre ng-show="stream.length == 0" class="text-center"><i>(no content)</i></pre>
-
   <div class="log-actions">
-    <span class="log-autoupdate log-action" ng-click="autoUpdate = !autoUpdate" ng-class="{'active': autoUpdate}" 
-            uib-tooltip="{{ autoUpdate ? 'Disable' : 'Enable' }} auto-update" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
-        <i class="fa fa-refresh"></i></span>
-    <span class="log-tail log-action" ng-click="tail = !tail" ng-class="{'active': tail}" 
+
+    <!-- Content filtering -->
+    <span class="log-action" ng-click="isDisplayOther = !isDisplayOther" ng-class="{'active': isDisplayOther, 'hidden': !isFilterContent()}"
+          uib-tooltip="{{ isDisplayOther ? 'Hide' : 'Show' }} other" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
+        <i class="fa fa-question"></i></span>
+    <span class="log-action" ng-click="isDisplayTrace = !isDisplayTrace" ng-class="{'active': isDisplayTrace, 'hidden': !isFilterContent()}"
+          uib-tooltip="{{ isDisplayTrace ? 'Hide' : 'Show' }} trace" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
+        <i class="fa fa-bullhorn"></i></span>
+    <span class="log-action" ng-click="isDisplayDebug = !isDisplayDebug" ng-class="{'active': isDisplayDebug, 'hidden': !isFilterContent()}"
+          uib-tooltip="{{ isDisplayDebug ? 'Hide' : 'Show' }} debug" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
+        <i class="fa fa-bug"></i></span>
+    <span class="log-action" ng-click="isDisplayWarning = !isDisplayWarning" ng-class="{'active': isDisplayWarning, 'hidden': !isFilterContent()}"
+          uib-tooltip="{{ isDisplayWarning ? 'Hide' : 'Show' }} warnings" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
+        <i class="fa fa-bolt"></i></span>
+    <span class="log-action" ng-click="isDisplayError = !isDisplayError" ng-class="{'active': isDisplayError, 'hidden': !isFilterContent()}"
+          uib-tooltip="{{ isDisplayError ? 'Hide' : 'Show' }} errors" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
+        <i class="fa fa-exclamation-triangle"></i></span>
+
+    <!-- CLI XML output mode -->
+    <span class="log-action" ng-click="toggleCliXml()" ng-class="{'active': cliXml, 'hidden': !isCliXmlSupported()}"
+          uib-tooltip="Display {{ cliXml ? 'formatted output' : 'CLI XML' }}" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
+        <i class="fa fa-code"></i></span>
+
+    <!-- Auto-update and auto-scroll -->
+    <span class="log-action" ng-click="autoUpdate = !autoUpdate" ng-class="{'active': autoUpdate}"
+          uib-tooltip="{{ autoUpdate ? 'Disable' : 'Enable' }} auto-update" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
+        <i class="fa fa-refresh" ng-class="autoUpdate ? 'fa-spin' : ''"></i></span>
+    <span class="log-tail log-action" ng-click="tail = !tail" ng-class="{'active': tail}"
             uib-tooltip="{{ tail ? 'Disable' : 'Enable' }} auto-scroll" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
         <i class="fa fa-arrow-circle-o-down "></i></span>
   </div>
