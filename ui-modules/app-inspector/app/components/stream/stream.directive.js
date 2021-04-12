@@ -22,11 +22,11 @@ import template from './stream.template.html';
 const MODULE_NAME = 'inspector.stream';
 
 angular.module(MODULE_NAME, [])
-    .directive('stream', ["$compile", streamDirective]);
+    .directive('stream', streamDirective);
 
 export default MODULE_NAME;
 
-export function streamDirective($compile) {
+export function streamDirective() {
     return {
         template: template,
         restrict: 'E',
