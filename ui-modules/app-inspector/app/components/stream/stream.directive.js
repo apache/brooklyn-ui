@@ -65,6 +65,7 @@ export function streamDirective() {
         let autoScrollableElement = Array.from(document.getElementsByClassName('auto-scrollable'));
         let refreshFunction;
 
+        // Set up cancellation of auto-scrolling on scrolling up.
         autoScrollableElement.forEach(item => {
             if (item.addEventListener)
             {
@@ -78,9 +79,9 @@ export function streamDirective() {
                 // Firefox
                 item.addEventListener("DOMMouseScroll", wheelHandler, false);
             }
-
         });
 
+        // Watch the 'tail' and auto-scroll down if auto-scroll is enabled.
         $scope.$watch('tail', () => {
             if ($scope.tail) {
                 $scope.$applyAsync(() => {
@@ -150,7 +151,7 @@ export function streamDirective() {
         }
 
         /**
-         * @returns {boolean} True stream type is WinRM, and false otherwise.
+         * @returns {boolean} True if stream type is WinRM, and false otherwise.
          */
         function isWinRmStream() {
             return $scope.streamType === 'winrm';
@@ -189,11 +190,11 @@ export function streamDirective() {
          * @returns {boolean} True if formatted item should be displayed, and false otherwise.
          */
         function isDisplayFormattedItem(formattedItem) {
-            return !!(formattedItem.isWarning && $scope.isDisplayWarning
+            return formattedItem.isWarning && $scope.isDisplayWarning
                 || formattedItem.isDebug && $scope.isDisplayDebug
                 || formattedItem.isError && $scope.isDisplayError
-                || formattedItem.isTrace & $scope.isDisplayTrace
-                || formattedItem.isOther && $scope.isDisplayOther);
+                || formattedItem.isTrace && $scope.isDisplayTrace
+                || formattedItem.isOther && $scope.isDisplayOther;
         }
 
         /**
