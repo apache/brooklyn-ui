@@ -46,6 +46,11 @@ export function streamDirective() {
         // Content filtering features
         $scope.filteredStream = [];
         $scope.streamProcessedUpTo = 0;
+        $scope.otherLogLines = 0;
+        $scope.errorLogLines = 0;
+        $scope.debugLogLines = 0;
+        $scope.traceLogLines = 0;
+        $scope.warningLogLines = 0;
         $scope.isDisplayOther = $scope.isDisplayOther !== false;
         $scope.isDisplayError = $scope.isDisplayError !== false;
         $scope.isDisplayDebug = $scope.isDisplayDebug !== false;
@@ -62,7 +67,7 @@ export function streamDirective() {
         $scope.isCliXmlSupported = isCliXmlSupported;
         $scope.cliXmlVerificationRequired = isWinRmStream(); // CLI XML verification is required only when stream is WinRM
 
-        let autoScrollableElement = Array.from(document.getElementsByClassName('auto-scrollable'));
+        let autoScrollableElement = Array.from($element.find('pre')).filter(item => item.classList.contains('auto-scrollable'));
         let refreshFunction;
 
         // Set up cancellation of auto-scrolling on scrolling up.
@@ -224,14 +229,19 @@ export function streamDirective() {
                 };
 
                 if (/<s s="warning">/i.test(item)) {
+                    $scope.warningLogLines++;
                     formattedItem.isWarning = true;
                 } else if (/<s s="debug">/i.test(item)) {
+                    $scope.debugLogLines++;
                     formattedItem.isDebug = true;
                 } else if (/<s s="verbose">/i.test(item)) {
+                    $scope.traceLogLines++;
                     formattedItem.isTrace = true;
                 } else if (/<s s="error">/i.test(item)) {
+                    $scope.errorLogLines++;
                     formattedItem.isError = true;
                 } else {
+                    $scope.otherLogLines++;
                     formattedItem.isOther = true;
                 }
 
