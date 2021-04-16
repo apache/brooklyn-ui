@@ -19,22 +19,42 @@
 stream {
   display: block;
   position: relative;
+  @warning-log-color: @brand-warning;
+  @error-log-color: @brand-danger;
+  @debug-log-color: @brand-info;
+  @trace-log-color: @gray-lighter;
 
   pre {
     min-height: 4em;
     background: @gray;
     color:  @gray-lighter;
     .monospace();
-    padding: 0.8em;
-    padding-bottom: 1.2em;
+    padding: 0.8em 0.8em 1.2em;
+
+    .log-section {
+      all: revert;
+      margin: 0;
+      .monospace();
+      &.log-warning {
+        color: @warning-log-color;
+      }
+      &.log-error {
+        color: @error-log-color;
+      }
+      &.log-debug {
+        color: @debug-log-color;
+      }
+      &.log-trace {
+        color: @trace-log-color;
+      }
+    }
   }
 
   .log-actions {
     position: absolute;
     top: 0;
     right: 0;
-    padding: 1em;
-    padding-top: 0.75em;
+    padding: 0.75em 1em 1em;
   }
 
   .log-action {
@@ -49,25 +69,50 @@ stream {
     &:hover .fa  {
       color: lighten(desaturate(@base-color, 40%), 10%);
     }
-    &.active .fa {
-      color: @base-color
+    &.active {
+      .fa {
+        color: @base-color;
+      }
+      .fa-exclamation-triangle {
+        color: @error-log-color;
+      }
+      .fa-bolt {
+        color: @warning-log-color;
+      }
+      .fa-bug {
+        color: @debug-log-color;
+      }
+      .fa-bullhorn {
+        color: @trace-log-color;
+      }
+      .fa-question {
+        color: @trace-log-color;
+      }
     }
-    &.active:hover .fa {
-      color: desaturate(@base-color, 20%);
+    &.active:hover {
+      .fa {
+        color: desaturate(@base-color, 20%);
+      }
+      .fa-exclamation-triangle {
+        color: desaturate(@error-log-color, 20%);
+      }
+      .fa-bolt {
+        color: desaturate(@warning-log-color, 20%);
+      }
+      .fa-bug {
+        color: desaturate(@debug-log-color, 20%);
+      }
+      .fa-bullhorn {
+        color: desaturate(@trace-log-color, 20%);
+      }
+      .fa-question {
+        color: desaturate(@trace-log-color, 20%);
+      }
     }
   }
   
   .fa-arrow-circle-o-down {
     margin-top: 1px;
-  }
-
-  .log-autoupdate {
-    .fa {
-      transform: rotate(0);
-    }
-    &.active .fa {
-      transform: rotate(180deg) translate(0,1px);
-    }
   }
 }
 

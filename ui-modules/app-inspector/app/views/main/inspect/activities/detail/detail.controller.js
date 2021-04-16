@@ -116,6 +116,14 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
                 otherMap[name] = s;
             }
         }
+
+        // Do not display streams that are not initialized
+        for (let name in knownMap) {
+            if (knownMap[name] === null || knownMap[name] === undefined) {
+                delete knownMap[name];
+            }
+        }
+
         $scope.streamsById = Object.assign({}, knownMap, otherMap);
         return Object.keys($scope.streamsById);
     };
