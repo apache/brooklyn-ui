@@ -18,17 +18,18 @@
  */
 import angular from 'angular';
 import template from './index.html';
+import mdHelper from 'brooklyn-ui-utils/md-helper';
 
 import brIconGenerator from 'brooklyn-ui-utils/icon-generator/icon-generator';
 
 const MODULE_NAME = 'brooklyn.components.type-item';
 
-angular.module(MODULE_NAME, [brIconGenerator])
-    .directive('typeItem', typeListDirective);
+angular.module(MODULE_NAME, [brIconGenerator, mdHelper])
+    .directive('typeItem', ['mdHelper', typeListDirective]);
 
 export default MODULE_NAME;
 
-export function typeListDirective() {
+export function typeListDirective(mdHelper) {
     return {
         restrict: 'EA',
         scope: {
@@ -37,6 +38,9 @@ export function typeListDirective() {
             showType: '<?',
             showBundle: '<?'
         },
-        template: template
+        template: template,
+        controller: ["$scope", ($scope) => {
+           $scope.descriptionMarkdown = mdHelper.analyzeDescription($scope.type);
+        }],
     };
 }

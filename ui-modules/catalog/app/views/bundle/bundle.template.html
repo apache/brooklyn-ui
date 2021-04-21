@@ -21,8 +21,8 @@
         <header class="row">
             <div class="col-md-12">
                 <div class="media">
-                    <div class="media-left">
-                        <img ng-src="{{bundle | iconGeneratorPipe:'symbolicName'}}" class="media-object" alt="{{::bundle.symbolicName}}'s logo" />
+                    <div class="media-left" ng-if="bundle.symbolicName">
+                        <img ng-src="{{::bundle | iconGeneratorPipe:'symbolicName'}}" class="media-object" alt="{{::bundle.symbolicName}}'s logo" />
                     </div>
                     <div class="media-body">
                         <div class="pull-right highlights" ng-bind-html="bundle | bundleHighlights"></div>
@@ -37,7 +37,7 @@
                                     </li>
                                 </ul>
                             </div>
-                            <a class="btn btn-sm btn-default" ng-href="{{downloadBundle()}}">
+                            <a class="btn btn-sm btn-default" ng-href="{{downloadBundleUrl()}}">
                                 <i class="fa fa-fw fa-download"></i> Download
                             </a>
                         </h4>
@@ -104,7 +104,8 @@
 
             <div class="col-md-12">
                 <ul class="list-group list-group-types">
-                    <li ng-repeat="type in bundle.types | filter:state.search | orderBy:state.orderBy.id as filteredTypes track by (type.containingBundle + type.symbolicName + type.version)"
+                    <li ng-repeat="type in (bundle.types | filter:state.search | orderBy:state.orderBy.id) as filteredTypes track by (type.containingBundle + type.symbolicName + type.version)"
+                        ng-if="$index < pagination.maxItemsToShow"
                         ng-class="{'deprecated': type.deprecated, 'disabled': type.disabled}"
                         class="list-group-item">
                         <type-item bundle="bundle" type="type" show-type="true"></type-item>
@@ -114,11 +115,21 @@
                         <h4>Loading types</h4>
                     </li>
                     <li ng-show="bundle.types.length === 0" class="list-group-item empty">
-                        <h4>There is no types associated to this bundle</h4>
+                        <h4>There are no types provided by this bundle</h4>
                     </li>
                     <li ng-show="bundle.types.length > 0 && filteredTypes.length === 0" class="list-group-item no-results">
                         <h4>No results matching current filters</h4>
                     </li>
+
+                    <!-- quick and dirty pagination; should improve / refactor / apply to others; but for now we are only dealing with bundles
+                         that might have 1000 entities so only focused on that -->
+                    <div ng-if="filteredTypes.length > pagination.maxItemsToShow" style="text-align: right;">
+                        <i>Only showing {{ pagination.maxItemsToShow }} of {{ filteredTypes.length }}</i>
+                        &nbsp;&nbsp;
+                        <a ng-click="pagination.maxItemsToShow = pagination.maxItemsToShow + 50">Show more</a>
+                        &nbsp;&nbsp;
+                        <a ng-click="pagination.maxItemsToShow = filteredTypes.length">Show all</a>
+                    </div>
                 </ul>
             </div>
         </div>

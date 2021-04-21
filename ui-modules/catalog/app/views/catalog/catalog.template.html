@@ -69,7 +69,7 @@
         </div>
 
         <div class="col-md-12">
-            <ul class="list-group list-group-bundles" ng-show="state.view === 'bundles'">
+            <ul class="list-group list-group-bundles" ng-if="state.view === 'bundles'">
                 <li ng-repeat="bundle in bundles | filter:state.search | orderBy:state.orderBy.id as filteredBundles track by (bundle.symbolicName + bundle.version)"
                         ng-class="{'expanded': !isCollapsed, 'is-expandable': bundle.types.length > 0}"
                         class="list-group-item bundles-list">
@@ -98,6 +98,7 @@
                     </div>
 
                     <div class="extra" uib-collapse="isCollapsed">
+                        <!-- note entities are not filtered as search changes; but they will take an initial search; not intuitive -->
                         <div ng-init="filteredEntities = (bundle.types | bundleTypeFilter:'org.apache.brooklyn.api.entity.Entity' | filter:state.search)" ng-show="::filteredEntities.length > 0">
                             <ul class="list-group list-group-types">
                                 <li class="list-group-item typed-group-table-header">
@@ -105,11 +106,21 @@
                                               when="{'one': 'Entity', 'other': 'Entities'}">
                                     </ng-pluralize>
                                 </li>
-                                <li ng-repeat="entity in filteredEntities track by (entity.containingBundle + entity.symbolicName + entity.version)"
+                                <li ng-repeat="entity in ::filteredEntities track by (entity.containingBundle + entity.symbolicName + entity.version)"
+                                        ng-if="!isCollapsed && $index < pagination.itemsPerPage"
                                         ng-class="{'deprecated': entity.deprecated, 'disabled': entity.disabled}"
                                         class="list-group-item">
-                                    <type-item bundle="bundle" type="entity"></type-item>
+                                    <type-item bundle="::bundle" type="::entity"></type-item>
                                 </li>
+                                <!-- quick and dirty pagination; should improve / refactor / apply to others; but for now we are only dealing with bundles
+                                     that might have 1000 entities so only focused on that -->
+                                <div ng-if="::filteredEntities.length > pagination.itemsPerPage" style="text-align: right;">
+                                    <i>Only showing {{ pagination.itemsPerPage }} of {{ ::filteredEntities.length }}</i>
+                                    &nbsp;&nbsp;
+                                    <a ng-click="pagination.itemsPerPage = pagination.itemsPerPage + 20">Show more</a>
+                                    &nbsp;&nbsp;
+                                    <a ng-click="pagination.itemsPerPage = filteredEntities.length">Show all</a>
+                                </div>
                             </ul>
                         </div>
                         <div ng-init="filteredPolicies = (bundle.types | bundleTypeFilter:'org.apache.brooklyn.api.policy.Policy' | filter:state.search)" ng-show="::filteredPolicies.length > 0">
@@ -165,7 +176,7 @@
                 </li>
             </ul>
 
-            <ul class="list-group list-group-types" ng-show="state.view === 'types'">
+            <ul class="list-group list-group-types" ng-if="state.view === 'types'">
                 <li ng-repeat="type in types | filter:state.search | orderBy:state.orderBy.id  as filteredTypes track by (type.containingBundle + type.symbolicName + type.version)"
                     ng-class="{'deprecated': type.deprecated, 'disabled': type.disabled}"
                     class="list-group-item">
@@ -176,7 +187,7 @@
                     <h4>Loading types</h4>
                 </li>
                 <li ng-show="types.length === 0" class="list-group-item empty">
-                    <h4>There is no items in the catalog</h4>
+                    <h4>There are no items in the catalog</h4>
                     <button class="btn btn-primary" ng-click="launchCatalogUploader()">Upload some</button>
                 </li>
                 <li ng-show="filteredTypes.length === 0" class="list-group-item no-results">

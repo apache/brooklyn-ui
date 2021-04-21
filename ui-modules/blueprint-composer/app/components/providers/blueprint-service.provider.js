@@ -584,6 +584,9 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
             version: data.containingBundle.split(':')[1]
         });
         entity.miscData.set('typeName', data.displayName || data.symbolicName);
+        entity.miscData.set('displayName', data.displayName);
+        entity.miscData.set('symbolicName', data.symbolicName);
+        entity.miscData.set('description', data.description);
         entity.miscData.set('config', data.config || []);
         entity.miscData.set('parameters', data.parameters || []);
         entity.miscData.set('sensors', data.sensors || []);

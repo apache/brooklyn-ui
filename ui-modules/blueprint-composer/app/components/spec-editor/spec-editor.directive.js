@@ -35,7 +35,7 @@ const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
 const REPLACED_DSL_ENTITYSPEC = '___brooklyn:entitySpec';
 
 angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer])
-    .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', '$compile', 'blueprintService', 'composerOverrides', specEditorDirective])
+    .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', '$compile', 'blueprintService', 'composerOverrides', 'mdHelper', specEditorDirective])
     .filter('specEditorConfig', specEditorConfigFilter)
     .filter('specEditorType', specEditorTypeFilter)
     .run(['$templateCache', templateCache]);
@@ -89,7 +89,7 @@ export const PARAM_TYPES = [
     'string', 'boolean', 'integer', 'double', 'duration', ' port'
     ];
 
-export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, $state, $compile, blueprintService, composerOverrides) {
+export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, $state, $compile, blueprintService, composerOverrides, mdHelper) {
     return {
         restrict: 'E',
         scope: {
@@ -118,6 +118,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope.REPLACED_DSL_ENTITYSPEC = REPLACED_DSL_ENTITYSPEC;
         scope.parameters = [];
         scope.config = {};
+        specEditor.descriptionVisible = false;
         specEditor.paramTypes = PARAM_TYPES;
 
         specEditor.getParameter = getParameter;
@@ -214,6 +215,11 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         // Model
         scope.$watch('model', (newVal, oldVal) => {
             if (newVal && !newVal.equals(oldVal)) {
+                scope.modelDescription = mdHelper.analyzeDescription({
+                    description: newVal.miscData.get('description'),
+                    symbolicName: newVal.miscData.get('symbolicName'),
+                    displayName: newVal.miscData.get('displayName'),
+                });
                 loadLocalConfigFromModel();
                 loadLocalParametersFromModel();
             }
@@ -468,16 +474,6 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
 
         scope.getBadgeClass = (issues) => {
             return issues.some(issue => issue.level === ISSUE_LEVEL.ERROR) ? 'badge-danger' : 'badge-warning';
-        };
-
-        specEditor.descriptionHtml = (text) => {
-            let out = [];
-            for (let item of text.split(/\n\n+/)) {
-                out.push('<div class="paragraph-spacing"></div>');
-                out.push($sanitize(item));
-            }
-            out.splice(0, 1);
-            return $sce.trustAsHtml(out.join("\n"));
         };
 
         function getConfigWidgetModeInternal(item, val) {

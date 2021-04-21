@@ -36,6 +36,7 @@
     "angular": "^1.6.1",
     "angular-animate": "^1.6.1",
     "angular-multiple-transclusion": "^1.0.0",
+    "angular-sanitize": "^1.6.1",
     "angular-ui-bootstrap": "^2.5.0",
     "bootstrap": "^3.3.7",
     "codemirror": "^5.27.2",
@@ -44,6 +45,7 @@
     "jsonschema": "^1.1.1",
     "jssha": "^2.2.0",
     "lodash": "^4.15.0",
+    "marked": "^2.0.1",
     "rxjs": "^5.0.0-beta.11"
   },
   "devDependencies": {

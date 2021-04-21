@@ -19,7 +19,7 @@
 <div class="media">
     <a ui-sref="bundle.type({bundleId: bundle.symbolicName, bundleVersion: bundle.version, typeId: type.symbolicName, typeVersion: type.version})"></a>
     <div class="media-left media-middle icon">
-        <img ng-src="{{type | iconGeneratorPipe:'symbolicName'}}" class="media-object" alt="{{::type.symbolicName}}'s logo" />
+        <img ng-src="{{ ::type | iconGeneratorPipe:'symbolicName' }}" class="media-object" alt="{{::type.symbolicName}}'s logo" />
     </div>
     <div class="media-body catalog-item-body">
         <div class="btn-group pull-right" ng-if="showBundle || showType">
@@ -36,8 +36,8 @@
             <span class="label label-default">{{::type.version}}</span>
         </h4>
         <span class="media-description">
-            <span ng-if="type.displayName"><i class="fa fa-fw fa-bookmark sym-name"></i> <samp class="sym-name">{{::type.symbolicName}}</samp>: </span>
-            {{::type.description}}
+            <span ng-if="type.displayName"><i class="fa fa-fw fa-bookmark sym-name"></i> <samp class="sym-name">{{::type.symbolicName}}</samp>{{::descriptionMarkdown.oneline ? ':' : ''}} </span>
+            <md-first-line data="descriptionMarkdown"></md-first-line>
         </span>
     </div>
 </div>

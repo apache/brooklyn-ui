@@ -31,7 +31,10 @@ angular.module(MODULE_NAME, [])
 export default MODULE_NAME;
 
 export function iconGeneratorProvider() {
-    let useSessionStorage = true;
+    // session storage can fill up very quickly with icons - best not to use it.
+    // generation isn't that big a problem anyway, across tabs.
+    // actual icons are probably more expensive, but the browser will cache those for us.
+    let useSessionStorage = false;
     let background = [0, 0, 0, 0];
     let margin = 0.2;
     let size = 128;
@@ -50,6 +53,10 @@ export function iconGeneratorProvider() {
         },
         disableSessionStorage: function () {
             useSessionStorage = false;
+            return this;
+        },
+        enableSessionStorage: function () {
+            useSessionStorage = true;
             return this;
         },
         $get: ['$cacheFactory', function ($cacheFactory) {
@@ -191,16 +198,38 @@ function SessionsStorageWrapper(cacheName) {
     this.get = getValue;
     this.put = putValue;
 
+    var disabled = null;
+    var count = 0;
+
+    // session storage can fill up very quickly with icons - so have some good error checking
+
     function getValue(key, defaultValue) {
+        //if (count++ % 1000 < 10) console.log("SessionStorage access for "+key+": "+( sessionStorage.getItem(cacheName + '.' + key) ? "hit" : "miss" )+" (count "+count+")");
         return sessionStorage.getItem(cacheName + '.' + key) || defaultValue || undefined;
     }
 
     function putValue(key, value) {
+        //if (count++ % 1000 < 10) console.log("SessionStorage write for "+key+": "+( sessionStorage.getItem(cacheName + '.' + key) ? "already present" : "not present" )+" (count "+count+")");
+        if (disabled) {
+            if (disabled + 60*1000 < Date.now()) {
+                console.log("Attempting to re-enable session storage");
+                disabled = null;
+            } else {
+                return;
+            }
+        }
         try {
             sessionStorage.setItem(cacheName + '.' + key, value);
         } catch (ex) {
+            console.warn("Error setting cache value in session storage; will try clearing and retrying", cacheName, key, ex);
             sessionStorage.clear();
-            this.putValue(key, value);
+            try {
+                sessionStorage.setItem(cacheName + '.' + key, value);
+                console.log("Succeeded after clearing cache");
+            } catch (ex2) {
+                console.warn("Failed even after clearing cache; will disable session storage for a period", ex2);
+                disabled = Date.now();
+            }
         }
     }
 }

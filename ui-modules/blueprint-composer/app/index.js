@@ -35,6 +35,7 @@ import brooklynModuleLinks from 'brooklyn-ui-utils/module-links/module-links';
 import brooklynUserManagement from 'brooklyn-ui-utils/user-management/user-management';
 import brYamlEditor from 'brooklyn-ui-utils/yaml-editor/yaml-editor';
 import brUtils from 'brooklyn-ui-utils/utils/general';
+import mdHelper from 'brooklyn-ui-utils/md-helper';
 
 import brSpecEditor from './components/spec-editor/spec-editor.directive';
 import brooklynCatalogSaver from './components/catalog-saver/catalog-saver.directive';
@@ -79,7 +80,7 @@ const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
 angular.module('brooklynBlueprintComposer', [ngAnimate, ngResource, ngCookies, ngClipboard, uiRouter, 'ui.router.state.events', brCore,
     brServerStatus, brAutoFocus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement,
-    brYamlEditor, brUtils, brSpecEditor, brooklynCatalogSaver, brooklynApi, bottomSheet, stackViewer, brDragndrop,
+    brYamlEditor, brUtils, brSpecEditor, brooklynCatalogSaver, brooklynApi, bottomSheet, stackViewer, brDragndrop, mdHelper,
     customActionDirective, customConfigSuggestionDropdown, paletteApiProvider, paletteServiceProvider, blueprintLoaderApiProvider,
     breadcrumbs, catalogSelector, designer, objectCache, entityFilters, locationFilter, actionService, tabService, composerOverrides, blueprintService,
     dslService, paletteDragAndDropService, recentlyUsedService, scriptTagDecorator, brandAngularJs])

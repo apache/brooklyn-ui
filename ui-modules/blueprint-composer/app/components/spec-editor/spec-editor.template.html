@@ -41,16 +41,32 @@
             <img ng-src="{{model.icon}}" alt="{{model | entityName}} logo" class="media-object" />
         </div>
         <div class="media-body panel-header-body">
-            <div title="{{ model.miscData.get('typeName') }}"><i class="fa fa-bookmark panel-header-icon"></i><samp class="entity-type-header">{{model.type}}</samp> <span class="label label-primary version">{{model | entityVersion}}</span></div>
+            <div title="{{ model.miscData.get('typeName') }}">
+                <i class="fa fa-question-circle type-description"
+                   ng-class="{ 'active': specEditor.descriptionVisible }"
+                   title="{{ specEditor.descriptionVisible ? 'Hide description' : 'Show description' }}"
+                   ng-if="modelDescription.isPresent"
+                   ng-click="specEditor.descriptionVisible = !specEditor.descriptionVisible"></i>
+                <i class="fa fa-bookmark panel-header-icon"></i><samp class="entity-type-header">{{model.type}}</samp>
+                <span class="label label-primary version">{{model | entityVersion}}</span>
+            </div>
             <div ng-if="['POLICY', 'ENRICHER'].indexOf(model.family.id) === -1" class="identifier">
                 <i class="fa fa-id-card-o panel-header-icon"></i>
                 <input class="form-control editable" ng-model="model.id" placeholder="(no reference ID)" blur-on-enter />
                 </div>
+            <md-if-oneline ng-show="specEditor.descriptionVisible && modelDescription.isNonMultiline" data="modelDescription"></md-if-oneline>
         </div>
     </div>
   </div>
 </section>
 
+<br-collapsible state="true" ng-show="specEditor.descriptionVisible && modelDescription.isMultiline">
+    <heading>Description</heading>
+
+    <div style="margin-left: 3px;">
+        <md-if-multiline ng-show="specEditor.descriptionVisible" data="modelDescription"></md-if-multiline>
+    </div>
+</br-collapsible>
 
 <!-- ENTITY PARAMETERS -->
 <br-collapsible state="state.parameters.open" ng-if="!model.parent">  <!-- the ng-if is needed to make state update?! -->
@@ -672,7 +688,9 @@
             <p><i class="mini-icon fa fa-fw fa-cog"></i> <samp class="type-symbolic-name">{{item.name}}</samp>
                 <span class="config-type label-color column-for-type oneline label label-success">{{item.type}}</span></p>
         </div>
-        <p class="quick-info-description" ng-if="item.description" ng-bind-html="specEditor.descriptionHtml(item.description)"></p>
+        <p class="quick-info-description">
+            <md-field raw-item="item"/>
+        </p>
         <div class="quick-info-metadata config-default" ng-if="item.defaultValue"></i>Default value: <samp>{{item.defaultValue}}</samp></div>
     </div>
 
@@ -686,7 +704,9 @@
             <p><i class="mini-icon fa fa-fw fa-cog"></i> <samp class="type-symbolic-name">{{item.name}}</samp>
             <span class="config-type label-color column-for-type oneline label label-success">{{item.type}}</span></p>
         </div>
-        <p class="quick-info-description" ng-if="item.description" ng-bind-html="specEditor.descriptionHtml(item.description)"></p>
+        <p class="quick-info-description" ng-if="item.description">
+            <md-field raw-item="item"/>
+        </p>
         <div class="quick-info-metadata config-default" ng-if="item.defaultValue"></i>Default value: <samp>{{item.defaultValue}}</samp></div>
         <div class="quick-info-metadata config-required" ng-if="item.constraints.required"><i>This field is required.</div>
     </div>

@@ -22,6 +22,7 @@ import brooklynCatalogApi from 'brooklyn-ui-utils/providers/catalog-api.provider
 import brooklynTypeItem from '../../components/type-item/index';
 import brUtils from 'brooklyn-ui-utils/utils/general';
 import template from './catalog.template.html';
+import {analyzeDescription} from 'brooklyn-ui-utils/md-helper';
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 
 const MODULE_NAME = 'catalog.state';
@@ -88,8 +89,8 @@ export function catalogController($scope, $rootScope, catalogApi, brUtilsGeneral
         }
 
     $scope.pagination = {
-        page: 1,
-        itemsPerPage: 20
+        page: 1, // not used
+        itemsPerPage: 20  // used as an absolute limit
     };
     $scope.config = {
         orderBy: savedOrderBy.orderBy === 'bundles' ? orderBysBundles : orderBysTypes
@@ -201,8 +202,10 @@ export function bundleDescriptionFilter() {
             return;
         }
         if (input.description) {
-            return input.description;
+            // bundles don't have description yet so this is moot, but when they do this will be nice - or better use the md-if-multiline widget from mdHelper
+            return analyzeDescription(input).oneline;
         }
+
         let alwaysGenerateDefaultDescription = true;
         if (alwaysGenerateDefaultDescription || (input.symbolicName && input.symbolicName.startsWith('brooklyn-catalog-bom'))) {
             // useful in anonymous case because the name gives no clue as to the title;

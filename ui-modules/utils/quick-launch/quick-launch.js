@@ -41,10 +41,10 @@ export function quickLaunchDirective() {
             args: '=?', // default behaviour of code is: { noEditButton: false, noComposerButton: false, noCreateLocationLink: false, location: null }
             callback: '=?',
         },
-        controller: ['$scope', '$http', '$location', 'brSnackbar', controller]
+        controller: ['$scope', '$http', '$location', 'brSnackbar', 'brBrandInfo', controller]
     };
 
-    function controller($scope, $http, $location, brSnackbar) {
+    function controller($scope, $http, $location, brSnackbar, brBrandInfo) {
         $scope.deploying = false;
         $scope.model = {
             newConfigFormOpen: false,
@@ -287,13 +287,17 @@ export function quickLaunchDirective() {
         }
 
         function openComposer() {
+            if (!brBrandInfo.blueprintComposerBaseUrl) {
+              console.warn("Composer unavailable in this build");
+              return;
+            }
             try {
-              window.location.href = '/brooklyn-ui-blueprint-composer/#!/graphical?'+
+              window.location.href = brBrandInfo.blueprintComposerBaseUrl + '#!/graphical?'+
                 ($scope.app.plan.format ? 'format='+encodeURIComponent($scope.app.plan.format)+'&' : '')+
                 'yaml='+encodeURIComponent(buildComposerYaml(true));
             } catch (error) {
               console.warn("Opening composer in YAML text editor mode because we cannot generate a model for this configuration:", error);
-              window.location.href = '/brooklyn-ui-blueprint-composer/#!/yaml?'+
+              window.location.href = brBrandInfo.blueprintComposerBaseUrl + '#!/yaml?'+
                 ($scope.app.plan.format ? 'format='+encodeURIComponent($scope.app.plan.format)+'&' : '')+
                 'yaml='+encodeURIComponent(
                     "# This plan may have items which require attention so is being opened in YAML text editor mode.\n"+
