@@ -485,7 +485,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
                     resolve(parsed);
                 }
             } catch (ex) {
-                $log.debug(ex);
+                $log.debug("Cannot detect whether this is a DSL expression; assuming not", ex);
                 reject(ex, input);
             }
         });
