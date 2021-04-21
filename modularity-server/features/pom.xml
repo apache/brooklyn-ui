@@ -114,6 +114,7 @@
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>attach-artifact</id>
                         <phase>package</phase>
                         <goals>
                             <goal>attach-artifact</goal>
@@ -125,23 +126,6 @@
                                     <classifier>features</classifier>
                                     <type>xml</type>
                                 </artifact>
-                            </artifacts>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-artifact</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>attach-artifact</goal>
-                        </goals>
-                        <configuration>
-                            <artifacts>
                                 <artifact>
                                     <file>${project.basedir}/src/main/resources/ui-common.cfg</file>
                                     <type>cfg</type>
