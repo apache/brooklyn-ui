@@ -143,13 +143,21 @@
         margin-left: 0;
         margin-right: 0;
     }    
-    
+
+    .palette-spacer {
+      max-height: 12px;
+      height: 6px;
+      flex: 10 10 auto; // doesn't work to grow/shrink as hoped, but still looks better
+    }
+
     &, .palette-full-height-wrapper {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
 
-      flex: 1 1 auto;
+      // this looks bad if just a few elements being shown
+      //justify-content: space-between;
+
+      flex: 0 0 auto;
       margin-left: 0;
       margin-right: 0;
     }
