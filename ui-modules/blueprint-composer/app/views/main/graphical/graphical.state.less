@@ -28,6 +28,7 @@
   .toolbar {
     position: relative;
     height: calc(~"100vh - 105px");
+    width: 48px;  // palette pane has left: 49px
     background-color: #fff;
     overflow-y: scroll;
     z-index: 40;
@@ -43,27 +44,113 @@
       background-color: @navbar-default-border;
     }
 
-    .list-group-item {
-      @active-border-width: 4px;
-      padding-top: 10px + @active-border-width;
-      padding-bottom: 9px + @active-border-width;
-      border-left: none;
-      border-radius: 0;
+    .list-group {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      margin-bottom: 0;
 
-      &:first-child {
-        border-top: none;
+      .list-group-item {
+        @active-border-width: 4px;
+        padding-top: 10px + @active-border-width;
+        padding-bottom: 9px + @active-border-width;
+        border-left: none;
+        border-radius: 0;
+
+        &:first-child {
+          border-top: none;
+        }
+        &.active {
+          border-right: none;
+          border-color: @list-group-border;
+          border-bottom: @active-border-width solid @brand-primary;
+          background-color: #fff;
+          color: @list-group-link-color;
+          padding-bottom: 10px;
+        }
       }
-      &.active {
-        border-right: none;
-        border-color: @list-group-border;
-        border-bottom: @active-border-width solid @brand-primary;
-        background-color: #fff;
-        color: @list-group-link-color;
-        padding-bottom: 10px;
+
+
+      .spacer {
+        flex: 1 1 auto;
+      }
+
+      .errors-square, .warning-square {
+        padding-left: 0;
+        padding-right: 0;
+        text-align: center;
+        &.errorsActive {
+          background: @gray-lighter;
+        }
+      }
+      .errors-square {
+        color: @brand-danger;
+      }
+      .warning-square {
+        color: @brand-warning;
       }
     }
   }
-  
+  .errors-popout {
+    position: absolute;
+    left: 49px;
+    width: 440px;
+    bottom: 0;
+    z-index: 60;
+    border-top: 1px solid @gray-lighter;
+    background: @gray-lightest;
+
+    .errors-close {
+      float: right;
+    }
+
+    .errors-body {
+      padding: 8px;
+    }
+
+    .errorsHeader {
+      width: 100%;
+      background: @gray-lighter;
+      border-top: 1px solid @gray-light;
+      border-bottom: 1px solid @gray-light;
+      padding: 8px;
+      margin-bottom: 8px;
+    }
+    max-height: 600px;
+    overflow-y: scroll;
+  }
+  .error-line {
+    display: flex;
+    justify-self: stretch;
+    padding-bottom: 8px;
+    .error-line-marker, .error-line-action {
+      flex: 0 0 auto;
+      margin-top: 4px;
+    }
+    .error-line-text {
+      flex: 1 1 auto;
+    }
+    .error-line-marker {
+      color: @brand-danger;
+      padding-right: 0.5ex;
+    }
+    .error-line-action {
+      padding-left: 0.5ex;
+    }
+    .error-line-sub-line {
+      display: flex;
+      justify-self: stretch;
+      margin-bottom: 4px;
+      margin-top: 4px;
+      .error-line-marker {
+        color: inherit;
+        font-size: 50%;
+        padding-right: 1em;
+        margin-top: 6px;
+      }
+    }
+  }
+
   #palette-controls-button {
     margin-right: -2px;  // not sure why the default -1px doesn't work to merge the borders?
   }

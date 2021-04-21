@@ -65,6 +65,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         isReservedKey: isReservedKey,
         getIssues: getIssues,
         hasIssues: hasIssues,
+        getAllIssues: getAllIssues,
         populateEntityFromApi: populateEntityFromApiSuccess,
         populateLocationFromApi: populateLocationFromApiSuccess,
         addConfigKeyDefinition: addConfigKeyDefinition,
@@ -148,30 +149,72 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         return RESERVED_KEYS.indexOf(key) > -1;
     }
 
-    function getIssues(entity = blueprint) {
+    function getIssues(entity = blueprint, nonRecursive) {
         let issues = [];
 
         if (entity.hasIssues()) {
-            issues = issues.concat(entity.issues.map((issue)=> {
+            issues = issues.concat(entity.issues.map((issue) => {
                 let newIssue = Issue.builder().message(issue.message).group(issue.group).ref(issue.ref).level(issue.level).build();
                 newIssue.entity = entity;
                 return newIssue;
             }));
         }
 
-        entity.policies.forEach((policy)=> {
+        entity.policies.forEach((policy) => {
             issues = issues.concat(getIssues(policy));
         });
 
-        entity.enrichers.forEach((enricher)=> {
+        entity.enrichers.forEach((enricher) => {
             issues = issues.concat(getIssues(enricher));
         });
 
-        entity.children.forEach((child)=> {
-            issues = issues.concat(getIssues(child));
-        });
+        if (!nonRecursive) {
+            entity.children.forEach((child) => {
+                issues = issues.concat(getIssues(child));
+            });
+        }
 
         return issues;
+    }
+
+    function getAllIssues(entity = blueprint) {
+        return collectAllIssues({}, entity);
+    }
+
+    function collectAllIssues(result, entity) {
+        if (!result.entities) {
+            result.entities = {};
+            result.byEntity = {};
+            result.count = 0;
+            result.errors = { byEntity: {}, count: 0 }
+            result.warnings = { byEntity: {}, count: 0 }
+        }
+        if (result.entities[entity._id]) {
+            // already visited, some sort of reference; ignore
+        } else {
+            result.entities[entity._id] = entity;
+
+            let issues = getIssues(entity, true);
+            if (issues.length) {
+                result.byEntity[entity._id] = issues;
+                result.count += issues.length;
+
+                let errors = issues.filter(i => i.level.id == 'error');
+                if (errors.length) {
+                    result.errors.byEntity[entity._id] = errors;
+                    result.errors.count += errors.length;
+                }
+
+                let warnings = issues.filter(i => i.level.id != 'error');
+                if (warnings.length) {
+                    result.warnings.byEntity[entity._id] = warnings;
+                    result.warnings.count += warnings.length;
+                }
+            }
+
+            entity.children.forEach((child)=> collectAllIssues(result, child));
+        }
+        return result;
     }
 
     function hasIssues() {

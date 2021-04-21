@@ -41,10 +41,29 @@ function graphicalController($scope, $state, $filter, blueprintService, paletteS
     this.sections = paletteService.getSections();
     this.selectedSection = Object.values(this.sections).find(section => section.type === EntityFamily.ENTITY);
     $scope.paletteState = {};  // share state among all sections
+    $scope.errorsPane = { level: null };
+
+    $scope.blueprint = blueprintService.get();
+    $scope.$watch('blueprint', ()=> {
+        $scope.allIssues = blueprintService.getAllIssues();
+        $scope.allIssues.errors.byMessage = {};
+        Object.values($scope.allIssues.errors.byEntity).forEach(list => {
+           list.forEach(issue => {
+               $scope.allIssues.errors.byMessage[issue.group+":"+issue.ref] = $scope.allIssues.errors.byMessage[issue.group+" "+issue.ref] || [];
+               $scope.allIssues.errors.byMessage[issue.group+":"+issue.ref].push(issue);
+           });
+        });
+        //console.log("blueprint update, get all issues", $scope.allIssues);
+    }, true);
 
     this.onCanvasSelection = (item) => {
         $scope.canvasSelectedItem = item;
     }
+    this.size = (obj) => {
+        if (!obj) return 0;
+        return Object.keys(obj).length;
+    }
+
     this.getOnSelectText = (selectableType) => $scope.canvasSelectedItem ? "Add to " + $filter('entityName')($scope.canvasSelectedItem) : "Add to application";
     
     this.addSelectedTypeToTargetEntity = (selectedType, targetEntity) => {
