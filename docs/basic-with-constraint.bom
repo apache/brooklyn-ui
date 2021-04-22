@@ -27,4 +27,10 @@ brooklyn.catalog:
     - name: zip_code
       constraints:
       - forbiddenIf: post_code
+  tags:
+  - ui-composer-hints:
+      config-quick-fixes:
+      - key: zip_code
+        fix: clear_config
+        message-regex: .*cannot both be set.*
 

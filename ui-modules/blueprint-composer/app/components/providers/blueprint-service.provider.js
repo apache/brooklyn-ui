@@ -65,6 +65,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         isReservedKey: isReservedKey,
         getIssues: getIssues,
         hasIssues: hasIssues,
+        clearAllIssues: clearAllIssues,
         getAllIssues: getAllIssues,
         populateEntityFromApi: populateEntityFromApiSuccess,
         populateLocationFromApi: populateLocationFromApiSuccess,
@@ -175,6 +176,12 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         }
 
         return issues;
+    }
+
+    // typically followed by a call to refresh
+    function clearAllIssues(entity = blueprint) {
+        entity.resetIssues();
+        entity.children.forEach(clearAllIssues);
     }
 
     function getAllIssues(entity = blueprint) {
@@ -559,9 +566,9 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
             return promises;
         }, [])).then(results => {
             results.forEach(result => {
-                entity.clearIssues({ref: result.key});
+                entity.clearIssues({ref: result.key, phase: 'relationship'});
                 result.issues.forEach(issue => {
-                    entity.addIssue(Issue.builder().group('config').ref(result.key).message($sce.trustAsHtml(issue)).build());
+                    entity.addIssue(Issue.builder().group('config').phase('relationship').ref(result.key).message($sce.trustAsHtml(issue)).build());
                 });
             })
         });
