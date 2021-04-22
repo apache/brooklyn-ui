@@ -18,30 +18,13 @@
  */
  
 import angular from 'angular';
-import template from './quick-fix.html';
 
 const MODULE_NAME = 'brooklyn.components.quick-fix.quick-fix';
 
-angular.module(MODULE_NAME, [])
-    .directive('quickFix', ['$rootScope', quickFixDirective]);
+angular.module(MODULE_NAME, []);
 
 export default MODULE_NAME;
 
-export function quickFixDirective($rootScope) {
-    return {
-        restrict: 'E',
-        template: template,
-        scope: {
-            issues: '=',
-        },
-        link: link,
-    };
-
-    function link(scope, element, attrs, specEditor) {
-        console.log("quick-fix", attrs);
-        scope.foo = "hello";
-    }
-}
 
 export function computeQuickFixes(allIssues) {
     if (!allIssues) allIssues = {};
