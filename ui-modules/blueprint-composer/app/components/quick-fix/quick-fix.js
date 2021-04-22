@@ -52,20 +52,24 @@ export function computeQuickFixes(allIssues) {
             }
             v.issues.push(issueO);
 
-            let qfs = getQuickFixHintsForIssue(issue);
-            (qfs || []).forEach(qf => {
-                let qfi = getQuickFixProposer(qf['fix']);
-                if (!qfi) {
-                    console.log("Skipping unknown quick fix", qf);
-                } else {
-                    qfi.propose(issue, v.quickFixes);
-                    // we could offer the fix per-issue, but no need as they can get that by navigating to the entity
-                    //qfi.propose(issue, issueO.quickFixes);
-                }
-            });
+            computeQuickFixesForIssue(issue, issue.entity, v.quickFixes)
         });
     });
     return allIssues;
+}
+
+export function computeQuickFixesForIssue(issue, entity, proposalHolder) {
+    let qfs = getQuickFixHintsForIssue(issue, entity);
+    (qfs || []).forEach(qf => {
+        let qfi = getQuickFixProposer(qf['fix']);
+        if (!qfi) {
+            console.log("Skipping unknown quick fix", qf);
+        } else {
+            qfi.propose(issue, proposalHolder);
+            // we could offer the fix per-issue, but no need as they can get that by navigating to the entity
+            //qfi.propose(issue, issueO.quickFixes);  // issueO from previous method
+        }
+    });
 }
 
 const QUICK_FIX_PROPOSERS = {
@@ -78,7 +82,7 @@ const QUICK_FIX_PROPOSERS = {
             if (!proposals.clear_config) {
                 proposals.clear_config = {
                     text: "Remove the current value (clear config \""+issue.ref+"\")",
-                    apply: (issue) => issue.entity.removeConfig(issue.ref),
+                    apply: (issue, entity) => (entity || issue.entity).removeConfig(issue.ref),
                     issues: [],
                 };
             }
@@ -91,9 +95,9 @@ export function getQuickFixProposer(type) {
     return QUICK_FIX_PROPOSERS[type];
 }
 
-export function getQuickFixHintsForIssue(issue) {
+export function getQuickFixHintsForIssue(issue, entity) {
     if (issue.group === 'config') {
-        let hints = (issue.entity.miscData.get('ui-composer-hints') || {})['config-quick-fixes'] || [];
+        let hints = (entity.miscData.get('ui-composer-hints') || {})['config-quick-fixes'] || [];
         hints = hints.filter(h => h.key === issue.ref);
         if (!hints.length) return null;
         hints = hints.filter(h => !h['message-regex'] || new RegExp(h['message-regex']).test(issue.message));

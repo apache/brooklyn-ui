@@ -459,6 +459,9 @@ spec-editor {
                     max-width: 0;
                 }
             }
+            .quick-fix {
+              display: none;
+            }
         }
         .hide-masked-sensitive-value {
           display: none !important;
@@ -466,6 +469,12 @@ spec-editor {
         .sensitive-field-hidden .sensitive-field-hidden-icon {
           margin-top: 5px;  //align with icons when expanded
         }
+    }
+    .quick-fix {
+      .btn {
+        float: right;
+        color: @gray-lighter !important;
+      }
     }
     .param-fields {
         width: 100%;

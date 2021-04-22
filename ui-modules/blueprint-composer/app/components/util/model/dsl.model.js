@@ -772,7 +772,9 @@ export class DslParser {
             // a floating point number
             return new Dsl(KIND.NUMBER, t.nextNumber());
         }
-        throw new DslError('Expected: CONSTANT but found: ' + t.toJSON());
+        return new Dsl(KIND.STRING, t.remainder());
+        // previously we did this, but it caused all kinds of errors, as non-json input is common
+        // throw new DslError('Expected: CONSTANT but found: ' + t.toJSON());
     }
 
     /**
@@ -971,6 +973,12 @@ export class Tokenizer {
      */
     skipChars(num) {
         this.s = this.s.substring(num);
+    }
+
+    remainder() {
+        let result = this.s;
+        this.s = "";
+        return result;
     }
 
     /**

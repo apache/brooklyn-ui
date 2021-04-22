@@ -29,6 +29,7 @@ import brooklynDslViewer from '../dsl-viewer/dsl-viewer';
 import template from './spec-editor.template.html';
 import {graphicalState} from '../../views/main/graphical/graphical.state';
 import {SENSITIVE_FIELD_REGEX} from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
+import {computeQuickFixesForIssue} from '../quick-fix/quick-fix';
 
 const MODULE_NAME = 'brooklyn.components.spec-editor';
 const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
@@ -246,8 +247,28 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 return blueprintService.refreshConfigConstraints(scope.model);
             }).then(() => {
                 refreshCustomValidation(scope.model);
+            }).then(() => {
+                scope.model.issuesWithFixes = [];
+                scope.model.issues.forEach(issue => {
+                    // really messy copying the issue to add the fixes, but the easiest way
+                    let issueCopy = {
+                        ref: issue.ref,
+                        group: issue.group,
+                        message: issue.message,
+                    };
+                    let issueWithFixes = Object.assign({}, issueCopy, {
+                        quickFixes: {},
+                    });
+                    computeQuickFixesForIssue(issueCopy, scope.model, issueWithFixes.quickFixes);
+                    scope.model.issuesWithFixes.push(issueWithFixes);
+                });
             });
+
         }, true);
+
+        scope.applyQuickFix = (issue, fix) => {
+            fix.apply(issue, scope.model);
+        }
 
         scope.getObjectSize = (object) => {
             return specEditor.defined(object) && object !== null ? Object.keys(object).length : 0;
