@@ -187,7 +187,8 @@
                               <div class="error-line-text">
                                   {{ fix.text }}
                                   <a class="hand btn btn-xs btn-primary" style="float: right;" ng-click="vm.applyQuickFix(fix)"
-                                  >Apply
+                                     ng-attr-title="{{ fix.tooltip }}"
+                                    >Apply
                                       ({{ vm.size(fix.issues) }}
                                       <span ng-if="vm.size(fix.issues) == 1">entity</span
                                       ><span ng-if="vm.size(fix.issues) != 1">entities</span

@@ -551,7 +551,7 @@
                         <span ng-bind-html="issue.message"></span>
                         <div ng-if="getObjectSize(issue.quickFixes)" class="quick-fix">
                             <div ng-repeat="fix in issue.quickFixes">
-                                <a ng-click="applyQuickFix(issue, fix)" class="btn btn-xs btn-primary">{{ fix.text }}</a>
+                                <a ng-click="applyQuickFix(issue, fix)" class="btn btn-xs btn-primary" ng-attr-title="{{ fix.tooltip }}">{{ fix.text }}</a>
                             </div>
                         </div>
                     </small>

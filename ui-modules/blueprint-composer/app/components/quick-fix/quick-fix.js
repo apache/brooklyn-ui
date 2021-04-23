@@ -81,13 +81,38 @@ const QUICK_FIX_PROPOSERS = {
             if (!proposals) proposals = {};
             if (!proposals.clear_config) {
                 proposals.clear_config = {
-                    text: "Remove the current value (clear config \""+issue.ref+"\")",
+                    text: "Remove value",
+                    tooltip: "This will clear the value currently set for config \""+issue.ref+"\".",
                     apply: (issue, entity) => (entity || issue.entity).removeConfig(issue.ref),
                     issues: [],
                 };
             }
             proposals.clear_config.issues.push(issue);
         },
+    },
+    set_from_parameter: {
+        propose: (issue, proposals) => {}
+      // - key: post_code
+      //   fix: set_from_parameter
+      //   message-regex: required
+      //   source-mode: suggested
+      //   source-hierarchy: root
+      //   source-types: [ org.apache.brooklyn.api.entity.Application ]
+      //   source-parameter: postal_code
+      //   source-constraints:
+      //   - required
+
+    },
+    set_from_config_key: {
+        propose: (issue, proposals) => {}
+        // - key: post_code
+        //   fix: set_from_config_key
+        //   message-regex: required
+        //   source-mode: enforced
+        //   source-types: [ basic-with-constraint ]
+        //   source-key: post_code
+        //   source-hierarchy: anywhere
+
     }
 };
 
