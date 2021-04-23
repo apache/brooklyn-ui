@@ -558,7 +558,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             return item.widgetMode;
         };
         specEditor.getParameterWidgetMode = (item) => {
-            let type = item.type || item.typeName;
+            let type = item.type || item.typeName || 'string';
 
             if (type === 'java.lang.Boolean') type = 'boolean';
             else if (type === 'java.util.Map') type = 'map';

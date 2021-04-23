@@ -463,6 +463,11 @@ export class Entity {
         }
     }
 
+    getApplication() {
+        if (this.hasParent()) return this.parent.getApplication();
+        return this;
+    }
+
     /**
      * Has {Entity} got a parent
      * @returns {boolean}
@@ -567,6 +572,7 @@ Entity.prototype.getConfigAsJson = getConfigAsJson;
 Entity.prototype.setConfigFromJson = setConfigFromJson;
 
 Entity.prototype.getParametersAsArray = getParametersAsArray;
+Entity.prototype.getParameterNamed = getParameterNamed;
 Entity.prototype.setParametersFromJson = setParametersFromJson;
 
 Entity.prototype.getMetadataAsJson = getMetadataAsJson;
@@ -1114,6 +1120,11 @@ function getConfigAsJson() {
 
 function getParametersAsArray() {
     return PARAMETERS.get(this);
+}
+
+function getParameterNamed(name) {
+    // TODO confirm works
+    return PARAMETERS.get(this).find(p => p.name === name);
 }
 
 /* "cleaning" here means:  Dsl objects are toStringed, to the given depth (or infinite if depth<0);

@@ -65,7 +65,7 @@ export function computeQuickFixesForIssue(issue, entity, proposalHolder) {
         if (!qfi) {
             console.log("Skipping unknown quick fix", qf);
         } else {
-            qfi.propose(issue, proposalHolder);
+            qfi.propose(qf, issue, entity, proposalHolder);
             // we could offer the fix per-issue, but no need as they can get that by navigating to the entity
             //qfi.propose(issue, issueO.quickFixes);  // issueO from previous method
         }
@@ -75,10 +75,10 @@ export function computeQuickFixesForIssue(issue, entity, proposalHolder) {
 const QUICK_FIX_PROPOSERS = {
     clear_config: {
         // the propose function updates the proposals object
-        propose: (issue, proposals) => {
+        propose: (qfdef, issue, entity, proposals) => {
             if (!issue.ref) return;
-
             if (!proposals) proposals = {};
+
             if (!proposals.clear_config) {
                 proposals.clear_config = {
                     text: "Remove value",
@@ -91,7 +91,8 @@ const QUICK_FIX_PROPOSERS = {
         },
     },
     set_from_parameter: {
-        propose: (issue, proposals) => {}
+        propose: proposeSetFrom('parameter')
+
       // - key: post_code
       //   fix: set_from_parameter
       //   message-regex: required
@@ -104,7 +105,8 @@ const QUICK_FIX_PROPOSERS = {
 
     },
     set_from_config_key: {
-        propose: (issue, proposals) => {}
+        propose: proposeSetFrom('config')
+
         // - key: post_code
         //   fix: set_from_config_key
         //   message-regex: required
@@ -115,6 +117,51 @@ const QUICK_FIX_PROPOSERS = {
 
     }
 };
+
+function proposeSetFrom(sourceType) {
+    return function (qfdef, issue, entity, proposals) {
+        if (!issue.ref) return;
+        if (!proposals) proposals = {};
+
+        let sourceNode = {
+            id: 'root',
+            name: 'the application root node',
+            entity: entity.getApplication(),
+        };
+
+        if (sourceType === 'parameter') {
+            let params = sourceNode.entity.getParametersAsArray();
+            console.log("params", params);
+        }
+
+        let key = 'set_from_'+sourceType+'_'+sourceNode.id;
+        if (!proposals[key]) {
+            proposals[key] = {
+                text: "Set from a new "+sourceType+" on "+sourceNode.name,
+                tooltip: "This will create a "+sourceType+" on "+sourceNode.name+" and fix this error by setting it equal to that "+sourceType,
+                issues: [],
+                apply: (issue, entity) => {
+                    entity = (entity || issue.entity);
+                    console.log("TODO do this; NB issue invoked wrt", entity, qfdef);
+                    if (sourceType === 'parameter') {
+                        if (!sourceNode.entity.getParameterNamed(qfdef['source-parameter'])) {
+                            sourceNode.entity.addParameter({
+                                name: qfdef['source-parameter'],
+                                constraints: qfdef['source-constraints']
+                            });
+                        }
+                        if (!sourceNode.entity.id) {
+                            // TODO
+                            sourceNode.entity.id = 'id_XXX';
+                        }
+                        entity.addConfig(issue.ref, '$brooklyn:component("'+sourceNode.entity.id+'").config("'+qfdef['source-parameter']+'")');
+                    }
+                }
+            };
+        }
+        proposals[key].issues.push(issue);
+    };
+}
 
 export function getQuickFixProposer(type) {
     return QUICK_FIX_PROPOSERS[type];
