@@ -34,7 +34,7 @@
                title="Click to show/hide details of errors"
                ng-class="{ errorsActive: errorsPane.level }"
                ng-show="allIssues.errors.count"
-               ng-click="errorsPane.level = errorsPane.level ? null : 'summary'">
+               ng-click="errorsPane.level = errorsPane.level ? null : 'error-errors'">
                 <i class="fa fa-fw fa-times-circle"></i> {{ allIssues.errors.count }}
             </a>
             <a class="hand list-group-item warning-square"
