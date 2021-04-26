@@ -361,8 +361,8 @@ export function entityNodeDirective() {
         };
 
         // TODO SMART-143
-        $scope.isInSpotlight = function() {
-            return $scope.entity.viewModesSpotLight.has($scope.viewMode);
+        $scope.isSecondary = function() {
+            return !$scope.entity.viewModesSpotLight.has($scope.viewMode);
         };
 
         // TODO SMART-143
