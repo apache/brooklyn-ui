@@ -30,6 +30,12 @@ import {detailState} from '../../views/main/inspect/activities/detail/detail.con
 import {managementState} from '../../views/main/inspect/management/management.controller';
 import {detailState as managementDetailState} from '../../views/main/inspect/management/detail/detail.controller';
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
+import {
+    RELATIONSHIP_HOST_FOR,
+    RELATIONSHIP_HOSTED_ON,
+    VIEW_HOST_FOR_HOSTED_ON,
+    VIEW_PARENT_CHILD
+} from '../../views/main/main.controller';
 
 const MODULE_NAME = 'inspector.entity.tree';
 
@@ -44,7 +50,9 @@ export function entityTreeDirective() {
         restrict: 'E',
         template: entityTreeTemplate,
         scope: {
-           sortReverse: '=',
+            sortReverse: '=',
+            viewModes: '=',
+            viewMode: '<'
         },
         controller: ['$scope', '$state', 'applicationApi', 'entityApi', 'iconService', 'brWebNotifications', controller],
         controllerAs: 'vm'
@@ -59,6 +67,7 @@ export function entityTreeDirective() {
 
         applicationApi.applicationsTree().then((response)=> {
             vm.applications = response.data;
+            analyzeRelationships(vm.applications);
 
             observers.push(response.subscribe((response)=> {
                 response.data
@@ -79,6 +88,7 @@ export function entityTreeDirective() {
                     });
 
                 vm.applications = response.data;
+                analyzeRelationships(vm.applications);
 
                 function spawnNotification(app, opts) {
                     iconService.get(app).then((icon)=> {
@@ -90,6 +100,166 @@ export function entityTreeDirective() {
                     });
                 }
             }));
+
+            // TODO SMART-143
+            function analyzeRelationships(entityTree) {
+                let entities = entityTreeToArray(entityTree);
+                let relationships = findAllRelationships(entities);
+
+                // Initialize entity tree with 'parent/child' view first (default view).
+                initParentChildView(entities);
+
+                // Identify new view modes based on relationships. This adds a drop-down menu with new views if found any.
+                updateViewModes(relationships);
+
+                // Re-arrange entity tree for 'host_for/hosted_on' view if present.
+                if ($scope.viewModes.has(VIEW_HOST_FOR_HOSTED_ON)) {
+                    addHostForHostedOnView(entities, relationships);
+                }
+            }
+
+            // TODO SMART-143
+            function entityTreeToArray(entities) {
+                let children = [];
+                if (!Array.isArray(entities) || entities.length === 0) {
+                    return children;
+                }
+                entities.forEach(entity => {
+                    children = children.concat(entityTreeToArray(entity.children));
+                    children = children.concat(entityTreeToArray(entity.members));
+                })
+                return entities.concat(children);
+            }
+
+            // TODO SMART-143
+            function addHostForHostedOnView(entities, relationships) {
+                entities.forEach(entity => {
+                    let relationship = relationships.find(r => r.id === entity.id);
+                    if (relationship && relationship.name === RELATIONSHIP_HOST_FOR) {
+                        displayEntityInView(entity, VIEW_HOST_FOR_HOSTED_ON);
+                        spotlightEntityInView(entity, VIEW_HOST_FOR_HOSTED_ON);
+
+                        relationship.targets.forEach(target => {
+                            let child = entities.find(e => e.id === target);
+                            if (child) {
+                                spotlightEntityInView(child, VIEW_HOST_FOR_HOSTED_ON);
+                                if (child.parentId !== entity.id) { // Move (copy) child under 'hosted_on' entity.
+                                    let childCopy = Object.assign({}, child); // Copy entity
+
+                                    // Display in 'host_for/hosted_on' view only.
+                                    childCopy.viewModes = null;
+                                    displayEntityInView(childCopy, VIEW_HOST_FOR_HOSTED_ON);
+
+                                    let parent = findEntity(entities, child.parentId);
+                                    if (parent) {
+                                        childCopy.name += ' (' + parent.name + ')';
+                                    }
+
+                                    if (!entity.children) {
+                                        entity.children = [childCopy];
+                                    } else {
+                                        entity.children.push(childCopy);
+                                    }
+                                }
+                                displayParentsInView(entities, child.parentId, VIEW_HOST_FOR_HOSTED_ON);
+                            }
+                        });
+                    } else if (!relationship || relationship.name !== RELATIONSHIP_HOSTED_ON) {
+                        // Display original position for any other entity under 'host_for/hosted_on' view.
+                        displayEntityInView(entity, VIEW_HOST_FOR_HOSTED_ON);
+                        // Spotlight will not be on entities that are required to be displayed but do not belong to this view.
+                    }
+                });
+            }
+
+            // TODO SMART-143
+            function displayParentsInView(entities, id, viewMode) {
+                let entity = findEntity(entities, id);
+                if (entity) {
+                    displayEntityInView(entity, viewMode);
+                    displayParentsInView(entities, entity.parentId, viewMode);
+                }
+            }
+
+            // TODO SMART-143
+            function findEntity(entities, id) {
+                return entities.find(entity => entity.id === id);
+            }
+
+            // TODO SMART-143
+            function displayEntityInView(entity, viewMode) {
+                if (!entity.viewModes) {
+                    entity.viewModes = new Set([viewMode]);
+                } else {
+                    entity.viewModes.add(viewMode);
+                }
+            }
+
+            // TODO SMART-143
+            function spotlightEntityInView(entity, viewMode) {
+                if (!entity.viewModesSpotLight) {
+                    entity.viewModesSpotLight = new Set([viewMode]);
+                } else {
+                    entity.viewModesSpotLight.add(viewMode);
+                }
+            }
+
+            /**
+             * Initializes entity tree with 'parent/child' view mode. This is a default view mode.
+             *
+             * @param {Object} entities The entity tree to initialize with 'parent/child' view mode.
+             */
+            function initParentChildView(entities) {
+                entities.forEach(entity => {
+                    displayEntityInView(entity, VIEW_PARENT_CHILD);
+                    spotlightEntityInView(entity, VIEW_PARENT_CHILD);
+                });
+            }
+
+            /**
+             * Identifies new view modes based on relationships between entities. Updates $scope.viewModes set.
+             *
+             * @param {Object} relationships The entity tree relationships.
+             */
+            function updateViewModes(relationships) {
+                let viewModesDiscovered = new Set([VIEW_PARENT_CHILD]); // 'parent/child' view mode is a minimum required
+
+                relationships.forEach(relationship => {
+                    relationship.targets.forEach(id => {
+                        let target = relationships.find(item => item.id === id);
+                        if (target) {
+                            let uniqueRelationshipName = [relationship.name, target.name].sort().join('/'); // e.g. host_for/hosted_on
+                            viewModesDiscovered.add(uniqueRelationshipName);
+                        }
+                    })
+                });
+
+                $scope.viewModes = viewModesDiscovered; // Refresh view modes
+            }
+
+            // TODO SMART-143
+            function findAllRelationships(entities) {
+                let relationships = [];
+
+                if (!Array.isArray(entities) || entities.length === 0) {
+                    return relationships;
+                }
+
+                entities.forEach(entity => {
+                    if (Array.isArray(entity.relations)) {
+                        entity.relations.forEach(r => {
+                            let relationship = {
+                                id: entity.id,
+                                name: r.type.name.split('/')[0], // read name up until '/', e.g. take 'hosted_on' from 'hosted_on/oU7i'
+                                targets: Array.isArray(r.targets) ? r.targets : []
+                            }
+                            relationships.push(relationship)
+                        });
+                    }
+                });
+
+                return relationships;
+            }
         });
 
         $scope.$on('$destroy', ()=> {
@@ -107,6 +277,7 @@ export function entityNodeDirective() {
         scope: {
             entity: '<',
             applicationId: '<',
+            viewMode: '<'
         },
         link: link,
         controller: ['$scope', '$state', '$stateParams', 'iconService', controller]
@@ -189,5 +360,17 @@ export function entityNodeDirective() {
             }
         };
 
+        // TODO SMART-143
+        $scope.isInSpotlight = function() {
+            return $scope.entity.viewModesSpotLight.has($scope.viewMode);
+        };
+
+        // TODO SMART-143
+        $scope.entitiesInCurrentView = (entities) => {
+            if (!entities) {
+                return 0;
+            }
+            return entities.filter(entity => entity.viewModes.has($scope.viewMode)).length || 0;
+        }
     }
 }

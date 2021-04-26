@@ -29,6 +29,20 @@
                                     <span class="glyphicon" ng-class="ctrl.sortReverse ? 'fa fa-sort-amount-desc' : 'fa fa-sort-amount-asc'"></span>
                                 </div>
                             </button>
+                            <div class="btn-group" ng-if="ctrl.viewModes.size > 1" uib-dropdown>
+                                <button class="btn btn-sm btn-default" uib-tooltip="Switch view" tooltip-append-to-body="true" uib-dropdown-toggle/>
+                                    <div>
+                                        <span class="fa fa-sitemap"></span>
+                                    </div>
+                                </button>
+                                <ul class="dropdown-menu" uib-dropdown-menu>
+                                    <li ng-repeat="viewMode in ctrl.viewModesArray()">
+                                        <a class="view-mode-item"
+                                           ng-click="ctrl.viewMode = viewMode"
+                                           ng-class="{'active': ctrl.viewMode === viewMode}">{{viewMode}}</a>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                         <div class="entity-tree-header-section">
                             <button class="btn btn-link entity-tree-action"
@@ -51,7 +65,7 @@
                         </div>
                     </div>
 
-                    <entity-tree sort-reverse="ctrl.sortReverse"></entity-tree>
+                    <entity-tree sort-reverse="ctrl.sortReverse" view-mode="ctrl.viewMode" view-modes="ctrl.viewModes"></entity-tree>
                 </br-card-content>
             </br-card>
 
