@@ -563,6 +563,16 @@ export class Entity {
     toString() {
         return 'Entity :: id = [' + this._id + ']' + (this.hasType() ? ' type = [' + this.type + ']' : '');
     }
+
+    visitWithDescendants(fn) {
+        fn(this);
+        this.children.forEach(c => c.visitWithDescendants(fn));
+    }
+
+    visitWithAncestors(fn) {
+        fn(this);
+        if (this.parent) this.parent.visitWithAncestors(fn);
+    }
 }
 
 Entity.prototype.setEntityFromJson = setEntityFromJson;

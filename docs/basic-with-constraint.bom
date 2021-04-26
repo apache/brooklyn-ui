@@ -37,21 +37,20 @@ brooklyn.catalog:
         message-regex: cannot both be set
 
       - key: post_code
-        fix: set_from_parameter
+        fix: set_from_key
         message-regex: required
 
-        source-mode: suggested
+        source-key: postal_code
         source-hierarchy: root
-        source-types: [ org.apache.brooklyn.api.entity.Application ]
-        source-parameter: postal_code
-        source-constraints:
-        - required
+        source-key-createable: true
+        source-key-parameter-definition:
+          constraints:
+          - required
 
       - key: post_code
-        fix: set_from_config_key
+        fix: set_from_key
         message-regex: required
 
-        source-mode: enforced
-        source-types: [ basic-with-constraint ]
         source-key: post_code
         source-hierarchy: anywhere
+        source-types: [ basic-with-constraint ]
