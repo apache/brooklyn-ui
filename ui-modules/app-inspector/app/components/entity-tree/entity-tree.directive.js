@@ -120,6 +120,7 @@ export function entityTreeDirective() {
                 if ($scope.viewModes.has(VIEW_HOST_FOR_HOSTED_ON)) {
                     addHostForHostedOnView(entities, relationships);
                 }
+                console.log('-------------THE END-------------------------');
             }
 
             /**
@@ -129,16 +130,15 @@ export function entityTreeDirective() {
              * @returns {Array.<Object>} The array of all entities found in the tree.
              */
             function entityTreeToArray(entities) {
-                let children = [];
+                let nodes = [];
                 if (!Array.isArray(entities) || entities.length === 0) {
-                    return children;
+                    return nodes;
                 }
                 entities.forEach(entity => {
-                    children = children.concat(entityTreeToArray(entity.children));
-                    children = children.concat(entityTreeToArray(entity.members));
-                })
-
-                return entities.concat(children);
+                    nodes = nodes.concat(entityTreeToArray(entity.children));
+                    nodes = nodes.concat(entityTreeToArray(entity.members));
+                });
+                return entities.concat(nodes);
             }
 
             /**
@@ -149,43 +149,97 @@ export function entityTreeDirective() {
              * @param {Array.<Object>} relationships The relationships of entities.
              */
             function addHostForHostedOnView(entities, relationships) {
+
+                // Look through all entities found in the entity tree
                 entities.forEach(entity => {
+
+                    // Check if entity has 'host_for/hosted_on' relationship.
                     let relationship = relationships.find(r => r.id === entity.id);
                     if (relationship && relationship.name === RELATIONSHIP_HOST_FOR) {
+
+                        // Label every 'host_for' entity to display and highlight in 'host_for/hosted_on' view mode.
                         displayEntityInView(entity, VIEW_HOST_FOR_HOSTED_ON);
                         highlightEntityInView(entity, VIEW_HOST_FOR_HOSTED_ON);
 
+                        // Look for 'hosted_on' entities under 'host_for', flip of move them and label to display in
+                        // 'host_for/hosted_on' view mode respectively.
                         relationship.targets.forEach(target => {
-                            let child = entities.find(e => e.id === target);
-                            if (child) {
-                                highlightEntityInView(child, VIEW_HOST_FOR_HOSTED_ON);
-                                if (child.parentId !== entity.id) { // Move (copy) child under 'hosted_on' entity.
-                                    let childCopy = Object.assign({}, child); // Copy entity
+                            let relatedEntity = entities.find(e => e.id === target);
+                            if (relatedEntity) {
+                                highlightEntityInView(relatedEntity, VIEW_HOST_FOR_HOSTED_ON);
+                                displayParentsInView(entities, relatedEntity.parentId, VIEW_HOST_FOR_HOSTED_ON);
 
-                                    // Display in 'host_for/hosted_on' view only.
-                                    childCopy.viewModes = null;
-                                    displayEntityInView(childCopy, VIEW_HOST_FOR_HOSTED_ON);
+                                // Re-arrange the tree if related 'hosted_on' entity is not a child of 'host_for'.
+                                if (relatedEntity.parentId !== entity.id) {
 
-                                    let parent = findEntity(entities, child.parentId);
-                                    if (parent) {
-                                        childCopy.name += ' (' + parent.name + ')';
-                                    }
-
-                                    if (!entity.children) {
-                                        entity.children = [childCopy];
+                                    if (relatedEntity.id === entity.parentId) {
+                                        // 4.1. Flip 'hosted_on' parent with a 'host_for' child.
+                                        flipParentAndChild(relatedEntity, entity, entities, VIEW_HOST_FOR_HOSTED_ON);
                                     } else {
-                                        entity.children.push(childCopy);
+                                        // 4.2. Move 'hosted_on' entity to a new 'host_for' parent.
+                                        moveEntityToParent(relatedEntity, entity, entities, VIEW_HOST_FOR_HOSTED_ON);
                                     }
                                 }
-                                displayParentsInView(entities, child.parentId, VIEW_HOST_FOR_HOSTED_ON);
                             }
                         });
                     } else if (!relationship || relationship.name !== RELATIONSHIP_HOSTED_ON) {
-                        // Display original position for any other entity under 'host_for/hosted_on' view.
+
+                        // Display original position for any other entity under 'host_for/hosted_on' view. Do no highlight
+                        // entities that are required to be displayed but do not belong to this view.
                         displayEntityInView(entity, VIEW_HOST_FOR_HOSTED_ON);
-                        // Spotlight will never be on entities that are required to be displayed but do not belong to this view.
                     }
                 });
+            }
+
+            /**
+             * Flips parent entity with its child.
+             *
+             * @param parent The parent entity to flip with its child.
+             * @param child The child entity to flip with its parent.
+             * @param {Array.<Object>} entities The entity tree converted to array.
+             * @param {string} viewMode The view mode to display copy of the entity in only.
+             */
+            function flipParentAndChild(parent, child, entities, viewMode) {
+                console.log('Flip parent with a child!', parent, child);
+                let parentOfTheParent = findEntity(entities, parent.parentId);
+                if (parentOfTheParent) {
+                    hideEntityInView(child, viewMode);
+                    let childCopy = moveEntityToParent(child, parentOfTheParent, entities, viewMode);
+                    moveEntityToParent(parent, childCopy, entities, viewMode);
+                }
+            }
+
+            /**
+             * Moves entity to a new parent, creates copy of the entity under parent.otherNodes.
+             *
+             * @param {Object} entity The entity to move.
+             * @param {Object} parent The parent to move entity to.
+             * @param {Array.<Object>} entities The entity tree converted to array.
+             * @param {string} viewMode The view mode to display copy of the entity in only.
+             * @returns {Object} The copy of the entity under parent.otherNodes.
+             */
+            function moveEntityToParent(entity, parent, entities, viewMode) {
+                // 1. Create a copy.
+                let entityCopy = Object.assign({}, entity);
+
+                // 2. Include the name of the original parent.
+                let parentOfEntity = findEntity(entities, entityCopy.parentId);
+                if (parentOfEntity) {
+                    entityCopy.name += ' (' + parentOfEntity.name + ')';
+                }
+
+                // 3. Label it to display in a view mode specified only.
+                entityCopy.viewModes = null;
+                displayEntityInView(entityCopy, viewMode);
+
+                // 4. Add copy under otherNodes.
+                if (!parent.otherNodes) {
+                    parent.otherNodes = [entityCopy];
+                } else {
+                    parent.otherNodes.push(entityCopy);
+                }
+
+                return entityCopy;
             }
 
             /**
@@ -213,6 +267,18 @@ export function entityTreeDirective() {
              */
             function findEntity(entities, id) {
                 return entities.find(entity => entity.id === id) || null;
+            }
+
+            /**
+             * Labels entity to not display in particular view mode.
+             *
+             * @param {Object} entity The entity to label.
+             * @param {string} viewMode The view mode to not display entity in.
+             */
+            function hideEntityInView(entity, viewMode) {
+                if (entity.viewModes) {
+                    entity.viewModes.delete(viewMode);
+                }
             }
 
             /**

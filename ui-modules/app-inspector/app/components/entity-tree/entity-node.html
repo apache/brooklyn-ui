@@ -25,7 +25,9 @@
             <span class="node-icon"><img ng-src="{{ iconUrl }}"/></span>
         </a>
         <div class="entity-node-toggle-wrapper">
-          <div class="entity-node-toggle" ng-if="entitiesInCurrentView(entity.children) > 0 || entitiesInCurrentView(entity.members) > 0" ng-click="onToggle($event)" >
+          <div class="entity-node-toggle"
+               ng-if="entitiesInCurrentView(entity.children) > 0 || entitiesInCurrentView(entity.members) > 0 || entitiesInCurrentView(entity.otherNodes) > 0"
+               ng-click="onToggle($event)" >
             <span class="glyphicon" ng-class="isChildrenOpen ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'"></span>
           </div>
         </div>
@@ -38,6 +40,10 @@
         <!-- Or entity members -->
         <entity-node ng-repeat="child in entity.members track by child.id"
                      ng-show="child.viewModes.has(viewMode) && (!entity.children || entity.children.length === 0)"
+                     entity="child" application-id="applicationId" view-mode="viewMode"></entity-node>
+        <!-- Other nodes under entity -->
+        <entity-node ng-repeat="child in entity.otherNodes track by child.id"
+                     ng-show="child.viewModes.has(viewMode)"
                      entity="child" application-id="applicationId" view-mode="viewMode"></entity-node>
     </div>
     <script type="text/ng-template" id="EntityNodeInfoTemplate.html">
