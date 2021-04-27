@@ -364,9 +364,7 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
             if (brUtilsGeneral.isNonEmpty(state.entityId)) {
                 targetEntity.id = state.entityId;
             } else {
-                targetEntity.id = targetEntity.hasName() ?
-                    targetEntity.name.replace(/\W/g, '-').toLowerCase() :
-                    targetEntity._id;
+                blueprintService.populateId(targetEntity);
             }
         }
 

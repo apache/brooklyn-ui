@@ -36,14 +36,14 @@ export const DSL_ENTITY_SPEC = '$brooklyn:entitySpec';
 
 export function blueprintServiceProvider() {
     return {
-        $get: ['$log', '$q', '$sce', 'paletteApi', 'iconGenerator', 'dslService',
-            function ($log, $q, $sce, paletteApi, iconGenerator, dslService) {
-            return new BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService);
-        }]
+        $get: ['$log', '$q', '$sce', 'paletteApi', 'iconGenerator', 'dslService', 'brBrandInfo',
+            function ($log, $q, $sce, paletteApi, iconGenerator, dslService, brBrandInfo) {
+                return new BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService, brBrandInfo);
+            }]
     }
 }
 
-function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService) {
+function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService, brBrandInfo) {
     let blueprint = new Entity();
 
     return {
@@ -72,6 +72,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         addConfigKeyDefinition: addConfigKeyDefinition,
         addParameterDefinition: addParameterDefinition,
         getRelationships: getRelationships,
+        populateId: populateId,
     };
 
     function setBlueprintFromJson(jsonBlueprint) {
@@ -771,6 +772,41 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         return entity.children.reduce((relationships, child) => {
             return relationships.concat(getRelationships(child))
         }, relationships);
+    }
+
+    function populateId(entity) {
+        if (entity.id) return;
+
+        let defaultSalterFn = (candidateId, index) => candidateId+"-"+index;
+        let uniqueSuffixFn = (candidateId, root, salterFn) => {
+            let matches = {};
+            root.visitWithDescendants(e => {
+                if (e.id && e.id.startsWith(candidateId)) {
+                    matches[e.id] = true;
+                }
+            });
+            if (!matches[candidateId]) return candidateId;
+            let i=2;
+            while (true) {
+                let newCandidateId = (salterFn || defaultSalterFn)(candidateId, i);
+                if (!matches[newCandidateId]) return newCandidateId;
+                i++;
+            }
+        };
+
+        entity.id = (brBrandInfo.blueprintComposerIdGenerator || blueprintComposerIdGenerator)(entity, uniqueSuffixFn);
+    }
+
+    function blueprintComposerIdGenerator(entity, uniqueSuffixFn) {
+        let candidate = entity.hasName()
+            ? entity.name.replace(/\W/g, '-').toLowerCase()
+            : entity.type ? entity.type.replace(/\W/g, '-').toLowerCase()
+            : !entity.parent ? "root"
+            : entity._id;
+        return uniqueSuffixFn(
+                candidate,
+                entity.getApplication() /* unique throughout blueprint */,
+                null /* use default salter */ );
     }
 
 }

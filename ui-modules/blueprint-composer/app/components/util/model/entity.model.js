@@ -685,11 +685,14 @@ function addParameterDefinition(param, overwrite, skipUpdatesDuringBatch) {
     let allParams = this.miscDataOrDefault('parametersMap', {});
     if (param) {
         if (typeof param === 'string') {
-            param = {name: key, type: 'string'};
+            param = {name: param, type: 'string'};
             overwrite = false;
         }
         let key = (param || {}).name;
-        if (!key) throw new Error("'name' field must be included when adding parameter");
+        if (!key) {
+            console.warn("Invalid parameter definition to add", typeof param, param);
+            throw new Error("'name' field must be included when adding parameter");
+        }
 
         param = allParams[key] = Object.assign(allParams[key] || {}, param, overwrite ? null : allParams[key]);
 
