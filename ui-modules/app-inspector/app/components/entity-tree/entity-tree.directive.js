@@ -120,7 +120,6 @@ export function entityTreeDirective() {
                 if ($scope.viewModes.has(VIEW_HOST_FOR_HOSTED_ON)) {
                     addHostForHostedOnView(entities, relationships);
                 }
-                console.log('-------------THE END-------------------------');
             }
 
             /**
@@ -200,7 +199,6 @@ export function entityTreeDirective() {
              * @param {string} viewMode The view mode to display copy of the entity in only.
              */
             function flipParentAndChild(parent, child, entities, viewMode) {
-                console.log('Flip parent with a child!', parent, child);
                 let parentOfTheParent = findEntity(entities, parent.parentId);
                 if (parentOfTheParent) {
                     hideEntityInView(child, viewMode);
@@ -471,24 +469,29 @@ export function entityNodeDirective() {
         };
 
         /**
-         * @returns {boolean} True if entity is a secondary in a current view, false otherwise. Secondary entity is one
-         * that is not part of relationship view the id currently displayed.
+         * @returns {boolean} True if entity is changed in a current view, false otherwise.
          */
-        $scope.isSecondary = function() {
-            return !$scope.entity.viewModesHighlight.has($scope.viewMode);
+        $scope.isChanged = function() {
+            return $scope.entity.viewModesHighlight.has($scope.viewMode) && $scope.viewMode !== VIEW_PARENT_CHILD;
         };
 
         /**
-         * Counts amount of entities that are expected to be displayed in the current view.
+         * Counts amount of entity nodes that are expected to be displayed in the current view.
          *
-         * @param {Array.<Object>} entities The array of entities to count amount for.
-         * @returns {number} Amount of entities in the current view.
+         * @returns {number} Amount of entity nodes in the current view.
          */
-        $scope.entitiesInCurrentView = (entities) => {
-            if (!entities) {
-                return 0;
+        $scope.nodesInCurrentView = () => {
+            let amount = 0;
+            if ($scope.entity.children) {
+                amount += $scope.entity.children.filter(entity => entity.viewModes.has($scope.viewMode)).length;
             }
-            return entities.filter(entity => entity.viewModes.has($scope.viewMode)).length || 0;
+            if ($scope.entity.members) {
+                amount += $scope.entity.members.filter(entity => entity.viewModes.has($scope.viewMode)).length;
+            }
+            if ($scope.entity.otherNodes) {
+                amount += $scope.entity.otherNodes.filter(entity => entity.viewModes.has($scope.viewMode)).length;
+            }
+            return amount;
         }
     }
 }
