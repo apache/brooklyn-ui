@@ -104,7 +104,7 @@ export function entityTreeDirective() {
             /**
              * Analyzes relationships of the entity tree and prepares mode views, e.g. 'parent/child' and 'host_for/hosted_on'.
              *
-             * @param {Array} entityTree The entity tree to process and prepare view modes for.
+             * @param {Array.<Object>} entityTree The entity tree to process and prepare view modes for.
              */
             function analyzeRelationships(entityTree) {
                 let entities = entityTreeToArray(entityTree);
@@ -193,8 +193,8 @@ export function entityTreeDirective() {
             /**
              * Flips parent entity with its child.
              *
-             * @param parent The parent entity to flip with its child.
-             * @param child The child entity to flip with its parent.
+             * @param {Object} parent The parent entity to flip with its child.
+             * @param {Object} child The child entity to flip with its parent.
              * @param {Array.<Object>} entities The entity tree converted to array.
              * @param {string} viewMode The view mode to display copy of the entity in only.
              */
@@ -310,12 +310,11 @@ export function entityTreeDirective() {
             /**
              * Initializes entity tree with 'parent/child' view mode. This is a default view mode.
              *
-             * @param {Object} entities The entity tree to initialize with 'parent/child' view mode.
+             * @param {Array.<Object>} entities The entity tree to initialize with 'parent/child' view mode.
              */
             function initParentChildView(entities) {
                 entities.forEach(entity => {
                     displayEntityInView(entity, VIEW_PARENT_CHILD);
-                    highlightEntityInView(entity, VIEW_PARENT_CHILD);
                 });
             }
 
@@ -469,10 +468,10 @@ export function entityNodeDirective() {
         };
 
         /**
-         * @returns {boolean} True if entity is changed in a current view, false otherwise.
+         * @returns {boolean} True if to highlight entity in a current view, false otherwise.
          */
-        $scope.isChanged = function() {
-            return $scope.entity.viewModesHighlight.has($scope.viewMode) && $scope.viewMode !== VIEW_PARENT_CHILD;
+        $scope.isHighlight = function() {
+            return $scope.entity.viewModesHighlight.has($scope.viewMode);
         };
 
         /**

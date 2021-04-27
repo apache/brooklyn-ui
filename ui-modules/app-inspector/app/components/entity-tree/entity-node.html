@@ -17,7 +17,7 @@
   under the License.
 -->
 <div class="entity-node">
-    <div ng-if="isOpen" class="entity-node-item" ng-class="{ 'active': isSelected(), 'highlight' : isChanged() && !isSelected() }" uib-popover-template="'EntityNodeInfoTemplate.html'" popover-trigger="'mouseenter'" popover-placement="right" popover-popup-delay="1000">
+    <div ng-if="isOpen" class="entity-node-item" ng-class="{ 'active': isSelected(), 'highlight' : isHighlight() && !isSelected() }" uib-popover-template="'EntityNodeInfoTemplate.html'" popover-trigger="'mouseenter'" popover-placement="right" popover-popup-delay="1000">
         <a ng-href="{{getHref()}}" class="entity-node-link">
             <brooklyn-status-icon value="{{entity.serviceState}}" ng-if="entity.serviceState || entity.applicationId"></brooklyn-status-icon>
             <i class="fa fa-2x fa-external-link" ng-if="!entity.serviceState && !entity.applicationId"></i>
