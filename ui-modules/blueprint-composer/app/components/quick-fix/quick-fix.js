@@ -132,10 +132,14 @@ function proposeSetFrom() {
 
         let considerNode = (sourceNode) => {
             if (qfdef['source-types']) {
-                // TODO would be nice to store super-types of entity in miscData and filter based on those
                 if (!qfdef['source-types'].includes(sourceNode.entity.type)) {
-                    // wrong type
-                    return;
+                    // wrong type; check traits (supertypes)
+                    if ((sourceNode.entity.miscData.get("traits") || []).find(t => qfdef['source-types'].includes(t))) {
+                        // there was a super-type which matched; we're okay
+                    } else {
+                        // also no supertype matches the specified source-types, so don't make a proposal for this node
+                        return;
+                    }
                 }
             }
 
