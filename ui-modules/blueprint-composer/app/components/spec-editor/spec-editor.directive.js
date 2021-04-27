@@ -259,7 +259,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     let issueWithFixes = Object.assign({}, issueCopy, {
                         quickFixes: {},
                     });
-                    computeQuickFixesForIssue(issueCopy, scope.model, issueWithFixes.quickFixes);
+                    computeQuickFixesForIssue(issueCopy, scope.model, blueprintService, issueWithFixes.quickFixes);
                     scope.model.issuesWithFixes.push(issueWithFixes);
                 });
             });

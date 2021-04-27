@@ -49,7 +49,7 @@ function graphicalController($scope, $state, $filter, blueprintService, paletteS
     $scope.$watch('blueprint', () => vm.computeIssues(), true);
 
     this.computeIssues = () => {
-        $scope.allIssues = computeQuickFixes(blueprintService.getAllIssues());
+        $scope.allIssues = computeQuickFixes(blueprintService);
     }
     this.onCanvasSelection = (item) => {
         $scope.canvasSelectedItem = item;

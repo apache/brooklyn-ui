@@ -104,6 +104,7 @@ class Builder {
 
     phase(phase) {
         this.issue.phase = phase;
+        return this;
     }
 
     ref(ref) {

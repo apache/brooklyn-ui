@@ -26,7 +26,8 @@ angular.module(MODULE_NAME, []);
 export default MODULE_NAME;
 
 
-export function computeQuickFixes(allIssues) {
+export function computeQuickFixes(blueprintService, allIssues) {
+    if (!allIssues) allIssues = blueprintService.getAllIssues();
     if (!allIssues) allIssues = {};
     if (!allIssues.errors) allIssues.errors = {};
 
@@ -51,20 +52,20 @@ export function computeQuickFixes(allIssues) {
             }
             v.issues.push(issueO);
 
-            computeQuickFixesForIssue(issue, issue.entity, v.quickFixes)
+            computeQuickFixesForIssue(issue, issue.entity, blueprintService, v.quickFixes)
         });
     });
     return allIssues;
 }
 
-export function computeQuickFixesForIssue(issue, entity, proposalHolder) {
+export function computeQuickFixesForIssue(issue, entity, blueprintService, proposalHolder) {
     let qfs = getQuickFixHintsForIssue(issue, entity);
     (qfs || []).forEach(qf => {
         let qfi = getQuickFixProposer(qf['fix']);
         if (!qfi) {
             console.log("Skipping unknown quick fix", qf);
         } else {
-            qfi.propose(qf, issue, entity, proposalHolder);
+            qfi.propose(qf, issue, entity, blueprintService, proposalHolder);
             // we could offer the fix per-issue, but no need as they can get that by navigating to the entity
             //qfi.propose(issue, issueO.quickFixes);  // issueO from previous method
         }
@@ -74,7 +75,7 @@ export function computeQuickFixesForIssue(issue, entity, proposalHolder) {
 const QUICK_FIX_PROPOSERS = {
     clear_config: {
         // the propose function updates the proposals object
-        propose: (qfdef, issue, entity, proposals) => {
+        propose: (qfdef, issue, entity, blueprintService, proposals) => {
             if (!issue.ref) return;
             if (!proposals) proposals = {};
 
@@ -111,7 +112,7 @@ const QUICK_FIX_PROPOSERS = {
 };
 
 function proposeSetFrom() {
-    return function (qfdef, issue, entity, proposals) {
+    return function (qfdef, issue, entity, blueprintService, proposals) {
         if (!issue.ref) return;
 
         let ckey_exact = qfdef['source-key'];
@@ -217,9 +218,7 @@ function proposeSetFrom() {
                                     ));
                                 }
                             }
-                            if (!sourceNode.entity.id) {
-                                sourceNode.entity.id = sourceNode.entity._id;
-                            }
+                            blueprintService.populateId(sourceNode.entity);
 
                             entity = (entity || issue.entity);
                             entity.addConfig(issue.ref, '$brooklyn:component("' + sourceNode.entity.id + '").config("' + ckey + '")');
