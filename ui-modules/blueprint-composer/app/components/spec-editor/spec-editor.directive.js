@@ -1052,8 +1052,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         specEditor.addConfigKey = addConfigKey;
         function addConfigKey(name) {
             if (name) {
-                let allConfig = scope.model.miscData.get('config');
-                blueprintService.addConfigKeyDefinition(allConfig, name);
+                blueprintService.addConfigKeyDefinition(scope.model, name);
                 scope.model.addConfig(name, '');
                 loadLocalConfigFromModel();
                 scope.state.config.add.value = '';
@@ -1204,14 +1203,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         }
 
         function addParameter(name) {
-            let allParams = scope.model.miscData.get('parameters');
-            if (!allParams) {
-                allParams = [];
-                scope.model.miscData.set('parameters', allParams);
-            }
-            blueprintService.addParameterDefinition(allParams, name);
-            let param = allParams.find(p => p.name === name);
-            scope.model.addParameter(param);
+            scope.model.addParameterDefinition(name);
             loadLocalParametersFromModel();
             scope.state.parameters.search = '';
             scope.state.parameters.add.value = '';

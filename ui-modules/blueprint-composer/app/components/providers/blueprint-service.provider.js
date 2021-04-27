@@ -90,7 +90,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         }
         setBlueprintFromJson(newBlueprint);
         $log.debug(TAG + 'Blueprint set from YAML', blueprint);
-        // TODO refresh the blueprint now?  see comments in yaml.state.js and on refreshBlueprint
+        // do we need to refresh the blueprint now?  see comments in yaml.state.js and on refreshBlueprint; think not.
     }
 
     function getBlueprint() {
@@ -285,7 +285,6 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
 
     function refreshTypeMetadata(entity, family) {
         let deferred = $q.defer();
-
         if (entity.hasType()) {
             entity.family = family.id;
 
@@ -350,86 +349,89 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
     }
 
     function refreshConfigConstraints(entity) {
+        function checkConstraints(config) {
+            for (let constraintO of config.constraints) {
+                let message = null;
+                let key = null, args = null;
+                if (constraintO instanceof String || typeof constraintO=='string') {
+                    key = constraintO;
+                } else if (Object.keys(constraintO).length==1) {
+                    key = Object.keys(constraintO)[0];
+                    args = constraintO[key];
+                } else {
+                    $log.warn("Unknown constraint object", typeof constraintO, constraintO, config);
+                    key = constraintO;
+                }
+                let val = (k) => entity.config.get(k || config.name);
+                let isSet = (k) => entity.config.has(k || config.name) && angular.isDefined(val(k));
+                let isAnySet = (k) => {
+                    if (!k || !Array.isArray(k)) return false;
+                    return k.some(isSet);
+                }
+                let hasDefault = () => angular.isDefined(config.defaultValue);
+                switch (key) {
+                    case 'Predicates.notNull()':
+                    case 'Predicates.notNull':
+                        if (!isSet() && !hasDefault()) {
+                            message = `<samp>${config.name}</samp> is required`;
+                        }
+                        break;
+                    case 'required':
+                        if (!isSet() && !hasDefault() && val()!='') {
+                            message = `<samp>${config.name}</samp> is required`;
+                        }
+                        break;
+                    case 'regex':
+                        if (isSet() && !(new RegExp(args).test(val))) {
+                            message = `<samp>${config.name}</samp> does not match the required format: <samp>${args}</samp>`;
+                        }
+                        break;
+                    case 'forbiddenIf':
+                        if (isSet() && isSet(args)) {
+                            message = `<samp>${config.name}</samp> and <samp>${args}</samp> cannot both be set`;
+                        }
+                        break;
+                    case 'forbiddenUnless':
+                        if (isSet() && !isSet(args)) {
+                            message = `<samp>${config.name}</samp> can only be set when <samp>${args}</samp> is set`;
+                        }
+                        break;
+                    case 'requiredIf':
+                        if (!isSet() && isSet(args)) {
+                            message = `<samp>${config.name}</samp> must be set if <samp>${args}</samp> is set`;
+                        }
+                        break;
+                    case 'requiredUnless':
+                        if (!isSet() && !isSet(args)) {
+                            message = `<samp>${config.name}</samp> or <samp>${args}</samp> is required`;
+                        }
+                        break;
+                    case 'requiredUnlessAnyOf':
+                        if (!isSet() && !isAnySet(args)) {
+                            message = `<samp>${config.name}</samp> or one of <samp>${args}</samp> is required`;
+                        }
+                        break;
+                    case 'forbiddenUnlessAnyOf':
+                        if (isSet() && !isAnySet(args)) {
+                            message = `<samp>${config.name}</samp> cannot be set if any of <samp>${args}</samp> are set`;
+                        }
+                        break;
+                    default:
+                        $log.warn("Unknown constraint predicate", constraintO, config);
+                }
+                if (message !== null) {
+                    entity.addIssue(Issue.builder().group('config').ref(config.name).message($sce.trustAsHtml(message)).build());
+                }
+            }
+        }
         return $q((resolve) => {
             if (entity.miscData.has('config')) {
                 entity.miscData.get('config')
                     .filter(config => config.constraints && config.constraints.length > 0)
-                    .forEach(config => {
-                        for (let constraintO of config.constraints) {
-                            let message = null;
-                            let key = null, args = null;
-                            if (constraintO instanceof String || typeof constraintO=='string') {
-                                key = constraintO;
-                            } else if (Object.keys(constraintO).length==1) {
-                                key = Object.keys(constraintO)[0];
-                                args = constraintO[key];
-                            } else {
-                                $log.warn("Unknown constraint object", typeof constraintO, constraintO, config);
-                                key = constraintO;
-                            }
-                            let val = (k) => entity.config.get(k || config.name);
-                            let isSet = (k) => entity.config.has(k || config.name) && angular.isDefined(val(k));
-                            let isAnySet = (k) => {
-                                if (!k || !Array.isArray(k)) return false;
-                                return k.some(isSet);
-                            }
-                            let hasDefault = () => angular.isDefined(config.defaultValue);
-                            switch (key) {
-                                case 'Predicates.notNull()':
-                                case 'Predicates.notNull':
-                                    if (!isSet() && !hasDefault()) {
-                                        message = `<samp>${config.name}</samp> is required`;
-                                    }
-                                    break;
-                                case 'required':
-                                    if (!isSet() && !hasDefault() && val()!='') {
-                                        message = `<samp>${config.name}</samp> is required`;
-                                    }
-                                    break;
-                                case 'regex':
-                                    if (isSet() && !(new RegExp(args).test(val))) {
-                                        message = `<samp>${config.name}</samp> does not match the required format: <samp>${args}</samp>`;
-                                    }
-                                    break;
-                                case 'forbiddenIf':
-                                    if (isSet() && isSet(args)) {
-                                        message = `<samp>${config.name}</samp> and <samp>${args}</samp> cannot both be set`;
-                                    }
-                                    break;
-                                case 'forbiddenUnless':
-                                    if (isSet() && !isSet(args)) {
-                                        message = `<samp>${config.name}</samp> can only be set when <samp>${args}</samp> is set`;
-                                    }
-                                    break;
-                                case 'requiredIf':
-                                    if (!isSet() && isSet(args)) {
-                                        message = `<samp>${config.name}</samp> must be set if <samp>${args}</samp> is set`;
-                                    }
-                                    break;
-                                case 'requiredUnless':
-                                    if (!isSet() && !isSet(args)) {
-                                        message = `<samp>${config.name}</samp> or <samp>${args}</samp> is required`;
-                                    }
-                                    break;
-                                case 'requiredUnlessAnyOf':
-                                    if (!isSet() && !isAnySet(args)) {
-                                        message = `<samp>${config.name}</samp> or one of <samp>${args}</samp> is required`;
-                                    }
-                                    break;
-                                case 'forbiddenUnlessAnyOf':
-                                    if (isSet() && !isAnySet(args)) {
-                                        message = `<samp>${config.name}</samp> cannot be set if any of <samp>${args}</samp> are set`;
-                                    }
-                                    break;
-                                default:
-                                    $log.warn("Unknown constraint predicate", constraintO, config);
-                            }
-                            if (message !== null) {
-                                entity.addIssue(Issue.builder().group('config').ref(config.name).message($sce.trustAsHtml(message)).build());
-                            }
-                        }
-                    });
+                    .forEach(checkConstraints);
             }
+            // could do same as above to check parameters, but that doesn't make the parameters appear as config to set,
+            // so instead we merge parameters with config
             resolve();
         });
     }
@@ -582,49 +584,51 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         return $q.all(promises);
     }
 
-    function addConfigKeyDefinition(config, key) {
-        config.push({
-            "name": key,
-            "label": key,
-            "description": "",
-            "priority": 1,
-            "pinned": true,
-            "type": "java.lang.String",
-            "constraints": [],
-        });
+    function addConfigKeyDefinition(entity, key) {
+        // TODO return type, and below
+        entity.addConfigKeyDefinition(key, false);
     }
 
-    function addParameterDefinition(params, key) {
-        params.push({
-            "name": key,
-            "type": "string",
-        });
+    function addParameterDefinition(entity, key) {
+        entity.addParameterDefinition(key);
     }
 
     function addUnlistedConfigKeysDefinitions(entity) {
         // copy config key definitions set on this entity into the miscData aggregated view
-        let allConfig = entity.miscData.get('config') || [];
+        let allConfig = entity.miscDataOrDefault('configMap', {});
         entity.config.forEach((value, key) => {
-            if (!allConfig.some((e) => e.name === key)) {
-                addConfigKeyDefinition(allConfig, key);
+            if (!allConfig[key]) {
+                entity.addConfigKeyDefinition(key);
             }
         });
-        entity.miscData.set('config', allConfig);
+        entity.miscData.set('config', Object.values(allConfig));
+
     }
 
     function addUnlistedParameterDefinitions(entity) {
         // copy parameter definitions set on this entity into the miscData aggregated view;
-        // TODO see discussions in PR 112 about whether this is necessary and/or there is a better way
-        let allParams = entity.miscData.get('parameters') || [];
+        // see discussions in PR 112 about whether this is necessary and/or there is a better way; but note, this is much updated since
+        let allParams = entity.miscDataOrDefault('parametersMap', {});
         entity.parameters.forEach((param) => {
-            if (!allParams.some((e) => e.name === param.name)) {
-                allParams.push(param);
+            if (!allParams[param.name]) {
+                allParams[param.name] = param;
             }
         });
-        entity.miscData.set('parameters', allParams);
+        entity.miscData.set('parameters', Object.values(allParams));
     }
 
     function populateEntityFromApiSuccess(entity, data) {
+        function mapped(list, field) {
+            let result = {};
+            if (list) {
+                list.forEach(l => {
+                    if (l && l[field]) {
+                        result[l[field]] = l;
+                    }
+                });
+            }
+            return result;
+        }
         entity.clearIssues({group: 'type'});
         entity.type = data.symbolicName;
         entity.icon = data.iconUrl || iconGenerator(data.symbolicName);
@@ -637,8 +641,12 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         entity.miscData.set('displayName', data.displayName);
         entity.miscData.set('symbolicName', data.symbolicName);
         entity.miscData.set('description', data.description);
+
         entity.miscData.set('config', data.config || []);
+        entity.miscData.set('configMap', mapped(data.config, 'name'));
         entity.miscData.set('parameters', data.parameters || []);
+        entity.miscData.set('parametersMap', mapped(data.parameters, 'name'));
+
         entity.miscData.set('sensors', data.sensors || []);
         entity.miscData.set('traits', data.supertypes || []);
         entity.miscData.set('tags', data.tags || []);

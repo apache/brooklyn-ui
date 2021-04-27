@@ -18,6 +18,7 @@
  */
 import {Issue} from './issue.model';
 import {Dsl, DslParser} from './dsl.model';
+import {blueprintServiceProvider} from "../../providers/blueprint-service.provider";
 
 const MEMBERSPEC_REGEX = /^(\w+\.)*[mM]ember[sS]pec$/;
 const FIRST_MEMBERSPEC_REGEX = /^(\w+\.)*first[mM]ember[sS]pec$/;
@@ -550,6 +551,17 @@ export class Entity {
         return MISC_DATA.get(this);
     }
 
+    miscDataOrDefault(key, defaultValue) {
+        let miscData = this.miscData;
+        let result = miscData.get(key);
+        if (result) {
+            return result;
+        } else {
+            miscData.set(key, defaultValue);
+            return defaultValue;
+        }
+    }
+
     equals(value) {
         if (value && value instanceof Entity) {
             try {
@@ -593,10 +605,12 @@ Entity.prototype.setPoliciesFromJson = setPoliciesFromJson;
 
 Entity.prototype.getData = getData;
 Entity.prototype.addConfig = addConfig;
-Entity.prototype.addParameter = addParameter;
+Entity.prototype.addConfigKeyDefinition = addConfigKeyDefinition;
+Entity.prototype.addParameterDefinition = addParameterDefinition;
 Entity.prototype.addMetadata = addMetadata;
 Entity.prototype.removeConfig = removeConfig;
 Entity.prototype.removeParameter = removeParameter;
+Entity.prototype.updateParameter = updateParameter;
 Entity.prototype.removeMetadata = removeMetadata;
 Entity.prototype.isCluster = isCluster;
 Entity.prototype.isMemberSpec = isMemberSpec;
@@ -639,8 +653,47 @@ function addConfig(key, value) {
     }
 }
 
-function addParameter(param) {
-    PARAMETERS.get(this).push(param);
+function addConfigKeyDefinition(param, overwrite) {
+    if (typeof param === 'string') {
+        param = {
+            "name": param,
+            "label": param,
+            "description": "",
+            "priority": 1,
+            "pinned": true,
+            "type": "java.lang.String",
+            "constraints": [],
+        };
+        overwrite = false;
+    }
+    let key = (param || {}).name;
+    if (!key) throw new Error("'name' field must be included when adding parameter; was", param);
+
+    let allConfig = this.miscDataOrDefault('configMap', {});
+    allConfig[key] = Object.assign(allConfig[key] || {}, param, overwrite ? null : allConfig[key]);
+    this.miscData.set('config', Object.values(allConfig));
+
+    this.touch();
+    return this;
+}
+
+function addParameterDefinition(param, overwrite) {
+    if (typeof param === 'string') {
+        param = {name: key, type: 'string'};
+        overwrite = false;
+    }
+    let key = (param || {}).name;
+    if (!key) throw new Error("'name' field must be included when adding parameter");
+
+    let allParams = this.miscDataOrDefault('parametersMap', {});
+    allParams[key] = Object.assign(allParams[key] || {}, param, overwrite ? null : allParams[key]);
+    this.miscData.set('parameters', Object.values(allParams));
+
+    let eps = PARAMETERS.get(this);
+    this.updateParameter(key, allParams[key], true);
+
+    this.addConfigKeyDefinition(allParams[key], overwrite);
+
     this.touch();
     return this;
 }
@@ -685,17 +738,22 @@ function removeParameter(name) {
 
 
 /**
- * Update an entry in brooklyn.parameters
+ * Update an entry in brooklyn.parameters if it exists
  * @param {string} name
  * @param {object} definition
  * @returns {Entity}
  */
-function updateParameter(name, definition) {
-    if (this.hasParameters()) {
+function updateParameter(name, definition, createIfMissing) {
+    if (createIfMissing || this.hasParameters()) {
         let paramIndex = PARAMETERS.get(this).findIndex(e => e.name === name);
         if (paramIndex != -1) {
             PARAMETERS.get(this)[paramIndex] = definition;
             this.touch();
+        } else {
+            if (createIfMissing) {
+                PARAMETERS.get(this).push(definition);
+                this.touch();
+            }
         }
     }
     return this;
@@ -1065,7 +1123,7 @@ function setParametersFromJson(incomingModel) {
 
     let self = this;
     incomingModel.map((param)=> {
-        self.addParameter(param);
+        self.addParameterDefinition(param);
     });
     this.touch();
 }
@@ -1133,7 +1191,6 @@ function getParametersAsArray() {
 }
 
 function getParameterNamed(name) {
-    // TODO confirm works
     return PARAMETERS.get(this).find(p => p.name === name);
 }
 

@@ -95,6 +95,9 @@ function yamlCampStateController($scope, blueprintService, brSnackbar) {
                 // blueprintService.refreshBlueprintMetadata();
                 
             } catch (err) {
+
+                // YAML exceptions detected separately so ignore those
+
                 if (!(err instanceof YAMLException)) {
                     issues.push({
                         from: CodeMirror.Pos(0, 0),
@@ -102,6 +105,10 @@ function yamlCampStateController($scope, blueprintService, brSnackbar) {
                         message: err.message
                     });
                 }
+            }
+            if (issues.length) {
+                // these should be displayed, but sometimes aren't.
+                console.log("Issues detected in blueprint", issues);
             }
 
             return issues;

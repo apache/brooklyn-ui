@@ -33,7 +33,6 @@ export function computeQuickFixes(allIssues) {
     allIssues.errors.byMessage = {};
     Object.values(allIssues.errors.byEntity).forEach(list => {
         list.forEach(issue => {
-            // TODO key should be a tuple of group, ref, message
             let key = issue.group+":"+issue.ref+":"+issue.message;
             let v = allIssues.errors.byMessage[key];
             if (!v) {
@@ -126,8 +125,9 @@ function proposeSetFrom() {
         let createable = qfdef['source-key-createable'];
 
         // TODO if root param is required, show error
-        // TODO make default id containts type name
+        // TODO make default id contain type name
         // TODO show default id if no id present
+
         // TODO if id is changed, update all refs
         // TODO allow graphically selectable
 
@@ -162,7 +162,7 @@ function proposeSetFrom() {
 
             let pkey = 'set_from_' + sourceNode.id + '_' + ckey;
             if (!proposals[pkey]) {
-                if (sourceNode.create_key) {
+                if (create) {
                     proposals[pkey] = {
                         text: "Set from new parameter '" + ckey + "' on " + sourceNode.name,
                         tooltip: "This will fix the error by setting the value here equal to the value of a new parameter '" + ckey + "' created on " + sourceNode.name
@@ -180,13 +180,13 @@ function proposeSetFrom() {
                 Object.assign(proposals[pkey], {
                     issues: [],
                     apply: (issue, entity) => {
-                        if (sourceNode.create_key) {
+                        if (create) {
                             // check again so we only create once
                             let hasParam = sourceNode.entity.getParameterNamed(ckey);
                             if (!hasParam) {
-                                sourceNode.entity.addParameter(Object.assign(
+                                sourceNode.entity.addParameterDefinition(Object.assign(
                                     {name: ckey,},
-                                    qfdef['source-key-parameter-definition'] || {}
+                                    qfdef['source-key-parameter-definition'],
                                 ));
                             }
                         }
