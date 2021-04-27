@@ -36,21 +36,32 @@ brooklyn.catalog:
         fix: clear_config
         message-regex: cannot both be set
 
-      - key: post_code
+      - # set from existing key matching [.*_|]postal_code[|_.*] on ancestor
+        key: post_code
         fix: set_from_key
         message-regex: required
 
         source-key: postal_code
-        source-hierarchy: root
-        source-key-createable: true
+        source-key-regex: (_|^)postal_code(_|$)   # will match e.g. cust1_postal_code and postal_core_north but not postal_codex
+        source-hierarchy: ancestors               # on self or any ancestor
+
+      - # create key postal_code at root
+        key: post_code
+        fix: set_from_key
+        message-regex: required
+
+        source-key: postal_code
+        source-key-createable: true               # will create if not present
+        source-hierarchy: root                    # but only at root
         source-key-parameter-definition:
           constraints:
           - required
 
-      - key: post_code
+      - # use this key on any other entity of the same type
+        key: post_code
         fix: set_from_key
         message-regex: required
 
-        source-key: post_code
-        source-hierarchy: anywhere
-        source-types: [ basic-with-constraint ]
+        source-key: post_code                     # will match the key
+        source-hierarchy: anywhere                # anywhere
+        source-types: [ basic-with-constraint ]   # of this type

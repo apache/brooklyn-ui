@@ -114,9 +114,10 @@ function proposeSetFrom() {
     return function (qfdef, issue, entity, proposals) {
         if (!issue.ref) return;
 
-        let ckey = qfdef['source-key'];
-        if (!ckey) {
-            console.warn("Missing required 'source-key' on hint", qfdef);
+        let ckey_exact = qfdef['source-key'];
+        let ckey_regex = qfdef['source-key-regex'];
+        if (!ckey_exact && !ckey_regex) {
+            console.warn("Missing at least one of 'source-key' or 'source-key-regex' on hint", qfdef);
             return;
         }
 
@@ -143,76 +144,96 @@ function proposeSetFrom() {
                 }
             }
 
-            if (sourceNode.entity._id === entity._id && ckey === issue.ref) {
-                // skip proposal for recursive definition
-                return;
+            let contenders = {};
+            if (ckey_exact) {
+                let exactKey = sourceNode.entity.config[ckey_exact] || (sourceNode.entity.miscData.get("config") || []).find(c => c.name === ckey_exact);
+                // don't think we need to check params -- sourceNode.entity.getParameterNamed(ckey) -- as they should be in config
+
+                if (exactKey) contenders[ckey_exact] = true;
+            }
+            let create = !Object.keys(contenders).length && createable && ckey_exact;
+            if (create) {
+                contenders[ckey_exact] = true;
             }
 
-            let hasKey = sourceNode.entity.config[ckey] || (sourceNode.entity.miscData.get("config") || []).find(c => c && c.name === ckey);
-            let hasParam = sourceNode.entity.getParameterNamed(ckey);
+            if (ckey_regex) {
+                let r = new RegExp(ckey_regex);
+                Object.keys(sourceNode.entity.config).forEach(k => {
+                    if (r.test(k)) contenders[k] = true;
+                });
+                (sourceNode.entity.miscData.get("config") || []).forEach(c => {
+                    if (r.test(c.name)) contenders[c.name] = true;
+                });
+            }
+            console.log("result of regex at", ckey_regex, sourceNode, contenders);
 
-            let existing = hasKey || hasParam;
-            let create = !existing && createable;
-
-            if (!existing && !create) {
+            if (!Object.keys(contenders).length) {
                 // no proposal available (cannot create)
                 return;
             }
 
+            if (!sourceNode.entity.parent) {
+                sourceNode.id = sourceNode.id || 'root';
+                sourceNode.name = sourceNode.name || sourceNode.entity.name || 'the application root node';
+            }
+
             sourceNode.id = sourceNode.id || sourceNode.entity.id || sourceNode.entity._id;
             sourceNode.name = sourceNode.name || sourceNode.entity.name ||
-                ((sourceNode.entity.type || "Unnamed item") + " " + "(" + (sourceNode.entity.id || sourceNode.entity._id) +")");
+                ((sourceNode.entity.type || "Unnamed item") + " " + "(" + (sourceNode.entity.id || sourceNode.entity._id) + ")");
 
-            let pkey = 'set_from_' + sourceNode.id + '_' + ckey;
-            if (!proposals[pkey]) {
-                if (create) {
-                    proposals[pkey] = {
-                        text: "Set from new parameter '" + ckey + "' on " + sourceNode.name,
-                        tooltip: "This will fix the error by setting the value here equal to the value of a new parameter '" + ckey + "' created on " + sourceNode.name
-                            + ". The value of that parameter may need to be set in order to deploy this.",
-                    };
-                } else {
-                    proposals[pkey] = {
-                        text: "Set from '" + ckey + "' on " + sourceNode.name,
-                        tooltip: "This will fix the error by setting the value here equal to the value of " +
-                            sourceNode.target_mode +
-                            " '" + ckey + "' on " + sourceNode.name,
-                    };
+            Object.keys(contenders).forEach(ckey => {
+                if (sourceNode.entity._id === entity._id && ckey === issue.ref) {
+                    // skip proposal for recursive definition
+                    return;
                 }
 
-                Object.assign(proposals[pkey], {
-                    issues: [],
-                    apply: (issue, entity) => {
-                        if (create) {
-                            // check again so we only create once
-                            let hasParam = sourceNode.entity.getParameterNamed(ckey);
-                            if (!hasParam) {
-                                sourceNode.entity.addParameterDefinition(Object.assign(
-                                    {name: ckey,},
-                                    qfdef['source-key-parameter-definition'],
-                                ));
-                            }
-                        }
-                        if (!sourceNode.entity.id) {
-                            sourceNode.entity.id = sourceNode.entity._id;
-                        }
-
-                        entity = (entity || issue.entity);
-                        entity.addConfig(issue.ref, '$brooklyn:component("' + sourceNode.entity.id + '").config("' + ckey + '")');
+                let pkey = 'set_from_' + sourceNode.id + '_' + ckey;
+                if (!proposals[pkey]) {
+                    if (create) {
+                        proposals[pkey] = {
+                            text: "Set from new parameter '" + ckey + "' on " + sourceNode.name,
+                            tooltip: "This will fix the error by setting the value here equal to the value of a new parameter '" + ckey + "' created on " + sourceNode.name
+                                + ". The value of that parameter may need to be set in order to deploy this.",
+                        };
+                    } else {
+                        proposals[pkey] = {
+                            text: "Set from '" + ckey + "' on " + sourceNode.name,
+                            tooltip: "This will fix the error by setting the value here equal to the value of " +
+                                sourceNode.target_mode +
+                                " '" + ckey + "' on " + sourceNode.name,
+                        };
                     }
-                });
-            }
-            if (proposals[pkey]) {
-                proposals[pkey].issues.push(issue);
-            }
-        };
+
+                    Object.assign(proposals[pkey], {
+                        issues: [],
+                        apply: (issue, entity) => {
+                            if (create) {
+                                // check again so we only create once
+                                let hasParam = sourceNode.entity.getParameterNamed(ckey);
+                                if (!hasParam) {
+                                    sourceNode.entity.addParameterDefinition(Object.assign(
+                                        {name: ckey,},
+                                        qfdef['source-key-parameter-definition'],
+                                    ));
+                                }
+                            }
+                            if (!sourceNode.entity.id) {
+                                sourceNode.entity.id = sourceNode.entity._id;
+                            }
+
+                            entity = (entity || issue.entity);
+                            entity.addConfig(issue.ref, '$brooklyn:component("' + sourceNode.entity.id + '").config("' + ckey + '")');
+                        }
+                    });
+                }
+                if (proposals[pkey]) {
+                    proposals[pkey].issues.push(issue);
+                }
+            });
+        }
 
         if (qfdef['source-hierarchy']=='root' || (!qfdef['source-hierarchy'] && !qfdef['source-types'])) {
-            considerNode({
-                        id: 'root',
-                        name: 'the application root node',
-                        entity: entity.getApplication(),
-                    });
+            considerNode({ entity: entity.getApplication() });
         } else if (qfdef['source-hierarchy']=='anywhere' || (!qfdef['source-hierarchy'] && qfdef['source-types'])) {
             entity.getApplication().visitWithDescendants(entity => considerNode({ entity }));
         } else if (qfdef['source-hierarchy']=='ancestors') {

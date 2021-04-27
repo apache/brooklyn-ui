@@ -97,16 +97,19 @@
             <div ng-if="parameters.length === 0">
                 <h4>No parameters</h4>
                 <p class="buttons">
-                    <button class="btn btn-sm btn-success" ng-click="specEditor.addParameter(state.parameters.search)">
-                        <i class="fa fa-plus"></i> Add parameter
+                    <button class="btn btn-sm btn-success" ng-click="specEditor.addParameter(state.parameters.search)" ng-if="state.parameters.search">
+                        <i class="fa fa-plus"></i> Add '{{state.parameters.search}}'
                     </button>
+                </p>
+                <p ng-if="!state.parameters.search">
+                    Search for a parameter to add one
                 </p>
             </div>
             <div ng-if="parameters.length > 0">
                 <h4>No matching parameters</h4>
                 <p class="buttons">
                     <button class="btn btn-sm btn-default" ng-if="state.parameters.search.length > 0" ng-click="state.parameters.search = ''">Clear search</button>
-                    <button class="btn btn-sm btn-success" ng-click="specEditor.addParameter(state.parameters.search)">
+                    <button class="btn btn-sm btn-success" ng-click="specEditor.addParameter(state.parameters.search)" ng-if="state.parameters.search">
                         <i class="fa fa-plus"></i> Add '{{state.parameters.search}}'
                     </button>
                 </p>
