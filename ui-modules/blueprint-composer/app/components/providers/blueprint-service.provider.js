@@ -65,6 +65,8 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         isReservedKey: isReservedKey,
         getIssues: getIssues,
         hasIssues: hasIssues,
+        clearAllIssues: clearAllIssues,
+        getAllIssues: getAllIssues,
         populateEntityFromApi: populateEntityFromApiSuccess,
         populateLocationFromApi: populateLocationFromApiSuccess,
         addConfigKeyDefinition: addConfigKeyDefinition,
@@ -88,7 +90,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         }
         setBlueprintFromJson(newBlueprint);
         $log.debug(TAG + 'Blueprint set from YAML', blueprint);
-        // TODO refresh the blueprint now?  see comments in yaml.state.js and on refreshBlueprint
+        // do we need to refresh the blueprint now?  see comments in yaml.state.js and on refreshBlueprint; think not.
     }
 
     function getBlueprint() {
@@ -148,30 +150,78 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         return RESERVED_KEYS.indexOf(key) > -1;
     }
 
-    function getIssues(entity = blueprint) {
+    function getIssues(entity = blueprint, nonRecursive) {
         let issues = [];
 
         if (entity.hasIssues()) {
-            issues = issues.concat(entity.issues.map((issue)=> {
+            issues = issues.concat(entity.issues.map((issue) => {
                 let newIssue = Issue.builder().message(issue.message).group(issue.group).ref(issue.ref).level(issue.level).build();
                 newIssue.entity = entity;
                 return newIssue;
             }));
         }
 
-        entity.policies.forEach((policy)=> {
+        entity.policies.forEach((policy) => {
             issues = issues.concat(getIssues(policy));
         });
 
-        entity.enrichers.forEach((enricher)=> {
+        entity.enrichers.forEach((enricher) => {
             issues = issues.concat(getIssues(enricher));
         });
 
-        entity.children.forEach((child)=> {
-            issues = issues.concat(getIssues(child));
-        });
+        if (!nonRecursive) {
+            entity.children.forEach((child) => {
+                issues = issues.concat(getIssues(child));
+            });
+        }
 
         return issues;
+    }
+
+    // typically followed by a call to refresh
+    function clearAllIssues(entity = blueprint) {
+        entity.resetIssues();
+        entity.children.forEach(clearAllIssues);
+    }
+
+    function getAllIssues(entity = blueprint) {
+        return collectAllIssues({}, entity);
+    }
+
+    function collectAllIssues(result, entity) {
+        if (!result.entities) {
+            result.entities = {};
+            result.byEntity = {};
+            result.count = 0;
+            result.errors = { byEntity: {}, count: 0 }
+            result.warnings = { byEntity: {}, count: 0 }
+        }
+        if (result.entities[entity._id]) {
+            // already visited, some sort of reference; ignore
+        } else {
+            result.entities[entity._id] = entity;
+
+            let issues = getIssues(entity, true);
+            if (issues.length) {
+                result.byEntity[entity._id] = issues;
+                result.count += issues.length;
+
+                let errors = issues.filter(i => i.level.id == 'error');
+                if (errors.length) {
+                    result.errors.byEntity[entity._id] = errors;
+                    result.errors.count += errors.length;
+                }
+
+                let warnings = issues.filter(i => i.level.id != 'error');
+                if (warnings.length) {
+                    result.warnings.byEntity[entity._id] = warnings;
+                    result.warnings.count += warnings.length;
+                }
+            }
+
+            entity.children.forEach((child)=> collectAllIssues(result, child));
+        }
+        return result;
     }
 
     function hasIssues() {
@@ -235,7 +285,6 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
 
     function refreshTypeMetadata(entity, family) {
         let deferred = $q.defer();
-
         if (entity.hasType()) {
             entity.family = family.id;
 
@@ -248,19 +297,23 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
             }).catch(function (error) {
                 deferred.resolve(populateEntityFromApiError(entity, error));
             });
-        } else if (entity.parent) {
-            entity.clearIssues({group: 'type'}).addIssue(Issue.builder().group('type').message('Entity needs a type').level(ISSUE_LEVEL.WARN).build());
-            entity.miscData.set('sensors', []);
-            entity.miscData.set('traits', []);
-            deferred.resolve(entity);
-            addUnlistedConfigKeysDefinitions(entity);
-            addUnlistedParameterDefinitions(entity);
         } else {
+            if (entity.parent) {
+                entity.clearIssues({group: 'type'}).addIssue(Issue.builder().group('type').message('Entity needs a type').level(ISSUE_LEVEL.WARN).build());
+            }
             entity.miscData.set('sensors', []);
             entity.miscData.set('traits', []);
-            deferred.resolve(entity);
+
+            entity.clearIssues({group: 'config'});
+            entity.miscData.set('config', []);
+            entity.miscData.set('configMap', {});
+            entity.miscData.set('parameters', []);
+            entity.miscData.set('parametersMap', {});
+
             addUnlistedConfigKeysDefinitions(entity);
             addUnlistedParameterDefinitions(entity);
+
+            deferred.resolve(entity);
         }
 
         return deferred.promise;
@@ -300,86 +353,89 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
     }
 
     function refreshConfigConstraints(entity) {
+        function checkConstraints(config) {
+            for (let constraintO of config.constraints) {
+                let message = null;
+                let key = null, args = null;
+                if (constraintO instanceof String || typeof constraintO=='string') {
+                    key = constraintO;
+                } else if (Object.keys(constraintO).length==1) {
+                    key = Object.keys(constraintO)[0];
+                    args = constraintO[key];
+                } else {
+                    $log.warn("Unknown constraint object", typeof constraintO, constraintO, config);
+                    key = constraintO;
+                }
+                let val = (k) => entity.config.get(k || config.name);
+                let isSet = (k) => entity.config.has(k || config.name) && angular.isDefined(val(k));
+                let isAnySet = (k) => {
+                    if (!k || !Array.isArray(k)) return false;
+                    return k.some(isSet);
+                }
+                let hasDefault = () => angular.isDefined(config.defaultValue);
+                switch (key) {
+                    case 'Predicates.notNull()':
+                    case 'Predicates.notNull':
+                        if (!isSet() && !hasDefault()) {
+                            message = `<samp>${config.name}</samp> is required`;
+                        }
+                        break;
+                    case 'required':
+                        if (!isSet() && !hasDefault() && val()!='') {
+                            message = `<samp>${config.name}</samp> is required`;
+                        }
+                        break;
+                    case 'regex':
+                        if (isSet() && !(new RegExp(args).test(val))) {
+                            message = `<samp>${config.name}</samp> does not match the required format: <samp>${args}</samp>`;
+                        }
+                        break;
+                    case 'forbiddenIf':
+                        if (isSet() && isSet(args)) {
+                            message = `<samp>${config.name}</samp> and <samp>${args}</samp> cannot both be set`;
+                        }
+                        break;
+                    case 'forbiddenUnless':
+                        if (isSet() && !isSet(args)) {
+                            message = `<samp>${config.name}</samp> can only be set when <samp>${args}</samp> is set`;
+                        }
+                        break;
+                    case 'requiredIf':
+                        if (!isSet() && isSet(args)) {
+                            message = `<samp>${config.name}</samp> must be set if <samp>${args}</samp> is set`;
+                        }
+                        break;
+                    case 'requiredUnless':
+                        if (!isSet() && !isSet(args)) {
+                            message = `<samp>${config.name}</samp> or <samp>${args}</samp> is required`;
+                        }
+                        break;
+                    case 'requiredUnlessAnyOf':
+                        if (!isSet() && !isAnySet(args)) {
+                            message = `<samp>${config.name}</samp> or one of <samp>${args}</samp> is required`;
+                        }
+                        break;
+                    case 'forbiddenUnlessAnyOf':
+                        if (isSet() && !isAnySet(args)) {
+                            message = `<samp>${config.name}</samp> cannot be set if any of <samp>${args}</samp> are set`;
+                        }
+                        break;
+                    default:
+                        $log.warn("Unknown constraint predicate", constraintO, config);
+                }
+                if (message !== null) {
+                    entity.addIssue(Issue.builder().group('config').ref(config.name).message($sce.trustAsHtml(message)).build());
+                }
+            }
+        }
         return $q((resolve) => {
             if (entity.miscData.has('config')) {
                 entity.miscData.get('config')
                     .filter(config => config.constraints && config.constraints.length > 0)
-                    .forEach(config => {
-                        for (let constraintO of config.constraints) {
-                            let message = null;
-                            let key = null, args = null;
-                            if (constraintO instanceof String || typeof constraintO=='string') {
-                                key = constraintO;
-                            } else if (Object.keys(constraintO).length==1) {
-                                key = Object.keys(constraintO)[0];
-                                args = constraintO[key];
-                            } else {
-                                $log.warn("Unknown constraint object", typeof constraintO, constraintO, config);
-                                key = constraintO;
-                            }
-                            let val = (k) => entity.config.get(k || config.name);
-                            let isSet = (k) => entity.config.has(k || config.name) && angular.isDefined(val(k));
-                            let isAnySet = (k) => {
-                                if (!k || !Array.isArray(k)) return false;
-                                return k.some(isSet);
-                            }
-                            let hasDefault = () => angular.isDefined(config.defaultValue);
-                            switch (key) {
-                                case 'Predicates.notNull()':
-                                case 'Predicates.notNull':
-                                    if (!isSet() && !hasDefault()) {
-                                        message = `<samp>${config.name}</samp> is required`;
-                                    }
-                                    break;
-                                case 'required':
-                                    if (!isSet() && !hasDefault() && val()!='') {
-                                        message = `<samp>${config.name}</samp> is required`;
-                                    }
-                                    break;
-                                case 'regex':
-                                    if (isSet() && !(new RegExp(args).test(val))) {
-                                        message = `<samp>${config.name}</samp> does not match the required format: <samp>${args}</samp>`;
-                                    }
-                                    break;
-                                case 'forbiddenIf':
-                                    if (isSet() && isSet(args)) {
-                                        message = `<samp>${config.name}</samp> and <samp>${args}</samp> cannot both be set`;
-                                    }
-                                    break;
-                                case 'forbiddenUnless':
-                                    if (isSet() && !isSet(args)) {
-                                        message = `<samp>${config.name}</samp> can only be set when <samp>${args}</samp> is set`;
-                                    }
-                                    break;
-                                case 'requiredIf':
-                                    if (!isSet() && isSet(args)) {
-                                        message = `<samp>${config.name}</samp> must be set if <samp>${args}</samp> is set`;
-                                    }
-                                    break;
-                                case 'requiredUnless':
-                                    if (!isSet() && !isSet(args)) {
-                                        message = `<samp>${config.name}</samp> or <samp>${args}</samp> is required`;
-                                    }
-                                    break;
-                                case 'requiredUnlessAnyOf':
-                                    if (!isSet() && !isAnySet(args)) {
-                                        message = `<samp>${config.name}</samp> or one of <samp>${args}</samp> is required`;
-                                    }
-                                    break;
-                                case 'forbiddenUnlessAnyOf':
-                                    if (isSet() && !isAnySet(args)) {
-                                        message = `<samp>${config.name}</samp> cannot be set if any of <samp>${args}</samp> are set`;
-                                    }
-                                    break;
-                                default:
-                                    $log.warn("Unknown constraint predicate", constraintO, config);
-                            }
-                            if (message !== null) {
-                                entity.addIssue(Issue.builder().group('config').ref(config.name).message($sce.trustAsHtml(message)).build());
-                            }
-                        }
-                    });
+                    .forEach(checkConstraints);
             }
+            // could do same as above to check parameters, but that doesn't make the parameters appear as config to set,
+            // so instead we merge parameters with config
             resolve();
         });
     }
@@ -442,7 +498,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
                     resolve(parsed);
                 }
             } catch (ex) {
-                $log.debug(ex);
+                $log.debug("Cannot detect whether this is a DSL expression; assuming not", ex);
                 reject(ex, input);
             }
         });
@@ -516,9 +572,9 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
             return promises;
         }, [])).then(results => {
             results.forEach(result => {
-                entity.clearIssues({ref: result.key});
+                entity.clearIssues({ref: result.key, phase: 'relationship'});
                 result.issues.forEach(issue => {
-                    entity.addIssue(Issue.builder().group('config').ref(result.key).message($sce.trustAsHtml(issue)).build());
+                    entity.addIssue(Issue.builder().group('config').phase('relationship').ref(result.key).message($sce.trustAsHtml(issue)).build());
                 });
             })
         });
@@ -532,49 +588,44 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         return $q.all(promises);
     }
 
-    function addConfigKeyDefinition(config, key) {
-        config.push({
-            "name": key,
-            "label": key,
-            "description": "",
-            "priority": 1,
-            "pinned": true,
-            "type": "java.lang.String",
-            "constraints": [],
-        });
+    function addConfigKeyDefinition(entity, key) {
+        entity.addConfigKeyDefinition(key, false);
     }
 
-    function addParameterDefinition(params, key) {
-        params.push({
-            "name": key,
-            "type": "string",
-        });
+    function addParameterDefinition(entity, key) {
+        entity.addParameterDefinition(key);
     }
 
     function addUnlistedConfigKeysDefinitions(entity) {
         // copy config key definitions set on this entity into the miscData aggregated view
-        let allConfig = entity.miscData.get('config') || [];
+        let allConfig = entity.miscDataOrDefault('configMap', {});
         entity.config.forEach((value, key) => {
-            if (!allConfig.some((e) => e.name === key)) {
-                addConfigKeyDefinition(allConfig, key);
-            }
+            entity.addConfigKeyDefinition(key, false, true);
         });
-        entity.miscData.set('config', allConfig);
+        entity.addConfigKeyDefinition(null, false, false);
     }
 
     function addUnlistedParameterDefinitions(entity) {
         // copy parameter definitions set on this entity into the miscData aggregated view;
-        // TODO see discussions in PR 112 about whether this is necessary and/or there is a better way
-        let allParams = entity.miscData.get('parameters') || [];
+        // see discussions in PR 112 about whether this is necessary and/or there is a better way; but note, this is much updated since
         entity.parameters.forEach((param) => {
-            if (!allParams.some((e) => e.name === param.name)) {
-                allParams.push(param);
-            }
+            entity.addParameterDefinition(param, false, true);
         });
-        entity.miscData.set('parameters', allParams);
+        entity.addParameterDefinition(null, false, false);
     }
 
     function populateEntityFromApiSuccess(entity, data) {
+        function mapped(list, field) {
+            let result = {};
+            if (list) {
+                list.forEach(l => {
+                    if (l && l[field]) {
+                        result[l[field]] = l;
+                    }
+                });
+            }
+            return result;
+        }
         entity.clearIssues({group: 'type'});
         entity.type = data.symbolicName;
         entity.icon = data.iconUrl || iconGenerator(data.symbolicName);
@@ -587,8 +638,12 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         entity.miscData.set('displayName', data.displayName);
         entity.miscData.set('symbolicName', data.symbolicName);
         entity.miscData.set('description', data.description);
+
         entity.miscData.set('config', data.config || []);
+        entity.miscData.set('configMap', mapped(data.config, 'name'));
         entity.miscData.set('parameters', data.parameters || []);
+        entity.miscData.set('parametersMap', mapped(data.parameters, 'name'));
+
         entity.miscData.set('sensors', data.sensors || []);
         entity.miscData.set('traits', data.supertypes || []);
         entity.miscData.set('tags', data.tags || []);

@@ -59,6 +59,7 @@ import paletteDragAndDropService from "./components/providers/palette-dragndrop.
 import actionService from "./components/providers/action-service.provider";
 import tabService from "./components/providers/tab-service.provider";
 import composerOverrides from "./components/providers/composer-overrides.provider";
+import quickFix from "./components/quick-fix/quick-fix";
 import {mainState} from "./views/main/main.controller";
 import {yamlAutodetectState, yamlCampState, yamlState} from "./views/main/yaml/yaml.state";
 import {graphicalState} from "./views/main/graphical/graphical.state";
@@ -82,7 +83,7 @@ angular.module('brooklynBlueprintComposer', [ngAnimate, ngResource, ngCookies, n
     brServerStatus, brAutoFocus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement,
     brYamlEditor, brUtils, brSpecEditor, brooklynCatalogSaver, brooklynApi, bottomSheet, stackViewer, brDragndrop, mdHelper,
     customActionDirective, customConfigSuggestionDropdown, paletteApiProvider, paletteServiceProvider, blueprintLoaderApiProvider,
-    breadcrumbs, catalogSelector, designer, objectCache, entityFilters, locationFilter, actionService, tabService, composerOverrides, blueprintService,
+    breadcrumbs, catalogSelector, designer, objectCache, entityFilters, locationFilter, actionService, tabService, composerOverrides, quickFix, blueprintService,
     dslService, paletteDragAndDropService, recentlyUsedService, scriptTagDecorator, brandAngularJs])
     .filter('dslParamLabel', ['$filter', dslParamLabelFilter])
     .config(['$urlRouterProvider', '$stateProvider', '$logProvider', '$compileProvider', applicationConfig])

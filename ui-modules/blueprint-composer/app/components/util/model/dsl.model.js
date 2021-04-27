@@ -37,6 +37,7 @@ export const KIND = {
     ENTITY  : {family: FAMILY.REFERENCE, name: 'entity object'},
     STRING  : {family: FAMILY.CONSTANT,  name: 'constant string'},
     NUMBER  : {family: FAMILY.CONSTANT,  name: 'constant number'},
+    OTHER   : {family: FAMILY.CONSTANT,  name: 'constant other'},
     PORT    : {family: FAMILY.CONSTANT,  name: 'constant port'},
 };
 
@@ -656,10 +657,16 @@ export class DslParser {
         if (this.s instanceof String || typeof this.s === 'string') {
             return this.parseString(this.s.toString().trim(), entity, entityResolver);
         }
-        // else ... TODO support JSON objects (for YAML syntax)
-        else {
-            throw new DslError("Unable to parse: " + typeof this.s);
+        // NUMBER and OTHER kinds are in the CONSTANT family which means they aren't DSL expressions
+        // (API here could be improved!)
+        if (typeof this.s === 'number') {
+            return new Dsl(KIND.NUMBER, this.s)
         }
+        if (typeof this.s === 'boolean') {
+            return new Dsl(KIND.OTHER, this.s)
+        }
+        // TODO support JSON objects (for YAML syntax)
+        throw new DslError("Unable to parse: " + typeof this.s);
     }
 
     /**
@@ -765,7 +772,9 @@ export class DslParser {
             // a floating point number
             return new Dsl(KIND.NUMBER, t.nextNumber());
         }
-        throw new DslError('Expected: CONSTANT but found: ' + t.toJSON());
+        return new Dsl(KIND.STRING, t.remainder());
+        // previously we did this, but it caused all kinds of errors, as non-json input is common
+        // throw new DslError('Expected: CONSTANT but found: ' + t.toJSON());
     }
 
     /**
@@ -964,6 +973,12 @@ export class Tokenizer {
      */
     skipChars(num) {
         this.s = this.s.substring(num);
+    }
+
+    remainder() {
+        let result = this.s;
+        this.s = "";
+        return result;
     }
 
     /**

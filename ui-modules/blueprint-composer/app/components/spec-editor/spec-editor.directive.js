@@ -29,6 +29,7 @@ import brooklynDslViewer from '../dsl-viewer/dsl-viewer';
 import template from './spec-editor.template.html';
 import {graphicalState} from '../../views/main/graphical/graphical.state';
 import {SENSITIVE_FIELD_REGEX} from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
+import {computeQuickFixesForIssue} from '../quick-fix/quick-fix';
 
 const MODULE_NAME = 'brooklyn.components.spec-editor';
 const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
@@ -246,8 +247,29 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 return blueprintService.refreshConfigConstraints(scope.model);
             }).then(() => {
                 refreshCustomValidation(scope.model);
+            }).then(() => {
+                scope.model.issuesWithFixes = [];
+                scope.model.issues.forEach(issue => {
+                    // really messy copying the issue to add the fixes, but the easiest way
+                    let issueCopy = {
+                        ref: issue.ref,
+                        group: issue.group,
+                        message: issue.message,
+                    };
+                    let issueWithFixes = Object.assign({}, issueCopy, {
+                        quickFixes: {},
+                    });
+                    computeQuickFixesForIssue(issueCopy, scope.model, issueWithFixes.quickFixes);
+                    scope.model.issuesWithFixes.push(issueWithFixes);
+                });
             });
+
         }, true);
+
+        scope.applyQuickFix = (issue, fix) => {
+            fix.apply(issue, scope.model);
+            blueprintService.refreshBlueprintMetadata();
+        }
 
         scope.getObjectSize = (object) => {
             return specEditor.defined(object) && object !== null ? Object.keys(object).length : 0;
@@ -537,7 +559,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             return item.widgetMode;
         };
         specEditor.getParameterWidgetMode = (item) => {
-            let type = item.type || item.typeName;
+            let type = item.type || item.typeName || 'string';
 
             if (type === 'java.lang.Boolean') type = 'boolean';
             else if (type === 'java.util.Map') type = 'map';
@@ -1031,8 +1053,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         specEditor.addConfigKey = addConfigKey;
         function addConfigKey(name) {
             if (name) {
-                let allConfig = scope.model.miscData.get('config');
-                blueprintService.addConfigKeyDefinition(allConfig, name);
+                blueprintService.addConfigKeyDefinition(scope.model, name);
                 scope.model.addConfig(name, '');
                 loadLocalConfigFromModel();
                 scope.state.config.add.value = '';
@@ -1183,14 +1204,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         }
 
         function addParameter(name) {
-            let allParams = scope.model.miscData.get('parameters');
-            if (!allParams) {
-                allParams = [];
-                scope.model.miscData.set('parameters', allParams);
-            }
-            blueprintService.addParameterDefinition(allParams, name);
-            let param = allParams.find(p => p.name === name);
-            scope.model.addParameter(param);
+            scope.model.addParameterDefinition(name);
             loadLocalParametersFromModel();
             scope.state.parameters.search = '';
             scope.state.parameters.add.value = '';
@@ -1204,6 +1218,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             if (scope.state.parameters.focus === name) {
                 scope.state.parameters.focus = '';
             }
+            blueprintService.refreshBlueprintMetadata(scope.model);
         }
     }
 }

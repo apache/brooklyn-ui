@@ -1,0 +1,56 @@
+
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+brooklyn.catalog:
+  id: basic-with-constraint
+  version: 1.0.0-SNAPSHOT
+  itemType: entity
+  item:
+    type: org.apache.brooklyn.entity.stock.BasicEntity
+    brooklyn.parameters:
+    - name: post_code
+      constraints:
+      - requiredUnless: zip-code
+    - name: zip_code
+      constraints:
+      - forbiddenIf: post_code
+  tags:
+  - ui-composer-hints:
+      config-quick-fixes:
+      - key: zip_code
+        fix: clear_config
+        message-regex: cannot both be set
+
+      - key: post_code
+        fix: set_from_key
+        message-regex: required
+
+        source-key: postal_code
+        source-hierarchy: root
+        source-key-createable: true
+        source-key-parameter-definition:
+          constraints:
+          - required
+
+      - key: post_code
+        fix: set_from_key
+        message-regex: required
+
+        source-key: post_code
+        source-hierarchy: anywhere
+        source-types: [ basic-with-constraint ]

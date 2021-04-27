@@ -19,6 +19,7 @@
 import {graphicalEditEntityState} from './edit/entity/edit.entity.controller';
 import {graphicalEditPolicyState} from './edit/policy/edit.policy.controller';
 import {graphicalEditEnricherState} from './edit/enricher/edit.enricher.controller';
+import {computeQuickFixes} from '../../../components/quick-fix/quick-fix';
 import {Entity, EntityFamily} from '../../../components/util/model/entity.model';
 import template from './graphical.state.html';
 
@@ -36,15 +37,29 @@ export const graphicalState = {
 };
 
 function graphicalController($scope, $state, $filter, blueprintService, paletteService) {
+    let vm = this;
     this.EntityFamily = EntityFamily;
 
     this.sections = paletteService.getSections();
     this.selectedSection = Object.values(this.sections).find(section => section.type === EntityFamily.ENTITY);
     $scope.paletteState = {};  // share state among all sections
+    $scope.errorsPane = { level: null };
 
+    $scope.blueprint = blueprintService.get();
+    $scope.$watch('blueprint', () => vm.computeIssues(), true);
+
+    this.computeIssues = () => {
+        $scope.allIssues = computeQuickFixes(blueprintService.getAllIssues());
+    }
     this.onCanvasSelection = (item) => {
         $scope.canvasSelectedItem = item;
     }
+    this.size = (obj) => {
+        if (!obj) return 0;
+        return Object.keys(obj).length;
+    }
+
+    this.messageNeedsPrefix = (itemV) => !itemV.message || (""+itemV.message).indexOf(itemV.ref)<0;
     this.getOnSelectText = (selectableType) => $scope.canvasSelectedItem ? "Add to " + $filter('entityName')($scope.canvasSelectedItem) : "Add to application";
     
     this.addSelectedTypeToTargetEntity = (selectedType, targetEntity) => {
@@ -77,4 +92,11 @@ function graphicalController($scope, $state, $filter, blueprintService, paletteS
             $state.go(graphicalEditEntityState, {entityId: targetEntity._id});
         }
     };
+
+    this.applyQuickFix = (fix) => {
+        fix.issues.forEach(issue => fix.apply(issue));
+        // recompute errors
+        blueprintService.clearAllIssues();
+        blueprintService.refreshBlueprintMetadata()
+    }
 }

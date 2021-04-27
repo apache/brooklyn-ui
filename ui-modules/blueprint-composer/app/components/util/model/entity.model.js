@@ -18,6 +18,7 @@
  */
 import {Issue} from './issue.model';
 import {Dsl, DslParser} from './dsl.model';
+import {blueprintServiceProvider} from "../../providers/blueprint-service.provider";
 
 const MEMBERSPEC_REGEX = /^(\w+\.)*[mM]ember[sS]pec$/;
 const FIRST_MEMBERSPEC_REGEX = /^(\w+\.)*first[mM]ember[sS]pec$/;
@@ -463,6 +464,11 @@ export class Entity {
         }
     }
 
+    getApplication() {
+        if (this.hasParent()) return this.parent.getApplication();
+        return this;
+    }
+
     /**
      * Has {Entity} got a parent
      * @returns {boolean}
@@ -545,6 +551,17 @@ export class Entity {
         return MISC_DATA.get(this);
     }
 
+    miscDataOrDefault(key, defaultValue) {
+        let miscData = this.miscData;
+        let result = miscData.get(key);
+        if (result) {
+            return result;
+        } else {
+            miscData.set(key, defaultValue);
+            return defaultValue;
+        }
+    }
+
     equals(value) {
         if (value && value instanceof Entity) {
             try {
@@ -558,6 +575,16 @@ export class Entity {
     toString() {
         return 'Entity :: id = [' + this._id + ']' + (this.hasType() ? ' type = [' + this.type + ']' : '');
     }
+
+    visitWithDescendants(fn) {
+        fn(this);
+        this.children.forEach(c => c.visitWithDescendants(fn));
+    }
+
+    visitWithAncestors(fn) {
+        fn(this);
+        if (this.parent) this.parent.visitWithAncestors(fn);
+    }
 }
 
 Entity.prototype.setEntityFromJson = setEntityFromJson;
@@ -567,6 +594,7 @@ Entity.prototype.getConfigAsJson = getConfigAsJson;
 Entity.prototype.setConfigFromJson = setConfigFromJson;
 
 Entity.prototype.getParametersAsArray = getParametersAsArray;
+Entity.prototype.getParameterNamed = getParameterNamed;
 Entity.prototype.setParametersFromJson = setParametersFromJson;
 
 Entity.prototype.getMetadataAsJson = getMetadataAsJson;
@@ -577,10 +605,12 @@ Entity.prototype.setPoliciesFromJson = setPoliciesFromJson;
 
 Entity.prototype.getData = getData;
 Entity.prototype.addConfig = addConfig;
-Entity.prototype.addParameter = addParameter;
+Entity.prototype.addConfigKeyDefinition = addConfigKeyDefinition;
+Entity.prototype.addParameterDefinition = addParameterDefinition;
 Entity.prototype.addMetadata = addMetadata;
 Entity.prototype.removeConfig = removeConfig;
 Entity.prototype.removeParameter = removeParameter;
+Entity.prototype.updateParameter = updateParameter;
 Entity.prototype.removeMetadata = removeMetadata;
 Entity.prototype.isCluster = isCluster;
 Entity.prototype.isMemberSpec = isMemberSpec;
@@ -623,8 +653,54 @@ function addConfig(key, value) {
     }
 }
 
-function addParameter(param) {
-    PARAMETERS.get(this).push(param);
+function addConfigKeyDefinition(param, overwrite, skipUpdatesDuringBatch) {
+    let allConfig = this.miscDataOrDefault('configMap', {});
+    if (param) {
+        if (typeof param === 'string') {
+            param = {
+                "name": param,
+                "label": param,
+                "description": "",
+                "priority": 1,
+                "pinned": true,
+                "type": "java.lang.String",
+                "constraints": [],
+            };
+            overwrite = false;
+        }
+        let key = (param || {}).name;
+        if (!key) throw new Error("'name' field must be included when adding parameter; was", param);
+
+        allConfig[key] = Object.assign(allConfig[key] || {}, param, overwrite ? null : allConfig[key]);
+    }
+    if (!skipUpdatesDuringBatch) {
+        this.miscData.set('config', Object.values(allConfig));
+    }
+
+    this.touch();
+    return this;
+}
+
+function addParameterDefinition(param, overwrite, skipUpdatesDuringBatch) {
+    let allParams = this.miscDataOrDefault('parametersMap', {});
+    if (param) {
+        if (typeof param === 'string') {
+            param = {name: key, type: 'string'};
+            overwrite = false;
+        }
+        let key = (param || {}).name;
+        if (!key) throw new Error("'name' field must be included when adding parameter");
+
+        param = allParams[key] = Object.assign(allParams[key] || {}, param, overwrite ? null : allParams[key]);
+
+        this.updateParameter(key, param, true);
+    }
+    if (!skipUpdatesDuringBatch) {
+        this.miscData.set('parameters', Object.values(allParams));
+    }
+
+    this.addConfigKeyDefinition(param, overwrite, skipUpdatesDuringBatch);
+
     this.touch();
     return this;
 }
@@ -652,7 +728,7 @@ function removeConfig(key) {
 }
 
 /**
- * Remove an entry from brooklyn.parameters
+ * Remove an entry from brooklyn.parameters; note the model needs an update after this
  * @param {string} name
  * @returns {Entity}
  */
@@ -669,17 +745,22 @@ function removeParameter(name) {
 
 
 /**
- * Update an entry in brooklyn.parameters
+ * Update an entry in brooklyn.parameters if it exists
  * @param {string} name
  * @param {object} definition
  * @returns {Entity}
  */
-function updateParameter(name, definition) {
-    if (this.hasParameters()) {
+function updateParameter(name, definition, createIfMissing) {
+    if (createIfMissing || this.hasParameters()) {
         let paramIndex = PARAMETERS.get(this).findIndex(e => e.name === name);
         if (paramIndex != -1) {
             PARAMETERS.get(this)[paramIndex] = definition;
             this.touch();
+        } else {
+            if (createIfMissing) {
+                PARAMETERS.get(this).push(definition);
+                this.touch();
+            }
         }
     }
     return this;
@@ -1049,7 +1130,7 @@ function setParametersFromJson(incomingModel) {
 
     let self = this;
     incomingModel.map((param)=> {
-        self.addParameter(param);
+        self.addParameterDefinition(param);
     });
     this.touch();
 }
@@ -1114,6 +1195,10 @@ function getConfigAsJson() {
 
 function getParametersAsArray() {
     return PARAMETERS.get(this);
+}
+
+function getParameterNamed(name) {
+    return PARAMETERS.get(this).find(p => p.name === name);
 }
 
 /* "cleaning" here means:  Dsl objects are toStringed, to the given depth (or infinite if depth<0);

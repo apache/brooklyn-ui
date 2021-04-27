@@ -547,7 +547,14 @@
                         
                     </div>
                     
-                    <small ng-repeat="issue in model.issues | filter:{ref: item.name}:true | filter:{group: 'config'}:true" class="help-block issue" ng-bind-html="issue.message"></small>
+                    <small ng-repeat="issue in model.issuesWithFixes | filter:{ref: item.name}:true | filter:{group: 'config'}:true" class="help-block issue">
+                        <span ng-bind-html="issue.message"></span>
+                        <div ng-if="getObjectSize(issue.quickFixes)" class="quick-fix">
+                            <div ng-repeat="fix in issue.quickFixes">
+                                <a ng-click="applyQuickFix(issue, fix)" class="btn btn-xs btn-primary" ng-attr-title="{{ fix.tooltip }}">{{ fix.text }}</a>
+                            </div>
+                        </div>
+                    </small>
                     <small ng-if="specEditor.customConfigWidgetError(item)" class="help-block issue">
                             Custom widget unavailable:
                             {{ specEditor.customConfigWidgetError(item) }}
