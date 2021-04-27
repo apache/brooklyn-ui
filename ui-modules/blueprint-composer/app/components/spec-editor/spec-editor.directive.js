@@ -268,6 +268,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
 
         scope.applyQuickFix = (issue, fix) => {
             fix.apply(issue, scope.model);
+            blueprintService.refreshBlueprintMetadata();
         }
 
         scope.getObjectSize = (object) => {
@@ -1217,6 +1218,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             if (scope.state.parameters.focus === name) {
                 scope.state.parameters.focus = '';
             }
+            blueprintService.refreshBlueprintMetadata(scope.model);
         }
     }
 }

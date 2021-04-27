@@ -124,7 +124,6 @@ function proposeSetFrom() {
 
         let createable = qfdef['source-key-createable'];
 
-        // TODO if root param is required, show error
         // TODO make default id contain type name
         // TODO show default id if no id present
 

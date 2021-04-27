@@ -297,19 +297,23 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
             }).catch(function (error) {
                 deferred.resolve(populateEntityFromApiError(entity, error));
             });
-        } else if (entity.parent) {
-            entity.clearIssues({group: 'type'}).addIssue(Issue.builder().group('type').message('Entity needs a type').level(ISSUE_LEVEL.WARN).build());
-            entity.miscData.set('sensors', []);
-            entity.miscData.set('traits', []);
-            deferred.resolve(entity);
-            addUnlistedConfigKeysDefinitions(entity);
-            addUnlistedParameterDefinitions(entity);
         } else {
+            if (entity.parent) {
+                entity.clearIssues({group: 'type'}).addIssue(Issue.builder().group('type').message('Entity needs a type').level(ISSUE_LEVEL.WARN).build());
+            }
             entity.miscData.set('sensors', []);
             entity.miscData.set('traits', []);
-            deferred.resolve(entity);
+
+            entity.clearIssues({group: 'config'});
+            entity.miscData.set('config', []);
+            entity.miscData.set('configMap', {});
+            entity.miscData.set('parameters', []);
+            entity.miscData.set('parametersMap', {});
+
             addUnlistedConfigKeysDefinitions(entity);
             addUnlistedParameterDefinitions(entity);
+
+            deferred.resolve(entity);
         }
 
         return deferred.promise;
@@ -585,7 +589,6 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
     }
 
     function addConfigKeyDefinition(entity, key) {
-        // TODO return type, and below
         entity.addConfigKeyDefinition(key, false);
     }
 
@@ -597,24 +600,18 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService)
         // copy config key definitions set on this entity into the miscData aggregated view
         let allConfig = entity.miscDataOrDefault('configMap', {});
         entity.config.forEach((value, key) => {
-            if (!allConfig[key]) {
-                entity.addConfigKeyDefinition(key);
-            }
+            entity.addConfigKeyDefinition(key, false, true);
         });
-        entity.miscData.set('config', Object.values(allConfig));
-
+        entity.addConfigKeyDefinition(null, false, false);
     }
 
     function addUnlistedParameterDefinitions(entity) {
         // copy parameter definitions set on this entity into the miscData aggregated view;
         // see discussions in PR 112 about whether this is necessary and/or there is a better way; but note, this is much updated since
-        let allParams = entity.miscDataOrDefault('parametersMap', {});
         entity.parameters.forEach((param) => {
-            if (!allParams[param.name]) {
-                allParams[param.name] = param;
-            }
+            entity.addParameterDefinition(param, false, true);
         });
-        entity.miscData.set('parameters', Object.values(allParams));
+        entity.addParameterDefinition(null, false, false);
     }
 
     function populateEntityFromApiSuccess(entity, data) {

@@ -653,46 +653,53 @@ function addConfig(key, value) {
     }
 }
 
-function addConfigKeyDefinition(param, overwrite) {
-    if (typeof param === 'string') {
-        param = {
-            "name": param,
-            "label": param,
-            "description": "",
-            "priority": 1,
-            "pinned": true,
-            "type": "java.lang.String",
-            "constraints": [],
-        };
-        overwrite = false;
-    }
-    let key = (param || {}).name;
-    if (!key) throw new Error("'name' field must be included when adding parameter; was", param);
-
+function addConfigKeyDefinition(param, overwrite, skipUpdatesDuringBatch) {
     let allConfig = this.miscDataOrDefault('configMap', {});
-    allConfig[key] = Object.assign(allConfig[key] || {}, param, overwrite ? null : allConfig[key]);
-    this.miscData.set('config', Object.values(allConfig));
+    if (param) {
+        if (typeof param === 'string') {
+            param = {
+                "name": param,
+                "label": param,
+                "description": "",
+                "priority": 1,
+                "pinned": true,
+                "type": "java.lang.String",
+                "constraints": [],
+            };
+            overwrite = false;
+        }
+        let key = (param || {}).name;
+        if (!key) throw new Error("'name' field must be included when adding parameter; was", param);
+
+        allConfig[key] = Object.assign(allConfig[key] || {}, param, overwrite ? null : allConfig[key]);
+    }
+    if (!skipUpdatesDuringBatch) {
+        this.miscData.set('config', Object.values(allConfig));
+    }
 
     this.touch();
     return this;
 }
 
-function addParameterDefinition(param, overwrite) {
-    if (typeof param === 'string') {
-        param = {name: key, type: 'string'};
-        overwrite = false;
-    }
-    let key = (param || {}).name;
-    if (!key) throw new Error("'name' field must be included when adding parameter");
-
+function addParameterDefinition(param, overwrite, skipUpdatesDuringBatch) {
     let allParams = this.miscDataOrDefault('parametersMap', {});
-    allParams[key] = Object.assign(allParams[key] || {}, param, overwrite ? null : allParams[key]);
-    this.miscData.set('parameters', Object.values(allParams));
+    if (param) {
+        if (typeof param === 'string') {
+            param = {name: key, type: 'string'};
+            overwrite = false;
+        }
+        let key = (param || {}).name;
+        if (!key) throw new Error("'name' field must be included when adding parameter");
 
-    let eps = PARAMETERS.get(this);
-    this.updateParameter(key, allParams[key], true);
+        param = allParams[key] = Object.assign(allParams[key] || {}, param, overwrite ? null : allParams[key]);
 
-    this.addConfigKeyDefinition(allParams[key], overwrite);
+        this.updateParameter(key, param, true);
+    }
+    if (!skipUpdatesDuringBatch) {
+        this.miscData.set('parameters', Object.values(allParams));
+    }
+
+    this.addConfigKeyDefinition(param, overwrite, skipUpdatesDuringBatch);
 
     this.touch();
     return this;
@@ -721,7 +728,7 @@ function removeConfig(key) {
 }
 
 /**
- * Remove an entry from brooklyn.parameters
+ * Remove an entry from brooklyn.parameters; note the model needs an update after this
  * @param {string} name
  * @returns {Entity}
  */
