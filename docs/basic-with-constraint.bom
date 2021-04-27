@@ -65,3 +65,11 @@ brooklyn.catalog:
         source-key: post_code                     # will match the key
         source-hierarchy: anywhere                # anywhere
         source-types: [ basic-with-constraint ]   # of this type
+
+      - key: post_code
+        fix: set_from_template
+        message-regex: required
+
+        template: ${application}-${entity}  # required, the template, supporting vars application, application.id, entity, entity.name, entity._id
+        preview: "Set ${entity.type} post_code '${application}-<entity_name_or_id>'"         # optional, summary for button, grouping fixes, and filtering (template rules applied to this, skipped if not applicable)
+        sanitize: _                         # optional, sanitize as specified, eg _ or - or '.' to replace non-alphanumeric chars with that
