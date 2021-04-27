@@ -60,6 +60,13 @@ function graphicalController($scope, $state, $filter, blueprintService, paletteS
     }
 
     this.messageNeedsPrefix = (itemV) => !itemV.message || (""+itemV.message).indexOf(itemV.ref)<0;
+    this.entitySummary = (entity) => {
+        return entity.id
+            ? entity.id + (entity.type ? ' ('+entity.type+')' : '')
+            : entity.name ? entity.name + (entity.type ? ' ('+entity.type+')' : '')
+            : entity.type ? entity.type + ' ('+entity._id+')'
+            : entity._id;
+    };
     this.getOnSelectText = (selectableType) => $scope.canvasSelectedItem ? "Add to " + $filter('entityName')($scope.canvasSelectedItem) : "Add to application";
     
     this.addSelectedTypeToTargetEntity = (selectedType, targetEntity) => {

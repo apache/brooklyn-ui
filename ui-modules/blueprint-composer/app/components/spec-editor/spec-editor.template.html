@@ -34,7 +34,7 @@
         </div>
     </div>
 
-    <p ng-if="!model.hasParent()"><input class="form-control editable spec-id" ng-model="model.id" placeholder="No reference ID" blur-on-enter /></p>
+    <p ng-if="!model.hasParent()"><input class="form-control editable spec-id" ng-model="model.id" placeholder="{{ model._id }} (reference ID not set)" blur-on-enter /></p>
 
     <div class="media" ng-if="model.hasParent()">
         <div class="media-left">
@@ -52,7 +52,7 @@
             </div>
             <div ng-if="['POLICY', 'ENRICHER'].indexOf(model.family.id) === -1" class="identifier">
                 <i class="fa fa-id-card-o panel-header-icon"></i>
-                <input class="form-control editable" ng-model="model.id" placeholder="(no reference ID)" blur-on-enter />
+                <input class="form-control editable" ng-model="model.id" placeholder="{{ model._id }} (reference ID not set)" blur-on-enter />
                 </div>
             <md-if-oneline ng-show="specEditor.descriptionVisible && modelDescription.isNonMultiline" data="modelDescription"></md-if-oneline>
         </div>

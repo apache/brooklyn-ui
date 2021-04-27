@@ -106,8 +106,7 @@
                     <i class="fa fa-fw fa-times-circle"></i>
                 </div>
                 <div class="error-line-text">
-                    {{ allIssues.entities[itemK].id ? allIssues.entities[itemK].id + ' ('+allIssues.entities[itemK].type+')'
-                        : allIssues.entities[itemK].type }}:
+                    {{ vm.entitySummary(allIssues.entities[itemK]) }}:
                     {{ itemV.length }} {{ itemV.length==1 ? 'error' : 'errors' }}
                 </div>
                 <div class="error-line-action">
@@ -167,8 +166,7 @@
                                   <i class="fa fa-fw fa-circle"></i>
                               </div>
                               <div class="error-line-text">
-                                  {{ issue.issue.entity.id ? issue.issue.entity.id + ' ('+issue.issue.entity.type+')'
-                                      : issue.issue.entity.type }}
+                                  {{ vm.entitySummary(issue.issue.entity) }}
                                   <!-- could offer the issue-specific quick fixes; but clearer to navigate to entity and do there -->
                               </div>
                               <div class="error-line-action">

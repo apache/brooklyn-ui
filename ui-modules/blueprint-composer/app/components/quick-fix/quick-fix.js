@@ -166,7 +166,6 @@ function proposeSetFrom() {
                     if (r.test(c.name)) contenders[c.name] = true;
                 });
             }
-            console.log("result of regex at", ckey_regex, sourceNode, contenders);
 
             if (!Object.keys(contenders).length) {
                 // no proposal available (cannot create)
