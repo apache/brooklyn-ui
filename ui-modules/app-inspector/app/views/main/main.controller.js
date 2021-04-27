@@ -45,13 +45,11 @@ export function mainController($scope, $q, brWebNotifications, brBrandInfo) {
 
     ctrl.composerUrl = brBrandInfo.blueprintComposerBaseUrl;
 
-    // TODO SMART-143
+    // View mode feature components, required in entity-tree and entity-node directives.
     ctrl.viewMode = VIEW_PARENT_CHILD;
     ctrl.viewModes = new Set([VIEW_PARENT_CHILD]);
     ctrl.viewModesArray = () => Array.from(ctrl.viewModes); // Array from set for ng-repeat component
     ctrl.isDefaultViewMode = () => ctrl.viewMode === VIEW_PARENT_CHILD; // 'parent/child' is a default view mode
-
-    // TODO SMART-143
     $scope.$watch('ctrl.viewModes', () => {
         if (!ctrl.viewModes.has(ctrl.viewMode)) {
             ctrl.viewMode = VIEW_PARENT_CHILD; // Default to 'parent/child' view if current is not available anymore.

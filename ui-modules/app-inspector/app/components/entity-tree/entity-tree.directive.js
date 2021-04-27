@@ -101,7 +101,11 @@ export function entityTreeDirective() {
                 }
             }));
 
-            // TODO SMART-143
+            /**
+             * Analyzes relationships of the entity tree and prepares mode views, e.g. 'parent/child' and 'host_for/hosted_on'.
+             *
+             * @param {Array} entityTree The entity tree to process and prepare view modes for.
+             */
             function analyzeRelationships(entityTree) {
                 let entities = entityTreeToArray(entityTree);
                 let relationships = findAllRelationships(entities);
@@ -118,7 +122,12 @@ export function entityTreeDirective() {
                 }
             }
 
-            // TODO SMART-143
+            /**
+             * Converts entity tree to array of entities.
+             *
+             * @param {Array.<Object>} entities The entity tree to convert.
+             * @returns {Array.<Object>} The array of all entities found in the tree.
+             */
             function entityTreeToArray(entities) {
                 let children = [];
                 if (!Array.isArray(entities) || entities.length === 0) {
@@ -128,21 +137,28 @@ export function entityTreeDirective() {
                     children = children.concat(entityTreeToArray(entity.children));
                     children = children.concat(entityTreeToArray(entity.members));
                 })
+
                 return entities.concat(children);
             }
 
-            // TODO SMART-143
+            /**
+             * Extends entity tree with 'host_for/hosted_on' view mode. Moves entities (creates copies) if their host is
+             * not a parent and labels them to display under 'host_for/hosted_on' view mode only.
+             *
+             * @param {Array.<Object>} entities The entity tree converted to array.
+             * @param {Array.<Object>} relationships The relationships of entities.
+             */
             function addHostForHostedOnView(entities, relationships) {
                 entities.forEach(entity => {
                     let relationship = relationships.find(r => r.id === entity.id);
                     if (relationship && relationship.name === RELATIONSHIP_HOST_FOR) {
                         displayEntityInView(entity, VIEW_HOST_FOR_HOSTED_ON);
-                        spotlightEntityInView(entity, VIEW_HOST_FOR_HOSTED_ON);
+                        highlightEntityInView(entity, VIEW_HOST_FOR_HOSTED_ON);
 
                         relationship.targets.forEach(target => {
                             let child = entities.find(e => e.id === target);
                             if (child) {
-                                spotlightEntityInView(child, VIEW_HOST_FOR_HOSTED_ON);
+                                highlightEntityInView(child, VIEW_HOST_FOR_HOSTED_ON);
                                 if (child.parentId !== entity.id) { // Move (copy) child under 'hosted_on' entity.
                                     let childCopy = Object.assign({}, child); // Copy entity
 
@@ -167,12 +183,19 @@ export function entityTreeDirective() {
                     } else if (!relationship || relationship.name !== RELATIONSHIP_HOSTED_ON) {
                         // Display original position for any other entity under 'host_for/hosted_on' view.
                         displayEntityInView(entity, VIEW_HOST_FOR_HOSTED_ON);
-                        // Spotlight will not be on entities that are required to be displayed but do not belong to this view.
+                        // Spotlight will never be on entities that are required to be displayed but do not belong to this view.
                     }
                 });
             }
 
-            // TODO SMART-143
+            /**
+             * Labels all parents to display for a particular view mode starting from a specified ID, traverses the node
+             * tree recursively, bottom-up.
+             *
+             * @param {Array.<Object>} entities The array of entities to search parents to label.
+             * @param {string} id The ID of a parent entity to start labelling.
+             * @param {string} viewMode The view mode to display parent in.
+             */
             function displayParentsInView(entities, id, viewMode) {
                 let entity = findEntity(entities, id);
                 if (entity) {
@@ -181,12 +204,23 @@ export function entityTreeDirective() {
                 }
             }
 
-            // TODO SMART-143
+            /**
+             * Attempts to find entity with ID specified in array of entities.
+             *
+             * @param {Array.<Object>} entities The array of entities to search for a particular entity in.
+             * @param {string} id The ID of entity to look for.
+             * @returns {Object} The entity with ID requested, and undefined otherwise.
+             */
             function findEntity(entities, id) {
-                return entities.find(entity => entity.id === id);
+                return entities.find(entity => entity.id === id) || null;
             }
 
-            // TODO SMART-143
+            /**
+             * Labels entity to display in particular view mode.
+             *
+             * @param {Object} entity The entity to label.
+             * @param {string} viewMode The view mode to display entity in.
+             */
             function displayEntityInView(entity, viewMode) {
                 if (!entity.viewModes) {
                     entity.viewModes = new Set([viewMode]);
@@ -195,12 +229,17 @@ export function entityTreeDirective() {
                 }
             }
 
-            // TODO SMART-143
-            function spotlightEntityInView(entity, viewMode) {
-                if (!entity.viewModesSpotLight) {
-                    entity.viewModesSpotLight = new Set([viewMode]);
+            /**
+             * Labels entity to highlight in particular view mode.
+             *
+             * @param {Object} entity The entity to label.
+             * @param {string} viewMode The view mode to highlight entity in.
+             */
+            function highlightEntityInView(entity, viewMode) {
+                if (!entity.viewModesHighlight) {
+                    entity.viewModesHighlight = new Set([viewMode]);
                 } else {
-                    entity.viewModesSpotLight.add(viewMode);
+                    entity.viewModesHighlight.add(viewMode);
                 }
             }
 
@@ -212,14 +251,14 @@ export function entityTreeDirective() {
             function initParentChildView(entities) {
                 entities.forEach(entity => {
                     displayEntityInView(entity, VIEW_PARENT_CHILD);
-                    spotlightEntityInView(entity, VIEW_PARENT_CHILD);
+                    highlightEntityInView(entity, VIEW_PARENT_CHILD);
                 });
             }
 
             /**
-             * Identifies new view modes based on relationships between entities. Updates $scope.viewModes set.
+             * Identifies new view modes based on relationships between entities. Updates {@link $scope.viewModes} set.
              *
-             * @param {Object} relationships The entity tree relationships.
+             * @param {Array.<Object>} relationships The relationships of entities.
              */
             function updateViewModes(relationships) {
                 let viewModesDiscovered = new Set([VIEW_PARENT_CHILD]); // 'parent/child' view mode is a minimum required
@@ -237,7 +276,12 @@ export function entityTreeDirective() {
                 $scope.viewModes = viewModesDiscovered; // Refresh view modes
             }
 
-            // TODO SMART-143
+            /**
+             * Finds relationships in array of entities.
+             *
+             * @param {Array.<Object>} entities The array of entities to search relationships in.
+             * @returns {Array.<Object>} Relationships found in entities.
+             */
             function findAllRelationships(entities) {
                 let relationships = [];
 
@@ -360,12 +404,20 @@ export function entityNodeDirective() {
             }
         };
 
-        // TODO SMART-143
+        /**
+         * @returns {boolean} True if entity is a secondary in a current view, false otherwise. Secondary entity is one
+         * that is not part of relationship view the id currently displayed.
+         */
         $scope.isSecondary = function() {
-            return !$scope.entity.viewModesSpotLight.has($scope.viewMode);
+            return !$scope.entity.viewModesHighlight.has($scope.viewMode);
         };
 
-        // TODO SMART-143
+        /**
+         * Counts amount of entities that are expected to be displayed in the current view.
+         *
+         * @param {Array.<Object>} entities The array of entities to count amount for.
+         * @returns {number} Amount of entities in the current view.
+         */
         $scope.entitiesInCurrentView = (entities) => {
             if (!entities) {
                 return 0;
