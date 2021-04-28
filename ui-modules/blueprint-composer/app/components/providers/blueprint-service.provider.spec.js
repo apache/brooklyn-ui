@@ -35,6 +35,7 @@ describe('Blueprint Service', ()=> {
         $provide.provider('iconGenerator', iconGeneratorProvider);
         $provide.provider('dslService', dslServiceProvider);
         $provide.provider('blueprintService', blueprintServiceProvider);
+        $provide.provider('brBrandInfo', {$get: () => {}});
     }));
     beforeEach(angular.mock.inject((_$rootScope_, _blueprintService_)=> {
         $rootScope = _$rootScope_;
