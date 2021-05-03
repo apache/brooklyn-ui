@@ -16,7 +16,7 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<entity-node ng-repeat="application in vm.applications | orderBy: sortReverse? '-creationTimeUtc': 'creationTimeUtc' track by application.id" entity="application" application-id="application.id"></entity-node>
+<entity-node ng-repeat="application in vm.applications | orderBy: sortReverse? '-creationTimeUtc': 'creationTimeUtc' track by application.id" entity="application" application-id="application.id" view-mode="viewMode"></entity-node>
 <p class="expand-tree-message text-center" ng-if="vm.applications.length > 0"><small><kbd>shift</kbd> + <kbd>{{navigator.appVersion.indexOf("Mac") !== -1 ? '⌘' : '⊞'}}</kbd> + click to expand all children</small></p>
 <div class="empty-tree text-muted text-center" ng-if="vm.applications.length === 0">
     <hr />

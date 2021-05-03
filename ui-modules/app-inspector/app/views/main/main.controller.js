@@ -27,6 +27,15 @@ export const mainState = {
     controllerAs: 'ctrl'
 };
 
+// Entity relationship constants
+export const RELATIONSHIP_HOST_FOR = 'host_for';
+export const RELATIONSHIP_HOSTED_ON = 'hosted_on';
+
+// View mode constants
+export const RELATIONSHIP_VIEW_DELIMITER = '/';
+export const VIEW_PARENT_CHILD = 'parent/child';
+export const VIEW_HOST_FOR_HOSTED_ON = RELATIONSHIP_HOST_FOR + RELATIONSHIP_VIEW_DELIMITER + RELATIONSHIP_HOSTED_ON;
+
 const savedSortReverse = 'app-inspector-sort-reverse';
 
 export function mainController($scope, $q, brWebNotifications, brBrandInfo) {
@@ -35,6 +44,17 @@ export function mainController($scope, $q, brWebNotifications, brBrandInfo) {
     let ctrl = this;
 
     ctrl.composerUrl = brBrandInfo.blueprintComposerBaseUrl;
+
+    // View mode feature components, required in entity-tree and entity-node directives.
+    ctrl.viewMode = VIEW_PARENT_CHILD;
+    ctrl.viewModes = new Set([VIEW_PARENT_CHILD]);
+    ctrl.viewModesArray = () => Array.from(ctrl.viewModes); // Array from set for ng-repeat component
+    ctrl.isDefaultViewMode = () => ctrl.viewMode === VIEW_PARENT_CHILD; // 'parent/child' is a default view mode
+    $scope.$watch('ctrl.viewModes', () => {
+        if (!ctrl.viewModes.has(ctrl.viewMode)) {
+            ctrl.viewMode = VIEW_PARENT_CHILD; // Default to 'parent/child' view if current is not available anymore.
+        }
+    });
 
     ctrl.sortReverse = localStorage && localStorage.getItem(savedSortReverse) !== null ?
         JSON.parse(localStorage.getItem(savedSortReverse)) :

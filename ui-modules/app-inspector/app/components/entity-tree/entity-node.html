@@ -17,7 +17,7 @@
   under the License.
 -->
 <div class="entity-node">
-    <div ng-if="isOpen" class="entity-node-item" ng-class="{'active': isSelected()}" uib-popover-template="'EntityNodeInfoTemplate.html'" popover-trigger="'mouseenter'" popover-placement="right" popover-popup-delay="1000">
+    <div ng-if="isOpen" class="entity-node-item" ng-class="{ 'active': isSelected(), 'highlight' : isHighlight() && !isSelected() }" uib-popover-template="'EntityNodeInfoTemplate.html'" popover-trigger="'mouseenter'" popover-placement="right" popover-popup-delay="1000">
         <a ng-href="{{getHref()}}" class="entity-node-link">
             <brooklyn-status-icon value="{{entity.serviceState}}" ng-if="entity.serviceState || entity.applicationId"></brooklyn-status-icon>
             <i class="fa fa-2x fa-external-link" ng-if="!entity.serviceState && !entity.applicationId"></i>
@@ -25,14 +25,26 @@
             <span class="node-icon"><img ng-src="{{ iconUrl }}"/></span>
         </a>
         <div class="entity-node-toggle-wrapper">
-          <div class="entity-node-toggle" ng-if="entity.children.length > 0 || entity.members.length > 0" ng-click="onToggle($event)" >
+          <div class="entity-node-toggle"
+               ng-if="nodesInCurrentView() > 0"
+               ng-click="onToggle($event)" >
             <span class="glyphicon" ng-class="isChildrenOpen ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'"></span>
           </div>
         </div>
     </div>
     <div class="entity-node-children" ng-show="isChildrenOpen">
-        <entity-node ng-repeat="child in entity.children track by child.id" entity="child" application-id="applicationId"></entity-node>
-        <entity-node ng-if="!entity.children || entity.children.length === 0" ng-repeat="child in entity.members track by child.id" entity="child" application-id="applicationId"></entity-node>
+        <!-- Entity children -->
+        <entity-node ng-repeat="child in entity.children track by child.id"
+                     ng-if="child.viewModes.has(viewMode)"
+                     entity="child" application-id="applicationId" view-mode="viewMode"></entity-node>
+        <!-- Or entity members -->
+        <entity-node ng-repeat="child in entity.members track by child.id"
+                     ng-if="child.viewModes.has(viewMode) && (!entity.children || entity.children.length === 0)"
+                     entity="child" application-id="applicationId" view-mode="viewMode"></entity-node>
+        <!-- Other nodes under entity -->
+        <entity-node ng-repeat="child in entity.otherNodes track by child.id"
+                     ng-if="child.viewModes.has(viewMode)"
+                     entity="child" application-id="applicationId" view-mode="viewMode"></entity-node>
     </div>
     <script type="text/ng-template" id="EntityNodeInfoTemplate.html">
         <table ng-if="isOpen" class="info-table">
@@ -46,7 +58,7 @@
             </tr>
             <tr>
                 <td><b>Number of children</b></td>
-                <td>{{entity.children.length || 0}}</td>
+                <td>{{nodesInCurrentView()}}</td>
             </tr>
         </table>
     </script>
