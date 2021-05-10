@@ -49,6 +49,7 @@
       flex-direction: column;
       height: 100%;
       margin-bottom: 0;
+      padding-bottom: 1px;
 
       .list-group-item {
         @active-border-width: 4px;
@@ -67,6 +68,9 @@
           background-color: #fff;
           color: @list-group-link-color;
           padding-bottom: 10px;
+        }
+        &:last-child {
+          padding-bottom: 1px;  // because list-group-item inherits margin-bottom: -1px, it causes a scroll bar to appear
         }
       }
 
@@ -229,6 +233,8 @@
     left: 49px;
     width: 440px;
     box-shadow: 5px 0 10px -2px @navbar-default-border;
+    overflow-y: none;  // should compute the height so not need scroll internally
+    min-height: 400px; // should be enough to show a few rows, to allow pagination
 
     .palette-title {
         margin-left: 0;
