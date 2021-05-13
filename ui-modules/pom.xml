@@ -44,5 +44,6 @@
         <module>groovy-console</module>
         <module>logout</module>
         <module>features</module>
+        <module>login</module>
     </modules>
 </project>
