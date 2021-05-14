@@ -28,7 +28,8 @@
     <feature name="brooklyn-ui-modules" version="${project.version}">
         <feature version="${project.version}">brooklyn-ui-home</feature>
         <feature version="${project.version}">brooklyn-ui-logout</feature>
-        
+        <feature version="${project.version}">brooklyn-ui-login</feature>
+
         <feature version="${project.version}">brooklyn-ui-app-inspector</feature>
         <feature version="${project.version}">brooklyn-ui-blueprint-composer</feature>
         <feature version="${project.version}">brooklyn-ui-blueprint-importer</feature>
@@ -45,6 +46,10 @@
     
     <feature name="brooklyn-ui-logout" version="${project.version}">
         <bundle>mvn:${project.groupId}/brooklyn-ui-logout/${project.version}/war</bundle>
+    </feature>
+
+    <feature name="brooklyn-ui-login" version="${project.version}">
+        <bundle>mvn:${project.groupId}/brooklyn-ui-login/${project.version}/war</bundle>
     </feature>
 
     <feature name="brooklyn-ui-app-inspector" version="${project.version}">

@@ -43,6 +43,7 @@
         <module>rest-api-docs</module>
         <module>groovy-console</module>
         <module>logout</module>
+        <module>login</module>
         <module>features</module>
     </modules>
 </project>
