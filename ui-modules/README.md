@@ -4,10 +4,11 @@
 
 Each of the module UI projects in this directory has a `Makefile` to make working with it easier.
 
-To install node dependencies (any anytime things get out of sync wipe `node_modules` and do this again):
+To install node dependencies (and anytime things get out of sync, to wipe `node_modules` in the local dir and the `../utils`;
+also see `local_clean` and `local_install` if you know `../utils` is updated and want to skip that update):
 
 ```sh
-make install
+make clean install
 ```
 
 To run a local development server:
