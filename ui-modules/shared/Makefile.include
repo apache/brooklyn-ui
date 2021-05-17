@@ -19,13 +19,12 @@ default: dev
 
 utils_clean:
 	@echo "Cleaning utils modules..."
-	cd ../utils
-	rm -rf ./node_modules
+	cd ../utils && rm -rf ./node_modules
 
 utils_install:
 	@echo "Installing utils npm modules..."
-	cd ../utils
-	npm install
+	cd ../utils && npm install
+
 
 build:
 	@echo "Building production bundle..."
@@ -33,13 +32,13 @@ build:
 
 local_clean:
 	@echo "Cleaning modules and builds..."
-	@rm -rf ./node_modules ./dist
+	rm -rf ./node_modules ./dist
 
 clean:	utils_clean local_clean
 
 dev:
 	@echo "Starting dev web server..."
-	@npm start
+	npm start
 
 server: build
 	@echo "Starting api proxy server..."
@@ -47,17 +46,17 @@ server: build
 
 local_install:
 	@echo "Installing npm modules..."
-	@npm install
+	npm install
 
 install:	utils_install local_install
 
 test:
 	@echo "Running tests..."
-	@npm test
+	npm test
 
 setup: clean install
 
 war:
-	@mvn clean install
+	mvn clean install
 
-.PHONY: build clean deploy dev install server setup test war
+.PHONY: build utils_clean local_clean clean deploy dev utils_install local_install install server setup test war
