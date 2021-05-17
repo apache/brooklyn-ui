@@ -15,35 +15,5 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-default: dev
 
-build:
-	@echo "Building production bundle..."
-	NODE_ENV="production" npm run build
-
-clean:
-	@echo "Cleaning modules..."
-	@rm -rf ./node_modules
-
-dev:
-	@echo "Starting dev web server..."
-	@npm start
-
-server: build
-	@echo "Starting api proxy server..."
-	NODE_ENV="production" npm start
-
-install:
-	@echo "Installing npm modules..."
-	@npm install
-
-test:
-	@echo "Running tests..."
-	@npm test
-
-setup: clean install
-
-war:
-	@mvn clean install
-
-.PHONY: build clean deploy dev install server setup test war
+include ../shared/Makefile.include
