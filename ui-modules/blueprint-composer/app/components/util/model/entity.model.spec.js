@@ -36,6 +36,8 @@ describe('Brooklyn Model', ()=> {
             expect(entity.hasEnrichers()).toBe(false);
             expect(entity.hasPolicies()).toBe(false);
             expect(entity.hasIssues()).toBe(false);
+            expect(entity.hasRequirements()).toBe(false);
+            expect(entity.hasInitializers()).toBe(false);
         });
 
         it('should load metadata from JSON', ()=> {
@@ -67,6 +69,30 @@ describe('Brooklyn Model', ()=> {
                 .toThrowError(msgPattern);
             expect(()=>(entity.setEntityFromJson(12345)))
                 .toThrowError(msgPattern);
+        });
+
+        it('should load brooklyn.initializers from JSON', ()=> {
+            let entity = new Entity();
+            entity.setInitializersFromJson([INITIALIZER_OBJECT]);
+            let data = entity.getData();
+            expect(data).not.toBeNull();
+            expect(Object.keys(data)).toContain('brooklyn.initializers');
+            expect(Object.keys(data['brooklyn.initializers'])).toEqual(Object.keys([INITIALIZER_OBJECT]));
+        });
+
+        it('should fail to load an invalid brooklyn.initializers', ()=> {
+            let errorMessage = 'Model parse error ... cannot add initializers as it must be an array';
+            let entity = new Entity();
+            expect(()=>(entity.setInitializersFromJson('string')))
+                .toThrowError(errorMessage);
+            expect(()=>(entity.setInitializersFromJson(true)))
+                .toThrowError(errorMessage);
+            expect(()=>(entity.setInitializersFromJson(12345)))
+                .toThrowError(errorMessage);
+            expect(()=>(entity.setInitializersFromJson(undefined)))
+                .toThrowError(errorMessage);
+            expect(()=>(entity.setInitializersFromJson(null)))
+                .toThrowError(errorMessage);
         });
 
         it('should load brooklyn.config from JSON', ()=> {
@@ -296,6 +322,17 @@ const CONFIG_OBJECT = {
         key: 'val',
     }
 };
+
+const INITIALIZER_OBJECT = {
+    type: 'brooklyn.special.application',
+    boolKey: false,
+    numKey: 123456789,
+    nullKey: null,
+    objectKey: {
+        key: 'val',
+    }
+};
+
 const BLUEPRINT_OBJECT = {
     name: 'Blueprint Name',
     version: '1.0',
