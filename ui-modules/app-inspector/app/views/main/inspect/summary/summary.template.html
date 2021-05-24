@@ -152,6 +152,12 @@
             Blueprint
         </heading>
 
+        <div>
+            <loading-state error="vm.error.spec" ng-if="!vm.spec"></loading-state>
+            <pre ng-if="vm.spec">{{vm.spec}}</pre>
+        </div>
+
+        <!--
         <select ng-model="specItem" class="form-control" id="spec" name="spec" required>
             <option ng-repeat="(summary, contents) in vm.specList" value="{{contents}}">{{summary}}</option>
         </select>
@@ -160,6 +166,7 @@
             <loading-state error="vm.error.spec" ng-if="!specItem"></loading-state>
             <pre ng-if="specItem">{{specItem.contents}}</pre>
         </div>
+        -->
     </br-collapsible>
 
     <br-collapsible state="show.config">

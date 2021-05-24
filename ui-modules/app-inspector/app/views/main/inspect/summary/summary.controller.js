@@ -98,9 +98,10 @@ export function summaryController($scope, $state, $stateParams, $q, $http, brSna
 
     entityApi.entitySpecList(applicationId, entityId).then((response)=> {
         vm.specList = response.data;
+        //console.log(" --> Spec List: " + vm.specList);
         vm.error.specList = undefined;
         observers.push(response.subscribe((response)=> {
-            vm.specMap = response.data;
+            vm.specList = response.data;
             vm.error.specList = undefined;
         }));
     }).catch((error)=> {
