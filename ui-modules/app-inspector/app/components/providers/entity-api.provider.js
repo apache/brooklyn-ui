@@ -37,6 +37,7 @@ function EntityApi($http, $q) {
         entityConfigInfo: getEntityConfigInfo,
         entityConfigState: getEntityConfigState,
         entitySpec: getEntitySpec,
+        entitySpecList: getEntitySpecList,
         entitySensorsInfo: getEntitySensorsInfo,
         entitySensorsState: getEntitySensorsState,
         entitySensorValue: getEntitySensorValue,
@@ -82,6 +83,9 @@ function EntityApi($http, $q) {
     }
     function getEntitySpec(applicationId, entityId) {
         return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/spec', {observable: true, ignoreLoadingBar: true});
+    }
+    function getEntitySpecList(applicationId, entityId) {
+        return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/speclist', {observable: true, ignoreLoadingBar: true});
     }
     function getEntitySensorsInfo(applicationId, entityId) {
         return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/sensors', {observable: true, ignoreLoadingBar: true});

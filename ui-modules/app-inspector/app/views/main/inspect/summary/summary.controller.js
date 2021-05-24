@@ -96,6 +96,17 @@ export function summaryController($scope, $state, $stateParams, $q, $http, brSna
         vm.error.spec = 'Cannot load spec for entity with ID: ' + entityId;
     });
 
+    entityApi.entitySpecList(applicationId, entityId).then((response)=> {
+        vm.specList = response.data;
+        vm.error.specList = undefined;
+        observers.push(response.subscribe((response)=> {
+            vm.specMap = response.data;
+            vm.error.specList = undefined;
+        }));
+    }).catch((error)=> {
+        vm.error.specList = 'Cannot load spec map for entity with ID: ' + entityId;
+    });
+
     entityApi.entityActivities(applicationId, entityId).then((response)=> {
         vm.activities = parseActivitiesResponse(response.data);
         vm.error.activities = undefined;
