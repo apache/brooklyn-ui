@@ -85,20 +85,9 @@ export function summaryController($scope, $state, $stateParams, $q, $http, brSna
         vm.error.config = 'Cannot load configuration information for entity with ID: ' + entityId;
     });
 
-    entityApi.entitySpec(applicationId, entityId).then((response)=> {
-        vm.spec = response.data;
-        vm.error.spec = undefined;
-        observers.push(response.subscribe((response)=> {
-            vm.spec = response.data;
-            vm.error.spec = undefined;
-        }));
-    }).catch((error)=> {
-        vm.error.spec = 'Cannot load spec for entity with ID: ' + entityId;
-    });
-
     entityApi.entitySpecList(applicationId, entityId).then((response)=> {
         vm.specList = response.data;
-        //console.log(" --> Spec List: " + vm.specList);
+        vm.specItem = vm.specList[0];
         vm.error.specList = undefined;
         observers.push(response.subscribe((response)=> {
             vm.specList = response.data;

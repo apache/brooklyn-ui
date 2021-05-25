@@ -471,7 +471,7 @@ export function entityNodeDirective() {
          * @returns {boolean} True if to highlight entity in a current view, false otherwise.
          */
         $scope.isHighlight = function() {
-            return $scope.entity.viewModesHighlight.has($scope.viewMode);
+            return $scope.entity.viewModesHighlight && $scope.entity.viewModesHighlight.has($scope.viewMode);
         };
 
         /**

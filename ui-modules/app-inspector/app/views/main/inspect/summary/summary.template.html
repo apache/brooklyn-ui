@@ -152,21 +152,14 @@
             Blueprint
         </heading>
 
-        <div>
-            <loading-state error="vm.error.spec" ng-if="!vm.spec"></loading-state>
-            <pre ng-if="vm.spec">{{vm.spec}}</pre>
-        </div>
-
-        <!--
-        <select ng-model="specItem" class="form-control" id="spec" name="spec" required>
-            <option ng-repeat="(summary, contents) in vm.specList" value="{{contents}}">{{summary}}</option>
-        </select>
+        <select ng-if="vm.specList" ng-model="vm.specItem"
+                ng-options="spec.summary for spec in vm.specList track by spec.summary" class="form-control"></select>
 
         <div>
-            <loading-state error="vm.error.spec" ng-if="!specItem"></loading-state>
-            <pre ng-if="specItem">{{specItem.contents}}</pre>
+            <loading-state error="vm.error.spec" ng-if="!vm.specItem"></loading-state>
+            <pre ng-if="vm.specItem">{{vm.specItem.contents}}</pre>
         </div>
-        -->
+
     </br-collapsible>
 
     <br-collapsible state="show.config">
