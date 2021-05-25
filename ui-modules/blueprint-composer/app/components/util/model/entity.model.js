@@ -52,7 +52,6 @@ const PARENT = new WeakMap();
 const METADATA = new WeakMap();
 const CONFIG = new WeakMap();
 const PARAMETERS = new WeakMap();
-const REQUIREMENTS = new WeakMap();
 const INITIALIZERS = new WeakMap();
 const CHILDREN = new WeakMap();
 const LOCATIONS = new WeakMap();
@@ -74,7 +73,6 @@ export class Entity {
         ID.set(this, Math.random().toString(36).slice(2));
         CONFIG.set(this, new Map());
         PARAMETERS.set(this, []);
-        REQUIREMENTS.set(this, []);
         INITIALIZERS.set(this, []);
         METADATA.set(this, new Map());
         ENRICHERS.set(this, new Map());
@@ -340,10 +338,6 @@ export class Entity {
         return PARAMETERS.get(this);
     }
 
-    get requirements() {
-        return REQUIREMENTS.get(this);
-    }
-
     get metadata() {
         return METADATA.get(this);
     }
@@ -507,13 +501,6 @@ export class Entity {
      */
     hasParameters() {
         return PARAMETERS.get(this).length > 0;
-    }
-
-    /**
-     * @returns {boolean} True if {Entity} has requirements, false otherwise.
-     */
-    hasRequirements() {
-        return REQUIREMENTS.get(this).length > 0;
     }
 
     /**

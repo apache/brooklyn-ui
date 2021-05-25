@@ -36,7 +36,6 @@ describe('Brooklyn Model', ()=> {
             expect(entity.hasEnrichers()).toBe(false);
             expect(entity.hasPolicies()).toBe(false);
             expect(entity.hasIssues()).toBe(false);
-            expect(entity.hasRequirements()).toBe(false);
             expect(entity.hasInitializers()).toBe(false);
         });
 
