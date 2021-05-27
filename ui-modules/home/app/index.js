@@ -33,12 +33,13 @@ import brooklynUserManagement from 'brooklyn-ui-utils/user-management/user-manag
 import mainState from 'views/main/main.controller';
 import mainDeployState from 'views/main/deploy/deploy.controller';
 import aboutState from 'views/about/about.controller.js';
+import logbookState from 'views/logbook/logbook.controller.js';
 
 import brandAngularJs from 'brand-angular-js';
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
-angular.module('brooklynHome', [ngAnimate, ngCookies, uiRouter, brCore, brServerStatus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, brooklynQuickLaunch, mainState, mainDeployState, aboutState, brandAngularJs])
+angular.module('brooklynHome', [ngAnimate, ngCookies, uiRouter, brCore, brServerStatus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, brooklynQuickLaunch, mainState, mainDeployState, aboutState, logbookState, brandAngularJs])
     .config(['$urlRouterProvider', '$logProvider', '$compileProvider', applicationConfig])
     .run(['$http', httpConfig]);
 
