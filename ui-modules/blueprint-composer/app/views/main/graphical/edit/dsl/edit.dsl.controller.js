@@ -45,11 +45,7 @@ function EditDslController($scope, $state, $stateParams, objectCache, state) {
         updateRootDsl(data.dsl);
 
         if ($scope.state.levels.length === 0) {
-            if ($stateParams.index) {
-                $scope.state.entity.config.get($stateParams.for)[$stateParams.index] = $scope.state.rootDsl;
-            } else {
-                $scope.state.entity.addConfig($stateParams.for, $scope.state.rootDsl);
-            }
+            $scope.state.setRootDsl($stateParams, $scope.state.entity, $scope.state.rootDsl);
             objectCache.removeAll();
             viewName = $scope.state.view.name;
             viewParams = $scope.state.view.params;
@@ -131,27 +127,31 @@ export const graphicalEditDslState = {
         index: {
             value: '',
             squash: true
-        }
+        },
+        isConfig: true // This flag identifies whether DSL edit is for configuration or something else. Configuration is a default.
     },
     template: template,
     controller: ['$scope', '$state', '$stateParams', 'objectCache', 'state', EditDslController],
     controllerAs: 'vm',
     resolve: {
-        state: ['$state', '$stateParams', 'entity', 'brSnackbar', 'objectCache', ($state, $stateParams, entity, brSnackbar, objectCache) => {
-            let definition = entity.miscData.get('config').find(config => config.name === $stateParams.for);
+        state: ['$state', '$stateParams', 'entity', 'brSnackbar', 'objectCache', 'composerOverrides', ($state, $stateParams, entity, brSnackbar, objectCache, composerOverrides) => {
+
+            // Initialize dsl-edit helpers
+            $state.getDefinition = getConfigDefinition;
+            $state.getRootDsl = getConfigRootDsl;
+            $state.setRootDsl = setConfigRootDsl;
+
+            // Allow downstream to configure this controller and override helpers defined above, when required.
+            (composerOverrides.configureDslEdit || function () {})($state);
+
+            let definition = $state.getDefinition($stateParams, entity);
             if (!definition) {
                 brSnackbar.create(`Config key ${$stateParams.for} does not exist.`);
             }
 
             let rootDsl = objectCache.get(`${definition.name}.dsl`);
             if (!rootDsl) {
-                let config = entity.config.get(definition.name);
-                if ($stateParams.index) {
-                    config = config[$stateParams.index];
-                }
-                rootDsl = config instanceof Dsl
-                    ? config.clone()
-                    : new Dsl(KIND.STRING, '');
+                rootDsl = $state.getRootDsl($stateParams, entity, definition);
                 objectCache.put(`${definition.name}.dsl`, rootDsl);
             }
 
@@ -181,7 +181,54 @@ export const graphicalEditDslState = {
                 state.definition.type = '.*';
             }
 
+            // This step enables $state.setRootDsl override in the controller.
+            state.setRootDsl = $state.setRootDsl;
+
             return state;
         }]
     }
 };
+
+/**
+ * Gets configuration definition.
+ *
+ * @param {Object} stateParams The state parameters to get name of the configuration definition to look for.
+ * @param {Entity} entity The entity to get configuration definition from.
+ * @returns {Object} The configuration definition.
+ */
+function getConfigDefinition(stateParams, entity) {
+    return entity.miscData.get('config').find(config => config.name === stateParams.for);
+}
+
+/**
+ * Gets root DSL model from the entity configuration, creates a new one if it does not exist.
+ *
+ * @param {Object} stateParams The state parameters to get index of the configuration definition to look for.
+ * @param {Entity} entity The entity to get configuration definition from.
+ * @param {Object} definition The configuration definition.
+ * @returns {Dsl} The root DSL model.
+ */
+function getConfigRootDsl(stateParams, entity, definition) {
+    let config = entity.config.get(definition.name);
+    if (stateParams.index) {
+        config = config[stateParams.index];
+    }
+    return config instanceof Dsl
+        ? config.clone()
+        : new Dsl(KIND.STRING, '');
+}
+
+/**
+ * Sets root DSL model in the entity configuration.
+ *
+ * @param {Object} stateParams The state parameters to get index and name of the configuration definition to set.
+ * @param {Entity} entity The entity to update root DSL model with.
+ * @param {Dsl} rootDsl The root DSL model to set.
+ */
+function setConfigRootDsl(stateParams, entity, rootDsl) {
+    if (stateParams.index) {
+        entity.config.get(stateParams.for)[stateParams.index] = rootDsl;
+    } else {
+        entity.addConfig(stateParams.for, rootDsl);
+    }
+}
