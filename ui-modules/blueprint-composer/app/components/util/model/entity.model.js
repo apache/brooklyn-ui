@@ -27,7 +27,7 @@ const ANY_MEMBERSPEC_REGEX = /^(\w+\.)*(\w*)[mM]ember[sS]pec$/;
 const RESERVED_KEY_REGEX = /(^children$|^services$|^locations?$|^brooklyn\.config$|^brooklyn\.parameters$|^brooklyn\.enrichers$|^brooklyn\.policies$)/;
 const FIELD = {
     SERVICES: 'services', CHILDREN: 'brooklyn.children', CONFIG: 'brooklyn.config', PARAMETERS: 'brooklyn.parameters', LOCATION: 'location',
-    POLICIES: 'brooklyn.policies', ENRICHERS: 'brooklyn.enrichers', TYPE: 'type', NAME: 'name', ID: 'id',
+    POLICIES: 'brooklyn.policies', ENRICHERS: 'brooklyn.enrichers', INITIALIZERS: 'brooklyn.initializers', TYPE: 'type', NAME: 'name', ID: 'id',
     // This field is not part of the Brooklyn blueprint spec but used to store information about the composer, e.g. X,Y coordinates, virtual items, etc
     COMPOSER_META: 'brooklyn.composer.metadata'
 };
@@ -52,6 +52,7 @@ const PARENT = new WeakMap();
 const METADATA = new WeakMap();
 const CONFIG = new WeakMap();
 const PARAMETERS = new WeakMap();
+const INITIALIZERS = new WeakMap();
 const CHILDREN = new WeakMap();
 const LOCATIONS = new WeakMap();
 const POLICIES = new WeakMap();
@@ -72,6 +73,7 @@ export class Entity {
         ID.set(this, Math.random().toString(36).slice(2));
         CONFIG.set(this, new Map());
         PARAMETERS.set(this, []);
+        INITIALIZERS.set(this, []);
         METADATA.set(this, new Map());
         ENRICHERS.set(this, new Map());
         POLICIES.set(this, new Map());
@@ -502,6 +504,13 @@ export class Entity {
     }
 
     /**
+     * @returns {boolean} True if {Entity} has initializers, false otherwise.
+     */
+    hasInitializers() {
+        return INITIALIZERS.get(this).length > 0;
+    }
+
+    /**
      * Has {Entity} got a location
      * @returns {boolean}
      */
@@ -602,6 +611,9 @@ Entity.prototype.setMetadataFromJson = setMetadataFromJson;
 
 Entity.prototype.setEnrichersFromJson = setEnrichersFromJson;
 Entity.prototype.setPoliciesFromJson = setPoliciesFromJson;
+
+Entity.prototype.setInitializersFromJson = setInitializersFromJson;
+Entity.prototype.getInitializersAsArray = getInitializersAsArray;
 
 Entity.prototype.getData = getData;
 Entity.prototype.addConfig = addConfig;
@@ -887,6 +899,9 @@ function getData(includeChildren = true) {
     if (this.hasParameters()) {
         result[FIELD.PARAMETERS] = this.getParametersAsArray();
     }
+    if (this.hasInitializers()) {
+        result[FIELD.INITIALIZERS] = this.getInitializersAsArray();
+    }
     if (this.hasLocation()) {
         result.location = LOCATIONS.get(this);
     }
@@ -1020,7 +1035,7 @@ function isDslish(x) {
  * @returns {Entity}
  */
 function setEntityFromJson(incomingModel, setChildren = true) {
-    // ideally we'd be able to detect the type of `incomingModel`; 
+    // ideally we'd be able to detect the type of `incomingModel`;
     // imagine we had `DslExpression` as a type and a `DslEntitySpecExpression` as a subclass of `DslExpression`, then:
     // * this code should throw an error if it's not-null, not undefined, but not a `DslExpression`.  
     // * the UI should then render it differently whether it is a `DslEntitySpecExpression` or not.
@@ -1062,6 +1077,9 @@ function setEntityFromJson(incomingModel, setChildren = true) {
             case FIELD.LOCATION:
                 this.location = incomingModel[key];
                 break;
+            case FIELD.INITIALIZERS:
+                self.setInitializersFromJson(incomingModel[key]);
+                break;
             case FIELD.TYPE:
                 let parsedType = incomingModel[key].split(':');
                 self.addMetadata(key, parsedType[0]);
@@ -1090,7 +1108,7 @@ function setEntityFromJson(incomingModel, setChildren = true) {
 
 
 /**
- * Set {Entity} childen from JSON {Array}
+ * Set {Entity} children from JSON {Array}
  * @param {Array} incomingModel
  */
 function setChildrenFromJson(incomingModel) {
@@ -1138,6 +1156,19 @@ function setParametersFromJson(incomingModel) {
     this.touch();
 }
 
+/**
+ * Set initializers from JSON.
+ *
+ * @param {Object} model
+ * @param {Array} initializers
+ */
+function setInitializersFromJson(initializers) {
+    if (!Array.isArray(initializers)) {
+        throw new Error('Model parse error ... cannot add initializers as it must be an array')
+    }
+    INITIALIZERS.set(this, initializers);
+    this.touch();
+}
 
 function setMetadataFromJson(incomingModel) {
     METADATA.get(this).clear();
@@ -1198,6 +1229,10 @@ function getConfigAsJson() {
 
 function getParametersAsArray() {
     return PARAMETERS.get(this);
+}
+
+function getInitializersAsArray() {
+    return INITIALIZERS.get(this);
 }
 
 function getParameterNamed(name) {

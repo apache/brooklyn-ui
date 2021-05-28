@@ -80,13 +80,13 @@
 
     <fieldset uib-collapse="!state.parameters.filter.open" class="spec-parameter-filters">
         <div class="form-group">
-            <input auto-focus="state.parameters.filter.open" 
+            <input auto-focus="state.parameters.filter.open"
                 type="text"
-                autocomplete="off" 
-                ng-model="state.parameters.search" 
-                placeholder="Search or add a parameter" 
+                autocomplete="off"
+                ng-model="state.parameters.search"
+                placeholder="Search or add a parameter"
                 class="form-control"
-                blur-on-enter 
+                blur-on-enter
                 />
         </div>
     </fieldset>
@@ -115,7 +115,7 @@
                 </p>
             </div>
         </div>
-    
+
         <form name="formSpecParameter" novalidate class="lightweight">
             <div ng-repeat="item in (filteredParams = (model.parameters | filter:{name:state.parameters.search})) track by item.name">
                 <div class="form-group"
@@ -155,24 +155,24 @@
                           <div class="input-group hide-when-collapsed" ng-if="state.parameters.codeModeActive[item.name]">
                             <span class="main-control span-for-rounded-edge">
                                 <textarea ng-model="state.parameters.edit.json" class="form-control rounded-edge" name="{{item.name}}" id="json-{{item.name}}"
-                                          auto-grow 
-                                          placeholder="(required)" 
+                                          auto-grow
+                                          placeholder="(required)"
                                           ng-focus="specEditor.recordParameterFocus(item)"
                                           on-enter="specEditor.advanceOutToFormGroupInPanel"></textarea>
                             </span>
                           </div>
-                          
+
                           <div class="param-fields input-group hide-when-collapsed" ng-if="!state.parameters.codeModeActive[item.name]">
                             <div class="param-field"> <span class="param-field-label">Key
                                     <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
                                            uib-popover="The internal name of this parameter and of the config key it becomes on deployment."
-                                           x-popover-class="spec-editor-popover" 
+                                           x-popover-class="spec-editor-popover"
                                            popover-placement="top-left" popover-append-to-body="true"></i>
-                                </span> 
+                                </span>
                                 <span class="param-field-value">
                                     <textarea ng-model="state.parameters.edit.newName" class="form-control rounded-edge" id="name-{{item.name}}"
-                                          auto-grow 
-                                          placeholder="(required)" 
+                                          auto-grow
+                                          placeholder="(required)"
                                           ng-focus="specEditor.recordParameterFocus(item)"
                                           on-enter="specEditor.advanceOutToFormGroupInPanel">
                                     </textarea>
@@ -181,13 +181,13 @@
                             <div class="param-field"> <span class="param-field-label">Type
                                     <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
                                            uib-popover="The type of the value this key takes, such as 'integer' or 'double' for numbers or 'string' for freeform text."
-                                           x-popover-class="spec-editor-popover" 
+                                           x-popover-class="spec-editor-popover"
                                            popover-placement="top-left" popover-append-to-body="true"></i>
-                                </span> 
+                                </span>
                                 <span class="param-field-value">
                                     <textarea ng-model="filteredParams[$index].type" class="form-control rounded-edge" id="type-{{item.name}}"
-                                          auto-grow 
-                                          placeholder="(required)" 
+                                          auto-grow
+                                          placeholder="(required)"
                                           uib-typeahead="t for t in specEditor.paramTypes | filter:$viewValue"
                                           typeahead-min-length="0"
                                           ng-focus="specEditor.recordParameterFocus(item)"
@@ -198,13 +198,13 @@
                             <div class="param-field"> <span class="param-field-label">Default value
                                     <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
                                            uib-popover="Optionally a value can be given here to use for this parameter if one is not supplied by the user. An empty string supplied here will cause the default to be removed. (Empty strings can be set explicitly in the underlying YAML code if required.)"
-                                           x-popover-class="spec-editor-popover" 
+                                           x-popover-class="spec-editor-popover"
                                            popover-placement="top-left" popover-append-to-body="true"></i>
-                                </span> 
+                                </span>
                                 <span class="param-field-value">
                                     <textarea ng-model="filteredParams[$index].default" class="form-control rounded-edge" id="default-{{item.name}}"
-                                          auto-grow 
-                                          placeholder="{{ state.parameters.edit.original.default == '' ? '(empty)' : '(not set)' }}" 
+                                          auto-grow
+                                          placeholder="{{ state.parameters.edit.original.default == '' ? '(empty)' : '(not set)' }}"
                                           ng-focus="specEditor.recordParameterFocus(item)"
                                           on-enter="specEditor.advanceOutToFormGroupInPanel">
                                     </textarea>
@@ -213,13 +213,13 @@
                             <div class="param-field"> <span class="param-field-label">Display name
                                     <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
                                            uib-popover="Optional label displayed in places to be more user-friendly than the parameter/key name. This can have spaces whereas the name should not."
-                                           x-popover-class="spec-editor-popover" 
+                                           x-popover-class="spec-editor-popover"
                                            popover-placement="top-left" popover-append-to-body="true"></i>
-                                </span> 
+                                </span>
                                 <span class="param-field-value">
                                     <textarea ng-model="filteredParams[$index].label" class="form-control rounded-edge" id="label-{{item.name}}"
-                                          auto-grow 
-                                          placeholder="(not set)" 
+                                          auto-grow
+                                          placeholder="(not set)"
                                           ng-focus="specEditor.recordParameterFocus(item)"
                                           on-enter="specEditor.advanceOutToFormGroupInPanel">
                                     </textarea>
@@ -228,13 +228,13 @@
                             <div class="param-field"> <span class="param-field-label">Description
                                     <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
                                            uib-popover="Optional information on what this parameter is for, displayed to the user in the UI"
-                                           x-popover-class="spec-editor-popover" 
+                                           x-popover-class="spec-editor-popover"
                                            popover-placement="top-left" popover-append-to-body="true"></i>
-                                </span> 
+                                </span>
                                 <span class="param-field-value">
                                     <textarea ng-model="filteredParams[$index].description" class="form-control rounded-edge" id="description-{{item.name}}"
-                                          auto-grow 
-                                          placeholder="(not set)" 
+                                          auto-grow
+                                          placeholder="(not set)"
                                           ng-focus="specEditor.recordParameterFocus(item)"
                                           on-enter="specEditor.advanceOutToFormGroupInPanel">
                                     </textarea>
@@ -243,12 +243,12 @@
                             <div class="param-field"> <span class="param-field-label">Constraints
                                     <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
                                            uib-popover="Constraints such as &quot;required&quot; or &quot;forbiddenUnless(otherKey)&quot;, expressed as a JSON list (wrapped in square brackets and double quotes)"
-                                           x-popover-class="spec-editor-popover" 
+                                           x-popover-class="spec-editor-popover"
                                            popover-placement="top-left" popover-append-to-body="true"></i>
-                                </span> 
+                                </span>
                                 <span class="param-field-value">
                                     <textarea ng-model="state.parameters.edit.constraints" class="form-control rounded-edge code" id="constraints-{{item.name}}"
-                                          auto-grow 
+                                          auto-grow
                                           placeholder="(none)"
                                           ng-focus="specEditor.recordParameterFocus(item)"
                                           on-enter="specEditor.advanceOutToFormGroupInPanel">
@@ -266,7 +266,7 @@
                 </div>
             </div>
         </form>
-        
+
         <div class="spec-add-button" ng-if="filteredParams.length > 0 && state.parameters.search && !specEditor.getParameter(state.parameters.search)">
                 <p class="buttons">
                     <button class="btn btn-sm btn-success" ng-click="specEditor.addParameter(state.parameters.search)">
@@ -274,7 +274,7 @@
                     </button>
                 </p>
         </div>
-        
+
     </div>
 </br-collapsible>
 
@@ -579,6 +579,12 @@
     </div>
 </br-collapsible>
 
+<!-- ENTITY REQUIREMENTS -->
+<ng-include src="'blueprint-composer/component/spec-editor/section-requirements.html'"></ng-include>
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-requirements.html" defer-to-preexisting-id="true">
+    <!-- Placeholder for 'requirements' section. -->
+</script>
+
 <!-- ENTITY LOCATION -->
 <ng-include src="'blueprint-composer/component/spec-editor/section-locations.html'"></ng-include>
 <script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-locations.html" defer-to-preexisting-id="true">
@@ -688,8 +694,8 @@
 
 <ng-include src="'blueprint-composer/component/spec-editor/section-others.html'"></ng-include>
 <script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-others.html" defer-to-preexisting-id="true">
+    <!-- Placeholder for other sections. -->
 </script>
-
 
 <!-- PARAMETER INFO TEMPLATE :: START -->
 <script type="text/ng-template" id="blueprint-composer/component/spec-editor/parameter-info.html" defer-to-preexisting-id="true">
