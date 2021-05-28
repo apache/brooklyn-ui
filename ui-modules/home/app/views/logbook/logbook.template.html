@@ -25,8 +25,15 @@
     <div class="row">
         <div class="col-md-12">
             <form>
-                <label for="logSearch">Search</label><input id="logSearch" type="text" class="logbook-search"><input type="submit"/><br/>
-                <textarea id="logContent" class="logbook-text"></textarea>
+                <div>
+                    <label for="logSearch">Search</label>
+                    <input id="logSearch" type="text" class="logbook-search" ng-model="query" auto-focus>
+<!--                    <input type="submit" ng-click="vm.doQuery()"/>-->
+                    <button class="btn btn-outline btn-success" ng-click="vm.doQuery()" ng-disabled="waitingResponse">Query</button>
+                </div>
+                <div>
+                    <textarea id="logContent" class="logbook-text" ng-model="results"></textarea>
+                </div>
             </form>
         </div>
     </div>

@@ -23,11 +23,6 @@ import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-sp
 import template from "./logbook.template.html";
 
 const MODULE_NAME = 'states.logbook';
-const BROOKLYN_VERSION = __BROOKLYN_VERSION__;
-const BUILD_NAME = __BUILD_NAME__;   // if something embedding brooklyn
-const BUILD_VERSION = __BUILD_VERSION__;   // if something embedding brooklyn
-const BUILD_BRANCH = __BUILD_BRANCH__; 
-const BUILD_COMMIT_ID = __BUILD_COMMIT_ID__;
 
 angular.module(MODULE_NAME, [uiRouter, serverApi])
     .config(['$stateProvider', logbookStateConfig]);
@@ -38,7 +33,7 @@ export const logbookState = {
     name: 'logbook',
     url: '/logbook',
     template: template,
-    controller: ['$scope', 'brBrandInfo', 'version', 'states', logbookStateController],
+    controller: ['$scope', 'brBrandInfo', 'version', 'states', 'logbookApi', logbookStateController],
     controllerAs: 'vm',
     resolve: {
         version: ['serverApi', (serverApi) => {
@@ -54,17 +49,35 @@ export function logbookStateConfig($stateProvider) {
     $stateProvider.state(logbookState);
 }
 
-export function logbookStateController($scope, brBrandInfo, version, states) {
+export function logbookStateController($scope, brBrandInfo, version, states, logbookApi) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
     $scope.getBrandedText = brBrandInfo.getBrandedText;
-    
-    this.serverVersion = version.data;
-    this.states = states.data;
-    this.buildInfo = {
-        buildVersion: BUILD_VERSION,
-        buildName: BUILD_NAME,
-        buildBranch: BUILD_BRANCH,
-        buildCommitId: BUILD_COMMIT_ID,
-        brooklynVersion: BROOKLYN_VERSION,
+
+    let vm = this;
+
+    $scope.$on('logbook.query', () => {
+        vm.doQuery();
+    });
+
+    vm.doQuery = function () {
+        $scope.waitingResponse = true;
+
+        const queryString = $scope.query;
+        console.log("requesting: "+queryString);
+        logbookApi.doQuery(queryString).then(function (success) {
+            console.log("success: "+ success) //todojd remove
+            $scope.results = success;
+        }, function (error) {
+            console.log("error: "+ error) //todojd remove
+            $scope.results = "Something bad happened: " + error;
+        }).finally(() => {
+            $scope.waitingResponse = false;
+        });
+
+
     };
+
+    $scope.query = "initial query";
+    $scope.results = "xx";
+    $scope.waitingResponse = false;
 }
