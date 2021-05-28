@@ -121,8 +121,17 @@
                     <br-table ng-model="type.effectors" columns="tables.effectors.columns" col-width="20"></br-table>
                 </uib-tab>
 
-                <uib-tab heading="Blueprint" ng-if="isNonEmpty(type.plan.data)">
-                    <pre>{{type.plan.data}}</pre>
+                <uib-tab heading="Blueprint" ng-if="isNonEmpty(type.specList)">
+                    <div class="form-group">
+                        <select ng-if="type.specList" ng-model="ctrl.specItem"
+                                ng-options="spec.summary for spec in type.specList track by spec.summary"
+                                class="form-control ng-pristine ng-untouched">
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <pre ng-if="ctrl.specItem">{{ctrl.specItem.contents}}</pre>
+                    </div>
                 </uib-tab>
                 
             </uib-tabset>
