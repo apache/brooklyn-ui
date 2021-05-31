@@ -565,6 +565,12 @@ export function D3Blueprint(container, options) {
         let nodeData = _nodeGroup.selectAll('g.node')
             .data(_d3DataHolder.visible.nodes, (d)=>(`node-${d.data._id}`));
 
+        // if desired to let overrides customize things, could leverage two functions on the seletions,
+        // TBC whether in enter or draw or etc (and note, by exposing just the first, callers can use the second)
+        //    .call( fn /* runs on the selection */ )
+        //    .each( fn /* runs on each Node */ )
+
+
         // Draw group that contains all SVG element: node representation and location/policies/enricher indicators
         // -----------------------------------------------------
         let nodeGroup = nodeData

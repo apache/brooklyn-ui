@@ -28,7 +28,7 @@ import {graphicalEditSpecState} from './graphical/edit/spec/edit.spec.controller
 import bottomSheetTemplate from './bottom-sheet.template.html';
 import {ISSUE_LEVEL} from '../../components/util/model/issue.model';
 
-const layers = [
+const LAYERS = [
     {
         id: 'locations',
         label: 'Locations',
@@ -54,7 +54,7 @@ const layers = [
         active: true
     }
 ];
-const layerCacheKey = 'blueprint-composer.layers';
+const LAYER_CACHE_KEY = 'blueprint-composer.layers';
 
 export function MainController($scope, $element, $log, $state, $stateParams, brBrandInfo, blueprintService, actionService, tabService, catalogApi, applicationApi, brSnackbar, brBottomSheet, composerOverrides, edit, yaml) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
@@ -69,18 +69,29 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
         vm.mode = toState;
     });
 
-    vm.layers = localStorage && localStorage.getItem(layerCacheKey) !== null ?
-        JSON.parse(localStorage.getItem(layerCacheKey)) :
-        layers;
+    let layersM = {};
+    (composerOverrides.getLayers() || LAYERS).forEach(l => layersM[l.id] = l);
+
+    let layersL = localStorage && localStorage.getItem(LAYER_CACHE_KEY) !== null && JSON.parse(localStorage.getItem(LAYER_CACHE_KEY));
+    if (layersL) layersL.forEach(l => { if (layersM[l.id]) layersM[l.id] = Object.assign({}, layersM[l.id], l); });
+    vm.layers = Object.values(layersM);
+
     $scope.$watch('vm.layers', ()=> {
         vm.layers.forEach(layer => {
             document.querySelectorAll(layer.selector).forEach(node => {
-                angular.element(node).css('display', layer.active ? 'block' : 'none');
+                // TODO does $watch approach give any newly created nodes/relationships the right display?
+
+                // if (layer.apply) {
+                //     // layers could supply custom layer behaviour (including via composer overrides)
+                //     layer.apply(node, layer, angular.element(node));
+                // } else {
+                    angular.element(node).css('display', layer.active ? 'block' : 'none');
+                // }
             });
         });
         if (localStorage) {
             try {
-                localStorage.setItem(layerCacheKey, JSON.stringify(vm.layers));
+                localStorage.setItem(LAYER_CACHE_KEY, JSON.stringify(vm.layers));
             } catch (ex) {
                 $log.error('Cannot save layers preferences: ' + ex.message);
             }
