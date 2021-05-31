@@ -63,7 +63,7 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
         $scope.selectedEntity = null;
 
         $scope.$on('d3.redraw', (event, initial)=> {
-            $log.debug(TAG + 'Re-draw blueprint, triggered by ' + event.name, $scope.blueprint);
+            $log.debug(TAG + 'Re-draw blueprint, triggered by ' + event.name, initial, $scope.blueprint);
 
             blueprintService.refreshBlueprintMetadata().then(()=>{
                 redrawGraph();

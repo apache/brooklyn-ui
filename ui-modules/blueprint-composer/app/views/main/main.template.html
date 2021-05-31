@@ -42,7 +42,7 @@
                         <li role="menuitem" class="layer"
                             ng-repeat="layer in vm.layers track by layer.id"
                             ng-class="{'active': layer.active}">
-                            <a ng-click="layer.active = !layer.active"><i class="fa fa-fw fa-circle"></i> {{layer.label}}</a>
+                            <a ng-click="vm.onLayerActive(layer, !layer.active)"><i class="fa fa-fw fa-circle"></i> {{layer.label}}</a>
                         </li>
                     </ul>
                 </li>

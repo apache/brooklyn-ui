@@ -690,6 +690,7 @@ export function D3Blueprint(container, options) {
             .attr('y2', (d)=>(d.target.y));
         link.exit()
             .transition()
+            .duration(_configHolder.transition)  // doesn't seem to work, links just disappear immediately
             .attr('opacity', 0)
             .remove();
     }

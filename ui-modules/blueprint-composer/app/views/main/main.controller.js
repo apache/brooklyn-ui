@@ -76,6 +76,14 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
     if (layersL) layersL.forEach(l => { if (layersM[l.id]) layersM[l.id] = Object.assign({}, layersM[l.id], l); });
     vm.layers = Object.values(layersM);
 
+    vm.onLayerActive = (layer, value) => {
+        if (layer.onLayerActive) {
+            layer.onLayerActive(value, $scope);
+        }
+        layer.active = value;
+    };
+    vm.layers.forEach(l => vm.onLayerActive(l, l.active));
+
     $scope.$watch('vm.layers', ()=> {
         vm.layers.forEach(layer => {
             document.querySelectorAll(layer.selector).forEach(node => {
