@@ -25,9 +25,10 @@ const FIRST_MEMBERSPEC_REGEX = /^(\w+\.)*first[mM]ember[sS]pec$/;
 // TODO ideally we'd just look at type EntitySpec, not key name, but for now look at keyname, anything ending memberSpec
 const ANY_MEMBERSPEC_REGEX = /^(\w+\.)*(\w*)[mM]ember[sS]pec$/;
 const RESERVED_KEY_REGEX = /(^children$|^services$|^locations?$|^brooklyn\.config$|^brooklyn\.parameters$|^brooklyn\.enrichers$|^brooklyn\.policies$)/;
-const FIELD = {
+export const FIELD = {
     SERVICES: 'services', CHILDREN: 'brooklyn.children', CONFIG: 'brooklyn.config', PARAMETERS: 'brooklyn.parameters', LOCATION: 'location',
     POLICIES: 'brooklyn.policies', ENRICHERS: 'brooklyn.enrichers', INITIALIZERS: 'brooklyn.initializers', TYPE: 'type', NAME: 'name', ID: 'id',
+    TAGS: 'brooklyn.tags',
     // This field is not part of the Brooklyn blueprint spec but used to store information about the composer, e.g. X,Y coordinates, virtual items, etc
     COMPOSER_META: 'brooklyn.composer.metadata'
 };
@@ -1097,6 +1098,9 @@ function setEntityFromJson(incomingModel, setChildren = true) {
                 let composerMetadata = incomingModel[key];
                 if (composerMetadata.hasOwnProperty('virtualType')) {
                     self.addMetadata(FIELD.TYPE, composerMetadata.virtualType);
+                }
+                if (composerMetadata.hasOwnProperty('tags')) {
+                    self.addMetadata(FIELD.TAGS, composerMetadata.virtualType);
                 }
                 break;
             default:
