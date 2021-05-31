@@ -137,7 +137,10 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
         return $state.is(stateKey);
     }
     vm.isYamlMode = () => {
-        return $state.includes(yamlAutodetectState.name);
+        return $state && $state.current && $state.current.name && $state.current.name.includes(yamlAutodetectState.name);
+    }
+    vm.isLayerDropdownEnabled = () => {
+        return !vm.isYamlMode();
     }
 
     if (yaml) {
