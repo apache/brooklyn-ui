@@ -368,7 +368,7 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
             }
         }
 
-        return new Dsl(KIND.METHOD, 'component').param(new Dsl(KIND.STRING, targetEntity.id));
+        return new Dsl(KIND.TARGET, TARGET.COMPONENT).param(new Dsl(KIND.STRING, targetEntity.id));
     }
 
     function isSelfDsl(dsl) {
