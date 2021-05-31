@@ -20,7 +20,20 @@ import {Entity} from './entity.model';
 
 const FUNCTION_PREFIX = '$brooklyn:';
 
-const TARGETS = [ 'self', 'parent', 'child', 'sibling', 'descendant', 'ancestor', 'root', 'scopeRoot', 'entity', 'component', ];
+export const TARGET = {
+    SELF: 'self',
+    ROOT: 'root',
+    CHILD: 'child',
+    ENTITY: 'entity',
+    PARENT: 'parent',
+    SIBLING: 'sibling',
+    ANCESTOR: 'ancestor',
+    SCOPEROOT: 'scopeRoot',
+    COMPONENT: 'component',
+    DESCENDANT: 'descendant'
+}
+
+const TARGETS = Object.values(TARGET);
 
 const UTILITIES = [ 'literal', 'formatString', 'urlEncode', 'regexReplacement' ];
 
@@ -585,20 +598,20 @@ export class Dsl {
         let curr = entity;
         while (dsl.kind === KIND.TARGET) {
             switch (dsl.name) {
-                case 'self':
+                case TARGET.SELF:
                     break;
-                case 'parent':
+                case TARGET.PARENT:
                     if (!curr.parent) {
                         this.issues.push('The entity with ID <code>' + curr.id + '</code> does not have a parent');
                     }
                     curr = curr.parent;
                     break;
-                case 'child':
-                case 'sibling':
-                case 'descendant':
-                case 'ancestor':
-                case 'entity':
-                case 'component': // component can have 1 or 2 params
+                case TARGET.CHILD:
+                case TARGET.SIBLING:
+                case TARGET.DESCENDANT:
+                case TARGET.ANCESTOR:
+                case TARGET.ENTITY:
+                case TARGET.COMPONENT: // component can have 1 or 2 params
                     let name = dsl.params[dsl.params.length - 1].name;
                     let resolvedEntity = entityResolver(name);
                     if (resolvedEntity === null) {
@@ -606,8 +619,8 @@ export class Dsl {
                     }
                     curr = resolvedEntity;
                     break;
-                case 'root':
-                case 'scopeRoot':
+                case TARGET.ROOT:
+                case TARGET.SCOPEROOT:
                     curr = this.resolveRoot(curr);
                     break;
             }
