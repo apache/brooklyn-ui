@@ -18,7 +18,7 @@
  */
 import angular from 'angular';
 import angularSanitize from 'angular-sanitize';
-import {Dsl, DslParser, KIND} from '../util/model/dsl.model';
+import {Dsl, DslParser, KIND, TARGET} from '../util/model/dsl.model';
 import template from './dsl-editor.template.html';
 import brAutoFocus from 'brooklyn-ui-utils/autofocus/autofocus';
 import brUtils from 'brooklyn-ui-utils/utils/general';
@@ -354,10 +354,10 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
 
     function getScopedDsl(entity, targetEntity, state) {
         if (entity === targetEntity) {
-            return new Dsl(KIND.TARGET, 'self');
+            return new Dsl(KIND.TARGET, TARGET.SELF);
         }
         if (entity.parent === targetEntity) {
-            return new Dsl(KIND.TARGET, 'parent');
+            return new Dsl(KIND.TARGET, TARGET.PARENT);
         }
 
         if (!targetEntity.hasId()) {
@@ -372,7 +372,7 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
     }
 
     function isSelfDsl(dsl) {
-        return dsl && dsl.kind === KIND.TARGET && dsl.name === 'self';
+        return dsl && dsl.kind === KIND.TARGET && dsl.name === TARGET.SELF;
     }
 }
 

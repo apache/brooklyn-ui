@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import {Dsl, KIND, DslParser, Tokenizer, DslError} from './dsl.model';
+import {Dsl, KIND, DslParser, Tokenizer, DslError, TARGET} from './dsl.model';
 import {Entity} from './entity.model';
 
 describe('Dsl Component Model', ()=>{
@@ -159,7 +159,7 @@ describe('Dsl Component Model', ()=>{
            expect(dsl2.generate()).toEqual('10.2');
 
            // target function without parameters
-           let dsl3 = new Dsl(KIND.TARGET, 'self');
+           let dsl3 = new Dsl(KIND.TARGET, TARGET.SELF);
            expect(dsl3.generateParams()).toEqual('');
            expect(dsl3.toString()).toEqual('$brooklyn:self()');
            expect(dsl3.generate()).toEqual('self()');
@@ -175,8 +175,8 @@ describe('Dsl Component Model', ()=>{
            expect(dsl3.toString()).toEqual('$brooklyn:self().attributeWhenReady("http.port")');
 
            // chained target functions and methods: parent().sibling(...).attributeWhenReady(...)
-           let dsl4 = new Dsl(KIND.TARGET, 'parent');
-           let sib1 = new Dsl(KIND.TARGET, 'sibling');
+           let dsl4 = new Dsl(KIND.TARGET, TARGET.PARENT);
+           let sib1 = new Dsl(KIND.TARGET, TARGET.SIBLING);
            let par2 = new Dsl(KIND.STRING, 'rootNode');
            sib1.param(par2);
            dsl4.chain(sib1);

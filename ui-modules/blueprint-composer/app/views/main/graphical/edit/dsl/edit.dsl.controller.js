@@ -128,7 +128,7 @@ export const graphicalEditDslState = {
             value: '',
             squash: true
         },
-        isConfig: true // This flag identifies whether DSL edit is for configuration or something else. Configuration is a default.
+        subsection: '' // This parameter specifies what subsection DSL edit is for. Configuration subsection is default.
     },
     template: template,
     controller: ['$scope', '$state', '$stateParams', 'objectCache', 'state', EditDslController],
