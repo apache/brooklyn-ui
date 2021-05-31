@@ -31,12 +31,12 @@ const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
 const TAG = 'DIRECTIVE :: DESIGNER :: ';
 
 angular.module(MODULE_NAME, [])
-    .directive('designer', ['$log', '$state', '$q', 'iconGenerator', 'catalogApi', 'blueprintService', 'brSnackbar', 'paletteDragAndDropService', designerDirective])
+    .directive('designer', ['$log', '$state', '$q', 'iconGenerator', 'catalogApi', 'blueprintService', 'brSnackbar', 'paletteDragAndDropService', 'composerOverrides', designerDirective])
     .run(['$templateCache', templateCache]);
 
 export default MODULE_NAME;
 
-export function designerDirective($log, $state, $q, iconGenerator, catalogApi, blueprintService, brSnackbar, paletteDragAndDropService) {
+export function designerDirective($log, $state, $q, iconGenerator, catalogApi, blueprintService, brSnackbar, paletteDragAndDropService, composerOverrides) {
     return {
         restrict: 'E',
         templateUrl: function (tElement, tAttrs) {
@@ -49,7 +49,7 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
     };
 
     function link($scope, $element) {
-        let blueprintGraph = new D3Blueprint($element[0]).center();
+        let blueprintGraph = new D3Blueprint($element[0], {shouldShowNode: composerOverrides.shouldShowNode}).center();
 
         $scope.blueprint = blueprintService.get();
         $scope.$watch('blueprint', ()=> {

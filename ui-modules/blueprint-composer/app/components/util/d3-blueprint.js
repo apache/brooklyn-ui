@@ -17,11 +17,11 @@
  * under the License.
  */
 import * as d3 from 'd3';
-import {PREDICATE_MEMBERSPEC} from './model/entity.model';
+import {PREDICATE_MEMBERSPEC, FIELD} from './model/entity.model';
 import addIcon from '../../img/icon-add.svg';
 import {ISSUE_LEVEL} from './model/issue.model';
 
-export function D3Blueprint(container) {
+export function D3Blueprint(container, options) {
     let _svg = d3.select(container).append('svg').attr('class', 'blueprint-canvas');
     let _mirror = _svg.append('path').style('display', 'none');
     let _zoomGroup = _svg.append('g').attr('class', 'zoom-group');
@@ -526,12 +526,26 @@ export function D3Blueprint(container) {
 
                 return 1 + (colWidth / (_configHolder.nodes.child.circle.r * 6)) * additionalCol;
             });
+
         let root = d3.hierarchy(blueprint);
         tree(root);
+
         _d3DataHolder.nodes = root.descendants();
         _d3DataHolder.links = root.links();
         _d3DataHolder.relationships = relationships;
+
+        _d3DataHolder.visible = {
+            nodes: _d3DataHolder.nodes.filter(d => shouldShowNode(d.data) ),
+            links: _d3DataHolder.links.filter(d => shouldShowNode(d.source.data) && shouldShowNode(d.target.data) ),
+            relationships: _d3DataHolder.relationships.filter(d => { return shouldShowNode(d.source) && shouldShowNode(d.target); } ),
+        };
+
         return this;
+    }
+
+    function shouldShowNode(node) {
+        if (options && options.shouldShowNode) return options.shouldShowNode(node);
+        return true;
     }
 
     /**
@@ -549,7 +563,7 @@ export function D3Blueprint(container) {
 
     function drawNodeGroup() {
         let nodeData = _nodeGroup.selectAll('g.node')
-            .data(_d3DataHolder.nodes, (d)=>(`node-${d.data._id}`));
+            .data(_d3DataHolder.visible.nodes, (d)=>(`node-${d.data._id}`));
 
         // Draw group that contains all SVG element: node representation and location/policies/enricher indicators
         // -----------------------------------------------------
@@ -654,7 +668,7 @@ export function D3Blueprint(container) {
 
     function drawLinks() {
         let link = _linkGroup.selectAll('line.link')
-            .data(_d3DataHolder.links, (d)=>(d.source.data._id + '_to_' + d.target.data._id));
+            .data(_d3DataHolder.visible.links, (d)=>(d.source.data._id + '_to_' + d.target.data._id));
 
         link.enter().insert('line')
             .attr('class', 'link')
@@ -697,7 +711,7 @@ export function D3Blueprint(container) {
         showRelationships();
 
         let relationData = _relationGroup.selectAll('.relation')
-            .data(_d3DataHolder.relationships, (d)=>(d.source._id + '_related_to_' + d.target._id));
+            .data(_d3DataHolder.visible.relationships, (d)=>(d.source._id + '_related_to_' + d.target._id));
 
         relationData.enter().insert('path')
             .attr('class', 'relation')
@@ -736,7 +750,7 @@ export function D3Blueprint(container) {
 
     function drawGhostNode() {
         let ghostNodeData = _ghostNodeGroup.selectAll('g.ghost-node')
-            .data(_d3DataHolder.nodes, (d)=>(`ghost-node-${d.data._id}`));
+            .data(_d3DataHolder.visible.nodes, (d)=>(`ghost-node-${d.data._id}`));
         let ghostNode = ghostNodeData
             .enter()
             .append('g')
