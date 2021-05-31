@@ -636,6 +636,21 @@ export class Dsl {
 
 }
 
+function fnLookupInDescendantsById(root) {
+    return id => {
+        if (root.id === id) {
+            return root;
+        }
+        for (let child of root.childrenAsMap.values()) {
+            let ret = fnLookupInDescendantsById(child)(id);
+            if (ret !== null) {
+                return ret;
+            }
+        }
+        return null;
+    };
+}
+
 /**
  * A parser for Dsl expressions.
  */
@@ -653,9 +668,9 @@ export class DslParser {
      * @param {function} entityResolver a function to resolve an entity from an ID
      * @return {Dsl} the Dsl object representing this expression
      */
-    parse(entity, entityResolver) {
+    parse(entity, entityResolverOrRoot) {
         if (this.s instanceof String || typeof this.s === 'string') {
-            return this.parseString(this.s.toString().trim(), entity, entityResolver);
+            return this.parseString(this.s.toString().trim(), entity, entityResolverOrRoot);
         }
         // NUMBER and OTHER kinds are in the CONSTANT family which means they aren't DSL expressions
         // (API here could be improved!)
@@ -676,7 +691,9 @@ export class DslParser {
      * @param {function} entityResolver a function to resolve an entity from an ID
      * @return {Dsl} the Dsl object representing the expression in s
      */
-    parseString(s, entity, entityResolver) {
+    parseString(s, entity, entityResolverOrRoot) {
+        const entityResolver = (typeof entityResolverOrRoot === 'function') ? entityResolverOrRoot : fnLookupInDescendantsById(entityResolverOrRoot);
+
         let t = new Tokenizer(s);
         let dsl = this.expression(t);
         t.skipWhitespace();
