@@ -20,6 +20,8 @@ import * as d3 from 'd3';
 import {PREDICATE_MEMBERSPEC, FIELD} from './model/entity.model';
 import addIcon from '../../img/icon-add.svg';
 import {ISSUE_LEVEL} from './model/issue.model';
+import marked from 'marked';
+import _ from 'lodash';
 
 export function D3Blueprint(container, options) {
     let _svg = d3.select(container).append('svg').attr('class', 'blueprint-canvas');
@@ -157,7 +159,20 @@ export function D3Blueprint(container, options) {
                     y: 75,
                     'xlink:href': addIcon
                 }
-            }
+            },
+            annotation: {
+                foreignObject: {
+                    x: 0,
+                    y: -100,
+                    background:
+                        // "#ffe8b0", // a nice yellow
+                        "#a0c0e0", // a nice light blue
+                    width: 200,
+                    height: 60,
+                    style: "",
+                    styleInnerDiv: "margin: auto 0;",  // center top/down but not left-right by default
+                }
+            },
         },
         transition: 300,
         grid: {
@@ -670,6 +685,46 @@ export function D3Blueprint(container, options) {
             .attr('transform', 'scale(0)')
             .remove();
         appendElement(adjunctData.enter(), 'rect', _configHolder.nodes.adjunct.rect);
+
+        let annotationElement = nodeGroup.append('g')
+            .attr('class', 'node-annotation');
+        let annotationData = nodeData.select('g.node-annotation')
+            .selectAll('foreignObject.node-annotation')
+            .data((d)=>{
+                let tags = d.data.metadata && d.data.metadata.get("brooklyn.tags");
+                if (tags) {
+                    let annotations = tags.map(tag => typeof tag === "object" && Object.keys(tag) && Object.keys(tag).length === 1 && tag["ui-composer-annotation"]).filter(x => x);
+                    if (annotations) {
+                        return annotations.map(annotationTag => Object.assign({},
+                            _configHolder.nodes.annotation.foreignObject,
+                            typeof annotationTag === "object" ? annotationTag : {text: annotationTag}) );
+                    }
+                }
+                return [];
+            });
+
+        appendElement(annotationData.enter(), 'foreignObject', {
+            class: 'node-annotation entity',
+            xmlns: "http://www.w3.org/1999/xhtml",
+            x: d => d.x - d.width/2,
+            y: d => d.y - d.height/2,
+            width: d => d.width,
+            height: d => d.height,
+            __children: {
+                "xhtml:div": {
+                    class: "annotation",
+                    style: d => "background: "+_.escape(d.background)+"; " +
+                        "width: "+_.escape(d.width)+"; " +
+                        "height: "+_.escape(d.height)+"; " +
+                        _.escape(d.style),
+                    __children: {
+                        "xhtml:div": {
+                            style: d => _.escape(d.styleInnerDiv),
+                            __text: d => marked(_.escape(d.text)),
+                        }
+                    }
+                }
+            }});
     }
 
     function drawLinks() {
@@ -932,7 +987,13 @@ export function D3Blueprint(container, options) {
     function appendElement(node, tag, properties) {
         let element = node.append(tag);
         Object.keys(properties).forEach((property)=> {
-            element.attr(property, properties[property]);
+            if ("__children"===property) {
+                appendElements(element, properties[property]);
+            } else if ("__text"===property) {
+                element.html(properties[property]);
+            } else {
+                element.attr(property, properties[property]);
+            }
         });
         return element;
     }
