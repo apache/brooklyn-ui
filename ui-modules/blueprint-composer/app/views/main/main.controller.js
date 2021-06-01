@@ -70,7 +70,7 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
     });
 
     let layersM = {};
-    (composerOverrides.getLayers() || LAYERS).forEach(l => layersM[l.id] = l);
+    (composerOverrides.getLayers && composerOverrides.getLayers() || LAYERS).forEach(l => layersM[l.id] = l);
 
     let layersL = localStorage && localStorage.getItem(LAYER_CACHE_KEY) !== null && JSON.parse(localStorage.getItem(LAYER_CACHE_KEY));
     if (layersL) layersL.forEach(l => { if (layersM[l.id]) layersM[l.id] = Object.assign({}, layersM[l.id], l); });
