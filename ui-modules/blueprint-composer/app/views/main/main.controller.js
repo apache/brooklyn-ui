@@ -52,7 +52,13 @@ const LAYERS = [
         label: 'Relationships',
         selector: '.relation-group',
         active: true
-    }
+    },
+    {
+        id: 'annotations',
+        label: 'Annotations',
+        selector: '.node-annotation',
+        active: true
+    },
 ];
 const LAYER_CACHE_KEY = 'blueprint-composer.layers';
 
