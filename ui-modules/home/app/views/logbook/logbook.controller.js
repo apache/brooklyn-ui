@@ -63,21 +63,36 @@ export function logbookStateController($scope, brBrandInfo, version, states, log
         $scope.waitingResponse = true;
 
         const queryString = $scope.query;
-        console.log("requesting: "+queryString);
-        logbookApi.doQuery(queryString).then(function (success) {
-            console.log("success: "+ success) //todojd remove
-            $scope.results = success;
-        }, function (error) {
-            console.log("error: "+ error) //todojd remove
-            $scope.results = "Something bad happened: " + error;
-        }).finally(() => {
-            $scope.waitingResponse = false;
-        });
+
+        console.log("requesting: " + queryString);
+        if (queryString === "") {
+            logbookApi.getEntries($scope.from, $scope.numberOfItems, true).then(function (success) {
+                $scope.results = success;
+            }, function (error) {
+                $scope.results = "Error getting the logs: \n" + JSON.stringify(error);
+            }).finally(() => {
+                $scope.waitingResponse = false;
+            });
+        } else {
+            logbookApi.doQuery(queryString, true).then(function (success) {
+                console.log("success: " + success) //todojd remove
+                $scope.results = JSON.stringify({success});
+            }, function (error) {
+                console.log("error: " + error) //todojd remove
+                $scope.results = "Something bad happened: " + error;
+            }).finally(() => {
+                $scope.waitingResponse = false;
+            });
+        }
 
 
     };
 
-    $scope.query = "initial query";
-    $scope.results = "xx";
+    $scope.query = "";
+    $scope.results = "-empty-";
+    $scope.from = -1;
+    $scope.numberOfItems = 10;
     $scope.waitingResponse = false;
+    $scope.logLevels = [{"name": "All", "value":"ALL"}, {"name": "Debug", "value":"DEBUG"}, {"name": "Info", "value":"INFO"}, {"name": "Warn", "value":"WARN"}, {"name": "Error", "value":"ERROR"}, {"name": "Fatal", "value":"FATAL"}];
+    $scope.queryLevel =   $scope.logLevels[0].value;
 }

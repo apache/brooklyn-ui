@@ -27,6 +27,10 @@ export class LogbookApi extends Api {
     doQuery() {
         return Promise.resolve();
     }
+
+    getEntries() {
+        return Promise.resolve();
+    }
 }
 
 window.LogbookApi = LogbookApi;

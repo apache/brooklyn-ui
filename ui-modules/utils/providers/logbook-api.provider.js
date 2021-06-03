@@ -51,8 +51,11 @@ class LogbookApiProvider extends LogbookApi {
         this.$q = $q;
     };
 
-    doQuery(queryString) {
+    doQuery(queryString, clearCache) {
         let url = `${this.host}/v1/logbook`;
+        if (clearCache) {
+            this.cache.remove(url);
+        }
         let deferred = this.$q.defer();
         const data = {
             "query": JSON.stringify(queryString) || ""
@@ -63,6 +66,23 @@ class LogbookApiProvider extends LogbookApi {
             data: data,
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Brooklyn-Allow-Non-Master-Access': 'true',
+            }
+        }).then(new SuccessHandler(deferred)).catch(new ErrorHandler(deferred));
+        return deferred.promise;
+    }
+
+    getEntries(from, numberOfLines, clearCache) {
+        let url = `${this.host}/v1/logbook/getEntries?from=${from}&numberOfItems=${numberOfLines}`;
+        if (clearCache) {
+            this.cache.remove(url);
+        }
+        let deferred = this.$q.defer();
+        this.$http({
+            method: 'GET',
+            url: url,
+            headers: {
                 'Accept': 'application/json',
                 'Brooklyn-Allow-Non-Master-Access': 'true',
             }
