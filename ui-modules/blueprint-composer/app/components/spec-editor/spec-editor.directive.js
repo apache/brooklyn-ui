@@ -110,7 +110,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
 
     function controller($scope, $element) {
         (composerOverrides.configureSpecEditorController || function () {
-        })(this, $scope, $element);
+        })(this, $scope, $element, blueprintService);
 
         // does very little currently, but link adds to this
         return this;
