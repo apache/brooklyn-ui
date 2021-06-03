@@ -36,10 +36,10 @@ export default MODULE_NAME;
 export function BrServerStatusDirective() {
     return {
         restrict: 'A',
-        controller: ['$rootScope', '$scope', '$http', '$cookies', '$interval', '$uibModal', '$log', controller]
+        controller: ['$rootScope', '$scope', '$http', '$cookies', '$interval', '$uibModal', '$log', '$window', controller]
     };
 
-    function controller($rootScope, $scope, $http, $cookies, $interval, $uibModal, $log) {
+    function controller($rootScope, $scope, $http, $cookies, $interval, $uibModal, $log, $window) {
         let cookie = DEFAULT_COOKIE;
         let intervalId = $interval(checkStatus, REFRESH_INTERVAL);
         $scope.$on('$destroy', () => ($interval.cancel(intervalId)));
@@ -65,6 +65,9 @@ export function BrServerStatusDirective() {
                 }else if(response.status === 404) {
                     state = BrServerStatusModalController.STATES.NO_CONNECTION;
                 }else if(response.status === 401 || response.status === 403 ) {
+                    if( response.headers("LOGIN_PAGE")) {
+                        $window.location.href = '/' + response.headers("LOGIN_PAGE");
+                    }
                     state = BrServerStatusModalController.STATES.USER_NOT_AUTHORIZED;
                 }else {
                     if (previousState === null || previousState == BrServerStatusModalController.STATES.OK){

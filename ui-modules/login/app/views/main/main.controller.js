@@ -47,18 +47,28 @@ export function loginStateController($scope, $http, $window, brBrandInfo) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
     $scope.getBrandedText = brBrandInfo.getBrandedText;
 
+    let loginController = this;
+    loginController.error = {};
+
+    var testAuthReq = {
+        method: 'HEAD',
+        url: '/v1/server/up/extended'
+    }
+
+    // If the user is already logged in then redirect to home
+    $http(testAuthReq).then( () => {$window.location.href = '/';} );
+
     $scope.login = (user)=> {
         var req = {
-            method: 'GET',
-            url: '/',
+            method: 'HEAD',
+            url: '/v1/server/up/extended',
             headers: {
                 'Authorization': 'Basic ' + btoa(user.name +":" + user.password)
             }
         }
 // ui registry metadata
         $http(req)
-            .then(function () {
-                $window.location.href = '/';
-            });
+            .then(() => { $window.location.href = '/'; },
+                () => { $window.alert("Login Failed") ; loginController.error.loginFailed = "Login Failed" });
     };
 }
