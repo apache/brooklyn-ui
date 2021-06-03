@@ -34,6 +34,10 @@ import {computeQuickFixesForIssue} from '../quick-fix/quick-fix';
 const MODULE_NAME = 'brooklyn.components.spec-editor';
 const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
 const REPLACED_DSL_ENTITYSPEC = '___brooklyn:entitySpec';
+const SUBSECTION = {
+    CONFIG: 'config',
+    PARAMETERS: 'parameters'
+}
 
 angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer])
     .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', '$compile', 'blueprintService', 'composerOverrides', 'mdHelper', specEditorDirective])
@@ -106,7 +110,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
 
     function controller($scope, $element) {
         (composerOverrides.configureSpecEditorController || function () {
-        })(this, $scope, $element);
+        })(this, $scope, $element, blueprintService);
 
         // does very little currently, but link adds to this
         return this;
@@ -127,6 +131,10 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         specEditor.removeParameter = removeParameter;
 
         let defaultState = {
+            focus: {
+                subsection: SUBSECTION.CONFIG,
+                name: ''
+            },
             parameters: {
                 add: {
                     value: '',
@@ -138,7 +146,6 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     open: false,
                 },
                 search: '',
-                focus: '',
                 filter: {
                     open: false,
                 },
@@ -153,7 +160,6 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     open: false
                 },
                 search: '',
-                focus: '',
                 filter: {
                     values: { suggested: true, required: true, inuse: true },
                     open: false,
@@ -181,6 +187,10 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             }
         };
 
+        scope.state = sessionStorage && sessionStorage.getItem(scope.model._id)
+            ? JSON.parse(sessionStorage.getItem(scope.model._id))
+            : defaultState;
+
         // allow downstream to configure this controller and/or scope
         (composerOverrides.configureSpecEditor || function () {
         })(specEditor, scope, element, $state, $compile, $templateCache);
@@ -193,9 +203,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             if (!scope.isFilterDisabled(filter)) scope.state.config.filter.values[filter.id] = !scope.state.config.filter.values[filter.id];
         };
 
-        scope.state = sessionStorage && sessionStorage.getItem(scope.model._id)
-            ? JSON.parse(sessionStorage.getItem(scope.model._id))
-            : defaultState;
+
         scope.$watch('state', () => {
             if (sessionStorage) {
                 try {
@@ -406,11 +414,18 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             }
             return $filter('specEditorConfig')(allConfig, scope.state.config.filter.values).indexOf(config) === -1;
         };
+        specEditor.recordFocus = (subsection, name) => {
+            scope.state.focus.subsection = subsection;
+            scope.state.focus.name = name;
+        };
+        specEditor.isInFocus = (subsection, name) => {
+            return scope.state.focus.subsection === subsection && scope.state.focus.name === name;
+        };
         scope.onFocusOnConfig = specEditor.onFocusOnConfig = ($item) => {
             scope.state.config.search = '';
             scope.state.config.add.value = '';
             scope.state.config.add.open = false;
-            scope.state.config.focus = $item.name;
+            specEditor.recordFocus(SUBSECTION.CONFIG, $item.name);
             if ($item.isHidden) {
                 scope.state.config.filter.values.all = true;
             }
@@ -419,13 +434,13 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             scope.state.parameters.search = '';
             scope.state.parameters.add.value = '';
             scope.state.parameters.add.open = false;
-            scope.state.parameters.focus = $item.name;
+            specEditor.recordFocus(SUBSECTION.PARAMETERS, $item.name);
         };
         scope.recordConfigFocus = specEditor.recordConfigFocus = ($item) => {
-            scope.state.config.focus = $item.name;
+            specEditor.recordFocus(SUBSECTION.CONFIG, $item.name);
         };
         scope.recordParameterFocus = specEditor.recordParameterFocus = ($item) => {
-            scope.state.parameters.focus = $item.name;
+            specEditor.recordFocus(SUBSECTION.PARAMETERS, $item.name);
             scope.state.parameters.edit = {
                 item: $item,
                 newName: $item.name,
@@ -1059,7 +1074,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 scope.state.config.add.value = '';
                 scope.state.config.add.open = false;
                 scope.state.config.filter.values[CONFIG_FILTERS[CONFIG_FILTERS.length - 1].id] = true;
-                scope.state.config.focus = name;
+                specEditor.recordFocus(SUBSECTION.CONFIG, name)
             }
         }
 
@@ -1209,14 +1224,14 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             scope.state.parameters.search = '';
             scope.state.parameters.add.value = '';
             scope.state.parameters.add.open = false;
-            scope.state.parameters.focus = name;
+            specEditor.recordFocus(SUBSECTION.PARAMETERS, name)
         }
 
         function removeParameter(name) {
             scope.model.removeParameter(name);
             loadLocalParametersFromModel();
-            if (scope.state.parameters.focus === name) {
-                scope.state.parameters.focus = '';
+            if (specEditor.isInFocus(SUBSECTION.PARAMETERS, name)) {
+                specEditor.recordFocus(SUBSECTION.PARAMETERS, '');
             }
             blueprintService.refreshBlueprintMetadata(scope.model);
         }

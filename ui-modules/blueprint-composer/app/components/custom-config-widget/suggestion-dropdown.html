@@ -45,7 +45,7 @@
                 <span class="main-control span-for-rounded-edge">
                   <textarea ng-model="config[item.name]" class="form-control rounded-edge" name="{{item.name}}" id="{{item.name}}" auto-grow
                           placeholder="{{defined(config[item.name]) ? null : item.defaultValue=='' || item.defaultValue==null ? '(empty)' : item.defaultValue}}"
-                          ng-focus="specEditor.recordFocus(item)" on-enter="specEditor.advanceOutToFormGroupInPanel"
+                          ng-focus="specEditor.recordFocus('suggestion', item)" on-enter="specEditor.advanceOutToFormGroupInPanel"
                           uib-typeahead="suggestion.value for suggestion in getSuggestions() | filter:{value:$viewValue}"
                           typeahead-min-length=0
                           typeahead-template-url="SuggestionTemplate.html"></textarea>
