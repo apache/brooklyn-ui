@@ -101,9 +101,10 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $f
                     $scope.config.version = entity.version || metadata.get('version');
                 }
                 if (!$scope.config.bundle) {
-                    if ($scope.config.symbolicName) {
-                        $scope.config.bundle = $scope.config.symbolicName;
+                    if (!$scope.config.symbolicName) {
+                        $scope.config.symbolicName =  $scope.config.name;
                     }
+                    $scope.config.bundle = $scope.config.symbolicName;
                 }
             }
             
