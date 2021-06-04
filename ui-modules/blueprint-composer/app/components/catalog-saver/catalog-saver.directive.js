@@ -100,6 +100,9 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $f
                 if (!$scope.config.version && (entity.hasVersion() || metadata.has('version'))) {
                     $scope.config.version = entity.version || metadata.get('version');
                 }
+                if(metadata && metadata.has("extra.tosca.metadata")){
+                    $scope.config.version = metadata.get("extra.tosca.metadata").metadata.template_version;
+                }
                 if (!$scope.config.bundle) {
                     if ($scope.config.symbolicName) {
                         $scope.config.bundle = $scope.config.symbolicName;
