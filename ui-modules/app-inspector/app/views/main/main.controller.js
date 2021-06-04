@@ -27,14 +27,9 @@ export const mainState = {
     controllerAs: 'ctrl'
 };
 
-// Entity relationship constants
-export const RELATIONSHIP_HOST_FOR = 'host_for';
-export const RELATIONSHIP_HOSTED_ON = 'hosted_on';
-
 // View mode constants
 export const RELATIONSHIP_VIEW_DELIMITER = '/';
 export const VIEW_PARENT_CHILD = 'parent/child';
-export const VIEW_HOST_FOR_HOSTED_ON = RELATIONSHIP_HOST_FOR + RELATIONSHIP_VIEW_DELIMITER + RELATIONSHIP_HOSTED_ON;
 
 const savedSortReverse = 'app-inspector-sort-reverse';
 
