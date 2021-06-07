@@ -22,6 +22,7 @@ import serverApi from 'brooklyn-ui-utils/api/brooklyn/server.js';
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./main.template.html";
 import modalTemplate from './login-failed.template.html';
+import './login-failed.less';
 
 const MODULE_NAME = 'states.login';
 
@@ -83,8 +84,8 @@ export function loginStateController($scope, $http, $window, $uibModal, brBrandI
             modalInstance = $uibModal.open({
                 animation: true,
                 template: modalTemplate,
-                backdropClass: 'server-status-index',
-                windowClass: 'server-status-index',
+                backdropClass: 'login-failed-index',
+                windowClass: 'login-failed-index',
                 controller: brLoginFailedModalController,
                 controllerAs: 'vm',
                 size: 'md',
