@@ -26,17 +26,15 @@
         <div class="col-md-12">
             <form>
                 <div>
-                    <label for="logSearch">Search</label>
-                    <input id="logSearch" type="text" class="logbook-search" ng-model="query" auto-focus>
-                </div>
-                <div>
                     <div class="form-group col-md-4">
+                        <label for="reverseOrder">From the bottom</label>
+                        <input id="reverseOrder" type="checkbox" ng-model="reverseOrder"><br/>
                         <label for="from">From</label>
-                        <input id="from" type="number" ng-model="from" class="form-control logbook">
+                        <input id="from" type="number" ng-model="from" class="form-control logbook" min="0">
                     </div>
                     <div class="form-group col-md-4">
                         <label for="numberOfItems">Number of lines</label>
-                        <input id="numberOfItems" type="number" ng-model="numberOfItems" class="form-control logbook">
+                        <input id="numberOfItems" type="number" ng-model="numberOfItems" class="form-control logbook" min="1" max="100">
                     </div>
                     <div class="form-group col-md-3">
                         <label for="level">Log level</label>
@@ -49,10 +47,10 @@
                         Query
                     </button>
                 </div>
-
+            </form>
         </div>
         <div>
-            <textarea id="logContent" class="logbook-text" ng-model="results" ng-list="\n"></textarea>
+            <textarea id="logContent" class="logbook-text" ng-model="results"></textarea>
         </div>
         </form>
     </div>

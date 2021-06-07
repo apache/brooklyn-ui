@@ -62,37 +62,51 @@ export function logbookStateController($scope, brBrandInfo, version, states, log
     vm.doQuery = function () {
         $scope.waitingResponse = true;
 
-        const queryString = $scope.query;
-
-        console.log("requesting: " + queryString);
-        if (queryString === "") {
-            logbookApi.getEntries($scope.from, $scope.numberOfItems, true).then(function (success) {
-                $scope.results = success;
-            }, function (error) {
-                $scope.results = "Error getting the logs: \n" + JSON.stringify(error);
-            }).finally(() => {
-                $scope.waitingResponse = false;
-            });
-        } else {
-            logbookApi.doQuery(queryString, true).then(function (success) {
-                console.log("success: " + success) //todojd remove
-                $scope.results = JSON.stringify({success});
-            }, function (error) {
-                console.log("error: " + error) //todojd remove
-                $scope.results = "Something bad happened: " + error;
-            }).finally(() => {
-                $scope.waitingResponse = false;
-            });
+        let from = $scope.from;
+        if($scope.reverseOrder){
+            from = from === 0? -1 : -from
         }
-
-
+        const params = {
+            from:from,
+            numberOfItems:$scope.numberOfItems,
+            logLevel:$scope.queryLevel
+        }
+        logbookApi.logbookQuery(params, true).then(function (success) {
+            // TODO implement logic for make output as table
+            $scope.results = vm.createLogOutputAsText(success);
+        }, function (error) {
+            $scope.results = "Error getting the logs: \n" + JSON.stringify(error);
+        }).finally(() => {
+            $scope.waitingResponse = false;
+        });
     };
 
-    $scope.query = "";
+    vm.createLogOutputAsText = function (success) {
+        let output=[];
+        success.forEach(entry=>{
+            let outputLine = [];
+            outputLine.push(entry.timestamp || "");
+            outputLine.push(entry.taskId || "");
+            outputLine.push(entry.entityIds || "");
+            outputLine.push(entry.level || "");
+            outputLine.push(entry.bundleId || "");
+            outputLine.push(entry.class || "");
+            outputLine.push(entry.threadName || "");
+            outputLine.push(entry.message || "");;
+            output.push(outputLine.join(" "));
+        })
+        return output.join("\n");
+    }
+
     $scope.results = "-empty-";
-    $scope.from = -1;
+    $scope.from = 0;
     $scope.numberOfItems = 10;
     $scope.waitingResponse = false;
-    $scope.logLevels = [{"name": "All", "value":"ALL"}, {"name": "Debug", "value":"DEBUG"}, {"name": "Info", "value":"INFO"}, {"name": "Warn", "value":"WARN"}, {"name": "Error", "value":"ERROR"}, {"name": "Fatal", "value":"FATAL"}];
-    $scope.queryLevel =   $scope.logLevels[0].value;
+    $scope.logLevels = [{"name": "All", "value": "ALL"}, {"name": "Debug", "value": "DEBUG"}, {
+        "name": "Info",
+        "value": "INFO"
+
+    }, {"name": "Warn", "value": "WARN"}, {"name": "Error", "value": "ERROR"}, {"name": "Fatal", "value": "FATAL"}];
+    $scope.queryLevel = $scope.logLevels[0].value;
+    $scope.reverseOrder = true;
 }

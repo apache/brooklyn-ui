@@ -24,7 +24,7 @@ export class LogbookApi extends Api {
         super(cache, host);
     }
 
-    doQuery() {
+    logbookQuery() {
         return Promise.resolve();
     }
 

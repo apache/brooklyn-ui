@@ -51,19 +51,19 @@ class LogbookApiProvider extends LogbookApi {
         this.$q = $q;
     };
 
-    doQuery(queryString, clearCache) {
+    logbookQuery(params, clearCache) {
         let url = `${this.host}/v1/logbook`;
         if (clearCache) {
             this.cache.remove(url);
         }
         let deferred = this.$q.defer();
-        const data = {
-            "query": JSON.stringify(queryString) || ""
+        const data =  {
+            "params": JSON.stringify(params) || ""
         };
         this.$http({
             method: 'POST',
             url: url,
-            data: data,
+            data: JSON.stringify(params),
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
