@@ -39,6 +39,11 @@ const SUBSECTION = {
     PARAMETERS: 'parameters'
 }
 
+export const SUBSECTION_TEMPLATE_URL = {
+    REQUIREMENTS: 'blueprint-composer/component/spec-editor/section-requirements.html',
+    OTHERS: 'blueprint-composer/component/spec-editor/section-others.html'
+};
+
 angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer])
     .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', '$compile', 'blueprintService', 'composerOverrides', 'mdHelper', specEditorDirective])
     .filter('specEditorConfig', specEditorConfigFilter)
@@ -110,7 +115,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
 
     function controller($scope, $element) {
         (composerOverrides.configureSpecEditorController || function () {
-        })(this, $scope, $element, blueprintService);
+        })(this, $scope, $element);
 
         // does very little currently, but link adds to this
         return this;
@@ -1266,6 +1271,22 @@ export function specEditorTypeFilter() {
     }
 }
 
+/**
+ * @returns {string} The HTML template placeholder for a subsection with a specified ID.
+ */
+function getSubsectionPlaceholder(id) {
+    return `<script type="text/ng-template" id="${id}" defer-to-preexisting-id="true">
+                 <!-- Subsection placeholder -->
+            </script>`;
+}
+
+/**
+ * Configures $templateCache for this directive.
+ *
+ * @param $templateCache The template cache to configure.
+ */
 function templateCache($templateCache) {
     $templateCache.put(TEMPLATE_URL, template);
+    $templateCache.put(SUBSECTION_TEMPLATE_URL.REQUIREMENTS, getSubsectionPlaceholder(SUBSECTION_TEMPLATE_URL.REQUIREMENTS));
+    $templateCache.put(SUBSECTION_TEMPLATE_URL.OTHERS, getSubsectionPlaceholder(SUBSECTION_TEMPLATE_URL.OTHERS));
 }
