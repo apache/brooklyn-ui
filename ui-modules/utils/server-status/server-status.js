@@ -33,6 +33,8 @@ angular.module(MODULE_NAME, [uibModal])
 
 export default MODULE_NAME;
 
+const LOGIN_PAGE_HEADER = "X_BROOKLYN_LOGIN_PAGE";
+
 export function BrServerStatusDirective() {
     return {
         restrict: 'A',
@@ -65,8 +67,8 @@ export function BrServerStatusDirective() {
                 }else if(response.status === 404) {
                     state = BrServerStatusModalController.STATES.NO_CONNECTION;
                 }else if(response.status === 401 || response.status === 403 ) {
-                    if( response.headers("LOGIN_PAGE")) {
-                        $window.location.href = '/' + response.headers("LOGIN_PAGE");
+                    if( response.headers(LOGIN_PAGE_HEADER)) {
+                        $window.location.href = '/' + response.headers(LOGIN_PAGE_HEADER);
                     }
                     state = BrServerStatusModalController.STATES.USER_NOT_AUTHORIZED;
                 }else {
