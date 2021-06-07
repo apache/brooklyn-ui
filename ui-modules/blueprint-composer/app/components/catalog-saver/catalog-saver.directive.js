@@ -62,6 +62,12 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $f
         link: link
     };
 
+    function getSuggestedVersionToSaveFromBlueprint(entity, metadata, scope) {
+        if (!scope.config.version && (entity.hasVersion() || metadata.has('version'))) {
+            scope.config.version = entity.version || metadata.get('version');
+        }
+    }
+
     function link($scope, $element) {
         if (!$scope.config.original) {
             // original if provided contains the original metadata, e.g. for use if coming from a template and switching between template and non-template
@@ -97,9 +103,7 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $f
                 if (!$scope.config.symbolicName && (entity.hasId() || metadata.has('id'))) {
                     $scope.config.symbolicName = entity.id || metadata.get('id');
                 }
-                if (!$scope.config.version && (entity.hasVersion() || metadata.has('version'))) {
-                    $scope.config.version = entity.version || metadata.get('version');
-                }
+                (composerOverrides.getSuggestedVersionToSaveFromBlueprint || getSuggestedVersionToSaveFromBlueprint)(entity, metadata, $scope);
                 if (!$scope.config.bundle) {
                     if ($scope.config.symbolicName) {
                         $scope.config.bundle = $scope.config.symbolicName;
