@@ -1096,9 +1096,9 @@ export function D3Blueprint(container, options) {
     }
 
     /**
-     * Draw menu with a confirmation request on the canvas for a node with a specified ID, on the right, beside the node.
+     * Draw menu with a confirmation request on the canvas for a node with a specified ID, under the node, in the middle.
      *  _________________________
-     * | Confirmation message |X||
+     * | Confirmation message |X|| <- 'close' button
      * | ________                |
      * ||Choice 1|               |
      * | --------'               |

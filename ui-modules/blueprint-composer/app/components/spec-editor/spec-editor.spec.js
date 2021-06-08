@@ -133,7 +133,7 @@ describe('Spec Editor', () => {
         expect(_element).toEqual(element); // Confirm expected `element` object.
         expect(_compile).toBe($compile); // Confirm expected `compile` object.
         expect(_specEditor).toBe(specEditor); // Confirm expected `controller` object.
-        expect(_templateCache).toBe($templateCache); // Confirm expected `controller` object.
+        expect(_templateCache).toBe($templateCache); // Confirm expected `templateCache` object.
 
         // 2. Verify secondary configuration.
         expect(__scope).toBe(scope); // Confirm expected `scope` object.
