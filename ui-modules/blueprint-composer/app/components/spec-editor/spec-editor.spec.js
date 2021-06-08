@@ -33,7 +33,7 @@ import {blueprintServiceProvider} from '../providers/blueprint-service.provider'
 describe('Spec Editor', () => {
 
     /** The template compiler of the spec-editor */
-    let $compile;
+    let $compile, $state;
 
     /** The root scope of the spec-editor (the parent scope). */
     let $rootScope;
@@ -41,8 +41,16 @@ describe('Spec Editor', () => {
     /** The template cache of the spec-editor. */
     let $templateCache;
 
-    /** The compiled element of the spec-editor. */
-    let element;
+    /** The scope, compiled element and controller of the spec-editor. */
+    let scope, element, specEditor;
+
+    /** The parameters supplied for primary external configuration of designer directive. */
+    let _scope, _element, _specEditor, _state, _compile, _templateCache;
+
+    /** The parameters supplied for secondary external configuration of designer directive. */
+    let __scope, __element, __specEditor;
+
+
 
     // Prepare dependencies for the spec-editor.
     beforeEach(angular.mock.module(($provide) => {
@@ -57,16 +65,42 @@ describe('Spec Editor', () => {
 
         // Dependencies of the spec-editor.
         $provide.provider('blueprintService', blueprintServiceProvider);
-        $provide.provider('$state', {$get: () => {}}); // Produces 'undefined', not needed just now.
+        $provide.provider('$state', {$get: () => {return {}}}); // Produces 'Object {}'.
         $provide.provider('composerOverrides', {$get: () => {return {}}}); // Produces 'Object {}'.
         $provide.factory('mdHelper', mdHelperFactory);
+
+        // Configuration dependency.
+        $provide.provider('composerOverrides', {
+            $get: () => {
+                return {
+                    // NOTE, ORDER AND TYPES OF THESE PARAMETERS IS IMPORTANT,
+                    // BRANDED VERSIONS OF BROOKLYN DEPEND ON IT.
+                    // Primary configuration (called from the link).
+                    configureSpecEditor: (specEditor, $scope, $element, $state, $compile, $templateCache) => {
+                        _scope = $scope;
+                        _state = $state;
+                        _element = $element;
+                        _compile = $compile;
+                        _specEditor = specEditor;
+                        _templateCache = $templateCache;
+                    },
+                    // Secondary configuration (called from the controller).
+                    configureSpecEditorController: (specEditor, $scope, $element) => {
+                        __scope = $scope;
+                        __element = $element;
+                        __specEditor = specEditor;
+                    }
+                }
+            }
+        });
     }));
 
     // Initialize the spec-editor.
     beforeEach(angular.mock.module(SpecEditor));
 
     // Create new instance of $injector to resolve references.
-    beforeEach(angular.mock.inject(function(_$compile_, _$rootScope_, _$templateCache_){
+    beforeEach(angular.mock.inject(function(_$state_, _$compile_, _$rootScope_, _$templateCache_){
+        $state = _$state_;
         $compile = _$compile_;
         $rootScope = _$rootScope_;
         $templateCache = _$templateCache_;
@@ -75,11 +109,36 @@ describe('Spec Editor', () => {
         $rootScope.testModel = new Entity();
         element = $compile('<spec-editor model="testModel"></spec-editor>')($rootScope);
         $rootScope.$digest();
+
+        // Get the `scope` of the complied spec-editor directive.
+        scope = element.isolateScope();
+
+        // Get the `controller` instance of the complied spec-editor directive.
+        specEditor = element.controller('spec-editor');
     }));
 
     it('Creates controller of the directive', () => {
-        let specEditor = element.controller('spec-editor');
         expect(specEditor).toBeDefined();
+    });
+
+    /**
+     * Verifies that parameters, their order and types are set correctly for any external configuration. Configuration
+     * is typically used in branded versions of Brooklyn.
+     */
+    it('Supplies expected parameters for external configuration of the designer directive', () => {
+
+        // 2. Verify primary configuration.
+        expect(_state).toBe($state); // Confirm expected `state` object.
+        expect(_scope).toBe(scope); // Confirm expected `scope` object.
+        expect(_element).toEqual(element); // Confirm expected `element` object.
+        expect(_compile).toBe($compile); // Confirm expected `compile` object.
+        expect(_specEditor).toBe(specEditor); // Confirm expected `controller` object.
+        expect(_templateCache).toBe($templateCache); // Confirm expected `controller` object.
+
+        // 2. Verify secondary configuration.
+        expect(__scope).toBe(scope); // Confirm expected `scope` object.
+        expect(__element).toEqual(element); // Confirm expected `element` object.
+        expect(__specEditor).toBe(specEditor); // Confirm expected `controller` object.
     });
 
     it('Creates default subsections', () => {

@@ -1050,7 +1050,11 @@ export function D3Blueprint(container, options) {
     function center() {
         let newX = window.innerWidth/2 + (window.innerWidth > 660 ? 220 : 0);
         let newY = _configHolder.nodes.child.circle.r + (_configHolder.nodes.child.circle.r * 2);
-        zoom.translateBy(_svg, newX, newY);
+        try {
+            zoom.translateBy(_svg, newX, newY);
+        } catch (e) {
+            console.warn(`Cannot translate SVG with parameters ${newX} and ${newY}`, e.message);
+        }
         return this;
     }
 
@@ -1093,7 +1097,7 @@ export function D3Blueprint(container, options) {
 
     /**
      * Draw menu with a confirmation request on the canvas for a node with a specified ID, on the right, beside the node.
-     *  __________________________
+     *  _________________________
      * | Confirmation message |X||
      * | ________                |
      * ||Choice 1|               |
@@ -1102,7 +1106,6 @@ export function D3Blueprint(container, options) {
      * | --------'               |
      * ||Etc.    |               |
      * '-------------------------'
-     * The menu disappears in 60 seconds.
      *
      * @param {String} id The ID of a node to draw confirmation menu for.
      * @param {String} message The confirmation message.
@@ -1112,8 +1115,9 @@ export function D3Blueprint(container, options) {
      */
     function confirmNode(id, message, choices, callback = (confirmedChoice) => {}) {
 
-        if (!id || !message || !Array.isArray(choices)) {
+        if (!id || !message || !Array.isArray(choices) || choices.length === 0) {
             console.error(`Cannot draw confirmation menu with message '${message}' for entity '${id}' offering array of choices:`, choices);
+            return;
         }
 
         let nodeData = _nodeGroup.select(`#entity-${id}`);
@@ -1121,8 +1125,8 @@ export function D3Blueprint(container, options) {
         let size = 300;
         let confirmationElement = nodeData.append('foreignObject')
             .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-            .attr('x', -(size/2))
-            .attr('y', 70)
+            .attr('x', -(size/2)) // position in the middle
+            .attr('y', 70) // below the node
             .attr('width', size)
             .attr('height', size);
 
@@ -1149,7 +1153,6 @@ export function D3Blueprint(container, options) {
             }
         }
 
-
         let close = () => reply(null);
         confirmation
             .append('xhtml:i')
@@ -1166,7 +1169,7 @@ export function D3Blueprint(container, options) {
                 .attr('class', 'btn btn-outline btn-primary node-confirmation-button')
                 .html(choice)
                 .on('click', confirmChoice);
-        })
+        });
 
         // The following is not required just now.
         //const MENU_TIMEOUT_MS = 60000;
