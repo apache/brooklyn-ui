@@ -17,7 +17,7 @@
  * under the License.
  */
 import * as d3 from 'd3';
-import {PREDICATE_MEMBERSPEC, FIELD} from './model/entity.model';
+import {PREDICATE_MEMBERSPEC} from './model/entity.model';
 import addIcon from '../../img/icon-add.svg';
 import {ISSUE_LEVEL} from './model/issue.model';
 import marked from 'marked';
@@ -433,7 +433,8 @@ export function D3Blueprint(container, options) {
                             nodeId: node.data._id,
                             parentId: parentId,
                             targetIndex: dropZone.getAttribute('targetIndex'),
-                        },
+                            isNewParent: true // used to intercept this event in branded versions, do not remove.
+                        }
                     });
                     container.dispatchEvent(event);
                 }
@@ -1049,7 +1050,11 @@ export function D3Blueprint(container, options) {
     function center() {
         let newX = window.innerWidth/2 + (window.innerWidth > 660 ? 220 : 0);
         let newY = _configHolder.nodes.child.circle.r + (_configHolder.nodes.child.circle.r * 2);
-        zoom.translateBy(_svg, newX, newY);
+        try {
+            zoom.translateBy(_svg, newX, newY);
+        } catch (e) {
+            console.warn(`Cannot translate SVG with parameters ${newX} and ${newY}`, e.message);
+        }
         return this;
     }
 
@@ -1088,6 +1093,87 @@ export function D3Blueprint(container, options) {
         _svg.selectAll('.entity.selected').classed('selected', false);
         _svg.selectAll('.relation.highlight').classed('highlight', false);
         return this;
+    }
+
+    /**
+     * Draw menu with a confirmation request on the canvas for a node with a specified ID, under the node, in the middle.
+     *  _________________________
+     * | Confirmation message |X|| <- 'close' button
+     * | ________                |
+     * ||Choice 1|               |
+     * | --------'               |
+     * ||Choice 2|               |
+     * | --------'               |
+     * ||Etc.    |               |
+     * '-------------------------'
+     *
+     * @param {String} id The ID of a node to draw confirmation menu for.
+     * @param {String} message The confirmation message.
+     * @param {Array.<String>} choices The confirmation choices.
+     * @param {Function} callback The confirmation callback with a boolean parameter, true if confirmed (Yes),
+     *        false if denied (No), null otherwise (ignored).
+     */
+    function confirmNode(id, message, choices, callback = (confirmedChoice) => {}) {
+
+        if (!id || !message || !Array.isArray(choices) || choices.length === 0) {
+            console.error(`Cannot draw confirmation menu with message '${message}' for entity '${id}' offering array of choices:`, choices);
+            return;
+        }
+
+        let nodeData = _nodeGroup.select(`#entity-${id}`);
+
+        let size = 300;
+        let confirmationElement = nodeData.append('foreignObject')
+            .attr('xmlns', 'http://www.w3.org/1999/xhtml')
+            .attr('x', -(size/2)) // position in the middle
+            .attr('y', 70) // below the node
+            .attr('width', size)
+            .attr('height', size);
+
+        let confirmation = confirmationElement
+            .append('xhtml:div')
+            .attr('class', 'node-confirmation');
+
+        confirmation
+            .append('xhtml:p')
+            .attr('class', 'node-confirmation-text')
+            .html(message);
+
+        let reply = (confirmedChoice) => {
+            if (confirmationElement) {
+                if (confirmedChoice) {
+                    try {
+                        callback(confirmedChoice);
+                    } catch (e) {
+                        console.error('Failure confirming the node ' + id, e);
+                    }
+                }
+                confirmationElement.remove();
+                confirmationElement = null;
+            }
+        }
+
+        let close = () => reply(null);
+        confirmation
+            .append('xhtml:i')
+            .style('position', 'absolute')
+            .style('right', '8px')
+            .style('top', '8px')
+            .attr('class', 'fa fa-fw fa-times remove-spec-configuration')
+            .on('click', close);
+
+        choices.forEach(choice => {
+            let confirmChoice = () => reply(choice);
+            confirmation
+                .append('xhtml:button')
+                .attr('class', 'btn btn-outline btn-primary node-confirmation-button')
+                .html(choice)
+                .on('click', confirmChoice);
+        });
+
+        // The following is not required just now.
+        //const MENU_TIMEOUT_MS = 60000;
+        //setTimeout(close, MENU_TIMEOUT_MS); // close menu on timeout - not confirmed.
     }
 
     /**
@@ -1138,6 +1224,7 @@ export function D3Blueprint(container, options) {
         update: update,
         center: center,
         select: selectNode,
+        confirm: confirmNode,
         unselect: unselectNode
     };
 }
