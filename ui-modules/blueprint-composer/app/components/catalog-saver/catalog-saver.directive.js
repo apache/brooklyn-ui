@@ -146,8 +146,6 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         saving: false,
         force: false,
     };
-    $scope.catalogBundleId ="";
-    $scope.catalogBundleBase ="";
 
     $scope.getTitle = () => {
         switch ($scope.state.view) {
@@ -157,6 +155,15 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
                 return `${$scope.config.name || $scope.config.symbolicName || 'Blueprint'} ${$scope.isUpdate() ? 'updated' : 'saved'}`;
         }
     };
+    $scope.getCatalogURL = () => {
+        switch ($scope.state.view) {
+            case VIEWS.form:
+                return '';
+            case VIEWS.saved:
+                return `/brooklyn-ui-catalog/#!/bundles/catalog-bom-${$scope.config.catalogBundleId}/${$scope.config.version}/types/${$scope.config.catalogBundleBase}/${$scope.config.version}`;
+        }
+    };
+
     $scope.title = $scope.getTitle();
 
     $scope.save = () => {
@@ -170,6 +177,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
             }
             $scope.config.versions.push($scope.config.version);
             $scope.state.view = VIEWS.saved;
+            $scope.catalogURL = $scope.getCatalogURL();
         }).catch(error => {
             $scope.state.error = error.error.message;
         }).finally(() => {
@@ -206,8 +214,8 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         if (brUtilsGeneral.isNonEmpty($scope.config.iconUrl)) {
             bomItem.iconUrl = $scope.config.iconUrl;
         }
-        $scope.catalogBundleId = bundleId;
-        $scope.catalogBundleBase = bundleBase;
+        $scope.config.catalogBundleId = bundleId;
+        $scope.config.catalogBundleBase = bundleBase;
         return jsYaml.dump({ 'brooklyn.catalog': bomCatalogYaml });
     }
 
