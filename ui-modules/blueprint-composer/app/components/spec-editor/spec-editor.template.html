@@ -72,7 +72,7 @@
 <br-collapsible state="state.parameters.open" ng-if="!model.parent">  <!-- the ng-if is needed to make state update?! -->
     <heading>
         Parameters
-        <span ng-if="specEditor.getParameterIssues().length> 0" class="badge" ng-class="getBadgeClass(specEditor.getParameterIssues())">{{specEditor.getParameterIssues().length}}</span>
+        <span ng-if="getIssuesByGroup('parameters').length> 0" class="badge" ng-class="getBadgeClass(getIssuesByGroup('parameters'))">{{getIssuesByGroup('parameters').length}}</span>
         <span class="pull-right" ng-show="$parent.stateWrapped.state">
             <span class="spec-toolbar-action" ng-class="{'active': state.parameters.filter.open}"><i class="fa fa-search-plus collapsible-action" title="Search or add a parameter" ng-click="$event.stopPropagation(); $event.preventDefault(); state.parameters.filter.open = !state.parameters.filter.open" ng-class="{'text-info': state.parameters.search.length > 0}"></i></span>
         </span>
@@ -282,7 +282,7 @@
 <br-collapsible ng-if="true" state="state.config.open">  <!-- the ng-if is needed to make state update?! -->
     <heading>
         Configuration
-        <span ng-if="getConfigIssues().length> 0" class="badge" ng-class="getBadgeClass(getConfigIssues())">{{getConfigIssues().length}}</span>
+        <span ng-if="getIssuesByGroup('config').length> 0" class="badge" ng-class="getBadgeClass(getIssuesByGroup('config'))">{{getIssuesByGroup('config').length}}</span>
         <span class="pull-right" ng-show="$parent.stateWrapped.state">
             <span class="spec-toolbar-action" ng-class="{'active': state.config.filter.open}"><i class="fa fa-search-plus collapsible-action" title="Filter configuration" ng-click="$event.stopPropagation(); $event.preventDefault(); state.config.filter.open = !state.config.filter.open" ng-class="{'text-info': state.config.search.length > 0}"></i></span>
         </span>
