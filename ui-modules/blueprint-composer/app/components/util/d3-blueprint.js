@@ -1124,6 +1124,7 @@ export function D3Blueprint(container, options) {
 
         let size = 300;
         let confirmationElement = nodeData.append('foreignObject')
+            .style('overflow', 'inherit')
             .attr('xmlns', 'http://www.w3.org/1999/xhtml')
             .attr('x', -(size/2)) // position in the middle
             .attr('y', 70) // below the node
