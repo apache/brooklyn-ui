@@ -483,20 +483,23 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             $state.go(graphicalState.name);
         };
 
-        specEditor.getParameterIssues = () => {
+        /**
+         * Gets collection of issues filtered by group.
+         *
+         * @param {String} groupName The group name to filter issues by.
+         * @returns {[]} The collection of issues found.
+         */
+        scope.getIssuesByGroup = (groupName) => {
             return scope.model.issues
-                .filter((issue) => (issue.group === 'parameters'))
+                .filter((issue) => (issue.group === groupName))
                 .concat(Object.values(scope.model.getClusterMemberspecEntities())
                     .filter((spec) => (spec && spec.hasIssues()))
                     .reduce((acc, spec) => (acc.concat(spec.issues)), []));
-        };
-        scope.getConfigIssues = specEditor.getConfigIssues = () => {
-            return scope.model.issues
-                .filter((issue) => (issue.group === 'config'))
-                .concat(Object.values(scope.model.getClusterMemberspecEntities())
-                    .filter((spec) => (spec && spec.hasIssues()))
-                    .reduce((acc, spec) => (acc.concat(spec.issues)), []));
-        };
+        }
+
+        /**
+         * @returns {[]} The collection of issues specific to Policies.
+         */
         scope.getPoliciesIssues = () => {
             return scope.model.getPoliciesAsArray().reduce((acc, policy) => {
                 if (policy.hasIssues()) {
@@ -505,6 +508,10 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 return acc;
             }, []);
         };
+
+        /**
+         * @returns {[]} The collection of issues specific to Enrichers.
+         */
         scope.getEnrichersIssues = () => {
             return scope.model.getEnrichersAsArray().reduce((acc, enricher) => {
                 if (enricher.hasIssues()) {
