@@ -17,7 +17,7 @@
  * under the License.
  */
 
-import SpecEditor, {SUBSECTION_TEMPLATE_URL} from './spec-editor.directive';
+import SpecEditor, {SUBSECTION_TEMPLATE_OTHERS_URL} from './spec-editor.directive';
 import {iconGeneratorProvider} from 'brooklyn-ui-utils/icon-generator/icon-generator';
 import {locationApiProvider} from 'brooklyn-ui-utils/providers/location-api.provider';
 import {catalogApiProvider} from 'brooklyn-ui-utils/providers/catalog-api.provider';
@@ -66,10 +66,10 @@ describe('Spec Editor', () => {
         // Dependencies of the spec-editor.
         $provide.provider('blueprintService', blueprintServiceProvider);
         $provide.provider('$state', {$get: () => {return {}}}); // Produces 'Object {}'.
-        $provide.provider('composerOverrides', {$get: () => {return {}}}); // Produces 'Object {}'.
         $provide.factory('mdHelper', mdHelperFactory);
 
         // Configuration dependency.
+        //$provide.provider('composerOverrides', {$get: () => {return {}}}); // Produces 'Object {}'.
         $provide.provider('composerOverrides', {
             $get: () => {
                 return {
@@ -157,10 +157,24 @@ describe('Spec Editor', () => {
     it('Creates custom subsections', () => {
 
         // Prepare templates for custom accordions.
-        $templateCache.put(SUBSECTION_TEMPLATE_URL.REQUIREMENTS, '<br-collapsible><heading>Requirements</heading></br-collapsible>');
-        $templateCache.put(SUBSECTION_TEMPLATE_URL.OTHERS, '<br-collapsible><heading>Other</heading></br-collapsible>');
+
+        // one at the end can be added by overriding this (requires scriptTagDecorator on spec-editor directive, which it is)
+        $templateCache.put(SUBSECTION_TEMPLATE_OTHERS_URL, '<br-collapsible><heading>Other</heading></br-collapsible>');
+        // a custom one can be inserted in the middle
+        $templateCache.put('custom-reqs', '<br-collapsible><heading>Requirements</heading></br-collapsible>');
+        // a dummy one has no impact
         $templateCache.put('dummy-template.html', '<br-collapsible><heading>Dummy</heading></br-collapsible>');
+
         element = $compile('<spec-editor model="testModel"></spec-editor>')($rootScope);
+        $templateCache.put(SUBSECTION_TEMPLATE_OTHERS_URL, '<br-collapsible><heading>Other</heading></br-collapsible>');
+
+        $rootScope.$digest();
+
+        _scope = element.isolateScope();
+        let index = _scope.sections.findIndex(k => k.indexOf("entity-config")>=0) + 1;
+        if (index<=0) index = _scope.sections.length;
+        _scope.sections.splice(index, 0, 'custom-reqs');
+
         $rootScope.$digest();
 
         let accordions = element.find('br-collapsible');

@@ -30,6 +30,7 @@ import template from './spec-editor.template.html';
 import {graphicalState} from '../../views/main/graphical/graphical.state';
 import {SENSITIVE_FIELD_REGEX} from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
 import {computeQuickFixesForIssue} from '../quick-fix/quick-fix';
+import scriptTagDecorator from 'brooklyn-ui-utils/script-tag-non-overwrite/script-tag-non-overwrite';
 
 const MODULE_NAME = 'brooklyn.components.spec-editor';
 const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
@@ -39,12 +40,9 @@ const SUBSECTION = {
     PARAMETERS: 'parameters'
 }
 
-export const SUBSECTION_TEMPLATE_URL = {
-    REQUIREMENTS: 'blueprint-composer/component/spec-editor/section-requirements.html',
-    OTHERS: 'blueprint-composer/component/spec-editor/section-others.html'
-};
+export const SUBSECTION_TEMPLATE_OTHERS_URL = 'blueprint-composer/component/spec-editor/section-others.html';
 
-angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer])
+angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer, scriptTagDecorator])
     .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', '$compile', 'blueprintService', 'composerOverrides', 'mdHelper', specEditorDirective])
     .filter('specEditorConfig', specEditorConfigFilter)
     .filter('specEditorType', specEditorTypeFilter)
@@ -128,6 +126,17 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope.REPLACED_DSL_ENTITYSPEC = REPLACED_DSL_ENTITYSPEC;
         scope.parameters = [];
         scope.config = {};
+
+        scope.sections = [
+            'blueprint-composer/component/spec-editor/section-header.html',
+            'blueprint-composer/component/spec-editor/section-parameters.html',
+            'blueprint-composer/component/spec-editor/section-entity-config.html',
+            'blueprint-composer/component/spec-editor/section-locations.html',
+            'blueprint-composer/component/spec-editor/section-policies.html',
+            'blueprint-composer/component/spec-editor/section-enrichers.html',
+            SUBSECTION_TEMPLATE_OTHERS_URL,
+        ];
+
         specEditor.descriptionVisible = false;
         specEditor.paramTypes = PARAM_TYPES;
 
@@ -1279,21 +1288,10 @@ export function specEditorTypeFilter() {
 }
 
 /**
- * @returns {string} The HTML template placeholder for a subsection with a specified ID.
- */
-function getSubsectionPlaceholder(id) {
-    return `<script type="text/ng-template" id="${id}" defer-to-preexisting-id="true">
-                 <!-- Subsection placeholder -->
-            </script>`;
-}
-
-/**
  * Configures $templateCache for this directive.
  *
  * @param $templateCache The template cache to configure.
  */
 function templateCache($templateCache) {
     $templateCache.put(TEMPLATE_URL, template);
-    $templateCache.put(SUBSECTION_TEMPLATE_URL.REQUIREMENTS, getSubsectionPlaceholder(SUBSECTION_TEMPLATE_URL.REQUIREMENTS));
-    $templateCache.put(SUBSECTION_TEMPLATE_URL.OTHERS, getSubsectionPlaceholder(SUBSECTION_TEMPLATE_URL.OTHERS));
 }

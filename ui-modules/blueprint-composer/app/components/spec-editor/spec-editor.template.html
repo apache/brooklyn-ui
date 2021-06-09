@@ -16,7 +16,13 @@
   specific language governing permissions and limitations
   under the License.
 -->
+
+
+<ng-include ng-repeat="section in sections" src="section"></ng-include>
+
+
 <!-- ENTITY TYPE -->
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-header.html" defer-to-preexisting-id="true">
 <section class="spec-type container-fluid panel-group">
   <div class="panel">
     <div class="spec-type-header">
@@ -67,8 +73,10 @@
         <md-if-multiline ng-show="specEditor.descriptionVisible" data="modelDescription"></md-if-multiline>
     </div>
 </br-collapsible>
+</script>
 
 <!-- ENTITY PARAMETERS -->
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-parameters.html" defer-to-preexisting-id="true">
 <br-collapsible state="state.parameters.open" ng-if="!model.parent">  <!-- the ng-if is needed to make state update?! -->
     <heading>
         Parameters
@@ -277,8 +285,10 @@
 
     </div>
 </br-collapsible>
+</script>
 
 <!-- ENTITY CONFIGURATION -->
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-entity-config.html" defer-to-preexisting-id="true">
 <br-collapsible ng-if="true" state="state.config.open">  <!-- the ng-if is needed to make state update?! -->
     <heading>
         Configuration
@@ -578,12 +588,9 @@
         
     </div>
 </br-collapsible>
-
-<!-- Placeholder for REQUIREMENTS section, URL (src) must match with SUBSECTION_TEMPLATE_URL.REQUIREMENTS -->
-<ng-include src="'blueprint-composer/component/spec-editor/section-requirements.html'"></ng-include>
+</script>
 
 <!-- ENTITY LOCATION -->
-<ng-include src="'blueprint-composer/component/spec-editor/section-locations.html'"></ng-include>
 <script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-locations.html" defer-to-preexisting-id="true">
   <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.location.open">
     <heading>
@@ -618,7 +625,6 @@
 </script>
 
 <!-- ENTITY POLICIES -->
-<ng-include src="'blueprint-composer/component/spec-editor/section-policies.html'"></ng-include>
 <script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-policies.html" defer-to-preexisting-id="true">
   <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.policy.open">
     <heading>
@@ -654,7 +660,6 @@
 </script>
 
 <!-- ENTITY ENRICHERS -->
-<ng-include src="'blueprint-composer/component/spec-editor/section-enrichers.html'"></ng-include>
 <script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-enrichers.html" defer-to-preexisting-id="true">
   <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.enricher.open">
     <heading>
@@ -689,8 +694,10 @@
   </br-collapsible>
 </script>
 
-<!-- Placeholder for other sections, URL (src) must match with SUBSECTION_TEMPLATE_URL.OTHERS -->
-<ng-include src="'blueprint-composer/component/spec-editor/section-others.html'"></ng-include>
+<!-- OTHERS (downstream customizations) -->
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-others.html" defer-to-preexisting-id="true">
+    <!-- Placeholder for other sections. -->
+</script>
 
 <!-- PARAMETER INFO TEMPLATE :: START -->
 <script type="text/ng-template" id="blueprint-composer/component/spec-editor/parameter-info.html" defer-to-preexisting-id="true">
