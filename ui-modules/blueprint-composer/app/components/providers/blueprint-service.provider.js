@@ -45,6 +45,65 @@ export function blueprintServiceProvider() {
 
 function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService, brBrandInfo) {
     let blueprint = new Entity();
+    let entityRelationshipProviders = {};
+
+    // Add relationships provider based on Entity.config
+    addEntityRelationshipsProvider( 'config',{
+        apply: (entity) => {
+            let set = Array.from(entity.config.values())
+                .reduce((set, config)=> {
+                    if (config instanceof Dsl) {
+                        config.relationships.forEach((entity) => {
+                            if (entity !== null) {
+                                set.add(entity);
+                            }
+                        });
+                    }
+                    if (config instanceof Array) {
+                        config
+                            .filter(conf => conf instanceof Dsl)
+                            .reduce((set, config)=> {
+                                config.relationships.forEach((entity)=> {
+                                    if (entity !== null) {
+                                        set.add(entity);
+                                    }
+                                });
+                                return set;
+                            }, set);
+                    }
+                    if (config instanceof Object) {
+                        Object.keys(config)
+                            .filter(key => config[key] instanceof Dsl)
+                            .reduce((set, key)=> {
+                                config[key].relationships.forEach((entity)=> {
+                                    if (entity !== null) {
+                                        set.add(entity);
+                                    }
+                                });
+                                return set;
+                            }, set);
+                    }
+                    return set;
+                }, new Set());
+
+            return Array.from(set).map((relation) => {
+                return {
+                    source: entity,
+                    target: relation
+                };
+            });
+        }
+    });
+
+    // Add relationships provider based on Entity spec
+    addEntityRelationshipsProvider('spec', {
+        apply: (entity, relationships) => {
+            return Array.from(entity.config.values())
+                .filter(config => config && config[DSL_ENTITY_SPEC] && config[DSL_ENTITY_SPEC] instanceof Entity)
+                .map(config => config[DSL_ENTITY_SPEC])
+                .reduce((relationships, spec) => relationships.concat(getRelationships(spec)), relationships);
+        }
+    });
 
     return {
         setFromJson: setBlueprintFromJson,
@@ -62,6 +121,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
         refreshConfigConstraints: refreshConfigConstraints,
         refreshRelationships: refreshRelationships,
         refreshAllRelationships: refreshAllRelationships,
+        addRelationshipsProvider: addEntityRelationshipsProvider,
         isReservedKey: isReservedKey,
         getIssues: getIssues,
         hasIssues: hasIssues,
@@ -714,61 +774,36 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
     }
 
     /**
-     * Retrieves all the Entities referenced by an Entity
+     * Adds {Entity} relationships provider to discover relationships between entities that are specific to provider.
+     *
+     * @param {String} providerName The relationships provider name.
+     * @param {Object} entityRelationshipsProvider The {Entity} relationships provider. The provider must implement the
+     * method `apply({Entity})` which takes {Entity} as an argument and returns array of relationships found in the
+     * format [{source: {Entity}, target: {Entity}}], or an empty array []. The method also receives an array of
+     * relationships discovered by previous providers so far `apply({Entity}, [{source: {Entity}, target: {Entity}}])`.
+     */
+    function addEntityRelationshipsProvider(providerName, entityRelationshipsProvider) {
+        if (typeof entityRelationshipsProvider.apply !== 'function' || !providerName) {
+            console.error(`Provider ${entityRelationshipsProvider} with name ${providerName} is not an Entity relationships provider.`);
+        }
+        entityRelationshipProviders[providerName] = entityRelationshipsProvider;
+    }
+
+    /**
+     * Retrieves all the Entities referenced by an Entity.
+     *
      * @param {Entity} entity the Entity to resolve relative references from
      * @return {Array} of objects that contains source and target entities
      */
     function getRelationships(entity = blueprint) {
-        let set = Array.from(entity.config.values())
-            .reduce((set, config)=> {
-                if (config instanceof Dsl) {
-                    config.relationships.forEach((entity) => {
-                        if (entity !== null) {
-                            set.add(entity);
-                        }
-                    });
-                }
-                if (config instanceof Array) {
-                    config
-                        .filter(conf => conf instanceof Dsl)
-                        .reduce((set, config)=> {
-                            config.relationships.forEach((entity)=> {
-                                if (entity !== null) {
-                                    set.add(entity);
-                                }
-                            });
-                            return set;
-                        }, set);
-                }
-                if (config instanceof Object) {
-                    Object.keys(config)
-                        .filter(key => config[key] instanceof Dsl)
-                        .reduce((set, key)=> {
-                            config[key].relationships.forEach((entity)=> {
-                                if (entity !== null) {
-                                    set.add(entity);
-                                }
-                            });
-                            return set;
-                        }, set);
-                }
-                return set;
-            }, new Set());
+        let relationships = [];
 
-        let relationships = Array.from(set).map((relation) => {
-            return {
-                source: entity,
-                target: relation
-            };
-        });
+        // Aggregate relationships discovered by Entity relationships providers.
+        for (let provider of Object.values(entityRelationshipProviders)) {
+            relationships = relationships.concat(provider.apply(entity, relationships));
+        }
 
-        relationships = Array.from(entity.config.values())
-            .filter(config => config && config[DSL_ENTITY_SPEC] && config[DSL_ENTITY_SPEC] instanceof Entity)
-            .map(config => config[DSL_ENTITY_SPEC])
-            .reduce((relationships, spec) => {
-            return relationships.concat(getRelationships(spec));
-        }, relationships);
-
+        // Iterate over children and reduct.
         return entity.children.reduce((relationships, child) => {
             return relationships.concat(getRelationships(child))
         }, relationships);
