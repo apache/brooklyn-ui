@@ -82,7 +82,8 @@ export function logbookStateController($scope, brBrandInfo, version, states, log
 
         logbookApi.logbookQuery(params, true).then(function (success) {
             // TODO implement logic for make output as table
-            $scope.results = vm.createLogOutputAsText(success);
+            $scope.logEntries = success;
+            $scope.results = vm.createLogOutputAsText($scope.logEntries);
         }, function (error) {
             $scope.results = "Error getting the logs: \n" + error.error.message;
             console.log(JSON.stringify(error));
@@ -166,8 +167,14 @@ export function logbookStateController($scope, brBrandInfo, version, states, log
             $scope.allLevels = false;
         }
     }, true);
+    $scope.$watch('logFields', function (newVal, oldVal) {
+        if($scope.logEntries!==""){
+            $scope.results = vm.createLogOutputAsText($scope.logEntries);
+        }
+    }, true);
 
     $scope.waitingResponse = false;
     vm.resetForm();
+    $scope.logEntries="";
     $scope.results = "-empty-"
 }
