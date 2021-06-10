@@ -20,6 +20,7 @@ const MESSAGE = new WeakMap();
 const GROUP = new WeakMap();
 const PHASE = new WeakMap();
 const REF = new WeakMap();
+const ID = new WeakMap();
 const LEVEL = new WeakMap();
 
 export const ISSUE_LEVEL = {
@@ -39,6 +40,7 @@ export class Issue {
         GROUP.set(this, '');
         PHASE.set(this, '');
         REF.set(this, '');
+        ID.set(this, '');
         LEVEL.set(this, ISSUE_LEVEL.ERROR);
     }
 
@@ -72,6 +74,14 @@ export class Issue {
 
     get ref() {
         return REF.get(this);
+    }
+
+    set id(ref) {
+        ID.set(this, ref);
+    }
+
+    get id() {
+        return ID.get(this);
     }
 
     set level(level) {
@@ -109,6 +119,11 @@ class Builder {
 
     ref(ref) {
         this.issue.ref = ref;
+        return this;
+    }
+
+    id(id) {
+        this.issue.id = id;
         return this;
     }
 

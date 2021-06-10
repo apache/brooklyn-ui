@@ -20,8 +20,10 @@ import * as d3 from 'd3';
 import {PREDICATE_MEMBERSPEC} from './model/entity.model';
 import addIcon from '../../img/icon-add.svg';
 import {ISSUE_LEVEL} from './model/issue.model';
+import marked from 'marked';
+import _ from 'lodash';
 
-export function D3Blueprint(container) {
+export function D3Blueprint(container, options) {
     let _svg = d3.select(container).append('svg').attr('class', 'blueprint-canvas');
     let _mirror = _svg.append('path').style('display', 'none');
     let _zoomGroup = _svg.append('g').attr('class', 'zoom-group');
@@ -157,7 +159,20 @@ export function D3Blueprint(container) {
                     y: 75,
                     'xlink:href': addIcon
                 }
-            }
+            },
+            annotation: {
+                foreignObject: {
+                    x: 0,
+                    y: -100,
+                    background:
+                        // "#ffe8b0", // a nice yellow
+                        "#a0c0e0", // a nice light blue
+                    width: 200,
+                    height: 60,
+                    style: "",
+                    styleInnerDiv: "margin: auto 0;",  // center top/down but not left-right by default
+                }
+            },
         },
         transition: 300,
         grid: {
@@ -418,7 +433,8 @@ export function D3Blueprint(container) {
                             nodeId: node.data._id,
                             parentId: parentId,
                             targetIndex: dropZone.getAttribute('targetIndex'),
-                        },
+                            isNewParent: true // used to intercept this event in branded versions, do not remove.
+                        }
                     });
                     container.dispatchEvent(event);
                 }
@@ -526,12 +542,26 @@ export function D3Blueprint(container) {
 
                 return 1 + (colWidth / (_configHolder.nodes.child.circle.r * 6)) * additionalCol;
             });
+
         let root = d3.hierarchy(blueprint);
         tree(root);
+
         _d3DataHolder.nodes = root.descendants();
         _d3DataHolder.links = root.links();
         _d3DataHolder.relationships = relationships;
+
+        _d3DataHolder.visible = {
+            nodes: _d3DataHolder.nodes.filter(d => shouldShowNode(d.data) ),
+            links: _d3DataHolder.links.filter(d => shouldShowNode(d.source.data) && shouldShowNode(d.target.data) ),
+            relationships: _d3DataHolder.relationships.filter(d => { return shouldShowNode(d.source) && shouldShowNode(d.target); } ),
+        };
+
         return this;
+    }
+
+    function shouldShowNode(node) {
+        if (options && options.shouldShowNode) return options.shouldShowNode(node);
+        return true;
     }
 
     /**
@@ -549,7 +579,13 @@ export function D3Blueprint(container) {
 
     function drawNodeGroup() {
         let nodeData = _nodeGroup.selectAll('g.node')
-            .data(_d3DataHolder.nodes, (d)=>(`node-${d.data._id}`));
+            .data(_d3DataHolder.visible.nodes, (d)=>(`node-${d.data._id}`));
+
+        // if desired to let overrides customize things, could leverage two functions on the seletions,
+        // TBC whether in enter or draw or etc (and note, by exposing just the first, callers can use the second)
+        //    .call( fn /* runs on the selection */ )
+        //    .each( fn /* runs on each Node */ )
+
 
         // Draw group that contains all SVG element: node representation and location/policies/enricher indicators
         // -----------------------------------------------------
@@ -650,11 +686,51 @@ export function D3Blueprint(container) {
             .attr('transform', 'scale(0)')
             .remove();
         appendElement(adjunctData.enter(), 'rect', _configHolder.nodes.adjunct.rect);
+
+        let annotationElement = nodeGroup.append('g')
+            .attr('class', 'node-annotation');
+        let annotationData = nodeData.select('g.node-annotation')
+            .selectAll('foreignObject.node-annotation')
+            .data((d)=>{
+                let tags = d.data.metadata && d.data.metadata.get("brooklyn.tags");
+                if (tags) {
+                    let annotations = tags.map(tag => typeof tag === "object" && Object.keys(tag) && Object.keys(tag).length === 1 && tag["ui-composer-annotation"]).filter(x => x);
+                    if (annotations) {
+                        return annotations.map(annotationTag => Object.assign({},
+                            _configHolder.nodes.annotation.foreignObject,
+                            typeof annotationTag === "object" ? annotationTag : {text: annotationTag}) );
+                    }
+                }
+                return [];
+            });
+
+        appendElement(annotationData.enter(), 'foreignObject', {
+            class: 'node-annotation entity',
+            xmlns: "http://www.w3.org/1999/xhtml",
+            x: d => d.x - d.width/2,
+            y: d => d.y - d.height/2,
+            width: d => d.width,
+            height: d => d.height,
+            __children: {
+                "xhtml:div": {
+                    class: "annotation",
+                    style: d => "background: "+_.escape(d.background)+"; " +
+                        "width: "+_.escape(d.width)+"; " +
+                        "height: "+_.escape(d.height)+"; " +
+                        _.escape(d.style),
+                    __children: {
+                        "xhtml:div": {
+                            style: d => _.escape(d.styleInnerDiv),
+                            __text: d => marked(_.escape(d.text)),
+                        }
+                    }
+                }
+            }});
     }
 
     function drawLinks() {
         let link = _linkGroup.selectAll('line.link')
-            .data(_d3DataHolder.links, (d)=>(d.source.data._id + '_to_' + d.target.data._id));
+            .data(_d3DataHolder.visible.links, (d)=>(d.source.data._id + '_to_' + d.target.data._id));
 
         link.enter().insert('line')
             .attr('class', 'link')
@@ -670,6 +746,7 @@ export function D3Blueprint(container) {
             .attr('y2', (d)=>(d.target.y));
         link.exit()
             .transition()
+            .duration(_configHolder.transition)  // doesn't seem to work, links just disappear immediately
             .attr('opacity', 0)
             .remove();
     }
@@ -697,7 +774,7 @@ export function D3Blueprint(container) {
         showRelationships();
 
         let relationData = _relationGroup.selectAll('.relation')
-            .data(_d3DataHolder.relationships, (d)=>(d.source._id + '_related_to_' + d.target._id));
+            .data(_d3DataHolder.visible.relationships, (d)=>(d.source._id + '_related_to_' + d.target._id));
 
         relationData.enter().insert('path')
             .attr('class', 'relation')
@@ -736,7 +813,7 @@ export function D3Blueprint(container) {
 
     function drawGhostNode() {
         let ghostNodeData = _ghostNodeGroup.selectAll('g.ghost-node')
-            .data(_d3DataHolder.nodes, (d)=>(`ghost-node-${d.data._id}`));
+            .data(_d3DataHolder.visible.nodes, (d)=>(`ghost-node-${d.data._id}`));
         let ghostNode = ghostNodeData
             .enter()
             .append('g')
@@ -911,7 +988,13 @@ export function D3Blueprint(container) {
     function appendElement(node, tag, properties) {
         let element = node.append(tag);
         Object.keys(properties).forEach((property)=> {
-            element.attr(property, properties[property]);
+            if ("__children"===property) {
+                appendElements(element, properties[property]);
+            } else if ("__text"===property) {
+                element.html(properties[property]);
+            } else {
+                element.attr(property, properties[property]);
+            }
         });
         return element;
     }
@@ -967,7 +1050,11 @@ export function D3Blueprint(container) {
     function center() {
         let newX = window.innerWidth/2 + (window.innerWidth > 660 ? 220 : 0);
         let newY = _configHolder.nodes.child.circle.r + (_configHolder.nodes.child.circle.r * 2);
-        zoom.translateBy(_svg, newX, newY);
+        try {
+            zoom.translateBy(_svg, newX, newY);
+        } catch (e) {
+            console.warn(`Cannot translate SVG with parameters ${newX} and ${newY}`, e.message);
+        }
         return this;
     }
 
@@ -1006,6 +1093,88 @@ export function D3Blueprint(container) {
         _svg.selectAll('.entity.selected').classed('selected', false);
         _svg.selectAll('.relation.highlight').classed('highlight', false);
         return this;
+    }
+
+    /**
+     * Draw menu with a confirmation request on the canvas for a node with a specified ID, under the node, in the middle.
+     *  _________________________
+     * | Confirmation message |X|| <- 'close' button
+     * | ________                |
+     * ||Choice 1|               |
+     * | --------'               |
+     * ||Choice 2|               |
+     * | --------'               |
+     * ||Etc.    |               |
+     * '-------------------------'
+     *
+     * @param {String} id The ID of a node to draw confirmation menu for.
+     * @param {String} message The confirmation message.
+     * @param {Array.<String>} choices The confirmation choices.
+     * @param {Function} callback The confirmation callback with a boolean parameter, true if confirmed (Yes),
+     *        false if denied (No), null otherwise (ignored).
+     */
+    function confirmNode(id, message, choices, callback = (confirmedChoice) => {}) {
+
+        if (!id || !message || !Array.isArray(choices) || choices.length === 0) {
+            console.error(`Cannot draw confirmation menu with message '${message}' for entity '${id}' offering array of choices:`, choices);
+            return;
+        }
+
+        let nodeData = _nodeGroup.select(`#entity-${id}`);
+
+        let size = 300;
+        let confirmationElement = nodeData.append('foreignObject')
+            .style('overflow', 'inherit')
+            .attr('xmlns', 'http://www.w3.org/1999/xhtml')
+            .attr('x', -(size/2)) // position in the middle
+            .attr('y', 70) // below the node
+            .attr('width', size)
+            .attr('height', size);
+
+        let confirmation = confirmationElement
+            .append('xhtml:div')
+            .attr('class', 'node-confirmation');
+
+        confirmation
+            .append('xhtml:p')
+            .attr('class', 'node-confirmation-text')
+            .html(message);
+
+        let reply = (confirmedChoice) => {
+            if (confirmationElement) {
+                if (confirmedChoice) {
+                    try {
+                        callback(confirmedChoice);
+                    } catch (e) {
+                        console.error('Failure confirming the node ' + id, e);
+                    }
+                }
+                confirmationElement.remove();
+                confirmationElement = null;
+            }
+        }
+
+        let close = () => reply(null);
+        confirmation
+            .append('xhtml:i')
+            .style('position', 'absolute')
+            .style('right', '8px')
+            .style('top', '8px')
+            .attr('class', 'fa fa-fw fa-times remove-spec-configuration')
+            .on('click', close);
+
+        choices.forEach(choice => {
+            let confirmChoice = () => reply(choice);
+            confirmation
+                .append('xhtml:button')
+                .attr('class', 'btn btn-outline btn-primary node-confirmation-button')
+                .html(choice)
+                .on('click', confirmChoice);
+        });
+
+        // The following is not required just now.
+        //const MENU_TIMEOUT_MS = 60000;
+        //setTimeout(close, MENU_TIMEOUT_MS); // close menu on timeout - not confirmed.
     }
 
     /**
@@ -1056,6 +1225,7 @@ export function D3Blueprint(container) {
         update: update,
         center: center,
         select: selectNode,
+        confirm: confirmNode,
         unselect: unselectNode
     };
 }

@@ -22,7 +22,7 @@ import marked from 'marked';
 const MODULE_NAME = 'br.utils.md-helper';
 
 angular.module(MODULE_NAME, [])
-    .factory("mdHelper", mdHelperProvider)
+    .factory("mdHelper", mdHelperFactory)
     .directive('mdField', [ mdFieldDirective])
     .directive('mdFirstLine', [ mdFirstLineDirective])
     .directive('mdIfOneline', [ mdIfOnelineDirective])
@@ -182,7 +182,7 @@ export function oneline(field, names) {
     }
 }
 
-function mdHelperProvider() {
+export function mdHelperFactory() {
     return {
         analyze,
         analyzeDescription,

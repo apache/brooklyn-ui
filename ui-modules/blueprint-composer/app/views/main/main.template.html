@@ -33,17 +33,16 @@
                 <blueprint-data-manager></blueprint-data-manager>
             </div>
 
-            <ul class="nav navbar-nav navbar-right navbar-nav-secondary-actions" ng-if="vm.isGraphicalMode()" >
+            <ul class="nav navbar-nav navbar-right navbar-nav-secondary-actions" ng-if="vm.isLayerDropdownEnabled()" >
                 <li class="dropdown" uib-dropdown>
                     <a href class="dropdown-toggle" uib-dropdown-toggle aria-haspopup="true" aria-expanded="false">
                         <i class="fa fa-fw fa-clone"></i> Layers <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu role="menu">
                         <li role="menuitem" class="layer"
-                            ng-if="vm.isGraphicalMode()"
                             ng-repeat="layer in vm.layers track by layer.id"
                             ng-class="{'active': layer.active}">
-                            <a ng-click="layer.active = !layer.active"><i class="fa fa-fw fa-circle"></i> {{layer.label}}</a>
+                            <a ng-click="vm.onLayerActive(layer, !layer.active)"><i class="fa fa-fw fa-circle"></i> {{layer.label}}</a>
                         </li>
                     </ul>
                 </li>

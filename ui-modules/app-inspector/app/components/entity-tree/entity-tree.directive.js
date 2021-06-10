@@ -30,12 +30,7 @@ import {detailState} from '../../views/main/inspect/activities/detail/detail.con
 import {managementState} from '../../views/main/inspect/management/management.controller';
 import {detailState as managementDetailState} from '../../views/main/inspect/management/detail/detail.controller';
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
-import {
-    RELATIONSHIP_HOST_FOR,
-    RELATIONSHIP_HOSTED_ON,
-    VIEW_HOST_FOR_HOSTED_ON,
-    VIEW_PARENT_CHILD
-} from '../../views/main/main.controller';
+import {RELATIONSHIP_VIEW_DELIMITER, VIEW_PARENT_CHILD} from '../../views/main/main.controller';
 
 const MODULE_NAME = 'inspector.entity.tree';
 
@@ -102,7 +97,7 @@ export function entityTreeDirective() {
             }));
 
             /**
-             * Analyzes relationships of the entity tree and prepares mode views, e.g. 'parent/child' and 'host_for/hosted_on'.
+             * Analyzes relationships of the entity tree and prepares mode views, e.g. 'parent/child'.
              *
              * @param {Array.<Object>} entityTree The entity tree to process and prepare view modes for.
              */
@@ -116,10 +111,8 @@ export function entityTreeDirective() {
                 // Identify new view modes based on relationships. This adds a drop-down menu with new views if found any.
                 updateViewModes(relationships);
 
-                // Re-arrange entity tree for 'host_for/hosted_on' view if present.
-                if ($scope.viewModes.has(VIEW_HOST_FOR_HOSTED_ON)) {
-                    addHostForHostedOnView(entities, relationships);
-                }
+                // Re-arrange entity tree for other views if present.
+                addOtherViews(entities, relationships);
             }
 
             /**
@@ -141,53 +134,104 @@ export function entityTreeDirective() {
             }
 
             /**
-             * Extends entity tree with 'host_for/hosted_on' view mode. Moves entities (creates copies) if their host is
-             * not a parent and labels them to display under 'host_for/hosted_on' view mode only.
+             * Extends entity tree with other view modes. Moves entities (creates copies) if their host is
+             * not a parent and labels them to display under other view modes only.
              *
              * @param {Array.<Object>} entities The entity tree converted to array.
              * @param {Array.<Object>} relationships The relationships of entities.
              */
-            function addHostForHostedOnView(entities, relationships) {
+            function addOtherViews(entities, relationships) {
+                let otherViews = Array.from($scope.viewModes).filter(r => r !== VIEW_PARENT_CHILD);
+                otherViews.forEach(view => {
 
-                // Look through all entities found in the entity tree
-                entities.forEach(entity => {
+                    // Get 'OTHER_PARENT' and 'OTHER_CHILD' identifiers.
+                    const {OTHER_PARENT, OTHER_CHILD} = getRelationshipViewIdentifiers(view);
 
-                    // Check if entity has 'host_for/hosted_on' relationship.
-                    let relationship = relationships.find(r => r.id === entity.id);
-                    if (relationship && relationship.name === RELATIONSHIP_HOST_FOR) {
+                    // Phase 1. Look through all entities found in the entity tree: process entity with 'OTHER_PARENT'
+                    //          roles and entities without roles.
+                    entities.forEach(entity => {
 
-                        // Label every 'host_for' entity to display and highlight in 'host_for/hosted_on' view mode.
-                        displayEntityInView(entity, VIEW_HOST_FOR_HOSTED_ON);
-                        highlightEntityInView(entity, VIEW_HOST_FOR_HOSTED_ON);
+                        // Get relationship roles for an entity.
+                        const {parentRole, childRole} = getRelationshipRoles(relationships, entity.id, OTHER_PARENT, OTHER_CHILD);
 
-                        // Look for 'hosted_on' entities under 'host_for', flip of move them and label to display in
-                        // 'host_for/hosted_on' view mode respectively.
-                        relationship.targets.forEach(target => {
-                            let relatedEntity = entities.find(e => e.id === target);
-                            if (relatedEntity) {
-                                highlightEntityInView(relatedEntity, VIEW_HOST_FOR_HOSTED_ON);
-                                displayParentsInView(entities, relatedEntity.parentId, VIEW_HOST_FOR_HOSTED_ON);
+                        if (parentRole) {
 
-                                // Re-arrange the tree if related 'hosted_on' entity is not a child of 'host_for'.
-                                if (relatedEntity.parentId !== entity.id) {
+                            // Label every 'OTHER_PARENT' entity to display and highlight in 'OTHER_PARENT/OTHER_CHILD'
+                            // view mode, only if it does not play the role of 'OTHER_CHILD' at the same time.
+                            if (!childRole) {
+                                displayEntityInView(entity, view);
+                                highlightEntityInView(entity, view);
+                            }
 
-                                    if (relatedEntity.id === entity.parentId) {
-                                        // 4.1. Flip 'hosted_on' parent with a 'host_for' child.
-                                        flipParentAndChild(relatedEntity, entity, entities, VIEW_HOST_FOR_HOSTED_ON);
-                                    } else {
-                                        // 4.2. Move 'hosted_on' entity to a new 'host_for' parent.
-                                        moveEntityToParent(relatedEntity, entity, entities, VIEW_HOST_FOR_HOSTED_ON);
+                            // Look for 'OTHER_CHILD' entities under 'OTHER_PARENT', flip or move them and label to display in
+                            // 'OTHER_PARENT/OTHER_CHILD' view mode respectively.
+                            parentRole.targets.forEach(target => {
+                                let relatedEntity = findEntity(entities, target);
+                                if (relatedEntity) {
+                                    highlightEntityInView(relatedEntity, view);
+                                    displayParentsInView(entities, relatedEntity.parentId, view);
+
+                                    // Re-arrange the tree if related 'OTHER_CHILD' entity is not a child of 'OTHER_PARENT'.
+                                    if (relatedEntity.parentId !== entity.id) {
+
+                                        if (relatedEntity.id === entity.parentId) {
+                                            // 4.1. Flip 'OTHER_CHILD' parent with a 'OTHER_PARENT' child.
+                                            flipParentAndChild(relatedEntity, entity, entities, view);
+                                        } else {
+                                            // 4.2. Move 'OTHER_CHILD' entity to a new 'OTHER_PARENT' parent.
+                                            moveEntityToParent(relatedEntity, entity, entities, view);
+                                        }
                                     }
                                 }
-                            }
-                        });
-                    } else if (!relationship || relationship.name !== RELATIONSHIP_HOSTED_ON) {
+                            });
+                        } else if (!parentRole && !childRole) {
 
-                        // Display original position for any other entity under 'host_for/hosted_on' view. Do no highlight
-                        // entities that are required to be displayed but do not belong to this view.
-                        displayEntityInView(entity, VIEW_HOST_FOR_HOSTED_ON);
-                    }
+                            // Display original position for any other entity under 'OTHER_PARENT/OTHER_CHILD' view. Do
+                            // no highlight entities that are required to be displayed but do not belong to this view.
+                            displayEntityInView(entity, view);
+                        }
+                    });
+
+                    // Phase 2. Look through all entities found again and process entities that play both roles:
+                    //          'OTHER_PARENT' and 'OTHER_CHILD'.
+                    entities.forEach(entity => {
+
+                        // Get relationship roles for an entity.
+                        const {parentRole, childRole} = getRelationshipRoles(relationships, entity.id, OTHER_PARENT, OTHER_CHILD);
+
+                        if (parentRole && childRole) {
+                            // Find new position where entity is an 'OTHER_CHILD' already, but to become 'OTHER_PARENT' as well.
+                            let newParentPosition = findEntityInOtherNodes(entities, entity.id);
+
+                            // Move 'OTHER_CHILD' entities added in Phase 1 to a new parent.
+                            if (entity.otherNodes && newParentPosition) {
+                                entity.otherNodes.forEach(entityToMove => {
+                                    moveEntityToParent(entityToMove, newParentPosition, entities, view, false);
+                                });
+                            }
+                        }
+                    });
                 });
+            }
+
+            /**
+             * @returns {{OTHER_PARENT, OTHER_CHILD}} tuple with relationship view identifiers.
+             */
+            function getRelationshipViewIdentifiers(view) {
+                const otherParentChildIdentifiers = view.split(RELATIONSHIP_VIEW_DELIMITER);
+                let OTHER_PARENT = otherParentChildIdentifiers[0];
+                let OTHER_CHILD = otherParentChildIdentifiers[1];
+                return {OTHER_PARENT, OTHER_CHILD};
+            }
+
+            /**
+             * @returns {{parentRole, childRole}} relationships tuple with parent and child roles.
+             */
+            function getRelationshipRoles(relationships, entityId, parentViewIdentifier, childViewIdentifier) {
+                const relationshipsFound = relationships.filter(r => r.id === entityId);
+                const parentRole = relationshipsFound.find(r => r.name === parentViewIdentifier);
+                const childRole = relationshipsFound.find(r => r.name === childViewIdentifier);
+                return {parentRole, childRole};
             }
 
             /**
@@ -214,15 +258,16 @@ export function entityTreeDirective() {
              * @param {Object} parent The parent to move entity to.
              * @param {Array.<Object>} entities The entity tree converted to array.
              * @param {string} viewMode The view mode to display copy of the entity in only.
+             * @param {boolean} decorateName Indicates whether to decorate name or not, true by default.
              * @returns {Object} The copy of the entity under parent.otherNodes.
              */
-            function moveEntityToParent(entity, parent, entities, viewMode) {
+            function moveEntityToParent(entity, parent, entities, viewMode, decorateName = true) {
                 // 1. Create a copy.
                 let entityCopy = Object.assign({}, entity);
 
                 // 2. Include the name of the original parent.
                 let parentOfEntity = findEntity(entities, entityCopy.parentId);
-                if (parentOfEntity) {
+                if (parentOfEntity && decorateName) {
                     entityCopy.name += ' (' + parentOfEntity.name + ')';
                 }
 
@@ -265,6 +310,25 @@ export function entityTreeDirective() {
              */
             function findEntity(entities, id) {
                 return entities.find(entity => entity.id === id) || null;
+            }
+
+            /**
+             * Attempts to find entity with ID specified in array of entities under 'otherNodes'.
+             *
+             * @param {Array.<Object>} entities The array of entities to search for a particular entity in.
+             * @param {string} id The ID of entity to look for under 'otherNodes'.
+             * @returns {Object} The entity with ID requested, and undefined otherwise.
+             */
+            function findEntityInOtherNodes(entities, id) {
+                for (const entity of entities) {
+                    if (entity.otherNodes) {
+                        let found = entity.otherNodes.find(e => e.id === id);
+                        if (found) {
+                            return found;
+                        }
+                    }
+                }
+                return null;
             }
 
             /**
@@ -329,8 +393,8 @@ export function entityTreeDirective() {
                 relationships.forEach(relationship => {
                     relationship.targets.forEach(id => {
                         let target = relationships.find(item => item.id === id);
-                        if (target) {
-                            let uniqueRelationshipName = [relationship.name, target.name].sort().join('/'); // e.g. host_for/hosted_on
+                        if (target && relationship.name !== target.name) {
+                            let uniqueRelationshipName = [relationship.name, target.name].sort().join(RELATIONSHIP_VIEW_DELIMITER);
                             viewModesDiscovered.add(uniqueRelationshipName);
                         }
                     })
@@ -357,7 +421,7 @@ export function entityTreeDirective() {
                         entity.relations.forEach(r => {
                             let relationship = {
                                 id: entity.id,
-                                name: r.type.name.split('/')[0], // read name up until '/', e.g. take 'hosted_on' from 'hosted_on/oU7i'
+                                name: r.type.name.split('/')[0], // read name up until '/'
                                 targets: Array.isArray(r.targets) ? r.targets : []
                             }
                             relationships.push(relationship)
@@ -471,7 +535,7 @@ export function entityNodeDirective() {
          * @returns {boolean} True if to highlight entity in a current view, false otherwise.
          */
         $scope.isHighlight = function() {
-            return $scope.entity.viewModesHighlight.has($scope.viewMode);
+            return $scope.entity.viewModesHighlight && $scope.entity.viewModesHighlight.has($scope.viewMode);
         };
 
         /**

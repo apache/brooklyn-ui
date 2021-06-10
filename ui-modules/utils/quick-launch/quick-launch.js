@@ -313,7 +313,7 @@ export function quickLaunchDirective() {
         }
 
         function isRequired(config) {
-            return angular.isArray(config.contraints) && config.constraints.indexOf('required') > -1;
+            return angular.isArray(config.constraints) && config.constraints.indexOf('required') > -1;
         }
     }
 

@@ -57,18 +57,7 @@ function DslService($log) {
      * @return {Dsl} a Dsl object containing relationships (referenced Entities)
      */
     function parse(dsl, entity, blueprint) {
-        return new DslParser(dsl).parse(entity, function lookupById(id, entity = blueprint) {
-            if (entity.id === id) {
-                return entity;
-            }
-            for (let child of entity.childrenAsMap.values()) {
-                let ret = lookupById(id, child);
-                if (ret !== null) {
-                    return ret;
-                }
-            }
-            return null;
-        });
+        return new DslParser(dsl).parse(entity, blueprint);
     }
 
     /**

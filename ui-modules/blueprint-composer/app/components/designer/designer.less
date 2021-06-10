@@ -231,5 +231,31 @@ designer {
         .arrowhead-highlight {
             fill: @brand-primary;
         }
+
+        .annotation {
+            padding: 2px 5px;
+            border-radius: 4px;
+            opacity: 0.8;
+            overflow: scroll;
+            display: flex;
+            align-items: center;
+        }
+
+        .node-confirmation {
+            padding: 10px;
+            border-radius: 8px;
+            //opacity: 0.8;
+            width: inherit;
+            align-items: center;
+            background: lighten(@brand-primary, 50%);
+            .node-confirmation-text {
+                overflow: scroll;
+                width: 90%;
+            }
+            .node-confirmation-button {
+                display: block;
+                margin-top: 8px;
+            }
+        }
     }
 }

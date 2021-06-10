@@ -122,7 +122,7 @@
             <p>What would you like to do next?</p>
             <button class="btn btn-default btn-block" ng-click="$dismiss('Continue editing')">Continue to edit this blueprint</button>
             <button class="btn btn-info btn-block" ng-click="$close(REASONS.new)">Create a new blueprint</button>
-            <a class="btn btn-primary btn-block" ng-href="/brooklyn-ui-catalog/#!/bundles/catalog-bom-{{config.bundle}}/{{config.version}}/types/{{config.symbolicName}}/{{config.version}}">View in catalog</a>
+            <a class="btn btn-primary btn-block" ng-href="{{getCatalogURL()}}">View in catalog</a>
             <button ng-if="['template', 'entity'].indexOf(config.itemType) > -1" class="btn btn-link btn-block" ng-click="$close(REASONS.deploy)">Or deploy</button>
         </div>
     </div>
