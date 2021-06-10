@@ -26,25 +26,40 @@
         <div class="col-md-12">
             <form>
                 <div>
-                    <div class="form-group col-md-4">
-                        <label for="reverseOrder">From the bottom</label>
-                        <input id="reverseOrder" type="checkbox" ng-model="reverseOrder"><br/>
-                        <label for="from">From</label>
-                        <input id="from" type="number" ng-model="from" class="form-control logbook" min="0">
-                    </div>
-                    <div class="form-group col-md-4">
+                    <div class="form-group col-md-3">
+                        <label for="initTime">Initial time</label>
+                        <input id="initTime" type="datetime-local" ng-model="initTime" class="form-control">
+                        <label for="finalTime">Final time</label>
+                        <input id="finalTime" type="datetime-local" ng-model="finalTime" class="form-control">
+
                         <label for="numberOfItems">Number of lines</label>
                         <input id="numberOfItems" type="number" ng-model="numberOfItems" class="form-control logbook" min="1" max="100">
+                        <label for="reverseOrder">Reverse order</label>
+                        <input id="reverseOrder" type="checkbox" ng-model="reverseOrder"><br/>
                     </div>
-                    <div class="form-group col-md-3">
-                        <label for="level">Log level</label>
-                        <select ng-model="queryLevel" ng-options="level.value as level.name for level in logLevels"
-                                id="level" class="form-control"></select>
+                    <div class="form-group col-md-9">
+                        <h4>Log level</h4>
+                        <label>
+                            <input type="checkbox" ng-model="allLevels" class=""/>All
+                        </label>
+                        <label ng-repeat="level in logLevels">
+                            <input type="checkbox" ng-model="level.selected" class=""/>{{level.name}}
+                        </label>
                     </div>
+                    <div class="form-group col-md-9">
+                        <h4>Fields</h4>
+                        <label ng-repeat="field in logFields">
+                            <input type="checkbox"  ng-model="field.selected" class=""/>{{field.name}}
+                        </label>
+                    </div>
+
                 </div>
-                <div>
+                <div  class="form-group col-md-12">
                     <button class="btn btn-outline btn-success" ng-click="vm.doQuery()" ng-disabled="waitingResponse">
                         Query
+                    </button>
+                    <button class="btn btn-outline" ng-click="vm.resetForm()">
+                        Reset form
                     </button>
                 </div>
             </form>
