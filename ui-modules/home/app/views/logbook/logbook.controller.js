@@ -70,7 +70,7 @@ export function logbookStateController($scope, brBrandInfo, version, states, log
         $scope.waitingResponse = true;
         $scope.results = "Loading..."
 
-        const levels = $scope.allLevels ? ['ALL']: vm.getChecked($scope.logLevels);
+        const levels = $scope.allLevels ? ['ALL'] : vm.getChecked($scope.logLevels);
 
         const params = {
             reverseOrder: $scope.reverseOrder,
@@ -97,26 +97,26 @@ export function logbookStateController($scope, brBrandInfo, version, states, log
         const fieldsToShow = vm.getChecked($scope.logFields);
         success.forEach(entry => {
             let outputLine = [];
-            if (fieldsToShow.includes("datetime"))
-                outputLine.push(entry.timestamp || "");
-            if (fieldsToShow.includes("taskId"))
-                outputLine.push(entry.taskId || "");
-            if (fieldsToShow.includes("entityIds"))
-                outputLine.push(entry.entityIds || "");
-            if (fieldsToShow.includes("level"))
-                outputLine.push(entry.level || "");
-            if (fieldsToShow.includes("bundleId"))
-                outputLine.push(entry.bundleId || "");
-            if (fieldsToShow.includes("class"))
-                outputLine.push(entry.class || "");
-            if (fieldsToShow.includes("threadName"))
-                outputLine.push(entry.threadName || "");
-            if (fieldsToShow.includes("message"))
-                outputLine.push(entry.message || "");
+            if (fieldsToShow.includes("datetime") && entry.timestamp)
+                outputLine.push(entry.timestamp);
+            if (fieldsToShow.includes("taskId") && entry.taskId)
+                outputLine.push(entry.taskId);
+            if (fieldsToShow.includes("entityIds") && entry.entityIds)
+                outputLine.push(entry.entityIds);
+            if (fieldsToShow.includes("level") && entry.level)
+                outputLine.push(entry.level);
+            if (fieldsToShow.includes("bundleId") && entry.bundleId)
+                outputLine.push(entry.bundleId);
+            if (fieldsToShow.includes("class") && entry.class)
+                outputLine.push(entry.class);
+            if (fieldsToShow.includes("threadName") && entry.threadName)
+                outputLine.push(entry.threadName);
+            if (fieldsToShow.includes("message") && entry.message)
+                outputLine.push(entry.message);
 
             output.push(outputLine.join(" "));
         })
-        return output.join("\n");
+        return output.length > 0 ? output.join("\n") : "No results";
     }
 
     vm.resetForm = function () {
@@ -133,7 +133,7 @@ export function logbookStateController($scope, brBrandInfo, version, states, log
         $scope.logFields = [
             {"name": "Timestamp", "value": "datetime", "selected": true},
             {"name": "Task ID", "value": "taskId", "selected": false},
-            {"name": "Entity ID", "value": "entityIds", "selected": false},
+            {"name": "Entity IDs", "value": "entityIds", "selected": false},
             {"name": "Log level", "value": "level", "selected": true},
             {"name": "Bundle ID", "value": "bundleId", "selected": false},
             {"name": "Class", "value": "class", "selected": true},
@@ -146,10 +146,10 @@ export function logbookStateController($scope, brBrandInfo, version, states, log
     }
 
     $scope.$watch('allLevels', function (v) {
-        if (!v){
-            if(vm.getChecked($scope.logLevels).length===0){
+        if (!v) {
+            if (vm.getChecked($scope.logLevels).length === 0) {
                 $scope.allLevels = true;
-            }else{
+            } else {
                 return;
             }
         }
@@ -161,20 +161,20 @@ export function logbookStateController($scope, brBrandInfo, version, states, log
         var selected = newVal.reduce(function (s, c) {
             return s + (c.selected ? 1 : 0);
         }, 0);
-        if (selected === newVal.length || selected ===0) {
+        if (selected === newVal.length || selected === 0) {
             $scope.allLevels = true;
         } else if (selected > 0) {
             $scope.allLevels = false;
         }
     }, true);
     $scope.$watch('logFields', function (newVal, oldVal) {
-        if($scope.logEntries!==""){
+        if ($scope.logEntries !== "") {
             $scope.results = vm.createLogOutputAsText($scope.logEntries);
         }
     }, true);
 
     $scope.waitingResponse = false;
     vm.resetForm();
-    $scope.logEntries="";
+    $scope.logEntries = "";
     $scope.results = "-empty-"
 }
