@@ -170,6 +170,9 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
 
     if (yaml) {
         $scope.initialYamlFormat = $stateParams.format;
+        if(edit.type.specList && edit.type.specList[0].format === $stateParams.format) {
+            yaml = edit.type.specList[0].contents;
+        }
 
         if (vm.isYamlMode()) {
             // don't set blueprint; yaml mode will take from "initial yaml" 
