@@ -144,7 +144,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         pattern: '[\\w\\.\\-\\_]+',
         view: VIEWS.form,
         saving: false,
-        force: false,
+        force: false
     };
 
     $scope.getTitle = () => {
@@ -155,6 +155,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
                 return `${$scope.config.name || $scope.config.symbolicName || 'Blueprint'} ${$scope.isUpdate() ? 'updated' : 'saved'}`;
         }
     };
+
     $scope.getCatalogURL = () => {
         switch ($scope.state.view) {
             case VIEWS.form:
@@ -165,7 +166,6 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
     };
 
     $scope.title = $scope.getTitle();
-
     $scope.save = () => {
         $scope.state.saving = true;
         $scope.state.error = undefined;
@@ -185,6 +185,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         });
     };
 
+
     function createBom() {
         let blueprint = blueprintService.getAsJson();
 
@@ -199,11 +200,21 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
             itemType: $scope.config.itemType,
             item: blueprint
         };
+        // tags can now be added to a blueprint created in the YAML Editor
+        let tags = [];
+        if(blueprint.tags) {
+            tags = blueprint.tags;
+            delete blueprint['tags'];
+        }
         let bomCatalogYaml = {
             bundle: `catalog-bom-${bundleBase}`,
             version: $scope.config.version,
             items: [ bomItem ]
         };
+        if(tags) {
+            bomCatalogYaml.tags = tags
+        }
+
         let bundleName = $scope.config.name || $scope.defaultName;
         if (brUtilsGeneral.isNonEmpty(bundleName)) {
             bomItem.name = bundleName;
