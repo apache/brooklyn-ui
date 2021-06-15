@@ -41,10 +41,10 @@ export function quickLaunchDirective() {
             args: '=?', // default behaviour of code is: { noEditButton: false, noComposerButton: false, noCreateLocationLink: false, location: null }
             callback: '=?',
         },
-        controller: ['$scope', '$http', '$location', 'brSnackbar', 'brBrandInfo', controller]
+        controller: ['$scope', '$http', '$location', 'brSnackbar', 'brBrandInfo' , 'quickLaunchOverrides', controller]
     };
 
-    function controller($scope, $http, $location, brSnackbar, brBrandInfo) {
+    function controller($scope, $http, $location, brSnackbar, brBrandInfo, quickLaunchOverrides) {
         $scope.deploying = false;
         $scope.model = {
             newConfigFormOpen: false,
@@ -183,14 +183,49 @@ export function quickLaunchDirective() {
         }
 
         function buildYaml() {
-            let newApp = {
-                name: $scope.model.name || $scope.app.displayName,
-                location: $scope.model.location || '<REPLACE>',
-                services: [
-                    angular.copy($scope.entityToDeploy)
-                ]
-            };
+            let newApp =  (quickLaunchOverrides.generateDeployableApp || generateDeployableApp)($scope);
             return yaml.safeDump(newApp);
+        }
+
+        function generateDeployableApp($scope){
+            // TODO figure out what to do with the template version !?
+            if (Array.isArray($scope.app.specList) && $scope.app.specList.length > 0) {
+               let format = $scope.app.specList[0].format;
+                switch(String(format)) {
+                    case "tosca13":
+                        return {
+                            metadata: {
+                                template_name: ($scope.model.name || $scope.app.displayName) + '-run' ,
+                            },
+                            topology_template: {
+                                node_templates: {
+                                    a_node: {
+                                        type:  $scope.model.name || $scope.app.displayName
+                                    }
+                                },
+                                groups: [
+                                    {
+                                        add_brooklyn_types: {
+                                            members: [ 'a_node' ],
+                                            type: 'brooklyn.tosca.groups.initializer',
+                                            properties: {
+                                                location: $scope.model.location || '<REPLACE>'
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        };
+                    default:
+                        return {
+                            name: $scope.model.name || $scope.app.displayName,
+                            location: $scope.model.location || '<REPLACE>',
+                            services: [
+                                angular.copy($scope.entityToDeploy)
+                            ]
+                        };
+                }
+            }
         }
 
         function buildComposerYaml(validate) {
