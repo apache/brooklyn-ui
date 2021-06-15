@@ -153,9 +153,13 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
             // or in other words, for other items, DO set these
             vm.saveToCatalogConfig = Object.assign(vm.saveToCatalogConfig, vm.saveToCatalogConfig.original); 
         }
-        
-        yaml = edit.type.plan.data;
+
         $scope.initialYamlFormat = edit.type.plan.format;
+        if($scope.initialYamlFormat && Array.isArray(edit.type.specList) && edit.type.specList.length > 0 && edit.type.specList[0].format === $scope.initialYamlFormat) {
+            yaml = edit.type.specList[0].contents;
+        }  else {
+            yaml = edit.type.plan.data;
+        }
     }
 
     vm.isTabActive = stateKey => {
