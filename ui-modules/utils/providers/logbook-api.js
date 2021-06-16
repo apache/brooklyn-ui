@@ -16,20 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-@import '~brooklyn-shared/style/first.less';
 
-@import '~brooklyn-ui-utils/yaml-editor/yaml-editor.less';
-@import '~brooklyn-ui-utils/quick-launch/quick-launch.less';
+import {Api} from './api';
 
-// Add project less files here
-@import 'views/main/main';
-@import 'views/logbook/logbook';
-@import 'views/main/deploy/modal';
-@import 'components/onboarding/onboarding';
+export class LogbookApi extends Api {
+    constructor(cache, host) {
+        super(cache, host);
+    }
 
-.hideMainContent {
-  display: none;
+    logbookQuery() {
+        return Promise.resolve();
+    }
+
+    getEntries() {
+        return Promise.resolve();
+    }
 }
 
-// Load last so that these style rules and var values trump others
-@import "~brooklyn-shared/style/last.less";
+window.LogbookApi = LogbookApi;

@@ -23,6 +23,7 @@ import {catalogApiProvider} from '../providers/catalog-api.provider'
 import {locationApiProvider} from '../providers/location-api.provider'
 import {sensorApiProvider} from '../providers/sensor-api.provider'
 import serverApi from '../api/brooklyn/server';
+import {logbookApiProvider} from "../providers/logbook-api.provider";
 
 const MODULE_NAME = 'utils.brooklyn.api';
 
@@ -30,6 +31,7 @@ angular.module(MODULE_NAME, [serverApi])
     .provider('applicationApi', applicationApiProvider)
     .provider('catalogApi', catalogApiProvider)
     .provider('locationApi', locationApiProvider)
-    .provider('sensorApi', sensorApiProvider);
+    .provider('sensorApi', sensorApiProvider)
+    .provider('logbookApi', logbookApiProvider);
 
 export default MODULE_NAME;
