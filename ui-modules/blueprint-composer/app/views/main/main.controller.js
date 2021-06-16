@@ -154,10 +154,11 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
             vm.saveToCatalogConfig = Object.assign(vm.saveToCatalogConfig, vm.saveToCatalogConfig.original); 
         }
 
-        $scope.initialYamlFormat = edit.type.plan.format;
+        $scope.initialYamlFormat = $stateParams.format;
         if($scope.initialYamlFormat && Array.isArray(edit.type.specList) && edit.type.specList.length > 0 && edit.type.specList[0].format === $scope.initialYamlFormat) {
-            yaml = edit.type.specList[0].contents;
+            yaml = edit.type.specList[0].contents; // for YAML editor
         }  else {
+            // for graphical editor
             yaml = edit.type.plan.data;
         }
     }
@@ -173,11 +174,6 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
     }
 
     if (yaml) {
-        $scope.initialYamlFormat = $stateParams.format;
-        if(Array.isArray(edit.type.specList) && edit.type.specList.length > 0 && edit.type.specList[0].format === $stateParams.format) {
-            yaml = edit.type.specList[0].contents;
-        }
-
         if (vm.isYamlMode()) {
             // don't set blueprint; yaml mode will take from "initial yaml" 
             blueprintService.reset();
