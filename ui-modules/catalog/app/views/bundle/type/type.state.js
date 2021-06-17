@@ -29,11 +29,11 @@ import brTable from 'brooklyn-ui-utils/table/index';
 import brUtils from 'brooklyn-ui-utils/utils/general';
 import mdHelper from 'brooklyn-ui-utils/md-helper';
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
-import quickLaunchOverrides from '../../../components/providers/quick-launch-overrides.provider';
 
 const MODULE_NAME = 'type.state';
 
-angular.module(MODULE_NAME, [ngSanitize, brooklynCatalogApi, brooklynQuickLaunch, brooklynTypeItem, brUtils, brTable, mdHelper, quickLaunchOverrides])
+angular.module(MODULE_NAME, [ngSanitize, brooklynCatalogApi, brooklynQuickLaunch, brooklynTypeItem, brUtils,
+    brTable, mdHelper, quickLaunchOverrides])
     .provider('locationApi', locationApiProvider)
     .config(['$stateProvider', typeStateConfig]);
 

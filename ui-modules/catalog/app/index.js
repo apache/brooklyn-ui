@@ -36,7 +36,7 @@ import catalogState from './views/catalog/catalog.state';
 import catalogBundleState from './views/bundle/bundle.state';
 import catalogBundleTypeState from './views/bundle/type/type.state';
 
-import quickLaunchOverrides from './components/providers/quick-launch-overrides.provider';
+import quickLaunchOverrides from '../../utils/providers/quick-launch-overrides.provider';
 
 import brandAngularJs from 'brand-angular-js';
 
