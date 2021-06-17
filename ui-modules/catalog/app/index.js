@@ -36,11 +36,15 @@ import catalogState from './views/catalog/catalog.state';
 import catalogBundleState from './views/bundle/bundle.state';
 import catalogBundleTypeState from './views/bundle/type/type.state';
 
+import quickLaunchOverrides from './components/providers/quick-launch-overrides.provider';
+
 import brandAngularJs from 'brand-angular-js';
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
-angular.module('brooklynCatalog', [ngAnimate, ngCookies, ngResource, brCore, brServerStatus, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, brooklynCatalogUpdater, uiRouter, catalogState, catalogBundleState, catalogBundleTypeState, brandAngularJs, mdHelper])
+angular.module('brooklynCatalog', [ngAnimate, ngCookies, ngResource, brCore, brServerStatus, brInterstitialSpinner,
+    brooklynModuleLinks, brooklynUserManagement, brooklynCatalogUpdater, uiRouter, catalogState, catalogBundleState,
+    catalogBundleTypeState, quickLaunchOverrides, brandAngularJs, mdHelper])
     .config(['$logProvider', '$compileProvider', applicationConfig])
     .config(['$urlRouterProvider', routerConfig])
     .run(['$rootScope', '$state', 'brSnackbar', errorHandler])
