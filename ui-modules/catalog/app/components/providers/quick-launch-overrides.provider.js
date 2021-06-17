@@ -18,8 +18,7 @@
  */
 import angular from 'angular';
 
-// TODO decide if this should be used to configure quick-launch to allow being overloaded by a plugin
-const MODULE_NAME = 'brooklyn.composer.service.quick-launch-overrides-service';
+const MODULE_NAME = 'brooklyn.quick-launch-overrides-service';
 
 angular.module(MODULE_NAME, [])
     .provider('quickLaunchOverrides', quickLaunchOverridesProvider);
