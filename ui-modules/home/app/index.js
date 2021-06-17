@@ -35,11 +35,15 @@ import mainDeployState from 'views/main/deploy/deploy.controller';
 import aboutState from 'views/about/about.controller.js';
 import logbookState from 'views/logbook/logbook.controller.js';
 
+import quickLaunchOverrides from '../../utils/providers/quick-launch-overrides.provider';
+
 import brandAngularJs from 'brand-angular-js';
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
-angular.module('brooklynHome', [ngAnimate, ngCookies, uiRouter, brCore, brServerStatus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, brooklynQuickLaunch, mainState, mainDeployState, aboutState, logbookState, brandAngularJs])
+angular.module('brooklynHome', [ngAnimate, ngCookies, uiRouter, brCore, brServerStatus, brIconGenerator,
+    brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, brooklynQuickLaunch, mainState, mainDeployState,
+    aboutState, logbookState, quickLaunchOverrides, brandAngularJs])
     .config(['$urlRouterProvider', '$logProvider', '$compileProvider', applicationConfig])
     .run(['$http', httpConfig]);
 
