@@ -16,20 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-@import '~brooklyn-shared/style/first.less';
 
-@import '~brooklyn-ui-utils/yaml-editor/yaml-editor.less';
-@import '~brooklyn-ui-utils/quick-launch/quick-launch.less';
-
-// Add project less files here
-@import 'views/main/main';
-@import 'views/logbook/logbook';
-@import 'views/main/deploy/modal';
-@import 'components/onboarding/onboarding';
-
-.hideMainContent {
-  display: none;
+.logbook-text {
+  padding: 10px;
+  min-width: 100%;
+  min-height: 300px;
+  .monospace();
 }
 
-// Load last so that these style rules and var values trump others
-@import "~brooklyn-shared/style/last.less";
+input.logbook{
+  width: 90px;
+  margin: 5px;
+  display: inline-block;
+}
+
+#level{
+  width:150px;
+  display:inline-block;
+}
+input[type=checkbox]{
+  margin-left: 20px;
+  margin-right: 5px;
+}
