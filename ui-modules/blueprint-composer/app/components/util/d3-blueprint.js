@@ -433,7 +433,7 @@ export function D3Blueprint(container, options) {
                             nodeId: node.data._id,
                             parentId: parentId,
                             targetIndex: dropZone.getAttribute('targetIndex'),
-                            isNewParent: true // used to intercept this event in branded versions, do not remove.
+                            isNewParent: true // used to intercept this event in customized versions, do not remove.
                         }
                     });
                     container.dispatchEvent(event);
@@ -1097,25 +1097,41 @@ export function D3Blueprint(container, options) {
 
     /**
      * Draw menu with a confirmation request on the canvas for a node with a specified ID, under the node, in the middle.
+     *
+     * Single-selection mode offers choices as buttons:
      *  _________________________
      * | Confirmation message |X|| <- 'close' button
      * | ________                |
-     * ||Choice 1|               |
+     * ||Choice 1|               | <- e.g. Button with confirmation choice 'Choice 1'
      * | --------'               |
      * ||Choice 2|               |
      * | --------'               |
      * ||Etc.    |               |
      * '-------------------------'
      *
+     * Multi-selection mode offers choices as check-boxes and confirmation button.
+     *  _________________________
+     * | Confirmation message |X||
+     * | _                       |
+     * || | Choice 1             | <- e.g. Checkbox with confirmation choice 'Choice 1'
+     * | -                       |
+     * || | Choice 2             |
+     * | -                       |
+     * || | Etc.                 |
+     * | --------                |
+     * ||Apply    |              | <- Button to apply confirmed choices.
+     * '-------------------------'
+     *
      * @param {String} id The ID of a node to draw confirmation menu for.
      * @param {String} message The confirmation message.
      * @param {Array.<String>} choices The confirmation choices.
-     * @param {Function} callback The confirmation callback with a boolean parameter, true if confirmed (Yes),
-     *        false if denied (No), null otherwise (ignored).
+     * @param {Function} callback The callback with confirmed choice in the single-selection mode, or with {Array.<String>}
+     *        of confirmed choices in the multi-selection mode.
+     * @param {Boolean} isMultiSelection Indicates if confirmation selection is multi-selection, single-selection is default.
      */
-    function confirmNode(id, message, choices, callback = (confirmedChoice) => {}) {
+    function confirmNode(id, message, choices, callback, isMultiSelection = false) {
 
-        if (!id || !message || !Array.isArray(choices) || choices.length === 0) {
+        if (!id || !message || !Array.isArray(choices) || choices.length === 0 || typeof callback !== 'function') {
             console.error(`Cannot draw confirmation menu with message '${message}' for entity '${id}' offering array of choices:`, choices);
             return;
         }
@@ -1126,7 +1142,7 @@ export function D3Blueprint(container, options) {
         let confirmationElement = nodeData.append('foreignObject')
             .style('overflow', 'inherit')
             .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-            .attr('x', -(size/2)) // position in the middle
+            .attr('x', -(size / 2)) // position in the middle
             .attr('y', 70) // below the node
             .attr('width', size)
             .attr('height', size);
@@ -1163,14 +1179,60 @@ export function D3Blueprint(container, options) {
             .attr('class', 'fa fa-fw fa-times remove-spec-configuration')
             .on('click', close);
 
-        choices.forEach(choice => {
-            let confirmChoice = () => reply(choice);
+        // Render the menu content based on multi-selection condition.
+        if (isMultiSelection) {
+
+            let confirmedChoices = new Set();
+
+            // Render the menu with check-boxes.
+            let toggleCheckbox = function () {
+
+                // NOTE! VALUE IN THE CHECKBOX IS A PLAIN STRING, WHEN CONFIRMATION CHOICES CAN BE CLASSES THAT RETURN
+                // ITS VALUE WITH A toString() METHOD. IT IS IMPORTANT TO FIND A MATCHING OBJECT THAT REPRESENTS THE
+                // CHOICE, NOT JUST ITS STRING VALUE. USE '==' INSTEAD OF '===' TO FIND OBJECT MATCHING ITS STRING VALUE
+                // ONLY, IGNORING THE TYPE.
+                let tickedChoice = choices.find(c => c == this.value);
+                if (this.checked) {
+                    confirmedChoices.add(tickedChoice);
+                } else {
+                    confirmedChoices.delete(tickedChoice);
+                }
+            }
+            choices.forEach(choice => {
+                let confirmationCheckboxDiv = confirmation
+                    .append('xhtml:div')
+                    .attr('class', 'checkbox');
+                confirmationCheckboxDiv
+                    .append('xhtml:input')
+                    .style('margin-left', '0px')
+                    .attr('type', 'checkbox')
+                    .attr('value', choice)
+                    .on('change', toggleCheckbox);
+                confirmationCheckboxDiv
+                    .append('xhtml:label')
+                    .html(choice);
+            });
+
+            // Add 'Apply' button at the end.
+            let confirmChoice = () => reply(Array.from(confirmedChoices));
             confirmation
                 .append('xhtml:button')
                 .attr('class', 'btn btn-outline btn-primary node-confirmation-button')
-                .html(choice)
+                .html('Apply')
                 .on('click', confirmChoice);
-        });
+
+        } else {
+
+            // Render the menu with buttons.
+            choices.forEach(choice => {
+                let confirmChoice = () => reply(choice);
+                confirmation
+                    .append('xhtml:button')
+                    .attr('class', 'btn btn-outline btn-primary node-confirmation-button')
+                    .html(choice)
+                    .on('click', confirmChoice);
+            });
+        }
 
         // The following is not required just now.
         //const MENU_TIMEOUT_MS = 60000;
