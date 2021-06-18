@@ -75,11 +75,8 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
 
     this.container = $element[0];
     this.now = Date.now();
-
-    $scope.states = this.states;
-    $scope.now = Date.now();
-    $scope.expectedNodeCounter = Object.keys(this.states.nodes).length;
-    $scope.template = 'haStatusTemplate';
+    this.expectedNodeCounter = Object.keys(this.states.nodes).length;
+    this.template = 'haStatusTemplate';
 
     let modalInstance = null;
 
@@ -103,7 +100,7 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
             });
             modalInstance.result.then(
                 (promiseList) => {
-                    $scope.template = 'spinnerTemplate';
+                    this.template = 'spinnerTemplate';
                     Promise.allSettled(promiseList).then((values) => {
                         let event = new CustomEvent('update-states', {});
                         container.dispatchEvent(event);
@@ -111,7 +108,7 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
                     modalInstance = null;
                 },
                 () => {
-                    $scope.template = 'spinnerTemplate';
+                    this.template = 'spinnerTemplate';
                     let event = new CustomEvent('update-states', {});
                     container.dispatchEvent(event);
                     modalInstance = null;
@@ -167,21 +164,21 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
     }
 
     this.removeNode = function (nodeId) {
-        $scope.template = 'spinnerTemplate';
+        this.template = 'spinnerTemplate';
         let removeNode = serverApi.removeHaTerminatedNode(nodeId);
         removeNode.then(data => {
-            $scope.expectedNodeCounter--;
+            this.expectedNodeCounter--;
             let event = new CustomEvent('update-states', {});
             this.container.dispatchEvent(event);
         });
     }
 
     this.removeAllTerminatedNodes = function () {
-        $scope.template = 'spinnerTemplate';
+        this.template = 'spinnerTemplate';
         let removeNodes = serverApi.removeHaTerminatedNodes();
         removeNodes.then(data => {
-            for (const node in $scope.states.nodes) {
-                if ($scope.states.nodes[node].status === "TERMINATED") $scope.expectedNodeCounter--;
+            for (const node in this.states.nodes) {
+                if (this.states.nodes[node].status === "TERMINATED") this.expectedNodeCounter--;
             }
             let event = new CustomEvent('update-states', {});
             this.container.dispatchEvent(event);
@@ -191,10 +188,10 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
     $element.bind('update-states', (event) => {
         let updateStates = serverApi.getHaStates();
         updateStates.then(data => {
-            if (Object.keys(data.data.nodes).length === $scope.expectedNodeCounter) {
-                $scope.states = data.data;
-                $scope.now = Date.now();
-                $scope.template = 'haStatusTemplate';
+            if (Object.keys(data.data.nodes).length === this.expectedNodeCounter) {
+                this.states = data.data;
+                this.now = Date.now();
+                this.template = 'haStatusTemplate';
             } else {
                 let event = new CustomEvent('update-states', {});
                 this.container.dispatchEvent(event);
