@@ -1,0 +1,88 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<h3 class="node-management-title">Node Management Panel</h3>
+<div>
+    <div></div>
+    <ul class="list-group">
+        <li class="list-group-item">
+            <span class="badge node-management-badge">{{vm.node.nodeId}}</span>
+            <h4 class="list-group-item-heading">Node ID</h4>
+        </li>
+
+        <li class="list-group-item">
+            <span class="badge node-management-badge">{{vm.node.remoteTimestamp | timeAgoFilter}}</span>
+            <h4 class="list-group-item-heading">Last active</h4>
+        </li>
+
+        <li class="list-group-item">
+            <span class="badge node-management-badge"
+                  ng-style="(vm.newStatus !== vm.node.status) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
+                <div ng-if="vm.showEditOptions===false">{{vm.newStatus}}</div>
+                <div ng-if="vm.showEditOptions">
+                    <select class="form-control property-change-box"
+                            ng-style="(vm.newStatus !== vm.node.status) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}"
+                            ng-options="status for status in vm.statuses" ng-init="vm.newStatus"
+                            ng-model="vm.newStatus">
+                    </select>
+                    <label style="font-size:small">Update status... (current: {{vm.node.status}})
+                    </label>
+                </div>
+
+            </span>
+            <h4 class="list-group-item-heading">Status</h4>
+            <br ng-if="vm.showEditOptions">
+            <br ng-if="vm.showEditOptions">
+            <p class="master-change-warning" ng-show="vm.node.status === 'MASTER' && vm.newStatus !== 'MASTER'">Warning!
+                Applying changes will de-mote this node from being Master and a new Master will be elected from other
+                management nodes.</p>
+            <p class="master-change-warning" ng-show="vm.node.status !== 'MASTER' && vm.newStatus === 'MASTER'">Warning!
+                Applying changes will de-mote the current Master and this node will be forcibly made the new Master.</p>
+        </li>
+
+        <li class="list-group-item" ng-style="vm.showEditOptions && {'min-height': '80px'}">
+
+            <span class="badge node-management-badge"
+                  ng-style="(vm.newPriority !== vm.node.priority) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
+                <div ng-if="vm.showEditOptions===false">{{vm.newPriority}}</div>
+                <div ng-if="vm.showEditOptions">
+                    <input class="form-control property-change-box" type="number" ng-model="vm.newPriority"
+                           ng-style="(vm.newPriority !== vm.node.priority) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
+                        <label style="font-size:small">Update priority... (current: {{vm.node.priority}})
+                        </label>
+                    </input>
+                </div>
+            </span>
+            <h4 class="list-group-item-heading">Priority</h4>
+
+        </li>
+    </ul>
+    <div class="node-management-actions">
+        <button class="btn btn-lg btn-danger btn-default pull-right" style="margin-left: 1em; margin-right: 1em"
+                ng-click="vm.cancelAndQuit()">Cancel</button>
+        <button class="btn btn-lg btn-default pull-right" style="margin-left: 1em;"
+                ng-if="!vm.showEditOptions"
+                ng-click="vm.setShowEditOptions(true)">Edit</button>
+        <button class="btn btn-lg btn-success btn-default pull-right" style="margin-left: 1em"
+                ng-if="vm.showEditOptions"
+                ng-disabled="(vm.newPriority === vm.node.priority) && (vm.newStatus === vm.node.status)"
+                ng-click="vm.applyChangesAndQuit()">Apply</button>
+    </div>
+
+</div>

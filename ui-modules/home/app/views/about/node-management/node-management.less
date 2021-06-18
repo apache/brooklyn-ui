@@ -16,20 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-@import '~brooklyn-shared/style/first.less';
 
-@import '~brooklyn-ui-utils/yaml-editor/yaml-editor.less';
-@import '~brooklyn-ui-utils/quick-launch/quick-launch.less';
 
-// Add project less files here
-@import 'views/main/main';
-@import 'views/main/deploy/modal';
-@import 'views/about/node-management/node-management';
-@import 'components/onboarding/onboarding';
-
-.hideMainContent {
-  display: none;
+.node-management-title {
+  &:extend(.modal-dialog .modal-header);
+  &:extend(.modal-dialog .modal-header h3);
+  margin: 0;
+  padding: 25px;
 }
 
-// Load last so that these style rules and var values trump others
-@import "~brooklyn-shared/style/last.less";
+.node-management-actions {
+  min-height: 60px;
+}
+
+.node-management-badge {
+  background-color: gray;
+  min-width: 250px;
+}
+
+.property-change-box {
+  border-color: black;
+  border-width: 1px;
+  color: white;
+}
+
+.master-change-warning {
+  font-size: 12px;
+  font-weight: bold;
+}

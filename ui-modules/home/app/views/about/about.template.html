@@ -42,7 +42,7 @@
                     <span class="badge">{{vm.buildInfo.brooklynVersion}}</span>
                     <h4 class="list-group-item-heading">Apache Brooklyn UI</h4>
                     <small class="list-group-item-text" ng-if="vm.buildInfo.buildBranch || vm.buildInfo.buildCommitId">
-                        Built from 
+                        Built from
                         <span ng-if="vm.buildInfo.buildBranch">branch <strong>{{vm.buildInfo.buildBranch}}</strong></span>
                         <span ng-if="vm.buildInfo.buildCommitId">commit <strong>{{vm.buildInfo.buildCommitId}}</strong></span>
                     </small>
@@ -54,29 +54,71 @@
                 </li>
             </ul>
 
-            <h2>HA status</h2>
-            <table class="table table-responsive table-bordered">
-                <thead>
-                <tr>
-                    <th class="server-status-node-id">Node ID</th>
-                    <th>Status</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr ng-repeat="node in vm.states.nodes track by node.nodeId"
-                    ng-class="{success: node.state === 'online', danger: node.state === 'offline'}">
-                    <td>
-                        {{node.nodeId}}
-                        <span ng-if="node.nodeId === vm.states.ownId" class="label label-info">current</span>
-                        <span ng-if="node.status === 'MASTER'" class="label label-success">master</span>
-                    </td>
-                    <td>
-                        <span class="text-left">{{node.status | lowercase}}</span>
-                        <a ng-if="node.state === 'online'" class="btn btn-xs btn-success pull-right" class="text-right" ng-class="{disabled: node.nodeUri === null}">Open</a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+
+            <h2>
+                HA status
+                <button ng-if="states.nodes[states.ownId].status === 'MASTER'"
+                        ng-click="vm.removeAllTerminatedNodes()" class="btn btn-sm btn-default"
+                        style="float: right;">Remove terminated nodes</button>
+            </h2>
+
+            <ng-include src="template"></ng-include>
+
+            <script type="text/ng-template" id="haStatusTemplate">
+
+                <table class="table table-responsive table-bordered table-hover">
+                    <thead>
+                    <tr>
+                        <th class="server-status-node-id">Node ID</th>
+                        <th>Information</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="node in states.nodes track by node.nodeId"
+                        ng-class="{success: node.state === 'online', danger: node.state === 'offline'}"
+                        ng-mouseover="row = $index" ng-mouseleave="row = -1">
+                        <td>
+                            {{node.nodeId}}
+                            <button class="btn btn-sm btn-default" style="float: right;"
+                                    ng-if="node.nodeId === states.ownId"
+                                    ng-click="vm.openDialog(states, states.ownId, vm.serverApi, vm.container)"
+                                    ng-show="row == $index">Manage</button>
+                            <button class="btn btn-sm btn-default" style="float: right;"
+                                    ng-if="(node.status === 'TERMINATED') && (states.nodes[states.ownId].status === 'MASTER')"
+                                    ng-click="vm.removeNode(node.nodeId)" ng-show="row == $index">Remove</button>
+                            <span ng-if="node.nodeId === states.ownId" class="label label-info">current</span>
+                            <span ng-if="node.status === 'MASTER'" class="label label-success">master</span><br>
+                        </td>
+                        <td>
+                            <span class="text-left">Status: {{node.status | lowercase}}</span><br>
+                            <span class="text-left">Last active: {{node.remoteTimestamp | timeAgoFilter}}</span><br>
+                            <span class="text-left">Priority: {{node.priority}}</span><br>
+                            <a ng-if="node.state === 'online'" class="btn btn-xs btn-success pull-right"
+                               class="text-right" ng-class="{disabled: node.nodeUri === null}">Open</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </script>
+
+            <script type="text/ng-template" id="spinnerTemplate">
+                <br-interstitial-spinner event-count="1" remove-after="0" max-wait="120000">
+                    <style>
+                        ${require('brooklyn-shared/partials/interstitial.less')}
+                    </style>
+
+                    <div class="spinner-area" style="height: 100px">
+                        <div class="spinner">
+                            <div class="svg-container">
+                                <svg viewBox="20 20 60 60">
+                                    <circle r="25" cx="50" cy="50" class="background"/>
+                                    <circle r="25" cx="50" cy="50" class="foreground"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </br-interstitial-spinner>
+            </script>
         </div>
 
         <div class="col-md-6">
@@ -92,3 +134,4 @@
         </div>
     </div>
 </div>
+
