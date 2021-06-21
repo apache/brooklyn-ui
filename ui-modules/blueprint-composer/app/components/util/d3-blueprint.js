@@ -1202,8 +1202,9 @@ export function D3Blueprint(container, options) {
 
                 // NOTE! VALUE IN THE CHECKBOX IS IDENTIFIED BY A PLAIN STRING VALUE IF CHOICE OPTION IS NOT AN OBJECT
                 // THAT HAS A DISTINCT `.id` FIELD WITH IMPLEMENTED `toString` TO DISPLAY THE OPTION TEXT, OR IF IT IS
-                // AN OBJECT THAT IMPLEMENTS `toString` ONLY. OPERATOR '==' IS USED FOR CASES WHEN `.id` IS NOT PRESENT.
-                let tickedChoice = choices.find(c => (c.id && c.id === this.id) || c == this.id);
+                // AN OBJECT THAT IMPLEMENTS `toString` ONLY. OPERATOR '==' IS USED FOR CASES WHEN `.id` TYPE IS NOT A
+                // STRING OT IT IS NOT PRESENT.
+                let tickedChoice = choices.find(c => (c.id && c.id == this.id) || c == this.id);
                 if (this.checked) {
                     confirmedChoices.add(tickedChoice);
                 } else {
