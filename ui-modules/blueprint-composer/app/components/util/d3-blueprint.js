@@ -1135,7 +1135,8 @@ export function D3Blueprint(container, options) {
      *
      * @param {String} id The ID of a node to draw confirmation menu for.
      * @param {String} message The confirmation message.
-     * @param {Array.<String>} choices The confirmation choices.
+     * @param {Array.<String|Object>} choices The confirmation choices as plain strings or objects that implement toString
+     *        to display choice options. Use objects with distinct *.id value for choices that return same toString value.
      * @param {Function} callback The callback with confirmed choice in the single-selection mode, or with {Array.<String>}
      *        of confirmed choices in the multi-selection mode.
      * @param {Boolean} isMultiSelection Indicates if confirmation selection is multi-selection, single-selection is default.
@@ -1199,11 +1200,10 @@ export function D3Blueprint(container, options) {
             // Render the menu with check-boxes.
             let toggleCheckbox = function () {
 
-                // NOTE! VALUE IN THE CHECKBOX IS A PLAIN STRING, WHEN CONFIRMATION CHOICES CAN BE CLASSES THAT RETURN
-                // ITS VALUE WITH A toString() METHOD. IT IS IMPORTANT TO FIND A MATCHING OBJECT THAT REPRESENTS THE
-                // CHOICE, NOT JUST ITS STRING VALUE. USE '==' INSTEAD OF '===' TO FIND OBJECT MATCHING ITS STRING VALUE
-                // ONLY, IGNORING THE TYPE.
-                let tickedChoice = choices.find(c => c == this.value);
+                // NOTE! VALUE IN THE CHECKBOX IS IDENTIFIED BY A PLAIN STRING VALUE IF CHOICE OPTION IS NOT AN OBJECT
+                // THAT HAS A DISTINCT `.id` FIELD WITH IMPLEMENTED `toString` TO DISPLAY THE OPTION TEXT, OR IF IT IS
+                // AN OBJECT THAT IMPLEMENTS `toString` ONLY. OPERATOR '==' IS USED FOR CASES WHEN `.id` IS NOT PRESENT.
+                let tickedChoice = choices.find(c => (c.id && c.id === this.id) || c == this.id);
                 if (this.checked) {
                     confirmedChoices.add(tickedChoice);
                 } else {
@@ -1224,6 +1224,7 @@ export function D3Blueprint(container, options) {
                     .append('xhtml:input')
                     .style('margin-left', '0px')
                     .attr('type', 'checkbox')
+                    .attr('id', (choice.id || choice))
                     .attr('value', choice)
                     .on('change', toggleCheckbox);
                 if (choices.length === 1) {
