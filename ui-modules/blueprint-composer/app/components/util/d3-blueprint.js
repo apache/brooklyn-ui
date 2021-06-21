@@ -1131,6 +1131,8 @@ export function D3Blueprint(container, options) {
      * ||Apply    |              | <- Button to apply confirmed choice.
      * '-------------------------'
      *
+     * Apply button is disabled until at least one choice is selected in the multi-selection mode.
+     *
      * @param {String} id The ID of a node to draw confirmation menu for.
      * @param {String} message The confirmation message.
      * @param {Array.<String>} choices The confirmation choices.
@@ -1192,6 +1194,7 @@ export function D3Blueprint(container, options) {
         if (isMultiSelection) {
 
             let confirmedChoices = new Set();
+            let applyButton = null;
 
             // Render the menu with check-boxes.
             let toggleCheckbox = function () {
@@ -1206,7 +1209,13 @@ export function D3Blueprint(container, options) {
                 } else {
                     confirmedChoices.delete(tickedChoice);
                 }
+                if (confirmedChoices.size === 0) {
+                    applyButton.attr('disabled', ''); // Disable 'Apply' button.
+                } else {
+                    applyButton.attr('disabled', null); // Enable 'Apply' button.
+                }
             }
+
             choices.forEach(choice => {
                 let confirmationCheckboxDiv = confirmation
                     .append('xhtml:div')
@@ -1229,12 +1238,14 @@ export function D3Blueprint(container, options) {
 
             // Add 'Apply' button at the end.
             let confirmChoice = () => reply(Array.from(confirmedChoices));
-            confirmation
+            applyButton = confirmation
                 .append('xhtml:button')
                 .attr('class', 'btn btn-outline btn-primary node-confirmation-button')
                 .html('Apply')
                 .on('click', confirmChoice);
-
+            if (choices.length > 1) {
+                applyButton.attr('disabled', ''); // Disable 'Apply' button until at least one option is selected.
+            }
         } else {
 
             // Render the menu with buttons.
