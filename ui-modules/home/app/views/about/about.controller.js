@@ -120,45 +120,47 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
 
     function nodeManagementController($scope, $uibModalInstance, node, serverApi) {
 
-        this.node = node;
-        this.newPriority = node.priority;
-        this.newStatus = node.status;
-        this.statuses = ["MASTER", "STANDBY", "HOT_STANDBY", "HOT_BACKUP"];
-        this.now = Date.now();
-        this.showEditOptions = false;
+        let vm = this;
 
-        this.setHaStatus = function () {
-            let result = serverApi.setHaStatus(this.newStatus);
-            this.node.status = this.newStatus;
+        vm.node = node;
+        vm.newPriority = node.priority;
+        vm.newStatus = node.status;
+        vm.statuses = ["MASTER", "STANDBY", "HOT_STANDBY", "HOT_BACKUP"];
+        vm.now = Date.now();
+        vm.showEditOptions = false;
+
+        vm.setHaStatus = function () {
+            let result = serverApi.setHaStatus(vm.newStatus);
+            vm.node.status = vm.newStatus;
         }
 
-        this.setHaPriority = function () {
-            let result = serverApi.setHaPriority(this.newPriority);
-            this.node.priority = this.newPriority;
+        vm.setHaPriority = function () {
+            let result = serverApi.setHaPriority(vm.newPriority);
+            vm.node.priority = vm.newPriority;
         }
 
-        this.applyChangesAndQuit = function () {
+        vm.applyChangesAndQuit = function () {
             let promiseList = [];
-            if (this.node.priority !== this.newPriority) {
-                let result = serverApi.setHaPriority(this.newPriority);
+            if (vm.node.priority !== vm.newPriority) {
+                let result = serverApi.setHaPriority(vm.newPriority);
                 promiseList.push(result);
             }
-            if (this.node.status !== this.newStatus) {
-                let result = serverApi.setHaStatus(this.newStatus);
+            if (vm.node.status !== vm.newStatus) {
+                let result = serverApi.setHaStatus(vm.newStatus);
                 promiseList.push(result);
             }
             $uibModalInstance.close(promiseList);
 
         }
 
-        this.cancelAndQuit = function () {
-            this.newPriority = this.node.priority;
-            this.newStatus = this.node.status;
+        vm.cancelAndQuit = function () {
+            vm.newPriority = vm.node.priority;
+            vm.newStatus = vm.node.status;
             $uibModalInstance.dismiss();
         }
 
-        this.setShowEditOptions = function (showEditOptions) {
-            this.showEditOptions = showEditOptions;
+        vm.setShowEditOptions = function (showEditOptions) {
+            vm.showEditOptions = showEditOptions;
         }
 
     }

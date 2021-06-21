@@ -230,7 +230,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
     }
 
     function lookup(entity, id, any = false) {
-        if ((entity._id === id) || (entity.id === id)) {
+        if (entity._id === id) {
             return entity;
         }
         if (entity.childrenAsMap.has(id)) {
