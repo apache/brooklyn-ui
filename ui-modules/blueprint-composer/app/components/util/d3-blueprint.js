@@ -1122,6 +1122,15 @@ export function D3Blueprint(container, options) {
      * ||Apply    |              | <- Button to apply confirmed choices.
      * '-------------------------'
      *
+     * Confirmation choice is pre-selected for a single option in multi-selected mode.
+     *  _________________________
+     * | Confirmation message |X||
+     * | _                       |
+     * ||X| Choice 1             | <- Checkbox with pre-selected confirmation choice 'Choice 1'
+     * | --------                |
+     * ||Apply    |              | <- Button to apply confirmed choice.
+     * '-------------------------'
+     *
      * @param {String} id The ID of a node to draw confirmation menu for.
      * @param {String} message The confirmation message.
      * @param {Array.<String>} choices The confirmation choices.
@@ -1202,12 +1211,17 @@ export function D3Blueprint(container, options) {
                 let confirmationCheckboxDiv = confirmation
                     .append('xhtml:div')
                     .attr('class', 'checkbox');
-                confirmationCheckboxDiv
+                let input = confirmationCheckboxDiv
                     .append('xhtml:input')
                     .style('margin-left', '0px')
                     .attr('type', 'checkbox')
                     .attr('value', choice)
                     .on('change', toggleCheckbox);
+                if (choices.length === 1) {
+                    // pre-select the single element in the check-box area.
+                    input.attr('checked','');
+                    confirmedChoices.add(choice);
+                }
                 confirmationCheckboxDiv
                     .append('xhtml:label')
                     .html(choice);
