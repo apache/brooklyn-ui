@@ -145,7 +145,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         saving: false,
         force: false
     };
-
+    /* Derived properties & calculators, will be updated whenever $scope.state.view changes */
     $scope.getTitle = () => {
         switch ($scope.state.view) {
             case VIEWS.form:
@@ -165,23 +165,35 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
     };
 
     $scope.title = $scope.getTitle();
+    $scope.catalogURL = $scope.getCatalogURL();
+
+    $scope.$watch('state.view', (newValue, oldValue) => {
+        if (newValue !== oldValue) {
+            $scope.title = $scope.getTitle();
+            $scope.catalogURL = $scope.getCatalogURL();
+        }
+    });
+    /* END Derived properties */
+
     $scope.save = () => {
         $scope.state.saving = true;
         $scope.state.error = undefined;
 
         let bom = createBom();
-        paletteApi.create(bom, {forceUpdate: $scope.state.force}).then((savedItem) => {
-            if (!angular.isArray($scope.config.versions)) {
-                $scope.config.versions = [];
-            }
-            $scope.config.versions.push($scope.config.version);
-            $scope.state.view = VIEWS.saved;
-            $scope.catalogURL = $scope.getCatalogURL();
-        }).catch(error => {
-            $scope.state.error = error.error.message;
-        }).finally(() => {
-            $scope.state.saving = false;
-        });
+        paletteApi.create(bom, { forceUpdate: $scope.state.force })
+            .then((savedItem) => {
+                if (!angular.isArray($scope.config.versions)) {
+                    $scope.config.versions = [];
+                }
+                $scope.config.versions.push($scope.config.version);
+                $scope.state.view = VIEWS.saved;
+            })
+            .catch(error => {
+                $scope.state.error = error.error.message;
+            })
+            .finally(() => {
+                $scope.state.saving = false;
+            });
     };
 
 
@@ -239,7 +251,6 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         $scope.updateDefaults(newVals[0]);
         $scope.form.name.$validate();
         $scope.buttonText = $scope.buttonTextFn();
-        $scope.title = $scope.getTitle();
     });
 }
 
