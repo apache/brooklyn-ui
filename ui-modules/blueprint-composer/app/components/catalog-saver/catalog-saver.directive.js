@@ -62,9 +62,23 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $f
         link: link
     };
 
-    function getSuggestedVersionToSaveFromBlueprint(entity, metadata, scope) {
+    // TODO We might need to refactor the controller and directive around this to structure it better
+    function updateBundleConfig(entity, metadata, scope) {
+        // the name or can be inherited if root node is a known application type we are editing
+        // (normally in those cases $scope.config will already be set by caller, but maybe not always)
+        if (!scope.config.name && entity.hasName()) {
+            scope.config.name = entity.name;
+        }
+        // the ID can be set in the UI or can be inherited if root node is a known application type we are editing
+        // (normally in those cases $scope.config will already be set by caller, but maybe not always)
+        if (!$scope.config.symbolicName && (entity.hasId() || metadata.has('id'))) {
+            $scope.config.symbolicName = entity.id || metadata.get('id');
+        }
         if (!scope.config.version && (entity.hasVersion() || metadata.has('version'))) {
             scope.config.version = entity.version || metadata.get('version');
+        }
+        if (!scope.config.bundle && scope.config.symbolicName) {
+            scope.config.bundle = $scope.config.symbolicName;
         }
     }
 
@@ -93,22 +107,7 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $f
             }
             if (!$scope.isNewFromTemplate()) {
                 // (these should only be set if not making something new from a template, as the entity items will refer to the template)
-
-                // the name and the ID can be set in the UI, 
-                // or all can be inherited if root node is a known application type we are editting 
-                // (normally in those cases $scope.config will already be set by caller, but maybe not always) 
-                if (!$scope.config.name && entity.hasName()) {
-                    $scope.config.name = entity.name;
-                }
-                if (!$scope.config.symbolicName && (entity.hasId() || metadata.has('id'))) {
-                    $scope.config.symbolicName = entity.id || metadata.get('id');
-                }
-                (composerOverrides.getSuggestedVersionToSaveFromBlueprint || getSuggestedVersionToSaveFromBlueprint)(entity, metadata, $scope);
-                if (!$scope.config.bundle) {
-                    if ($scope.config.symbolicName) {
-                        $scope.config.bundle = $scope.config.symbolicName;
-                    }
-                }
+                (composerOverrides.updateBundleConfig || updateBundleConfig)(entity,metadata, $scope);
             }
 
             // Override this callback to update configuration data elsewhere
