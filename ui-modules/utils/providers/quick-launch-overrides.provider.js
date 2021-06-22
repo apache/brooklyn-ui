@@ -18,20 +18,19 @@
  */
 import angular from 'angular';
 
-import {applicationApiProvider} from '../providers/application-api.provider'
-import {catalogApiProvider} from '../providers/catalog-api.provider'
-import {locationApiProvider} from '../providers/location-api.provider'
-import {sensorApiProvider} from '../providers/sensor-api.provider'
-import serverApi from '../api/brooklyn/server';
-import {logbookApiProvider} from "../providers/logbook-api.provider";
+const MODULE_NAME = 'brooklyn.quick-launch-overrides-service';
 
-const MODULE_NAME = 'utils.brooklyn.api';
-
-angular.module(MODULE_NAME, [serverApi])
-    .provider('applicationApi', applicationApiProvider)
-    .provider('catalogApi', catalogApiProvider)
-    .provider('locationApi', locationApiProvider)
-    .provider('sensorApi', sensorApiProvider)
-    .provider('logbookApi', logbookApiProvider);
+angular.module(MODULE_NAME, [])
+    .provider('quickLaunchOverrides', quickLaunchOverridesProvider);
 
 export default MODULE_NAME;
+
+function quickLaunchOverridesProvider() {
+    // callers can do angular.config(['quickLaunchOverridesProvider', function (provider) { provider.add({ ... }) })
+    // to set various configuration. to see what configuration is supported, grep for quickLaunchOverrides in this project.
+    var result = {};
+    return {
+        $get: () => result,
+        add: (props) => angular.extend(result, props),
+    };
+}

@@ -16,7 +16,13 @@
   specific language governing permissions and limitations
   under the License.
 -->
+
+
+<ng-include ng-repeat="section in sections" src="section"></ng-include>
+
+
 <!-- ENTITY TYPE -->
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-header.html" defer-to-preexisting-id="true">
 <section class="spec-type container-fluid panel-group">
   <div class="panel">
     <div class="spec-type-header">
@@ -67,12 +73,14 @@
         <md-if-multiline ng-show="specEditor.descriptionVisible" data="modelDescription"></md-if-multiline>
     </div>
 </br-collapsible>
+</script>
 
 <!-- ENTITY PARAMETERS -->
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-parameters.html" defer-to-preexisting-id="true">
 <br-collapsible state="state.parameters.open" ng-if="!model.parent">  <!-- the ng-if is needed to make state update?! -->
     <heading>
         Parameters
-        <span ng-if="specEditor.getParameterIssues().length> 0" class="badge" ng-class="getBadgeClass(specEditor.getParameterIssues())">{{specEditor.getParameterIssues().length}}</span>
+        <span ng-if="getIssuesByGroup('parameters').length> 0" class="badge" ng-class="getBadgeClass(getIssuesByGroup('parameters'))">{{getIssuesByGroup('parameters').length}}</span>
         <span class="pull-right" ng-show="$parent.stateWrapped.state">
             <span class="spec-toolbar-action" ng-class="{'active': state.parameters.filter.open}"><i class="fa fa-search-plus collapsible-action" title="Search or add a parameter" ng-click="$event.stopPropagation(); $event.preventDefault(); state.parameters.filter.open = !state.parameters.filter.open" ng-class="{'text-info': state.parameters.search.length > 0}"></i></span>
         </span>
@@ -277,12 +285,14 @@
 
     </div>
 </br-collapsible>
+</script>
 
 <!-- ENTITY CONFIGURATION -->
+<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-entity-config.html" defer-to-preexisting-id="true">
 <br-collapsible ng-if="true" state="state.config.open">  <!-- the ng-if is needed to make state update?! -->
     <heading>
         Configuration
-        <span ng-if="getConfigIssues().length> 0" class="badge" ng-class="getBadgeClass(getConfigIssues())">{{getConfigIssues().length}}</span>
+        <span ng-if="getIssuesByGroup('config').length> 0" class="badge" ng-class="getBadgeClass(getIssuesByGroup('config'))">{{getIssuesByGroup('config').length}}</span>
         <span class="pull-right" ng-show="$parent.stateWrapped.state">
             <span class="spec-toolbar-action" ng-class="{'active': state.config.filter.open}"><i class="fa fa-search-plus collapsible-action" title="Filter configuration" ng-click="$event.stopPropagation(); $event.preventDefault(); state.config.filter.open = !state.config.filter.open" ng-class="{'text-info': state.config.search.length > 0}"></i></span>
         </span>
@@ -578,15 +588,9 @@
         
     </div>
 </br-collapsible>
-
-<!-- ENTITY REQUIREMENTS -->
-<ng-include src="'blueprint-composer/component/spec-editor/section-requirements.html'"></ng-include>
-<script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-requirements.html" defer-to-preexisting-id="true">
-    <!-- Placeholder for 'requirements' section. -->
 </script>
 
 <!-- ENTITY LOCATION -->
-<ng-include src="'blueprint-composer/component/spec-editor/section-locations.html'"></ng-include>
 <script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-locations.html" defer-to-preexisting-id="true">
   <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.location.open">
     <heading>
@@ -621,7 +625,6 @@
 </script>
 
 <!-- ENTITY POLICIES -->
-<ng-include src="'blueprint-composer/component/spec-editor/section-policies.html'"></ng-include>
 <script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-policies.html" defer-to-preexisting-id="true">
   <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.policy.open">
     <heading>
@@ -657,7 +660,6 @@
 </script>
 
 <!-- ENTITY ENRICHERS -->
-<ng-include src="'blueprint-composer/component/spec-editor/section-enrichers.html'"></ng-include>
 <script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-enrichers.html" defer-to-preexisting-id="true">
   <br-collapsible ng-if="[FAMILIES.ENTITY, FAMILIES.SPEC].indexOf(model.family) > -1" state="state.enricher.open">
     <heading>
@@ -692,7 +694,7 @@
   </br-collapsible>
 </script>
 
-<ng-include src="'blueprint-composer/component/spec-editor/section-others.html'"></ng-include>
+<!-- OTHERS (downstream customizations) -->
 <script type="text/ng-template" id="blueprint-composer/component/spec-editor/section-others.html" defer-to-preexisting-id="true">
     <!-- Placeholder for other sections. -->
 </script>

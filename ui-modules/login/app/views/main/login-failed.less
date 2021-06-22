@@ -16,22 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import angular from 'angular';
+.login-failed-index  {
+  z-index: 2000;
+}
 
-import {applicationApiProvider} from '../providers/application-api.provider'
-import {catalogApiProvider} from '../providers/catalog-api.provider'
-import {locationApiProvider} from '../providers/location-api.provider'
-import {sensorApiProvider} from '../providers/sensor-api.provider'
-import serverApi from '../api/brooklyn/server';
-import {logbookApiProvider} from "../providers/logbook-api.provider";
-
-const MODULE_NAME = 'utils.brooklyn.api';
-
-angular.module(MODULE_NAME, [serverApi])
-    .provider('applicationApi', applicationApiProvider)
-    .provider('catalogApi', catalogApiProvider)
-    .provider('locationApi', locationApiProvider)
-    .provider('sensorApi', sensorApiProvider)
-    .provider('logbookApi', logbookApiProvider);
-
-export default MODULE_NAME;
+.login-failed-body {
+  table {
+    th.login-failed-node-id {
+      width: 25%;
+    }
+  }
+}

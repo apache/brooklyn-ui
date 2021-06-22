@@ -30,6 +30,7 @@ import template from './spec-editor.template.html';
 import {graphicalState} from '../../views/main/graphical/graphical.state';
 import {SENSITIVE_FIELD_REGEX} from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
 import {computeQuickFixesForIssue} from '../quick-fix/quick-fix';
+import scriptTagDecorator from 'brooklyn-ui-utils/script-tag-non-overwrite/script-tag-non-overwrite';
 
 const MODULE_NAME = 'brooklyn.components.spec-editor';
 const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
@@ -39,7 +40,9 @@ const SUBSECTION = {
     PARAMETERS: 'parameters'
 }
 
-angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer])
+export const SUBSECTION_TEMPLATE_OTHERS_URL = 'blueprint-composer/component/spec-editor/section-others.html';
+
+angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer, scriptTagDecorator])
     .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', '$compile', 'blueprintService', 'composerOverrides', 'mdHelper', specEditorDirective])
     .filter('specEditorConfig', specEditorConfigFilter)
     .filter('specEditorType', specEditorTypeFilter)
@@ -110,7 +113,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
 
     function controller($scope, $element) {
         (composerOverrides.configureSpecEditorController || function () {
-        })(this, $scope, $element, blueprintService);
+        })(this, $scope, $element);
 
         // does very little currently, but link adds to this
         return this;
@@ -123,6 +126,17 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope.REPLACED_DSL_ENTITYSPEC = REPLACED_DSL_ENTITYSPEC;
         scope.parameters = [];
         scope.config = {};
+
+        scope.sections = [
+            'blueprint-composer/component/spec-editor/section-header.html',
+            'blueprint-composer/component/spec-editor/section-parameters.html',
+            'blueprint-composer/component/spec-editor/section-entity-config.html',
+            'blueprint-composer/component/spec-editor/section-locations.html',
+            'blueprint-composer/component/spec-editor/section-policies.html',
+            'blueprint-composer/component/spec-editor/section-enrichers.html',
+            SUBSECTION_TEMPLATE_OTHERS_URL,
+        ];
+
         specEditor.descriptionVisible = false;
         specEditor.paramTypes = PARAM_TYPES;
 
@@ -478,20 +492,23 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             $state.go(graphicalState.name);
         };
 
-        specEditor.getParameterIssues = () => {
+        /**
+         * Gets collection of issues filtered by group.
+         *
+         * @param {String} groupName The group name to filter issues by.
+         * @returns {[]} The collection of issues found.
+         */
+        scope.getIssuesByGroup = (groupName) => {
             return scope.model.issues
-                .filter((issue) => (issue.group === 'parameters'))
+                .filter((issue) => (issue.group === groupName))
                 .concat(Object.values(scope.model.getClusterMemberspecEntities())
                     .filter((spec) => (spec && spec.hasIssues()))
                     .reduce((acc, spec) => (acc.concat(spec.issues)), []));
-        };
-        scope.getConfigIssues = specEditor.getConfigIssues = () => {
-            return scope.model.issues
-                .filter((issue) => (issue.group === 'config'))
-                .concat(Object.values(scope.model.getClusterMemberspecEntities())
-                    .filter((spec) => (spec && spec.hasIssues()))
-                    .reduce((acc, spec) => (acc.concat(spec.issues)), []));
-        };
+        }
+
+        /**
+         * @returns {[]} The collection of issues specific to Policies.
+         */
         scope.getPoliciesIssues = () => {
             return scope.model.getPoliciesAsArray().reduce((acc, policy) => {
                 if (policy.hasIssues()) {
@@ -500,6 +517,10 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 return acc;
             }, []);
         };
+
+        /**
+         * @returns {[]} The collection of issues specific to Enrichers.
+         */
         scope.getEnrichersIssues = () => {
             return scope.model.getEnrichersAsArray().reduce((acc, enricher) => {
                 if (enricher.hasIssues()) {
@@ -1266,6 +1287,11 @@ export function specEditorTypeFilter() {
     }
 }
 
+/**
+ * Configures $templateCache for this directive.
+ *
+ * @param $templateCache The template cache to configure.
+ */
 function templateCache($templateCache) {
     $templateCache.put(TEMPLATE_URL, template);
 }

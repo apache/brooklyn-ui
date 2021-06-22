@@ -41,10 +41,23 @@ export function quickLaunchDirective() {
             args: '=?', // default behaviour of code is: { noEditButton: false, noComposerButton: false, noCreateLocationLink: false, location: null }
             callback: '=?',
         },
-        controller: ['$scope', '$http', '$location', 'brSnackbar', 'brBrandInfo', controller]
+        controller: ['$scope', '$http', '$location', 'brSnackbar', 'brBrandInfo' , 'quickLaunchOverrides', controller]
     };
 
-    function controller($scope, $http, $location, brSnackbar, brBrandInfo) {
+    function controller($scope, $http, $location, brSnackbar, brBrandInfo, quickLaunchOverrides) {
+
+        let quickLaunch = this;
+        quickLaunch.buildNewApp = () => {
+            console.log('yaml new app');
+            return {
+                name: $scope.model.name || $scope.app.displayName,
+                location: $scope.model.location || '<REPLACE>',
+                services: [
+                    angular.copy($scope.entityToDeploy)
+                ]
+            };
+        };
+
         $scope.deploying = false;
         $scope.model = {
             newConfigFormOpen: false,
@@ -121,6 +134,11 @@ export function quickLaunchDirective() {
             $scope.clearError();
         });
 
+        // Configure this controller from outside. Customization
+        (quickLaunchOverrides.configureQuickLaunch || function () {})(quickLaunch, $scope);
+
+        // === Private members below ====================
+
         function deployApp() {
             $scope.deploying = true;
             let appYaml;
@@ -183,13 +201,7 @@ export function quickLaunchDirective() {
         }
 
         function buildYaml() {
-            let newApp = {
-                name: $scope.model.name || $scope.app.displayName,
-                location: $scope.model.location || '<REPLACE>',
-                services: [
-                    angular.copy($scope.entityToDeploy)
-                ]
-            };
+            let newApp = quickLaunch.buildNewApp();
             return yaml.safeDump(newApp);
         }
 

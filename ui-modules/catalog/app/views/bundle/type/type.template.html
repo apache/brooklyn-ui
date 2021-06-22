@@ -80,7 +80,7 @@
                             <a ng-href="{{ composerUrl }}#!/graphical?bundleSymbolicName={{type.containingBundle.split(':')[0]}}&bundleVersion={{type.containingBundle.split(':')[1]}}&typeSymbolicName={{type.symbolicName}}&typeVersion={{type.version}}">Using graphical designer</a>
                         </li>
                         <li role="menuitem" ng-if="type.supertypes.includes('org.apache.brooklyn.api.entity.Entity') && composerUrl">
-                            <a ng-href="{{ composerUrl }}#!/yaml?bundleSymbolicName={{type.containingBundle.split(':')[0]}}&bundleVersion={{type.containingBundle.split(':')[1]}}&typeSymbolicName={{type.symbolicName}}&typeVersion={{type.version}}">Using YAML editor</a>
+                            <a ng-href="{{ composerUrl }}#!/yaml?{{typeFormat}}bundleSymbolicName={{type.containingBundle.split(':')[0]}}&bundleVersion={{type.containingBundle.split(':')[1]}}&typeSymbolicName={{type.symbolicName}}&typeVersion={{type.version}}">Using YAML editor</a>
                         </li>
                         <li role="menuitem" ng-if="type.supertypes.includes('org.apache.brooklyn.api.location.Location')">
                             <a ng-href="brooklyn-ui-location-manager/#!/location?symbolicName={{type.symbolicName}}&version={{type.version}}">Using location manager</a>

@@ -51,21 +51,24 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
     function link($scope, $element) {
         let blueprintGraph = new D3Blueprint($element[0], {shouldShowNode: composerOverrides.shouldShowNode}).center();
 
+        // allow downstream to configure this directive and/or scope
+        (composerOverrides.configureDesignerDirective || function () {})($scope, $element, blueprintGraph);
+
         $scope.blueprint = blueprintService.get();
-        $scope.$watch('blueprint', ()=> {
+        $scope.$watch('blueprint', () => {
             redrawGraph();
         }, true);
 
-        blueprintService.refreshBlueprintMetadata().then(()=>{
+        blueprintService.refreshBlueprintMetadata().then(() => {
             redrawGraph();
         });
 
         $scope.selectedEntity = null;
 
-        $scope.$on('d3.redraw', (event, initial)=> {
+        $scope.$on('d3.redraw', (event, initial) => {
             $log.debug(TAG + 'Re-draw blueprint, triggered by ' + event.name, initial, $scope.blueprint);
 
-            blueprintService.refreshBlueprintMetadata().then(()=>{
+            blueprintService.refreshBlueprintMetadata().then(() => {
                 redrawGraph();
                 if (initial) {
                     blueprintGraph.center();
@@ -73,10 +76,10 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
             });
         });
 
-        $scope.$on('d3.remove', (event, entity)=> {
+        $scope.$on('d3.remove', (event, entity) => {
             $log.debug(TAG + `Delete ${entity.family.displayName} ${entity._id}`, entity);
 
-            let relationships = blueprintService.getRelationships().filter((relation)=>(relation.target === entity));
+            let relationships = blueprintService.getRelationships().filter((relation) => (relation.target === entity));
 
             switch (entity.family) {
                 case EntityFamily.ENTITY:
@@ -90,7 +93,7 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
                     break;
                 case EntityFamily.SPEC:
                     let memberSpecMap = entity.parent.getClusterMemberspecEntities();
-                    Object.keys(memberSpecMap).forEach((key)=> {
+                    Object.keys(memberSpecMap).forEach((key) => {
                         if (memberSpecMap[key] === entity) {
                             entity.parent.removeConfig(key);
                         }
@@ -98,17 +101,17 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
                     break;
             }
 
-            $q.all(relationships.map((relation)=>(blueprintService.refreshRelationships(relation.source)))).then(()=> {
-                $scope.$applyAsync(()=> {
+            $q.all(relationships.map((relation) => (blueprintService.refreshRelationships(relation.source)))).then(() => {
+                $scope.$applyAsync(() => {
                     redrawGraph();
                     $state.go('main.graphical');
                 });
             });
         });
 
-        $scope.$on('$stateChangeSuccess', (event, toState, toParams, fromState, fromParams, options)=> {
+        $scope.$on('$stateChangeSuccess', (event, toState, toParams, fromState, fromParams, options) => {
             let id;
-            switch(toState) {
+            switch (toState) {
                 case graphicalEditEntityState:
                     id = toParams.entityId;
                     break;
@@ -129,18 +132,18 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
             }
         });
 
-        $element.bind('click-svg', (event)=> {
+        $element.bind('click-svg', (event) => {
             $log.debug(TAG + 'Select canvas, un-select node (if one selected before)');
             $scope.selectedEntity = null;
             if ($scope.onSelectionChange) $scope.onSelectionChange($scope.selectedEntity);
-            $scope.$apply(()=> {
+            $scope.$apply(() => {
                 redrawGraph();
                 $state.go('main.graphical');
             });
         });
 
-        $element.bind('click-entity', (event)=> {
-            $scope.$apply(()=>{
+        $element.bind('click-entity', (event) => {
+            $scope.$apply(() => {
                 $log.debug(TAG + 'edit node ' + event.detail.entity._id, event.detail.entity);
                 switch (event.detail.entity.family) {
                     case EntityFamily.ENTITY:
@@ -159,14 +162,17 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
             });
         });
 
-        $element.bind('click-add-child', (event)=> {
+        $element.bind('click-add-child', (event) => {
             $log.debug(TAG + 'Add child to node ' + event.detail.entity._id);
-            $scope.$apply(()=> {
+            $scope.$apply(() => {
                 $state.go('main.graphical.edit.add', {entityId: event.detail.entity._id, family: 'entity'});
             });
         });
 
         $element.bind('move-entity', function (event) {
+            if (!event.detail.isNewParent) { // Do not remove, this event is intercepted in branded versions.
+                return;
+            }
             let currentNode = blueprintService.find(event.detail.nodeId);
             let parentNode = blueprintService.find(event.detail.parentId);
             if (parentNode.hasAncestor(currentNode)) {

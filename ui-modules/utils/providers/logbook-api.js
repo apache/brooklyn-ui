@@ -16,22 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import angular from 'angular';
 
-import {applicationApiProvider} from '../providers/application-api.provider'
-import {catalogApiProvider} from '../providers/catalog-api.provider'
-import {locationApiProvider} from '../providers/location-api.provider'
-import {sensorApiProvider} from '../providers/sensor-api.provider'
-import serverApi from '../api/brooklyn/server';
-import {logbookApiProvider} from "../providers/logbook-api.provider";
+import {Api} from './api';
 
-const MODULE_NAME = 'utils.brooklyn.api';
+export class LogbookApi extends Api {
+    constructor(cache, host) {
+        super(cache, host);
+    }
 
-angular.module(MODULE_NAME, [serverApi])
-    .provider('applicationApi', applicationApiProvider)
-    .provider('catalogApi', catalogApiProvider)
-    .provider('locationApi', locationApiProvider)
-    .provider('sensorApi', sensorApiProvider)
-    .provider('logbookApi', logbookApiProvider);
+    logbookQuery() {
+        return Promise.resolve();
+    }
 
-export default MODULE_NAME;
+    getEntries() {
+        return Promise.resolve();
+    }
+}
+
+window.LogbookApi = LogbookApi;
