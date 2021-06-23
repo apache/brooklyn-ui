@@ -79,7 +79,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                             .reduce((set, objectKey) => {
                                 config[key].relationships.forEach((entity)=> {
                                     if (entity !== null) {
-                                        set.add({entity: entity, name: objectKey});
+                                        set.add({entity: entity, name: key});
                                     }
                                 });
                                 return set;
