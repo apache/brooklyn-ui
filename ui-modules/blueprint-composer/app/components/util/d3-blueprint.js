@@ -796,7 +796,6 @@ export function D3Blueprint(container, options) {
             .attr('font-family', 'monospace')
             .attr('fill', '#f5f6fa') // colour of the canvas
                 .insert('textPath')
-                .attr('hidden', (d) => (d.label ? null : ''))
                 .attr('xlink:href', (d)=>('#' + d.source._id + '-' + d.target._id))
                 .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
                 .html((d) => (d.label ? '&#9608;'.repeat(d.label.length + 2) : null));
@@ -805,7 +804,6 @@ export function D3Blueprint(container, options) {
             .attr('text-anchor', 'middle')
             .attr('font-family', 'monospace')
                 .insert('textPath')
-                .attr('hidden', (d) => (d.label ? null : ''))
                 .attr('xlink:href', (d)=>('#' + d.source._id + '-' + d.target._id))
                 .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
                 .html((d) => (d.label ? ' ' + d.label + ' ': null));
