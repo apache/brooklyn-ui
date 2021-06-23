@@ -55,7 +55,8 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                     if (config instanceof Dsl) {
                         config.relationships.forEach((entity) => {
                             if (entity !== null) {
-                                set.add(entity);
+                                // TODO: set the right name of the relationship
+                                set.add({entity: entity, name: null});
                             }
                         });
                     }
@@ -63,9 +64,10 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                         config
                             .filter(conf => conf instanceof Dsl)
                             .reduce((set, config)=> {
-                                config.relationships.forEach((entity)=> {
+                                config.relationships.forEach((entity) => {
                                     if (entity !== null) {
-                                        set.add(entity);
+                                        // TODO: set the right name of the relationship
+                                        set.add({entity: entity, name: null});
                                     }
                                 });
                                 return set;
@@ -74,10 +76,10 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                     if (config instanceof Object) {
                         Object.keys(config)
                             .filter(key => config[key] instanceof Dsl)
-                            .reduce((set, key)=> {
+                            .reduce((set, key) => {
                                 config[key].relationships.forEach((entity)=> {
                                     if (entity !== null) {
-                                        set.add(entity);
+                                        set.add({entity: entity, name: key});
                                     }
                                 });
                                 return set;
@@ -89,7 +91,8 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
             return Array.from(set).map((relation) => {
                 return {
                     source: entity,
-                    target: relation
+                    target: relation.entity,
+                    label: relation.name
                 };
             });
         }
