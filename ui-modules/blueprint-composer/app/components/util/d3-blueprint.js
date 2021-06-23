@@ -798,7 +798,7 @@ export function D3Blueprint(container, options) {
                 .insert('textPath')
                 .attr('xlink:href', (d)=>('#' + d.source._id + '-' + d.target._id))
                 .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
-                .html((d) => (d.label ? '&#9608;'.repeat(d.label.length + 2) : null));
+                .html((d) => ('&#9608;'.repeat(d.label.length + 2)));
         relationDataLabelsEntered.insert('text') // Add label text on top of '&#9608;'s which is on top of the path.
             .attr('dominant-baseline', 'middle')
             .attr('text-anchor', 'middle')
@@ -806,7 +806,7 @@ export function D3Blueprint(container, options) {
                 .insert('textPath')
                 .attr('xlink:href', (d)=>('#' + d.source._id + '-' + d.target._id))
                 .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
-                .html((d) => (d.label ? ' ' + d.label + ' ': null));
+                .html((d) => (' ' + d.label + ' '));
 
         // Draw the transition
         relationData.transition()
