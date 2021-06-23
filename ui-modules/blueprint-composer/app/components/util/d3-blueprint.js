@@ -806,7 +806,7 @@ export function D3Blueprint(container, options) {
                 .attr('hidden', (d) => (d.label ? null : ''))
                 .attr('xlink:href', (d)=>('#' + d.source._id + '-' + d.target._id))
                 .attr('startOffset', '59%')
-                .html((d) => (' ' + d.label + ' '));
+                .html((d) => (d.label ? ' ' + d.label + ' ': null));
 
         // Draw the transition
         relationData.transition()
