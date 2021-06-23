@@ -781,7 +781,7 @@ export function D3Blueprint(container, options) {
 
         // Draw the relationship path
         relationDataEntered.insert('path')
-            .attr('class', 'relation')
+            .attr('class', (d) => (d.pathSelector))
             .attr('id', (d)=>(d.source._id + '-' + d.target._id))
             .attr('opacity', 0)
             .attr('from', (d)=>(d.source._id))
@@ -792,6 +792,7 @@ export function D3Blueprint(container, options) {
         // NOTE `textPath` DECREASES THE UI PERFORMANCE, USE LABELS WITH CAUTION.
         let relationDataLabelsEntered = relationDataEntered.filter(d => d.label);
         relationDataLabelsEntered.insert('text') // Add text layer of '&#9608;'s to erase the area on the path.
+            .attr('class', (d) => (d.labelSelector))
             .attr('dominant-baseline', 'middle')
             .attr('text-anchor', 'middle')
             .attr('font-family', 'monospace')
@@ -801,6 +802,7 @@ export function D3Blueprint(container, options) {
                 .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
                 .html((d) => ('&#9608;'.repeat(d.label.length + 2)));
         relationDataLabelsEntered.insert('text') // Add label text on top of '&#9608;'s which is on top of the path.
+            .attr('class', (d) => (d.labelSelector))
             .attr('dominant-baseline', 'middle')
             .attr('text-anchor', 'middle')
             .attr('font-family', 'monospace')

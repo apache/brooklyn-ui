@@ -28,7 +28,7 @@ import {graphicalEditSpecState} from './graphical/edit/spec/edit.spec.controller
 import bottomSheetTemplate from './bottom-sheet.template.html';
 import {ISSUE_LEVEL} from '../../components/util/model/issue.model';
 
-const LAYERS = [
+export const LAYERS = [
     {
         id: 'locations',
         label: 'Locations',
