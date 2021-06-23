@@ -24,7 +24,8 @@ import marked from 'marked';
 import _ from 'lodash';
 
 export function D3Blueprint(container, options) {
-    let _svg = d3.select(container).append('svg').attr('class', 'blueprint-canvas');
+    let _container = d3.select(container);
+    let _svg = _container.append('svg').attr('class', 'blueprint-canvas');
     let _mirror = _svg.append('path').style('display', 'none');
     let _zoomGroup = _svg.append('g').attr('class', 'zoom-group');
     let _parentGroup = _zoomGroup.append('g').attr('class', 'parent-group');
@@ -546,7 +547,7 @@ export function D3Blueprint(container, options) {
         let root = d3.hierarchy(blueprint);
         tree(root);
 
-        _d3DataHolder.nodes = root.descendants();
+        _d3DataHolder.nodes = root.descendants().reverse();
         _d3DataHolder.links = root.links();
         _d3DataHolder.relationships = relationships;
 
@@ -1179,9 +1180,12 @@ export function D3Blueprint(container, options) {
                 }
                 confirmationElement.remove();
                 confirmationElement = null;
+            } else {
+                // NOOP. The user user clicks on the 'X' button or elsewhere on the canvas to close the menu.
             }
         }
 
+        // Add 'X' close button at the top-right.
         let close = () => reply(null);
         confirmation
             .append('xhtml:i')
@@ -1190,6 +1194,9 @@ export function D3Blueprint(container, options) {
             .style('top', '8px')
             .attr('class', 'fa fa-fw fa-times remove-spec-configuration')
             .on('click', close);
+
+        // Listen to 'click-svg' to close the menu when user clicks elsewhere on the canvas.
+        _container.on('click-svg', close);
 
         // Render the menu content based on multi-selection condition.
         if (isMultiSelection) {
@@ -1217,7 +1224,10 @@ export function D3Blueprint(container, options) {
                 }
             }
 
+            // Add check-boxes.
             choices.forEach(choice => {
+
+                // Add check-box for every `choice` option.
                 let confirmationCheckboxDiv = confirmation
                     .append('xhtml:div')
                     .attr('class', 'checkbox');
@@ -1228,11 +1238,14 @@ export function D3Blueprint(container, options) {
                     .attr('id', (choice.id || choice))
                     .attr('value', choice)
                     .on('change', toggleCheckbox);
+
+                // Pre-select the single element in the check-box area.
                 if (choices.length === 1) {
-                    // pre-select the single element in the check-box area.
                     input.attr('checked','');
                     confirmedChoices.add(choice);
                 }
+
+                // Display the label with choice text.
                 confirmationCheckboxDiv
                     .append('xhtml:label')
                     .html(choice);
@@ -1245,9 +1258,12 @@ export function D3Blueprint(container, options) {
                 .attr('class', 'btn btn-outline btn-primary node-confirmation-button')
                 .html('Apply')
                 .on('click', confirmChoice);
+
+            // Disable 'Apply' button until at least one option is selected.
             if (choices.length > 1) {
-                applyButton.attr('disabled', ''); // Disable 'Apply' button until at least one option is selected.
+                applyButton.attr('disabled', '');
             }
+
         } else {
 
             // Render the menu with buttons.
