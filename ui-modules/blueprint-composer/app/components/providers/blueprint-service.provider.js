@@ -50,22 +50,24 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
     // Add relationships provider based on Entity.config
     addEntityRelationshipsProvider( 'config',{
         apply: (entity) => {
-            let set = Array.from(entity.config.values())
-                .reduce((set, config)=> {
+            let set = Array.from(entity.config.keys())
+                .reduce((set, key)=> {
+                    let config = entity.config.get(key);
                     if (config instanceof Dsl) {
                         config.relationships.forEach((entity) => {
                             if (entity !== null) {
-                                set.add(entity);
+                                set.add({entity: entity, name: key});
                             }
                         });
                     }
                     if (config instanceof Array) {
+                        console.log('Array',config)
                         config
-                            .filter(conf => conf instanceof Dsl)
-                            .reduce((set, config)=> {
-                                config.relationships.forEach((entity)=> {
+                            .filter(item => item instanceof Dsl)
+                            .reduce((set, config) => {
+                                config.relationships.forEach((entity) => {
                                     if (entity !== null) {
-                                        set.add(entity);
+                                        set.add({entity: entity, name: key});
                                     }
                                 });
                                 return set;
@@ -73,11 +75,11 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                     }
                     if (config instanceof Object) {
                         Object.keys(config)
-                            .filter(key => config[key] instanceof Dsl)
-                            .reduce((set, key)=> {
+                            .filter(objectKey => config[objectKey] instanceof Dsl)
+                            .reduce((set, objectKey) => {
                                 config[key].relationships.forEach((entity)=> {
                                     if (entity !== null) {
-                                        set.add(entity);
+                                        set.add({entity: entity, name: key});
                                     }
                                 });
                                 return set;
@@ -89,7 +91,8 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
             return Array.from(set).map((relation) => {
                 return {
                     source: entity,
-                    target: relation
+                    target: relation.entity,
+                    label: relation.name
                 };
             });
         }
