@@ -776,11 +776,39 @@ export function D3Blueprint(container, options) {
         let relationData = _relationGroup.selectAll('.relation')
             .data(_d3DataHolder.visible.relationships, (d)=>(d.source._id + '_related_to_' + d.target._id));
 
-        relationData.enter().insert('path')
+        let relationDataEntered = relationData.enter();
+
+        // Draw the relationship path
+        relationDataEntered.insert('path')
             .attr('class', 'relation')
+            .attr('id', (d)=>(d.source._id + '-' + d.target._id))
             .attr('opacity', 0)
             .attr('from', (d)=>(d.source._id))
             .attr('to', (d)=>(d.target._id));
+
+        // Draw the relationship label that follows the path, somewhere in the middle.
+        // NOTE `textPath` DECREASES THE UI PERFORMANCE, USE LABELS WITH CAUTION.
+        relationDataEntered.insert('text') // Add text layer of '&#9608;'s to erase the area on the path.
+            .attr('dominant-baseline', 'middle')
+            .attr('text-anchor', 'middle')
+            .attr('font-family', 'monospace')
+            .attr('fill', '#f5f6fa')
+                .insert('textPath')
+                .attr('hidden', (d) => (d.label ? null : ''))
+                .attr('xlink:href', (d)=>('#' + d.source._id + '-' + d.target._id))
+                .attr('startOffset', '59%')
+                .html((d) => (d.label ? '&#9608;'.repeat(d.label.length + 2) : null));
+        relationDataEntered.insert('text') // Add label text on top of '&#9608;'s which is on top of the path.
+            .attr('dominant-baseline', 'middle')
+            .attr('text-anchor', 'middle')
+            .attr('font-family', 'monospace')
+                .insert('textPath')
+                .attr('hidden', (d) => (d.label ? null : ''))
+                .attr('xlink:href', (d)=>('#' + d.source._id + '-' + d.target._id))
+                .attr('startOffset', '59%')
+                .html((d) => (' ' + d.label + ' '));
+
+        // Draw the transition
         relationData.transition()
             .duration(_configHolder.transition)
             .attr('opacity', 1)
@@ -804,6 +832,7 @@ export function D3Blueprint(container, options) {
 
                 return `M ${sourceNode.x},${sourceY} A ${dr},${dr} 0 0,${sweep} ${m.x},${m.y}`;
             });
+
         relationData.exit()
             .transition()
             .duration(_configHolder.transition)
