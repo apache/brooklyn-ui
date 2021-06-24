@@ -92,7 +92,9 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                 return {
                     source: entity,
                     target: relation.entity,
-                    label: relation.name
+                    label: relation.name,
+                    pathSelector: 'relation', // the CSS class for path
+                    labelSelector: 'relation-label', // the CSS class for label
                 };
             });
         }
