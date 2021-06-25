@@ -47,8 +47,10 @@ export function quickLaunchDirective() {
     function controller($scope, $http, $location, brSnackbar, brBrandInfo, quickLaunchOverrides) {
 
         let quickLaunch = this;
+        // each function added here will be chained (in order) to process the output of the YAML
+        // generator in buildYaml() (ie output:= array[2](array[1](array[0]({ ... getAppPlan() ... })))
+        quickLaunch.yamlPostProcessors = [];
         quickLaunch.buildNewApp = () => {
-            console.log('yaml new app');
             return {
                 name: $scope.model.name || $scope.app.displayName,
                 location: $scope.model.location || '<REPLACE>',
@@ -57,7 +59,9 @@ export function quickLaunchDirective() {
                 ]
             };
         };
+        quickLaunch.planSender = (appYaml) => $http.post('/v1/applications', appYaml);
 
+        $scope.editorEnabled = true;
         $scope.deploying = false;
         $scope.model = {
             newConfigFormOpen: false,
@@ -69,13 +73,12 @@ export function quickLaunchDirective() {
         $scope.args = $scope.args || {};
         if ($scope.args.location) {
             $scope.model.location = $scope.args.location;
-        } else {
-            if ($scope.locations) {
-                if ($scope.locations.length == 1) {
-                    $scope.model.location = $scope.locations[0];
-                }
-            } 
+        } else if ($scope.locations) {
+            if ($scope.locations.length == 1) {
+                $scope.model.location = $scope.locations[0];
+            }
         }
+
         $scope.toggleNewConfigForm = toggleNewConfigForm;
         $scope.addNewConfigKey = addNewConfigKey;
         $scope.deleteConfigField = deleteConfigField;
@@ -89,10 +92,12 @@ export function quickLaunchDirective() {
         $scope.$watch('app', () => {
             $scope.clearError();
             $scope.editorYaml = $scope.app.plan.data;
-            var parsedPlan = null;
+
+            let parsedPlan = null;
             try {
                 parsedPlan = yaml.safeLoad($scope.editorYaml);
             } catch (e) { /* ignore, it's an unparseable template */ }
+
             // enable wizard if it's parseble and doesn't specify a location
             // (if it's not parseable, or it specifies a location, then the YAML view is displayed)
             $scope.appHasWizard = parsedPlan!=null && !checkForLocationTags(parsedPlan);
@@ -135,32 +140,27 @@ export function quickLaunchDirective() {
         });
 
         // Configure this controller from outside. Customization
-        (quickLaunchOverrides.configureQuickLaunch || function () {})(quickLaunch, $scope);
+        (quickLaunchOverrides.configureQuickLaunch || function () {})(quickLaunch, $scope, $http);
 
         // === Private members below ====================
 
         function deployApp() {
             $scope.deploying = true;
-            let appYaml;
-            if ($scope.yamlViewDisplayed) {
-                appYaml = angular.copy($scope.editorYaml);
-            } else {
-                appYaml = buildYaml();
-            }
-            $http({
-                method: 'POST',
-                url: '/v1/applications',
-                data: appYaml
-            }).then((response) => {
-                if ($scope.callback) {
-                    $scope.callback.apply({}, [{state: 'SUCCESS', data: response.data}]);
-                } else {
-                    brSnackbar.create('Application Deployed');
-                }
-                $scope.deploying = false;
-            }, (response) => {
-                $scope.model.deployError = response.data.message;
-                $scope.deploying = false;
+
+            Promise.resolve(buildYaml()).then(appYaml => {
+                quickLaunch.planSender(appYaml)
+                    .then((response) => {
+                        if ($scope.callback) {
+                            $scope.callback.apply({}, [{state: 'SUCCESS', data: response.data}]);
+                        } else {
+                            brSnackbar.create('Application Deployed');
+                        }
+                        $scope.deploying = false;
+                    })
+                    .catch((err) => {
+                        $scope.model.deployError = err.data.message;
+                        $scope.deploying = false;
+                    });
             });
         }
 
@@ -201,8 +201,9 @@ export function quickLaunchDirective() {
         }
 
         function buildYaml() {
-            let newApp = quickLaunch.buildNewApp();
-            return yaml.safeDump(newApp);
+            // converting JSON to YAML text and then passing through postprocessors, if any
+            return [yaml.safeDump, ...quickLaunch.yamlPostProcessors]
+                .reduce((prev, cur) => Promise.resolve(prev).then(cur), quickLaunch.buildNewApp());
         }
 
         function buildComposerYaml(validate) {
@@ -228,11 +229,11 @@ export function quickLaunchDirective() {
                         throw "The plan does not have any services.";
                     }
                     for (const [k,v] of Object.entries(result) ) {
-                       if (planText.indexOf(k)!=0 && planText.indexOf('\n'+k+':')<0) {
-                          // plan is not outdented yaml, can't use its text mode
-                          cannotUsePlanText = true;
-                          break;
-                       }
+                        if (planText.indexOf(k)!=0 && planText.indexOf('\n'+k+':')<0) {
+                            // plan is not outdented yaml, can't use its text mode
+                            cannotUsePlanText = true;
+                            break;
+                        }
                     }
                 }
                 
@@ -290,8 +291,11 @@ export function quickLaunchDirective() {
         }
 
         function showEditor() {
-            $scope.editorYaml = buildYaml();
-            $scope.yamlViewDisplayed = true;
+            Promise.resolve(buildYaml()).then(appPlan=>{
+                $scope.editorYaml = appPlan;
+                $scope.yamlViewDisplayed = true;
+                $scope.$apply(); // making sure that $scope is updated from async context
+            })
         }
 
         function hideEditor() {
