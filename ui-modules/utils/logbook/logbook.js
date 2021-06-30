@@ -32,15 +32,16 @@ export function logbook() {
 
     return {
         template: template,
-        controller: ['$scope', 'brBrandInfo', 'logbookApi', controller],
+        controller: ['$scope', '$element', 'brBrandInfo', 'logbookApi', controller],
         controllerAs: 'vm'
     };
 
-    function controller($scope, brBrandInfo, logbookApi) {
+    function controller($scope, $element, brBrandInfo, logbookApi) {
         $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
         $scope.getBrandedText = brBrandInfo.getBrandedText;
 
         let vm = this;
+        let scrollableElements = Array.from($element.find('textarea'));
 
         $scope.$on('logbook.query', () => {
             vm.doQuery();
@@ -71,6 +72,7 @@ export function logbook() {
                 // TODO implement logic for make output as table
                 $scope.logEntries = success;
                 $scope.results = vm.createLogOutputAsText($scope.logEntries);
+                scrollToMostRecentRecords();
             }, function (error) {
                 $scope.results = "Error getting the logs: \n" + error.error.message;
                 console.log(JSON.stringify(error));
@@ -144,6 +146,7 @@ export function logbook() {
                 $scope.logLevels[i].selected = false;
             }
         });
+
         $scope.$watch('logLevels', function (newVal, oldVal) {
             let selected = newVal.reduce(function (s, c) {
                 return s + (c.selected ? 1 : 0);
@@ -154,11 +157,26 @@ export function logbook() {
                 $scope.allLevels = false;
             }
         }, true);
+
         $scope.$watch('logFields', function (newVal, oldVal) {
             if ($scope.logEntries !== "") {
                 $scope.results = vm.createLogOutputAsText($scope.logEntries);
             }
         }, true);
+
+        /**
+         * Scrolls down to the most recent records if order is not set to reverse.
+         */
+        function scrollToMostRecentRecords() {
+            $scope.$applyAsync(() => {
+                if ($scope.reverseOrder) {
+                    // NOOP: no need to scroll down. Reverse order displays the most recent records at the beginning.
+                } else {
+                    // Scroll down to the most recent records.
+                    scrollableElements.forEach(item => item.scrollTop = item.scrollHeight);
+                }
+            });
+        }
 
         $scope.waitingResponse = false;
         vm.resetForm();
