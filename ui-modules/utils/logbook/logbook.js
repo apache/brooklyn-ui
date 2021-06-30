@@ -109,7 +109,7 @@ export function logbook() {
         }
 
         vm.resetForm = function () {
-            $scope.numberOfItems = 10;
+            $scope.numberOfItems = 1000;
             $scope.allLevels = true
             $scope.logLevels = [
                 {"name": "Debug", "value": "DEBUG", "selected": false},
