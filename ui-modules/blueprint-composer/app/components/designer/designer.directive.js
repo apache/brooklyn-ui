@@ -56,12 +56,18 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
         (composerOverrides.configureDesignerDirective || function () {})($scope, $element, blueprintGraph);
 
         $scope.blueprint = blueprintService.get();
-        $scope.$watch('blueprint', () => {
-            redrawGraph();
-        }, true);
 
         blueprintService.refreshBlueprintMetadata().then(() => {
             redrawGraph();
+
+            // Start watching blueprint changes after metadata is refreshed. Metadata is changed many times while being
+            // refreshed, no need to re-draw on every change.
+            $scope.$watch('blueprint', () => {
+                redrawGraph();
+            }, true);
+
+            // Broadcast 'metadata-refreshed' event (downstream might listen to this event).
+            $scope.$broadcast('d3.metadata-refreshed');
         });
 
         $scope.selectedEntity = null;
