@@ -50,7 +50,7 @@ export const LAYERS = [
     {
         id: 'relationships',
         label: 'Relationships',
-        selector: '.relation-group',
+        selector: '.relation-selector',
         active: true
     },
     {

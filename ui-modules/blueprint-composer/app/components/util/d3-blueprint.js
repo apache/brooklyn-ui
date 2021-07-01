@@ -781,12 +781,11 @@ export function D3Blueprint(container, options) {
 
         // Draw the relationship path
         relationDataEntered.insert('path')
-            .attr('class', (d) => (d.pathSelector))
+            .attr('class', (d) => ('relation ' + d.pathSelector))
             .attr('id', (d)=>(d.source._id + '-' + d.target._id))
             .attr('opacity', 0)
             .attr('from', (d)=>(d.source._id))
             .attr('to', (d)=>(d.target._id));
-
 
         // Draw the relationship label that follows the path, somewhere in the middle.
         // NOTE `textPath` DECREASES THE UI PERFORMANCE, USE LABELS WITH CAUTION.
