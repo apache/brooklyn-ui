@@ -50,15 +50,13 @@ export function quickLaunchDirective() {
         // each function added here will be chained (in order) to process the output of the YAML
         // generator in buildYaml() (ie output:= array[2](array[1](array[0]({ ... getAppPlan() ... })))
         quickLaunch.yamlPostProcessors = [];
-        quickLaunch.buildNewApp = () => {
-            return {
-                name: $scope.model.name || $scope.app.displayName,
-                location: $scope.model.location || '<REPLACE>',
-                services: [
-                    angular.copy($scope.entityToDeploy)
-                ]
-            };
-        };
+        quickLaunch.buildNewApp = () => ({
+            name: $scope.model.name || $scope.app.displayName,
+            location: $scope.model.location || '<REPLACE>',
+            services: [
+                angular.copy($scope.entityToDeploy)
+            ],
+        });
         quickLaunch.planSender = (appYaml) => $http.post('/v1/applications', appYaml);
 
         $scope.editorEnabled = true;
@@ -71,11 +69,12 @@ export function quickLaunchDirective() {
             name: ($scope.app && ($scope.app.name || $scope.app.symbolicName)) || null, 
         };
         $scope.args = $scope.args || {};
-        if ($scope.args.location) {
+
+        if ($scope.args.location) { // inline Location definition passed
             $scope.model.location = $scope.args.location;
-        } else if ($scope.locations) {
+        } else if ($scope.locations) { // predefined/uploaded Location objects, ID prop is sufficient
             if ($scope.locations.length == 1) {
-                $scope.model.location = $scope.locations[0];
+                $scope.model.location = $scope.locations[0].id;
             }
         }
 
@@ -90,8 +89,10 @@ export function quickLaunchDirective() {
         $scope.isRequired = isRequired;
 
         $scope.$watch('app', () => {
+            console.log('app watch run')
             $scope.clearError();
             $scope.editorYaml = $scope.app.plan.data;
+            console.log('Blueprint', $scope.app.plan)
 
             let parsedPlan = null;
             try {
@@ -100,7 +101,7 @@ export function quickLaunchDirective() {
 
             // enable wizard if it's parseble and doesn't specify a location
             // (if it's not parseable, or it specifies a location, then the YAML view is displayed)
-            $scope.appHasWizard = parsedPlan!=null && !checkForLocationTags(parsedPlan);
+            $scope.appHasWizard = parsedPlan!==null && !checkForLocationTags(parsedPlan);
             $scope.yamlViewDisplayed = !$scope.appHasWizard;
             $scope.entityToDeploy = {
                 type: $scope.app.symbolicName + ($scope.app.version ? ':' + $scope.app.version : ''),
@@ -337,19 +338,10 @@ export function quickLaunchDirective() {
         return (((((parsedPlan || {})['services'] || {})[0] || {})[BROOKLYN_CONFIG] || {})[configName] || '');
     }
 
-    function checkForLocationTags(parsedPlan) {
-        return reduceFunction(false, parsedPlan);
+    function checkForLocationTags(plan) {
+        if (!plan) return false;
+        if (plan.location) return true;
 
-        function reduceFunction(locationFound, entity) {
-            if (entity.hasOwnProperty('location') || entity.hasOwnProperty('location')) {
-                return true;
-            }
-            if (!locationFound && entity.hasOwnProperty('brooklyn.children')) {
-                entity['brooklyn.children'].reduce(reduceFunction, locationFound);
-            } else if (!locationFound && entity.hasOwnProperty('services')) {
-                entity['services'].reduce(reduceFunction, locationFound);
-            }
-            return locationFound;
-        }
+        return checkForLocationTags(plan['brooklyn.children']) || checkForLocationTags(plan.services);
     }
 }
