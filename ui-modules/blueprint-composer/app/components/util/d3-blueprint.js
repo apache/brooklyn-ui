@@ -781,12 +781,11 @@ export function D3Blueprint(container, options) {
 
         // Draw the relationship path
         relationDataEntered.insert('path')
-            .attr('class', (d) => (d.pathSelector))
+            .attr('class', (d) => ('relation ' + d.pathSelector))
             .attr('id', (d)=>(d.source._id + '-' + d.target._id))
             .attr('opacity', 0)
             .attr('from', (d)=>(d.source._id))
             .attr('to', (d)=>(d.target._id));
-
 
         // Draw the relationship label that follows the path, somewhere in the middle.
         // NOTE `textPath` DECREASES THE UI PERFORMANCE, USE LABELS WITH CAUTION.
@@ -807,6 +806,9 @@ export function D3Blueprint(container, options) {
             .attr('text-anchor', 'middle')
             .attr('font-family', 'monospace')
                 .insert('textPath')
+                .attr('class', 'relation-text') // `relation-text` class is required for styling effects
+                .attr('from', (d) => (d.source._id)) // `from` class is required for styling effects used along with `relation-text`
+                .attr('to', (d) => (d.target._id)) // `to` class is required for styling effects used along with `relation-text`
                 .attr('xlink:href', (d)=>('#' + d.source._id + '-' + d.target._id))
                 .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
                 .html((d) => (' ' + d.label + ' '));
@@ -1115,15 +1117,19 @@ export function D3Blueprint(container, options) {
     function selectNode(id) {
         _svg.selectAll('.entity.selected').classed('selected', false);
         _svg.selectAll('.relation.highlight').classed('highlight', false);
+        _svg.selectAll('.relation-text.highlight').classed('highlight', false);
         _svg.select(`#entity-${id}`).classed('selected', true);
         _svg.selectAll(`.relation[from='${id}']`).classed('highlight', true);
         _svg.selectAll(`.relation[to='${id}']`).classed('highlight', true);
+        _svg.selectAll(`.relation-text[from='${id}']`).classed('highlight', true);
+        _svg.selectAll(`.relation-text[to='${id}']`).classed('highlight', true);
         return this;
     }
 
     function unselectNode() {
         _svg.selectAll('.entity.selected').classed('selected', false);
         _svg.selectAll('.relation.highlight').classed('highlight', false);
+        _svg.selectAll('.relation-text.highlight').classed('highlight', false);
         return this;
     }
 
@@ -1322,6 +1328,7 @@ export function D3Blueprint(container, options) {
             .filter(r => r.source.hasAncestor(node.data) || r.target.hasAncestor(node.data))
             .forEach(r => {
                 _relationGroup.selectAll(`.relation[from='${r.source._id}'][to='${r.target._id}']`).classed('hidden', true);
+                _relationGroup.selectAll(`.relation-text[from='${r.source._id}'][to='${r.target._id}']`).classed('hidden', true);
             });
     }
 
@@ -1330,6 +1337,7 @@ export function D3Blueprint(container, options) {
      */
     function showRelationships() {
         _relationGroup.selectAll('.relation').classed('hidden', false);
+        _relationGroup.selectAll('.relation-text').classed('hidden', false);
     }
 
     /**
