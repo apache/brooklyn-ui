@@ -249,6 +249,9 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         }, true);
         scope.$watch('model.id', () => {
             blueprintService.refreshAllRelationships();
+
+            // Broadcast 'd3.renamed' event, allow downstream to react on this event.
+            $rootScope.$broadcast('d3.renamed', scope.model);
         });
 
         scope.$watch('state.parameters', (newVal, oldVal) => {

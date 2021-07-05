@@ -66,7 +66,7 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
                 redrawGraph();
             }, true);
 
-            // Broadcast 'metadata-refreshed' event (downstream might listen to this event).
+            // Broadcast 'd3.metadata-refreshed' event, allow downstream to react on this event.
             $scope.$broadcast('d3.metadata-refreshed');
         });
 
@@ -114,6 +114,9 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
                     $state.go('main.graphical');
                 });
             });
+
+            // Broadcast 'd3.removed' event, allow downstream to react on this event.
+            $scope.$broadcast('d3.removed');
         });
 
         $scope.$on('$stateChangeSuccess', (event, toState, toParams, fromState, fromParams, options) => {
