@@ -48,8 +48,8 @@
                     </small>
                 </li>
                 <li class="list-group-item">
-                    <span class="badge" ng-attr-title="{{ vm.serverVersion.buildSha1 && 'Commit '+vm.serverVersion.buildSha1 }}">
-                        {{vm.serverVersion.version}}</span>
+                    <span class="badge" ng-attr-title="{{ serverVersion.buildSha1 && 'Commit ' + serverVersion.buildSha1 }}">
+                        {{serverVersion.version}}</span>
                     <h4 class="list-group-item-heading">Brooklyn Server</h4>
                 </li>
             </ul>
@@ -83,7 +83,7 @@
             <h2>Feature Information</h2>
             <p>This distribution includes the following features:</p>
             <ul class="list-group">
-                <li ng-repeat="feature in vm.serverVersion.features track by $index" class="list-group-item">
+                <li ng-repeat="feature in serverVersion.features track by $index" class="list-group-item">
                     <span class="badge" ng-attr-title="{{ feature.lastModified && (feature.lastModified | date: 'MMM dd, yyyy @ H:mm:ss.sss')}}">{{feature.version}}</span>
                     <h4 class="list-group-item-heading">{{feature.name}}</h4>
                     <small class="list-group-item-text">{{feature.symbolicName}}</small>

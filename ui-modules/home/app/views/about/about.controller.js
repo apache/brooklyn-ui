@@ -58,8 +58,8 @@ export function aboutStateConfig($stateProvider) {
 export function aboutStateController($scope, brBrandInfo, version, states) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
     $scope.getBrandedText = brBrandInfo.getBrandedText;
-    
-    this.serverVersion = version.data;
+
+    $scope.serverVersion = version.data;
     this.states = states.data;
     this.buildInfo = {
         buildVersion: BUILD_VERSION,
