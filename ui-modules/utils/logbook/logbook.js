@@ -41,7 +41,6 @@ export function logbook() {
         $scope.getBrandedText = brBrandInfo.getBrandedText;
 
         let vm = this;
-        let scrollableElements = Array.from($element.find('textarea'));
 
         $scope.$on('logbook.query', () => {
             vm.doQuery();
@@ -56,7 +55,7 @@ export function logbook() {
         }
         vm.doQuery = function () {
             $scope.waitingResponse = true;
-            $scope.results = "Loading..."
+            $scope.results = 'Loading...';
 
             const levels = $scope.allLevels ? ['ALL'] : vm.getChecked($scope.logLevels);
 
@@ -64,8 +63,9 @@ export function logbook() {
                 reverseOrder: $scope.reverseOrder,
                 numberOfItems: $scope.numberOfItems,
                 levels: levels,
-                initTime: $scope.initTime,
-                finalTime: $scope.finalTime,
+                dateTimeFrom: $scope.dateTimeFrom,
+                dateTimeTo: $scope.dateTimeTo,
+                searchPhrase: $scope.searchPhrase
             }
 
             logbookApi.logbookQuery(params, true).then(function (success) {
@@ -74,7 +74,7 @@ export function logbook() {
                 $scope.results = vm.createLogOutputAsText($scope.logEntries);
                 scrollToMostRecentRecords();
             }, function (error) {
-                $scope.results = "Error getting the logs: \n" + error.error.message;
+                $scope.results = 'Error getting the logs: \n' + error.error.message;
                 console.log(JSON.stringify(error));
             }).finally(() => {
                 $scope.waitingResponse = false;
@@ -86,37 +86,37 @@ export function logbook() {
             const fieldsToShow = vm.getChecked($scope.logFields);
             success.forEach(entry => {
                 let outputLine = [];
-                if (fieldsToShow.includes("datetime") && entry.timestamp)
+                if (fieldsToShow.includes('datetime') && entry.timestamp)
                     outputLine.push(entry.timestamp);
-                if (fieldsToShow.includes("taskId") && entry.taskId)
+                if (fieldsToShow.includes('taskId') && entry.taskId)
                     outputLine.push(entry.taskId);
-                if (fieldsToShow.includes("entityIds") && entry.entityIds)
+                if (fieldsToShow.includes('entityIds') && entry.entityIds)
                     outputLine.push(entry.entityIds);
-                if (fieldsToShow.includes("level") && entry.level)
+                if (fieldsToShow.includes('level') && entry.level)
                     outputLine.push(entry.level);
-                if (fieldsToShow.includes("bundleId") && entry.bundleId)
+                if (fieldsToShow.includes('bundleId') && entry.bundleId)
                     outputLine.push(entry.bundleId);
-                if (fieldsToShow.includes("class") && entry.class)
+                if (fieldsToShow.includes('class') && entry.class)
                     outputLine.push(entry.class);
-                if (fieldsToShow.includes("threadName") && entry.threadName)
+                if (fieldsToShow.includes('threadName') && entry.threadName)
                     outputLine.push(entry.threadName);
-                if (fieldsToShow.includes("message") && entry.message)
+                if (fieldsToShow.includes('message') && entry.message)
                     outputLine.push(entry.message);
 
-                output.push(outputLine.join(" "));
+                output.push(outputLine.join(' '));
             })
-            return output.length > 0 ? output.join("\n") : "No results";
+            return output.length > 0 ? output.join('\n') : 'No results';
         }
 
         vm.resetForm = function () {
             $scope.numberOfItems = 1000;
             $scope.allLevels = true
             $scope.logLevels = [
-                {"name": "Debug", "value": "DEBUG", "selected": false},
-                {"name": "Info", "value": "INFO ", "selected": false},
-                {"name": "Warn", "value": "WARN ", "selected": false},
+                {"name": "Info", "value": "INFO", "selected": false},
+                {"name": "Warn", "value": "WARN", "selected": false},
                 {"name": "Error", "value": "ERROR", "selected": false},
                 {"name": "Fatal", "value": "FATAL", "selected": false},
+                {"name": "Debug", "value": "DEBUG", "selected": false},
             ];
             $scope.fieldsToShow = ['datetime', 'class', 'message']
             $scope.logFields = [
@@ -130,12 +130,13 @@ export function logbook() {
                 {"name": "Message", "value": "message", "selected": true},
             ];
             $scope.reverseOrder = false;
-            $scope.initTime = "";
-            $scope.finalTime = "";
+            $scope.dateTimeFrom = '';
+            $scope.dateTimeTo = '';
+            $scope.searchPhrase = '';
         }
 
-        $scope.$watch('allLevels', function (v) {
-            if (!v) {
+        $scope.$watch('allLevels', function (value) {
+            if (!value) {
                 if (vm.getChecked($scope.logLevels).length === 0) {
                     $scope.allLevels = true;
                 } else {
@@ -173,15 +174,15 @@ export function logbook() {
                     // NOOP: no need to scroll down. Reverse order displays the most recent records at the beginning.
                 } else {
                     // Scroll down to the most recent records.
-                    scrollableElements.forEach(item => item.scrollTop = item.scrollHeight);
+                    Array.from($element.find('textarea')).forEach(item => item.scrollTop = item.scrollHeight);
                 }
             });
         }
 
         $scope.waitingResponse = false;
         vm.resetForm();
-        $scope.logEntries = "";
-        $scope.results = "-empty-"
+        $scope.logEntries = '';
+        $scope.results = null;
     }
 }
 

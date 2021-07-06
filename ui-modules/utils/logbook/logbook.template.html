@@ -17,44 +17,56 @@
   under the License.
 -->
 
-<form>
-    <div>
-        <div class="form-group col-md-3">
-            <label for="initTime">Initial time</label>
-            <input id="initTime" type="datetime-local" ng-model="initTime" class="form-control">
-            <label for="finalTime">Final time</label>
-            <input id="finalTime" type="datetime-local" ng-model="finalTime" class="form-control">
-
-            <label for="numberOfItems">Number of lines</label>
-            <input id="numberOfItems" type="number" ng-model="numberOfItems" class="form-control logbook" min="1">
-            <label for="reverseOrder">Reverse order</label>
-            <input id="reverseOrder" type="checkbox" ng-model="reverseOrder"><br/>
-        </div>
-        <div class="form-group col-md-9">
-            <h4>Log level</h4>
+<form class="form-group">
+    <div class="row">
+        <div class="col-md-6">
+            <label>Levels:</label>
             <label>
-                <input type="checkbox" ng-model="allLevels" class=""/>All
+                <input type="checkbox" ng-model="allLevels" class="">All</label>
             </label>
             <label ng-repeat="level in logLevels">
-                <input type="checkbox" ng-model="level.selected" class=""/>{{level.name}}
+                <input type="checkbox" ng-model="level.selected" class="">{{level.name}}</label>
             </label>
         </div>
-        <div class="form-group col-md-9">
-            <h4>Fields</h4>
-            <label ng-repeat="field in logFields">
-                <input type="checkbox"  ng-model="field.selected" class=""/>{{field.name}}
-            </label>
+        <div class="col-md-3">
+            <label for="reverseOrder">Reverse order:</label>
+            <input id="reverseOrder" type="checkbox" ng-model="reverseOrder">
         </div>
     </div>
-    <div  class="form-group col-md-12">
-        <button class="btn btn-outline btn-success" ng-click="vm.doQuery()" ng-disabled="waitingResponse">
-            Query
-        </button>
-        <button class="btn btn-outline" ng-click="vm.resetForm()">
-            Reset form
-        </button>
+    <br/>
+    <div class="row">
+        <div class="col-md-2">
+            <label for="dateTimeFrom">From:</label>
+            <input id="dateTimeFrom" type="datetime-local" ng-model="dateTimeFrom" class="form-control">
+        </div>
+        <div class="col-md-2">
+            <label for="dateTimeTo">To:</label>
+            <input id="dateTimeTo" type="datetime-local" ng-model="dateTimeTo" class="form-control">
+        </div>
+        <div class="col-md-2">
+            <label for="numberOfItems">Number of lines:</label>
+            <input id="numberOfItems" type="number" ng-model="numberOfItems" class="form-control" min="1">
+        </div>
+        <div class="col-md-6">
+            <label for="searchPhrase">Search phrase:</label>
+            <div class="input-group">
+                <input id="searchPhrase" type="text" ng-model="searchPhrase" class="form-control" placeholder="(None)">
+                <div class="input-group-btn">
+                    <div class="btn-group" uib-dropdown keyboard-nav="true">
+                        <button class="btn btn-default btn-success" ng-click="vm.doQuery()" ng-disabled="waitingResponse">Query</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </form>
-<div>
+<div ng-if="results">
     <textarea id="logContent" class="logbook-text" ng-model="results"></textarea>
+    <div class="form-group">
+        <br/>
+        <label>Filters:</label>
+        <label ng-repeat="field in logFields">
+            <input type="checkbox"  ng-model="field.selected" class="">{{field.name}}</label>
+        </label>
+    </div>
 </div>
