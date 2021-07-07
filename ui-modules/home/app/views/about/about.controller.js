@@ -16,11 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 import angular from 'angular';
 import uiRouter from 'angular-ui-router';
-import serverApi from 'brooklyn-ui-utils/api/brooklyn/server.js';
+import serverApi from 'brooklyn-ui-utils/api/brooklyn/server';
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
-import template from "./about.template.html";
+import template from './about.template.html';
 
 const MODULE_NAME = 'states.about';
 const BROOKLYN_VERSION = __BROOKLYN_VERSION__;
@@ -57,8 +58,8 @@ export function aboutStateConfig($stateProvider) {
 export function aboutStateController($scope, brBrandInfo, version, states) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
     $scope.getBrandedText = brBrandInfo.getBrandedText;
-    
-    this.serverVersion = version.data;
+
+    $scope.serverVersion = version.data;
     this.states = states.data;
     this.buildInfo = {
         buildVersion: BUILD_VERSION,
