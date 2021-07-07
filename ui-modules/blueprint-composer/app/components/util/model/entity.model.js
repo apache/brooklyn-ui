@@ -288,11 +288,11 @@ export class Entity {
         LOCATIONS.delete(this);
         this.miscData.delete('locationName');
         this.miscData.delete('locationIcon');
-        
+
         // this field provides a way for consumers to detect if the location was explicitly removed;
         // this can be useful to prevent default locations from being applied
         this.miscData.set('locationRemoved', true);
-        
+
         this.touch();
     }
 
@@ -632,6 +632,7 @@ Entity.prototype.getClusterMemberspecEntity = getClusterMemberspecEntity;
 Entity.prototype.getClusterMemberspecEntities = getClusterMemberspecEntities;
 Entity.prototype.getInheritedLocation = getInheritedLocation;
 Entity.prototype.hasInheritedLocation = hasInheritedLocation;
+Entity.prototype.hasInheritedConfig = hasInheritedConfig;
 Entity.prototype.addIssue = addIssue;
 Entity.prototype.hasIssues = hasIssues;
 Entity.prototype.clearIssues = clearIssues;
@@ -803,8 +804,8 @@ function isCluster() {
     let traits = MISC_DATA.get(this).get('traits');
     return traits && traits.filter((trait)=> {
         return ['org.apache.brooklyn.entity.group.Cluster',
-                'org.apache.brooklyn.entity.group.Fabric']
-                .indexOf(trait) !== -1
+            'org.apache.brooklyn.entity.group.Fabric']
+            .indexOf(trait) !== -1
     }).length > 0;
 }
 
@@ -818,7 +819,7 @@ function isMemberSpec() {
 
 export function baseType(s) {
     if (s && s.indexOf("<")>=0) {
-        s = s.substring(0, s.indexOf("<")); 
+        s = s.substring(0, s.indexOf("<"));
     }
     return s;
 }
@@ -840,7 +841,7 @@ function getClusterMemberspecEntities() {
             return acc;
         }, {});
 }
-       
+
 /**
  * Returns the first memberspec that matches the given predicate
  *
@@ -956,6 +957,17 @@ function getInheritedLocation() {
  */
 function hasInheritedLocation() {
     return this.getInheritedLocation() !== null;
+}
+
+function hasInheritedConfig(key) {
+    if (this.hasParent()) {
+        let ret = false;
+        this.parent.visitWithAncestors(ancestor => {
+            ret = ret || ancestor.config.has(key);
+        });
+        return ret;
+    }
+    return false;
 }
 
 function addIssue(issue) {
