@@ -21,6 +21,9 @@ import yaml from 'js-yaml';
 import brAutofocus from '../autofocus/autofocus';
 import brYamlEditor from '../yaml-editor/yaml-editor';
 import template from './quick-launch.html';
+import { get } from 'lodash';
+// stringifyUrl unavailable, possible webpack issue
+import { stringify } from 'query-string';
 
 const MODULE_NAME = 'brooklyn.components.quick-launch';
 
@@ -66,16 +69,14 @@ export function quickLaunchDirective() {
             
             // should never be null, so the placeholder in UI for model.name will never be used;
             // hence autofocus is disabled
-            name: ($scope.app && ($scope.app.name || $scope.app.symbolicName)) || null, 
+            name: get($scope.app, 'name') || get($scope.app, 'symbolicName', null),
         };
         $scope.args = $scope.args || {};
 
         if ($scope.args.location) { // inline Location definition passed
             $scope.model.location = $scope.args.location;
-        } else if ($scope.locations) { // predefined/uploaded Location objects, ID prop is sufficient
-            if ($scope.locations.length == 1) {
-                $scope.model.location = $scope.locations[0].id;
-            }
+        } else if (get($scope.locations, 'length') === 1) { // predefined/uploaded Location objects, ID prop is sufficient
+            $scope.model.location = $scope.locations[0].id;
         }
 
         $scope.toggleNewConfigForm = toggleNewConfigForm;
@@ -89,15 +90,13 @@ export function quickLaunchDirective() {
         $scope.isRequired = isRequired;
 
         $scope.$watch('app', () => {
-            console.log('app watch run')
             $scope.clearError();
             $scope.editorYaml = $scope.app.plan.data;
-            console.log('Blueprint', $scope.app.plan)
 
             let parsedPlan = null;
             try {
                 parsedPlan = yaml.safeLoad($scope.editorYaml);
-            } catch (e) { /* ignore, it's an unparseable template */ }
+            } catch (e) { /*console.log('Failed to parse YAML', e)*/ }
 
             // enable wizard if it's parseble and doesn't specify a location
             // (if it's not parseable, or it specifies a location, then the YAML view is displayed)
@@ -112,7 +111,7 @@ export function quickLaunchDirective() {
                     let configValue = configInPlan(parsedPlan, config.name);
 
                     if (configValue !== '' || config.pinned || (isRequired(config) && (!config.defaultValue === undefined || config.defaultValue === ''))) {
-                        if (!$scope.entityToDeploy.hasOwnProperty(BROOKLYN_CONFIG)) {
+                        if (!$scope.entityToDeploy[BROOKLYN_CONFIG]) {
                             $scope.entityToDeploy[BROOKLYN_CONFIG] = {};
                         }
                         if (configValue !== '') {
@@ -127,16 +126,11 @@ export function quickLaunchDirective() {
                 $scope.configMap = {};
             }
         });
-        $scope.$watch('editorYaml', () => {
-            $scope.clearError();
-        });
+
         $scope.$watch('entityToDeploy', () => {
             $scope.clearError();
         }, true);
-        $scope.$watch('model.name', () => {
-            $scope.clearError();
-        });
-        $scope.$watch('model.location', () => {
+        $scope.$watchGroup(['editorYaml', 'model.name', 'model.location'], () => {
             $scope.clearError();
         });
 
@@ -165,6 +159,7 @@ export function quickLaunchDirective() {
             });
         }
 
+        // add config handler
         function toggleNewConfigForm() {
             $scope.model.newConfigFormOpen = !$scope.model.newConfigFormOpen;
             if ($scope.model.newConfigFormOpen) {
@@ -179,7 +174,8 @@ export function quickLaunchDirective() {
             }
         }
 
-        function addNewConfigKey() {
+        function addNewConfigKey({ name, type }) {
+            console.log('$item', {name, type })
             if ($scope.model.newKey && $scope.model.newKey.length > 0) {
                 let newConfigValue = null;
                 if ($scope.configMap.hasOwnProperty($scope.model.newKey) &&
@@ -229,13 +225,10 @@ export function quickLaunchDirective() {
                     if (!result.services) {
                         throw "The plan does not have any services.";
                     }
-                    for (const [k,v] of Object.entries(result) ) {
-                        if (planText.indexOf(k)!=0 && planText.indexOf('\n'+k+':')<0) {
-                            // plan is not outdented yaml, can't use its text mode
-                            cannotUsePlanText = true;
-                            break;
-                        }
-                    }
+                    cannotUsePlanText = Object.keys(result).some(property =>
+                        // plan is not outdented yaml, can't use its text mode
+                        !planText.startsWith(property) && !planText.includes('\n'+property+':')
+                    );
                 }
                 
                 let newApp = {};
@@ -309,19 +302,20 @@ export function quickLaunchDirective() {
               return;
             }
             try {
-              window.location.href = brBrandInfo.blueprintComposerBaseUrl + '#!/graphical?'+
-                ($scope.app.plan.format ? 'format='+encodeURIComponent($scope.app.plan.format)+'&' : '')+
-                'yaml='+encodeURIComponent(buildComposerYaml(true));
+                window.location.href = `${brBrandInfo.blueprintComposerBaseUrl}#!/graphical?` + stringify({
+                    format: $scope.app.plan.format || undefined,
+                    yaml: buildComposerYaml(true),
+                });
             } catch (error) {
-              console.warn("Opening composer in YAML text editor mode because we cannot generate a model for this configuration:", error);
-              window.location.href = brBrandInfo.blueprintComposerBaseUrl + '#!/yaml?'+
-                ($scope.app.plan.format ? 'format='+encodeURIComponent($scope.app.plan.format)+'&' : '')+
-                'yaml='+encodeURIComponent(
-                    "# This plan may have items which require attention so is being opened in YAML text editor mode.\n"+
-                    "# The YAML was autogenerated by merging the plan with any values provided in UI, but issues were\n"+
-                    "# detected that mean it might not be correct. Please check the blueprint below carefully.\n"+
-                    "\n"+
-                    buildComposerYaml(false));
+                console.warn("Opening composer in YAML text editor mode because we cannot generate a model for this configuration:", error);
+                window.location.href = `${brBrandInfo.blueprintComposerBaseUrl}#!/yaml?` + stringify({
+                    format: $scope.app.plan.format || undefined,
+                    yaml:"# This plan may have items which require attention so is being opened in YAML text editor mode.\n"+
+                        "# The YAML was autogenerated by merging the plan with any values provided in UI, but issues were\n"+
+                        "# detected that mean it might not be correct. Please check the blueprint below carefully.\n"+
+                        "\n"+
+                        buildComposerYaml(false),
+                });
             }
         }
 
@@ -330,7 +324,7 @@ export function quickLaunchDirective() {
         }
 
         function isRequired(config) {
-            return angular.isArray(config.constraints) && config.constraints.indexOf('required') > -1;
+            return Array.isArray(config.constraints) && config.constraints.includes('required');
         }
     }
 
@@ -338,10 +332,10 @@ export function quickLaunchDirective() {
         return (((((parsedPlan || {})['services'] || {})[0] || {})[BROOKLYN_CONFIG] || {})[configName] || '');
     }
 
-    function checkForLocationTags(plan) {
-        if (!plan) return false;
-        if (plan.location) return true;
+    function checkForLocationTags(planSegment) {
+        if (!planSegment) return false;
+        if (planSegment.location) return true;
 
-        return checkForLocationTags(plan['brooklyn.children']) || checkForLocationTags(plan.services);
+        return checkForLocationTags(planSegment['brooklyn.children']) || checkForLocationTags(planSegment.services);
     }
 }
