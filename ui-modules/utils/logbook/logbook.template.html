@@ -19,33 +19,32 @@
 
 <form class="form-group">
     <div class="row">
-        <div class="col-md-6">
-            <label>Levels:</label>
+        <div class="col-md-12">
+            <label>Search parameters:</label>
             <label>
                 <input type="checkbox" ng-model="allLevels" class="">All</label>
             </label>
             <label ng-repeat="level in logLevels">
                 <input type="checkbox" ng-model="level.selected" class="">{{level.name}}</label>
             </label>
-        </div>
-        <div class="col-md-3">
-            <label for="reverseOrder">Reverse order:</label>
-            <input id="reverseOrder" type="checkbox" ng-model="reverseOrder">
+            <label>
+                <input type="checkbox" ng-model="isLatest" ng-disabled="autoUpdate">Query latest</label>
+            </label>
         </div>
     </div>
     <br/>
     <div class="row">
         <div class="col-md-2">
-            <label for="dateTimeFrom">From:</label>
-            <input id="dateTimeFrom" type="datetime-local" ng-model="dateTimeFrom" class="form-control">
+            <label for="dateTimeFrom">Query from:</label>
+            <input id="dateTimeFrom" type="datetime-local" ng-model="dateTimeFrom" ng-disabled="autoUpdate" class="form-control">
         </div>
         <div class="col-md-2">
-            <label for="dateTimeTo">To:</label>
-            <input id="dateTimeTo" type="datetime-local" ng-model="dateTimeTo" class="form-control">
+            <label for="dateTimeTo">Query to:</label>
+            <input id="dateTimeTo" type="datetime-local" ng-model="dateTimeTo" ng-disabled="autoUpdate" class="form-control">
         </div>
         <div class="col-md-2">
-            <label for="numberOfItems">Number of lines:</label>
-            <input id="numberOfItems" type="number" ng-model="numberOfItems" class="form-control" min="1">
+            <label for="numberOfItems">Query number of lines:</label>
+            <input id="numberOfItems" type="number" ng-model="numberOfItems" ng-disabled="autoUpdate" class="form-control" min="1">
         </div>
         <div class="col-md-6">
             <label for="searchPhrase">Search phrase:</label>
@@ -53,15 +52,27 @@
                 <input id="searchPhrase" type="text" ng-model="searchPhrase" class="form-control" placeholder="(None)">
                 <div class="input-group-btn">
                     <div class="btn-group" uib-dropdown keyboard-nav="true">
-                        <button class="btn btn-default btn-success" ng-click="vm.doQuery()" ng-disabled="waitingResponse">Query</button>
+                        <button class="btn btn-default btn-success" ng-click="vm.queryHead()" ng-disabled="waitingResponse || autoUpdate">Query</button>
+                    </div>
+                    <div class="btn-group" uib-dropdown keyboard-nav="true">
+                        <button class="btn btn-default btn-primary" ng-click="vm.queryTail()" ng-disabled="waitingResponse">
+                            <span ng-show="!autoUpdate" class="log-tail log-action">
+                                Tail
+                            </span>
+                            <span ng-show="autoUpdate" class="log-action" ng-class="{'active': autoUpdate}"
+                                  uib-tooltip="Stop auto-update" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
+                                <i class="fa fa-refresh" ng-class="autoUpdate ? 'fa-spin' : ''"></i>
+                            </span>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </form>
-<div ng-if="results">
-    <textarea id="logContent" class="logbook-text" ng-model="results"></textarea>
+
+<div ng-show="logtext">
+    <pre class="logbook-text auto-scrollable">{{logtext}}</pre>
     <div class="form-group">
         <br/>
         <label>Filters:</label>
