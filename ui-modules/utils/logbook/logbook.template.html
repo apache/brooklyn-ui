@@ -52,10 +52,10 @@
                 <input id="searchPhrase" type="text" ng-model="searchPhrase" class="form-control" placeholder="(None)">
                 <div class="input-group-btn">
                     <div class="btn-group" uib-dropdown keyboard-nav="true">
-                        <button class="btn btn-default btn-success" ng-click="vm.queryHead()" ng-disabled="waitingResponse || autoUpdate">Query</button>
+                        <button class="btn btn-default btn-primary" ng-click="vm.queryHead()" ng-disabled="waitingResponse || autoUpdate">Query</button>
                     </div>
                     <div class="btn-group" uib-dropdown keyboard-nav="true">
-                        <button class="btn btn-default btn-primary" ng-click="vm.queryTail()" ng-disabled="waitingResponse">
+                        <button class="btn btn-default btn-accent" ng-click="vm.queryTail()" ng-disabled="waitingResponse">
                             <span ng-show="!autoUpdate" class="log-tail log-action">
                                 Tail
                             </span>
