@@ -55,24 +55,28 @@
                 <div ng-if="allIssues.errors.count">
                     <a class="hand" ng-click="errorsPane.level = 'error-errors'">
                         <ng-pluralize count="allIssues.errors.count"
-                                      when="{'one': '{} error', 'other': '{} errors'}" />
+                                      when="{'one': '{} error', 'other': '{} errors'}">
+                        </ng-pluralize>
                     </a>
                     in
                     <a class="hand" ng-click="errorsPane.level = 'error-entities'">
                         <ng-pluralize count="vm.size(allIssues.errors.byEntity)"
-                                      when="{'one': '{} entity', 'other': '{} entities'}" />
+                                      when="{'one': '{} entity', 'other': '{} entities'}">
+                        </ng-pluralize>
                     </a>
                 </div>
 
                 <div ng-if="allIssues.warnings.count">
                     <a class="hand" ng-click="errorsPane.level = 'warning-errors'">
                         <ng-pluralize count="allIssues.warnings.count"
-                                      when="{'one': '{} warning', 'other': '{} warnings'}" />
+                                      when="{'one': '{} warning', 'other': '{} warnings'}">
+                        </ng-pluralize>
                     </a>
                     in
                     <a class="hand" ng-click="errorsPane.level = 'warning-entities'">
                         <ng-pluralize count="vm.size(allIssues.warnings.byEntity)"
-                                      when="{'one': '{} entity', 'other': '{} entities'}" />
+                                      when="{'one': '{} entity', 'other': '{} entities'}">
+                        </ng-pluralize>
                     </a>
                 </div>
 
@@ -89,14 +93,16 @@
 
                 <strong>
                     <ng-pluralize count="vm.size(allIssues.errors.byEntity)"
-                                  when="{'one': '{} entity', 'other': '{} entities'}" />
+                                  when="{'one': '{} entity', 'other': '{} entities'}">
+                    </ng-pluralize>
                 </strong>
 
                 with
 
                 <a class="hand" ng-click="errorsPane.level = 'error-errors'">
                     <ng-pluralize count="allIssues.errors.count"
-                                  when="{'one': '{} error', 'other': '{} errors'}" />
+                                  when="{'one': '{} error', 'other': '{} errors'}">
+                    </ng-pluralize>
                 </a>
             </div>
 
@@ -133,7 +139,8 @@
 
                 <a class="hand" ng-click="errorsPane.level = 'error-entities'">
                     <ng-pluralize count="vm.size(allIssues.errors.byEntity)"
-                                  when="{'one': '{} entity', 'other': '{} entities'}" />
+                                  when="{'one': '{} entity', 'other': '{} entities'}">
+                    </ng-pluralize>
                 </a>
             </div>
 
@@ -155,13 +162,15 @@
                         (<a class="hand" ng-click="errorsPane.focus = (errorsPane.focus == 'errors:'+itemK ? null : 'errors:'+itemK)"
                             ng-class="{active: errorsPane.focus == 'errors:'+itemK }">
                             <ng-pluralize count="itemV.issues.length"
-                                          when="{'one': '{} entity', 'other': '{} entities'}" />
+                                          when="{'one': '{} entity', 'other': '{} entities'}">
+                            </ng-pluralize>
                         </a>
                         <span ng-if="vm.size(itemV.quickFixes)">;
                           <a class="hand" ng-click="errorsPane.focus = (errorsPane.focus == 'fixes:'+itemK ? null : 'fixes:'+itemK)"
                              ng-class="{active: errorsPane.focus == 'fixes:'+itemK }">
                              <ng-pluralize count="vm.size(itemV.quickFixes)"
-                                           when="{'one': '{} quick fix', 'other': '{} quick fixes'}" />
+                                           when="{'one': '{} quick fix', 'other': '{} quick fixes'}">
+                             </ng-pluralize>
                              available
                           </a>
                         </span>)
@@ -194,7 +203,8 @@
                                        ng-attr-title="{{ fix.tooltip }}"
                                     >Apply
                                         (<ng-pluralize count="vm.size(fix.issues)"
-                                                       when="{'one': '{} entity', 'other': '{} entities'}" />)
+                                                       when="{'one': '{} entity', 'other': '{} entities'}">
+                                        </ng-pluralize>)
                                     </a>
                                 </div>
                             </div>
@@ -217,14 +227,16 @@
 
                 <strong>
                     <ng-pluralize count="vm.size(allIssues.warnings.byEntity)"
-                                  when="{'one': '{} entity', 'other': '{} entities'}" />
+                                  when="{'one': '{} entity', 'other': '{} entities'}">
+                    </ng-pluralize>
                 </strong>
 
                 with
 
                 <a class="hand" ng-click="errorsPane.level = 'warning-errors'">
                     <ng-pluralize count="allIssues.warnings.count"
-                                  when="{'one': '{} warning', 'other': '{} warnings'}" />
+                                  when="{'one': '{} warning', 'other': '{} warnings'}">
+                    </ng-pluralize>
                 </a>
             </div>
 
@@ -252,7 +264,8 @@
 
                 <strong>
                     <ng-pluralize count="allIssues.warnings.count"
-                                  when="{'one': '{} warning', 'other': '{} warnings'}" />
+                                  when="{'one': '{} warning', 'other': '{} warnings'}">
+                    </ng-pluralize>
                 </strong>
 
                 <span ng-show="allIssues.warnings.count != vm.size(allIssues.warnings.byMessage)"> ({{ vm.size(allIssues.warnings.byMessage) }} unique)</span>
@@ -261,7 +274,8 @@
 
                 <a class="hand" ng-click="errorsPane.level = 'warning-entities'">
                     <ng-pluralize count="vm.size(allIssues.warnings.byEntity)"
-                                  when="{'one': '{} entity', 'other': '{} entities'}" />
+                                  when="{'one': '{} entity', 'other': '{} entities'}">
+                    </ng-pluralize>
                 </a>
             </div>
 
@@ -283,13 +297,15 @@
                         (<a class="hand" ng-click="errorsPane.focus = (errorsPane.focus == 'warnings:'+itemK ? null : 'warnings:'+itemK)"
                             ng-class="{active: errorsPane.focus == 'warnings:'+itemK }">
                             <ng-pluralize count="itemV.issues.length"
-                                          when="{'one': '{} entity', 'other': '{} entities'}" />
+                                          when="{'one': '{} entity', 'other': '{} entities'}">
+                            </ng-pluralize>
                         </a>
                         <span ng-if="vm.size(itemV.quickFixes)">;
                           <a class="hand" ng-click="errorsPane.focus = (errorsPane.focus == 'fixes:'+itemK ? null : 'fixes:'+itemK)"
                              ng-class="{active: errorsPane.focus == 'fixes:'+itemK }">
                              <ng-pluralize count="vm.size(itemV.quickFixes)"
-                                           when="{'one': '{} quick fix', 'other': '{} quick fixes'}" />
+                                           when="{'one': '{} quick fix', 'other': '{} quick fixes'}">
+                             </ng-pluralize>
                              available
                           </a>
                         </span>)
@@ -322,7 +338,8 @@
                                        ng-attr-title="{{ fix.tooltip }}"
                                     >Apply
                                         (<ng-pluralize count="vm.size(fix.issues)"
-                                                      when="{'one': '{} entity', 'other': '{} entities'}" />)
+                                                      when="{'one': '{} entity', 'other': '{} entities'}">
+                                        </ng-pluralize>)
                                     </a>
                                 </div>
                             </div>
