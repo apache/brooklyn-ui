@@ -574,7 +574,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                             .group('config')
                             .ref(definition.name)
                             .level(ISSUE_LEVEL.WARN)
-                            .message(`Implicitly defined from one of it's ancestor`)
+                            .message(`Implicitly defined from one of its ancestor`)
                             .build());
                     }
                 });
