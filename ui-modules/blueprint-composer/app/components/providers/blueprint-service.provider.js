@@ -566,7 +566,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
 
     function refreshConfigInherited(entity) {
         return $q((resolve) => {
-            entity.miscData.get('config')
+            (Array.isArray(entity.miscData.get('config')) ? entity.miscData.get('config') : [])
                 .filter(definition => !entity.config.has(definition.name))
                 .forEach(definition => {
                     if (entity.hasInheritedConfig(definition.name)) {
