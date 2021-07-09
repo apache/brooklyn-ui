@@ -34,6 +34,14 @@ export default MODULE_NAME;
 export const RESERVED_KEYS = ['name', 'location', 'locations', 'type', 'services', 'brooklyn.config', 'brooklyn.children', 'brooklyn.enrichers', 'brooklyn.policies'];
 export const DSL_ENTITY_SPEC = '$brooklyn:entitySpec';
 
+export const COMMON_HINTS = {
+    'config-quick-fixes': [{
+        key: '.*',
+        fix: 'explicit_config',
+        'message-regex': /implicitly defined/i
+    }]
+};
+
 export function blueprintServiceProvider() {
     return {
         $get: ['$log', '$q', '$sce', 'paletteApi', 'iconGenerator', 'dslService', 'brBrandInfo',
@@ -126,6 +134,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
         refreshConfigConstraints: refreshConfigConstraints,
         refreshRelationships: refreshRelationships,
         refreshAllRelationships: refreshAllRelationships,
+        refreshConfigInherited: refreshConfigInherited,
         addRelationshipsProvider: addEntityRelationshipsProvider,
         isReservedKey: isReservedKey,
         getIssues: getIssues,
@@ -343,6 +352,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                 refreshConfigMemberspecsMetadata(entity),
                 refreshPoliciesMetadata(entity),
                 refreshEnrichersMetadata(entity),
+                refreshConfigInherited(entity)
             ]);
         }).then(()=> {
             return entity;
@@ -390,7 +400,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
         if (typeof location === 'object' && Object.keys(location).length==1) return Object.keys(location)[0];
         return null;
     }
-    
+
     function refreshLocationMetadata(entity) {
         let deferred = $q.defer();
 
@@ -554,6 +564,24 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
         }, []));
     }
 
+    function refreshConfigInherited(entity) {
+        return $q((resolve) => {
+            (Array.isArray(entity.miscData.get('config')) ? entity.miscData.get('config') : [])
+                .filter(definition => !entity.config.has(definition.name))
+                .forEach(definition => {
+                    if (entity.hasInheritedConfig(definition.name)) {
+                        entity.addIssue(Issue.builder()
+                            .group('config')
+                            .ref(definition.name)
+                            .level(ISSUE_LEVEL.WARN)
+                            .message(`Implicitly defined from one of its ancestor`)
+                            .build());
+                    }
+                });
+            resolve();
+        });
+    }
+
     function parseInput(input, entity) {
         return $q((resolve, reject) => {
             try {
@@ -713,11 +741,10 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
         entity.miscData.set('sensors', data.sensors || []);
         entity.miscData.set('traits', data.supertypes || []);
         entity.miscData.set('tags', data.tags || []);
-        var uiHints = {};
-        data.tags.forEach( (t) => { 
-            mergeAppendingLists(uiHints, t['ui-composer-hints']);
+        data.tags.forEach( (t) => {
+            mergeAppendingLists(COMMON_HINTS, t['ui-composer-hints']);
         });
-        entity.miscData.set('ui-composer-hints', uiHints);
+        entity.miscData.set('ui-composer-hints', COMMON_HINTS);
         entity.miscData.set('virtual', data.virtual || null);
         addUnlistedConfigKeysDefinitions(entity);
         addUnlistedParameterDefinitions(entity);
@@ -753,20 +780,20 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
     function populateLocationFromApiCommon(entity, data) {
         entity.clearIssues({group: 'location'});
         entity.location = data.yamlHere || data.symbolicName;
-        
+
         let name = data.name || data.displayName;
         if (!name && data.yamlHere) {
             name = typeof data.yamlHere === 'object' ? Object.keys(data.yamlHere)[0] : data.yamlHere;
         }
         if (!name) name =  data.symbolicName;
         entity.miscData.set('locationName', name);
-        
+
         // use icon on item, but if none then generate using *yaml* to distinguish when someone has changed it
         // (especially for things like jclouds:aws-ec2 -- the config is more interesting than the type name)
         entity.miscData.set('locationIcon', data==null ? null : data.iconUrl || iconGenerator(data.yamlHere ? JSON.stringify(data.yamlHere) : data.symbolicName));
         return entity;
     }
-    
+
     function populateLocationFromApiSuccess(entity, data) {
         populateLocationFromApiCommon(entity, data);
     }
@@ -841,12 +868,12 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
         let candidate = entity.hasName()
             ? entity.name.replace(/\W/g, '-').toLowerCase()
             : entity.type ? entity.type.replace(/\W/g, '-').toLowerCase()
-            : !entity.parent ? "root"
-            : entity._id;
+                : !entity.parent ? "root"
+                    : entity._id;
         return uniqueSuffixFn(
-                candidate,
-                entity.getApplication() /* unique throughout blueprint */,
-                null /* use default salter */ );
+            candidate,
+            entity.getApplication() /* unique throughout blueprint */,
+            null /* use default salter */ );
     }
 
 }
