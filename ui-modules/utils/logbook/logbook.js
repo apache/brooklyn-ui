@@ -82,6 +82,7 @@ export function logbook() {
         vm.queryHead = () => {
             $scope.waitingResponse = true;
             $scope.autoUpdate = false;
+            $scope.isLatest = false;
             $scope.logtext = 'Loading...';
             doQuery();
         }
