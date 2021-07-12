@@ -46,7 +46,7 @@ export function quickLaunchDirective() {
         },
         controller: ['$scope', '$http', '$location', 'brSnackbar', 'brBrandInfo' , 'quickLaunchOverrides', controller]
     };
-f
+
     function controller($scope, $http, $location, brSnackbar, brBrandInfo, quickLaunchOverrides) {
 
         let quickLaunch = this;
@@ -155,9 +155,9 @@ f
                             }
                             $scope.deploying = false;
                         })
-                        .catch(({ data }) => {
-                            // handling API error
-                            handleDeployError({ message: data.message });
+                        .catch((senderError) => {
+                            // handling API error response. data attribute contains failure message
+                            handleDeployError(senderError.data);
                         });
                 })
                 .catch(err => {
@@ -166,7 +166,7 @@ f
         }
 
         function handleDeployError(error) {
-            $scope.model.deployError = error.message;
+            $scope.model.deployError = get(error, 'message', 'Unknown error occurred with template preparation.');
             $scope.deploying = false;
         }
 
@@ -185,8 +185,7 @@ f
             }
         }
 
-        function addNewConfigKey({ name, type }) {
-            // console.log('$item', {name, type })
+        function addNewConfigKey() {
             if ($scope.model.newKey && $scope.model.newKey.length > 0) {
                 let newConfigValue = null;
                 if ($scope.configMap.hasOwnProperty($scope.model.newKey) &&
@@ -296,11 +295,15 @@ f
         }
 
         function showEditor() {
-            Promise.resolve(buildYaml()).then(appPlan=>{
-                $scope.editorYaml = appPlan;
-                $scope.yamlViewDisplayed = true;
-                $scope.$apply(); // making sure that $scope is updated from async context
-            })
+            Promise.resolve(buildYaml())
+                .then(appPlan=>{
+                    $scope.editorYaml = appPlan;
+                    $scope.yamlViewDisplayed = true;
+                    $scope.$apply(); // making sure that $scope is updated from async context
+                })
+                .catch(error => {
+                    console.error('Problem with Editor YAML generation:', error);
+                })
         }
 
         function hideEditor() {
