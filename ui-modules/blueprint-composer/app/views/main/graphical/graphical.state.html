@@ -19,129 +19,137 @@
 
 <div class="palette-and-or-toolbar">
 
-  <div class="layout">
-    <div class="toolbar">
-        <div class="list-group">
-            <a class="hand list-group-item"
-               ng-repeat="section in vm.sections track by $index"
-               ng-class="{'active': vm.selectedSection === section}"
-               ng-click="vm.selectedSection = section">
-                <i class="fa fa-fw" ng-class="section.icon"></i>
-            </a>
+    <div class="layout">
+        <div class="toolbar">
+            <div class="list-group">
+                <a class="hand list-group-item"
+                   ng-repeat="section in vm.sections track by $index"
+                   ng-class="{'active': vm.selectedSection === section}"
+                   ng-click="vm.selectedSection = section">
+                    <i class="fa fa-fw" ng-class="section.icon"></i>
+                </a>
 
-            <div class="spacer"></div>
-            <a class="hand list-group-item errors-square"
-               title="Click to show/hide details of errors"
-               ng-class="{ errorsActive: errorsPane.level }"
-               ng-show="allIssues.errors.count"
-               ng-click="errorsPane.level = errorsPane.level ? null : 'error-errors'">
-                <i class="fa fa-fw fa-times-circle"></i> {{ allIssues.errors.count }}
-            </a>
-            <a class="hand list-group-item warning-square"
-               title="Click to show/hide details of warnings"
-               ng-class="{ errorsActive: errorsPane.level }"
-               ng-show="!allIssues.errors.count && allIssues.warnings.count"
-               ng-click="errorsPane.level = errorsPane.level ? null : 'summary'">
-                <i class="fa fa-fw fa-exclamation-triangle"></i> {{ allIssues.warnings.count }}
-            </a>
+                <div class="spacer"></div>
+                <a class="hand list-group-item errors-square"
+                   title="Click to show/hide details of errors"
+                   ng-class="{ errorsActive: errorsPane.level }"
+                   ng-show="allIssues.errors.count"
+                   ng-click="errorsPane.level = errorsPane.level ? null : 'error-errors'">
+                    <i class="fa fa-fw fa-times-circle"></i> {{ allIssues.errors.count }}
+                </a>
+                <a class="hand list-group-item warning-square"
+                   title="Click to show/hide details of warnings"
+                   ng-class="{ errorsActive: errorsPane.level }"
+                   ng-show="!allIssues.errors.count && allIssues.warnings.count"
+                   ng-click="errorsPane.level = errorsPane.level ? null : 'summary'">
+                    <i class="fa fa-fw fa-exclamation-triangle"></i> {{ allIssues.warnings.count }}
+                </a>
+            </div>
         </div>
-    </div>
 
-      <div ng-if="errorsPane.level == 'summary'" class="errors-popout">
-          <div class="errors-body">
+        <div ng-if="errorsPane.level == 'summary'" class="errors-popout">
+            <div class="errors-body">
 
-              <a ng-click="errorsPane.level = null" class="hand errors-close"><i class="fa fa-fw fa-times"></i></a>
+                <a ng-click="errorsPane.level = null" class="hand errors-close"><i class="fa fa-fw fa-times"></i></a>
 
-            <div ng-if="allIssues.errors.count">
-                <a class="hand" ng-click="errorsPane.level = 'error-errors'">
-                {{ allIssues.errors.count }}
-                    <span ng-if="allIssues.errors.count == 1">error</span>
-                    <span ng-if="allIssues.errors.count != 1">errors</span>
-                </a>
-                in
-                <a class="hand" ng-click="errorsPane.level = 'error-entities'">
-                    {{ vm.size(allIssues.errors.byEntity) }}
-                    <span ng-if="vm.size(allIssues.errors.byEntity) == 1">entity</span>
-                    <span ng-if="vm.size(allIssues.errors.byEntity) != 1">entities</span>
-                </a>
-            </div>
-
-            <!-- TODO add links and panels for warnings -->
-            <div ng-if="allIssues.warnings.count">
-                {{ allIssues.warnings.count }}
-                    <span ng-if="allIssues.errors.count == 1">warning</span>
-                    <span ng-if="allIssues.errors.count != 1">warnings</span>
-                in {{ vm.size(allIssues.warnings.byEntity) }}
-                    <span ng-if="vm.size(allIssues.warnings.byEntity) == 1">entity</span>
-                    <span ng-if="vm.size(allIssues.warnings.byEntity) != 1">entities</span>
-            </div>
-
-            <div ng-if="!allIssues.errors.count && !allIssues.warnings.count">
-                No errors or warnings.
-            </div>
-
-          </div>
-      </div>
-
-      <div ng-if="errorsPane.level == 'error-entities'" class="errors-popout">
-          <div class="errorsHeader">
-              <a ng-click="errorsPane.level = null" class="hand errors-close"><i class="fa fa-fw fa-times"></i></a>
-
-              <b>{{ vm.size(allIssues.errors.byEntity) }}
-                  <span ng-if="vm.size(allIssues.errors.byEntity) == 1">entity</span>
-                  <span ng-if="vm.size(allIssues.errors.byEntity) != 1">entities</span></b>
-
-              with
-
-              <a class="hand" ng-click="errorsPane.level = 'error-errors'">
-                  {{ allIssues.errors.count }}
-                  <span ng-if="allIssues.errors.count == 1">error</span>
-                  <span ng-if="allIssues.errors.count != 1">errors</span>
-              </a>
-          </div>
-
-          <div class="errors-body">
-            <div ng-repeat="(itemK,itemV) in allIssues.errors.byEntity" class="error-line">
-                <div class="error-line-marker">
-                    <i class="fa fa-fw fa-times-circle"></i>
-                </div>
-                <div class="error-line-text">
-                    {{ vm.entitySummary(allIssues.entities[itemK]) }}:
-                    {{ itemV.length }} {{ itemV.length==1 ? 'error' : 'errors' }}
-                </div>
-                <div class="error-line-action">
-                    <a class="hand" ui-sref="main.graphical.edit.entity({entityId: itemK})">
-                        <i class="fa fa-fw fa-external-link"></i>
+                <div ng-if="allIssues.errors.count">
+                    <a class="hand" ng-click="errorsPane.level = 'error-errors'">
+                        <ng-pluralize count="allIssues.errors.count"
+                                      when="{'one': '{} error', 'other': '{} errors'}">
+                        </ng-pluralize>
+                    </a>
+                    in
+                    <a class="hand" ng-click="errorsPane.level = 'error-entities'">
+                        <ng-pluralize count="vm.size(allIssues.errors.byEntity)"
+                                      when="{'one': '{} entity', 'other': '{} entities'}">
+                        </ng-pluralize>
                     </a>
                 </div>
+
+                <div ng-if="allIssues.warnings.count">
+                    <a class="hand" ng-click="errorsPane.level = 'warning-errors'">
+                        <ng-pluralize count="allIssues.warnings.count"
+                                      when="{'one': '{} warning', 'other': '{} warnings'}">
+                        </ng-pluralize>
+                    </a>
+                    in
+                    <a class="hand" ng-click="errorsPane.level = 'warning-entities'">
+                        <ng-pluralize count="vm.size(allIssues.warnings.byEntity)"
+                                      when="{'one': '{} entity', 'other': '{} entities'}">
+                        </ng-pluralize>
+                    </a>
+                </div>
+
+                <div ng-if="!allIssues.errors.count && !allIssues.warnings.count">
+                    No errors or warnings.
+                </div>
+
             </div>
-          </div>
-      </div>
+        </div>
 
-      <div ng-if="errorsPane.level == 'error-errors'" class="errors-popout">
-          <div class="errorsHeader">
-              <a ng-click="errorsPane.level = null" class="hand errors-close"><i class="fa fa-fw fa-times"></i></a>
+        <div ng-if="errorsPane.level == 'error-entities'" class="errors-popout">
+            <div class="errorsHeader">
+                <a ng-click="errorsPane.level = null" class="hand errors-close"><i class="fa fa-fw fa-times"></i></a>
 
-              <b>{{ allIssues.errors.count }}
-                  <span ng-if="allIssues.errors.count == 1">error</span>
-                  <span ng-if="allIssues.errors.count != 1">errors</span></b>
-              <span ng-show="allIssues.errors.count != vm.size(allIssues.errors.byMessage)"> ({{ vm.size(allIssues.errors.byMessage) }} unique)</span>
+                <strong>
+                    <ng-pluralize count="vm.size(allIssues.errors.byEntity)"
+                                  when="{'one': '{} entity', 'other': '{} entities'}">
+                    </ng-pluralize>
+                </strong>
 
-              in
+                with
 
-              <a class="hand" ng-click="errorsPane.level = 'error-entities'">
-                  {{ vm.size(allIssues.errors.byEntity) }}
-                  <span ng-if="vm.size(allIssues.errors.byEntity) == 1">entity</span>
-                  <span ng-if="vm.size(allIssues.errors.byEntity) != 1">entities</span>
-              </a>
-          </div>
+                <a class="hand" ng-click="errorsPane.level = 'error-errors'">
+                    <ng-pluralize count="allIssues.errors.count"
+                                  when="{'one': '{} error', 'other': '{} errors'}">
+                    </ng-pluralize>
+                </a>
+            </div>
 
-          <div class="errors-body">
-              <div ng-repeat="(itemK,itemV) in allIssues.errors.byMessage" class="error-line">
-                  <div class="error-line-marker">
-                      <i class="fa fa-fw fa-times-circle"></i>
-                  </div>
-                  <div class="error-line-text">
+            <div class="errors-body">
+                <div ng-repeat="(itemK,itemV) in allIssues.errors.byEntity" class="error-line">
+                    <div class="error-line-marker">
+                        <i class="fa fa-fw fa-times-circle"></i>
+                    </div>
+                    <div class="error-line-text">
+                        {{ vm.entitySummary(allIssues.entities[itemK]) }}:
+                        {{ itemV.length }} {{ itemV.length==1 ? 'error' : 'errors' }}
+                    </div>
+                    <div class="error-line-action">
+                        <a class="hand" ui-sref="main.graphical.edit.entity({entityId: itemK})">
+                            <i class="fa fa-fw fa-external-link"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div ng-if="errorsPane.level == 'error-errors'" class="errors-popout">
+            <div class="errorsHeader">
+                <a ng-click="errorsPane.level = null" class="hand errors-close"><i class="fa fa-fw fa-times"></i></a>
+
+                <strong>
+                    <ng-pluralize count="allIssues.errors.count"
+                                  when="{'one': '{} error', 'other': '{} errors'}" />
+                </strong>
+
+                <span ng-show="allIssues.errors.count != vm.size(allIssues.errors.byMessage)"> ({{ vm.size(allIssues.errors.byMessage) }} unique)</span>
+
+                in
+
+                <a class="hand" ng-click="errorsPane.level = 'error-entities'">
+                    <ng-pluralize count="vm.size(allIssues.errors.byEntity)"
+                                  when="{'one': '{} entity', 'other': '{} entities'}">
+                    </ng-pluralize>
+                </a>
+            </div>
+
+            <div class="errors-body">
+                <div ng-repeat="(itemK,itemV) in allIssues.errors.byMessage" class="error-line">
+                    <div class="error-line-marker">
+                        <i class="fa fa-fw fa-times-circle"></i>
+                    </div>
+                    <div class="error-line-text">
                       <span>
                           <span ng-show="vm.messageNeedsPrefix(itemV)">
                               {{ itemV.group }} {{ itemV.ref }}<span ng-show="itemV.message">:</span>
@@ -151,81 +159,222 @@
                           </span>
                       </span>
 
-                      (<a class="hand" ng-click="errorsPane.focus = (errorsPane.focus == 'errors:'+itemK ? null : 'errors:'+itemK)"
-                            ng-class="{active: errorsPane.focus == 'errors:'+itemK }">{{
-                           itemV.issues.length }}
-                        {{ itemV.issues.length==1 ? 'entity' : 'entities'
-                      }}</a><span ng-if="vm.size(itemV.quickFixes)">;
+                        (<a class="hand" ng-click="errorsPane.focus = (errorsPane.focus == 'errors:'+itemK ? null : 'errors:'+itemK)"
+                            ng-class="{active: errorsPane.focus == 'errors:'+itemK }">
+                            <ng-pluralize count="itemV.issues.length"
+                                          when="{'one': '{} entity', 'other': '{} entities'}">
+                            </ng-pluralize>
+                        </a>
+                        <span ng-if="vm.size(itemV.quickFixes)">;
                           <a class="hand" ng-click="errorsPane.focus = (errorsPane.focus == 'fixes:'+itemK ? null : 'fixes:'+itemK)"
-                                ng-class="{active: errorsPane.focus == 'fixes:'+itemK }">
-                            {{ vm.size(itemV.quickFixes) }} quick fix<span ng-if="vm.size(itemV.quickFixes) != 1">es</span> available</a></span>)
+                             ng-class="{active: errorsPane.focus == 'fixes:'+itemK }">
+                             <ng-pluralize count="vm.size(itemV.quickFixes)"
+                                           when="{'one': '{} quick fix', 'other': '{} quick fixes'}">
+                             </ng-pluralize>
+                             available
+                          </a>
+                        </span>)
 
-                      <div class="error-line-sub" ng-if="errorsPane.focus == 'errors:'+itemK">
-                          <div ng-repeat="issue in itemV.issues" class="error-line-sub-line">
-                              <div class="error-line-marker">
-                                  <i class="fa fa-fw fa-circle"></i>
-                              </div>
-                              <div class="error-line-text">
-                                  {{ vm.entitySummary(issue.issue.entity) }}
-                                  <!-- could offer the issue-specific quick fixes; but clearer to navigate to entity and do there -->
-                              </div>
-                              <div class="error-line-action">
-                                  <a class="hand" ui-sref="main.graphical.edit.entity({entityId: issue.issue.entity._id})">
-                                      <i class="fa fa-fw fa-external-link"></i>
-                                  </a>
-                              </div>
-                          </div>
-                      </div>
+                        <div class="error-line-sub" ng-if="errorsPane.focus == 'errors:'+itemK">
+                            <div ng-repeat="issue in itemV.issues" class="error-line-sub-line">
+                                <div class="error-line-marker">
+                                    <i class="fa fa-fw fa-circle"></i>
+                                </div>
+                                <div class="error-line-text">
+                                    {{ vm.entitySummary(issue.issue.entity) }}
+                                    <!-- could offer the issue-specific quick fixes; but clearer to navigate to entity and do there -->
+                                </div>
+                                <div class="error-line-action">
+                                    <a class="hand" ui-sref="main.graphical.edit.entity({entityId: issue.issue.entity._id})">
+                                        <i class="fa fa-fw fa-external-link"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
 
-                      <div class="error-line-sub" ng-if="errorsPane.focus == 'fixes:'+itemK">
-                          <div ng-repeat="fix in itemV.quickFixes" class="error-line-sub-line">
-                              <div class="error-line-marker">
-                                  <i class="fa fa-fw fa-magic"></i>
-                              </div>
-                              <div class="error-line-text">
-                                  {{ fix.text }}
-                                  <a class="hand btn btn-xs btn-primary" style="float: right;" ng-click="vm.applyQuickFix(fix)"
-                                     ng-attr-title="{{ fix.tooltip }}"
+                        <div class="error-line-sub" ng-if="errorsPane.focus == 'fixes:'+itemK">
+                            <div ng-repeat="fix in itemV.quickFixes" class="error-line-sub-line">
+                                <div class="error-line-marker">
+                                    <i class="fa fa-fw fa-magic"></i>
+                                </div>
+                                <div class="error-line-text">
+                                    {{ fix.text }}
+                                    <a class="hand btn btn-xs btn-primary" style="float: right;" ng-click="vm.applyQuickFix(fix)"
+                                       ng-attr-title="{{ fix.tooltip }}"
                                     >Apply
-                                      ({{ vm.size(fix.issues) }}
-                                      <span ng-if="vm.size(fix.issues) == 1">entity</span
-                                      ><span ng-if="vm.size(fix.issues) != 1">entities</span
-                                      >)
-                                  </a>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-                  <!--
-                  <div class="error-line-action">
-                      <a class="hand" ui-sref="main.graphical.edit.entity({entityId: itemK})">
-                          <i class="fa fa-fw fa-external-link"></i>
-                      </a>
-                  </div>
-                  -->
-              </div>
-          </div>
-      </div>
-
-    <designer on-selection-change="vm.onCanvasSelection"></designer>
-  </div>
-
-  <div class="pane pane-palette" ng-if="vm.selectedSection">
-    <div ng-repeat="section in vm.sections track by $index"
-         class="palette-full-height-wrapper"
-         ng-if="vm.selectedSection === section">
-        <div class="container-fluid palette-title">
-            <h3>
-                {{section.title}}
-                <br-svg type="close" class="pull-right" ng-click="vm.selectedSection = undefined"></br-svg>
-            </h3>
+                                        (<ng-pluralize count="vm.size(fix.issues)"
+                                                       when="{'one': '{} entity', 'other': '{} entities'}">
+                                        </ng-pluralize>)
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--
+                    <div class="error-line-action">
+                        <a class="hand" ui-sref="main.graphical.edit.entity({entityId: itemK})">
+                            <i class="fa fa-fw fa-external-link"></i>
+                        </a>
+                    </div>
+                    -->
+                </div>
+            </div>
         </div>
-        <catalog-selector state="paletteState" family="section.type" mode="{{ section.mode }}" on-select="vm.addSelectedTypeToTargetEntity(item)" on-select-text="vm.getOnSelectText()" class="palette-full-height-wrapper"></catalog-selector>
-    </div>
-  </div>
 
-  <div class="pane pane-configuration">
-    <ui-view></ui-view>
-  </div>
+        <div ng-if="errorsPane.level == 'warning-entities'" class="errors-popout">
+            <div class="errorsHeader">
+                <a ng-click="errorsPane.level = null" class="hand errors-close"><i class="fa fa-fw fa-times"></i></a>
+
+                <strong>
+                    <ng-pluralize count="vm.size(allIssues.warnings.byEntity)"
+                                  when="{'one': '{} entity', 'other': '{} entities'}">
+                    </ng-pluralize>
+                </strong>
+
+                with
+
+                <a class="hand" ng-click="errorsPane.level = 'warning-errors'">
+                    <ng-pluralize count="allIssues.warnings.count"
+                                  when="{'one': '{} warning', 'other': '{} warnings'}">
+                    </ng-pluralize>
+                </a>
+            </div>
+
+            <div class="errors-body">
+                <div ng-repeat="(itemK,itemV) in allIssues.warnings.byEntity" class="error-line warning">
+                    <div class="error-line-marker">
+                        <i class="fa fa-fw fa-times-circle"></i>
+                    </div>
+                    <div class="error-line-text">
+                        {{ vm.entitySummary(allIssues.entities[itemK]) }}:
+                        {{ itemV.length }} {{ itemV.length==1 ? 'warning' : 'warnings' }}
+                    </div>
+                    <div class="error-line-action">
+                        <a class="hand" ui-sref="main.graphical.edit.entity({entityId: itemK})">
+                            <i class="fa fa-fw fa-external-link"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div ng-if="errorsPane.level == 'warning-errors'" class="errors-popout">
+            <div class="errorsHeader">
+                <a ng-click="errorsPane.level = null" class="hand errors-close"><i class="fa fa-fw fa-times"></i></a>
+
+                <strong>
+                    <ng-pluralize count="allIssues.warnings.count"
+                                  when="{'one': '{} warning', 'other': '{} warnings'}">
+                    </ng-pluralize>
+                </strong>
+
+                <span ng-show="allIssues.warnings.count != vm.size(allIssues.warnings.byMessage)"> ({{ vm.size(allIssues.warnings.byMessage) }} unique)</span>
+
+                in
+
+                <a class="hand" ng-click="errorsPane.level = 'warning-entities'">
+                    <ng-pluralize count="vm.size(allIssues.warnings.byEntity)"
+                                  when="{'one': '{} entity', 'other': '{} entities'}">
+                    </ng-pluralize>
+                </a>
+            </div>
+
+            <div class="errors-body">
+                <div ng-repeat="(itemK,itemV) in allIssues.warnings.byMessage" class="error-line warning">
+                    <div class="error-line-marker">
+                        <i class="fa fa-fw fa-times-circle"></i>
+                    </div>
+                    <div class="error-line-text">
+                      <span>
+                          <span ng-show="vm.messageNeedsPrefix(itemV)">
+                              {{ itemV.group }} {{ itemV.ref }}<span ng-show="itemV.message">:</span>
+                          </span>
+                          <span ng-show="itemV.message">
+                              <ng-bind-html ng-bind-html="itemV.message"></ng-bind-html>
+                          </span>
+                      </span>
+
+                        (<a class="hand" ng-click="errorsPane.focus = (errorsPane.focus == 'warnings:'+itemK ? null : 'warnings:'+itemK)"
+                            ng-class="{active: errorsPane.focus == 'warnings:'+itemK }">
+                            <ng-pluralize count="itemV.issues.length"
+                                          when="{'one': '{} entity', 'other': '{} entities'}">
+                            </ng-pluralize>
+                        </a>
+                        <span ng-if="vm.size(itemV.quickFixes)">;
+                          <a class="hand" ng-click="errorsPane.focus = (errorsPane.focus == 'fixes:'+itemK ? null : 'fixes:'+itemK)"
+                             ng-class="{active: errorsPane.focus == 'fixes:'+itemK }">
+                             <ng-pluralize count="vm.size(itemV.quickFixes)"
+                                           when="{'one': '{} quick fix', 'other': '{} quick fixes'}">
+                             </ng-pluralize>
+                             available
+                          </a>
+                        </span>)
+
+                        <div class="error-line-sub" ng-if="errorsPane.focus == 'warnings:'+itemK">
+                            <div ng-repeat="issue in itemV.issues" class="error-line-sub-line">
+                                <div class="error-line-marker">
+                                    <i class="fa fa-fw fa-circle"></i>
+                                </div>
+                                <div class="error-line-text">
+                                    {{ vm.entitySummary(issue.issue.entity) }}
+                                    <!-- could offer the issue-specific quick fixes; but clearer to navigate to entity and do there -->
+                                </div>
+                                <div class="error-line-action">
+                                    <a class="hand" ui-sref="main.graphical.edit.entity({entityId: issue.issue.entity._id})">
+                                        <i class="fa fa-fw fa-external-link"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="error-line-sub" ng-if="errorsPane.focus == 'fixes:'+itemK">
+                            <div ng-repeat="fix in itemV.quickFixes" class="error-line-sub-line">
+                                <div class="error-line-marker">
+                                    <i class="fa fa-fw fa-magic"></i>
+                                </div>
+                                <div class="error-line-text">
+                                    {{ fix.text }}
+                                    <a class="hand btn btn-xs btn-primary" style="float: right;" ng-click="vm.applyQuickFix(fix)"
+                                       ng-attr-title="{{ fix.tooltip }}"
+                                    >Apply
+                                        (<ng-pluralize count="vm.size(fix.issues)"
+                                                      when="{'one': '{} entity', 'other': '{} entities'}">
+                                        </ng-pluralize>)
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--
+                    <div class="error-line-action">
+                        <a class="hand" ui-sref="main.graphical.edit.entity({entityId: itemK})">
+                            <i class="fa fa-fw fa-external-link"></i>
+                        </a>
+                    </div>
+                    -->
+                </div>
+            </div>
+        </div>
+
+        <designer on-selection-change="vm.onCanvasSelection"></designer>
+    </div>
+
+    <div class="pane pane-palette" ng-if="vm.selectedSection">
+        <div ng-repeat="section in vm.sections track by $index"
+             class="palette-full-height-wrapper"
+             ng-if="vm.selectedSection === section">
+            <div class="container-fluid palette-title">
+                <h3>
+                    {{section.title}}
+                    <br-svg type="close" class="pull-right" ng-click="vm.selectedSection = undefined"></br-svg>
+                </h3>
+            </div>
+            <catalog-selector state="paletteState" family="section.type" mode="{{ section.mode }}" on-select="vm.addSelectedTypeToTargetEntity(item)" on-select-text="vm.getOnSelectText()" class="palette-full-height-wrapper"></catalog-selector>
+        </div>
+    </div>
+
+    <div class="pane pane-configuration">
+        <ui-view></ui-view>
+    </div>
 
 </div>

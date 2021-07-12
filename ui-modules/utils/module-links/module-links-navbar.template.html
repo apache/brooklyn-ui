@@ -39,7 +39,7 @@
         <span class="ui-module-name">Home</span>
     </a></li>
     <li role="menuitem" ng-repeat="module in ctrl.modules track by module.id" ng-if="module.path && !module.type.includes('library-ui-module')">
-        <a ng-href="{{module.path}}" class="module" ng-class="{active: ctrl.isModuleActive(module.path)}">
+        <a ng-href="{{module.path}}/" class="module" ng-class="{active: ctrl.isModuleActive(module.path)}">
             <i class="ui-module-icon fa fa-fw {{module.icon}}"></i>
             <span class="ui-module-name">{{module.name}}</span>
         </a>

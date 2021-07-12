@@ -157,6 +157,10 @@
         margin-top: 6px;
       }
     }
+
+    &.warning .error-line-marker {
+      color: @brand-warning;
+    }
   }
 
   #palette-controls-button {
@@ -170,23 +174,23 @@
     margin-top: -5px;
     padding: 12px 5px 4px 5px;
     display: flex;
-    
+
     .filters {
-        flex: 1 1 auto;
-        overflow: hidden;
-        display: flex;
-        flex-wrap: wrap;
-        
-        max-height: 27px;  // if things wrap hide them
-        &.multiline {      // unless toggled multiline
-            max-height: max-content; 
-        }
-        
-        .spacer {
-            flex: 0 0.5 1ex;
-        }
+      flex: 1 1 auto;
+      overflow: hidden;
+      display: flex;
+      flex-wrap: wrap;
+
+      max-height: 27px;  // if things wrap hide them
+      &.multiline {      // unless toggled multiline
+        max-height: max-content;
+      }
+
+      .spacer {
+        flex: 0 0.5 1ex;
+      }
     }
-    
+
     .nav-row-item {
       color: @gray-light;
       flex: 0 0 auto;
@@ -197,26 +201,26 @@
       cursor: hand;
     }
     .nav-row-item:hover {
-        color: @brand-primary;
+      color: @brand-primary;
     }
     span[uib-dropdown] {
-        align-self: start;
+      align-self: start;
     }
 
     a[aria-expanded="true"] {
-        > div.nav-row-item {
-            color: @brand-primary;
-        }
+      > div.nav-row-item {
+        color: @brand-primary;
+      }
     }
-    
+
     .spacer {
-        flex: 1 1 2em;
+      flex: 1 1 2em;
     }
-    
+
     .right-align-icon {
-        position: absolute;
-        left: auto;
-        right: 0;
+      position: absolute;
+      left: auto;
+      right: 0;
     }
   }
 }
@@ -237,9 +241,9 @@
     min-height: 400px; // should be enough to show a few rows, to allow pagination
 
     .palette-title {
-        margin-left: 0;
-        margin-right: 0;
-    }    
+      margin-left: 0;
+      margin-right: 0;
+    }
 
     .palette-spacer {
       max-height: 12px;
@@ -258,7 +262,7 @@
       margin-left: 0;
       margin-right: 0;
     }
-    
+
     h3 {
       color: @gray-light;
     }
@@ -279,33 +283,33 @@
     }
 
     .pane-palette .container-fluid {
-        padding-left: 15px;
-        padding-right: 15px;
+      padding-left: 15px;
+      padding-right: 15px;
     }
-    
+
     .container-fluid {
       padding: 0;
     }
 
     .add-panel {
+      display: flex;
+      flex-direction: column;
+      > .spec-parent {
+        flex: 0 0 auto;
+      }
+      > .add-panel-main {
+        flex: 1 1 auto;
         display: flex;
-        flex-direction: column;
-        > .spec-parent {
-            flex: 0 0 auto;
-        } 
-        > .add-panel-main {
-            flex: 1 1 auto;
-            display: flex;
-            flex-direction: row;
-            .toolbar {
-                flex: 0 0 auto;
-            }
-            .pane-palette {
-                flex: 1 1 auto;
-            }
+        flex-direction: row;
+        .toolbar {
+          flex: 0 0 auto;
         }
+        .pane-palette {
+          flex: 1 1 auto;
+        }
+      }
     }
-    
+
     .spec-parent {
       a {
         background-color: @gray-lighter;

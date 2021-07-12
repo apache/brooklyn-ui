@@ -95,7 +95,7 @@ export const CONFIG_FILTERS = [
 export const PARAM_TYPES = [
     // cut-down list from BasicSpecParameter.ParseYamlInputs
     'string', 'boolean', 'integer', 'double', 'duration', ' port'
-    ];
+];
 
 export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, $state, $compile, blueprintService, composerOverrides, mdHelper) {
     return {
@@ -271,6 +271,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             blueprintService.refreshRelationships(scope.model).then(() => {
                 return blueprintService.refreshConfigConstraints(scope.model);
             }).then(() => {
+                return blueprintService.refreshConfigInherited(scope.model);
+            }).then(() => {
                 refreshCustomValidation(scope.model);
             }).then(() => {
                 scope.model.issuesWithFixes = [];
@@ -368,7 +370,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope.nonempty = (o) => o && Object.keys(o).length;
         scope.defined = specEditor.defined = (o) => (typeof o !== 'undefined');
         specEditor.isInstance = (x, type) => (typeof x === type);
-                
+
         specEditor.advanceOutToFormGroupInPanel = (element, event) => {
             focusIfPossible(event, findAncestor(element, "form-group", "panel-body")) || element[0].blur();
         };
@@ -872,7 +874,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         function getConfig(name) {
             return scope.model.miscData.get('config').find(p => p.name === name);
         }
-        
+
 
         function loadCustomConfigWidgetMetadata(model) {
             let customConfigWidgets = (scope.model.miscData.get('ui-composer-hints') || {})['config-widgets'] || [];
@@ -1160,12 +1162,12 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             }
             if (oldName && oldName!==newName) {
                 scope.state.parameters.codeModeActive[newName] = scope.state.parameters.codeModeActive[oldName];
-                scope.state.parameters.codeModeError[newName] = scope.state.parameters.codeModeError[oldName]; 
-                delete scope.state.parameters.codeModeActive[oldName]; 
+                scope.state.parameters.codeModeError[newName] = scope.state.parameters.codeModeError[oldName];
+                delete scope.state.parameters.codeModeActive[oldName];
                 delete scope.state.parameters.codeModeError[oldName];
                 return true;
             }
-            return false;            
+            return false;
         }
         function setModelFromLocalParameters() {
             if (scope.state.parameters && scope.state.parameters.edit && scope.state.parameters.edit.item) {
@@ -1181,12 +1183,12 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                             Object.keys(item).forEach((k) => delete item[k]);
                             Object.assign(item, parsed);
                         }
-                        
+
                     } catch (e) {
                         // $log.warn("ERROR parsing json", scope.state.parameters.edit.json, e);
                         scope.state.parameters.edit.errors.push({ message: "Invalid JSON for parameter" });
                     }
-                    
+
                 } else {
                     if (scope.state.parameters.edit.newName) {
                         if (blueprintService.isReservedKey(scope.state.parameters.edit.newName)) {
@@ -1197,11 +1199,11 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     } else {
                         scope.state.parameters.edit.errors.push({ message: "Key name must not be blank" });
                     }
-                     
+
                     try {
                         let c = scope.state.parameters.edit.constraints ? JSON.parse(scope.state.parameters.edit.constraints) : [];
                         if (Array.isArray(c)) {
-                            if (c.length==0) { 
+                            if (c.length==0) {
                                 delete item['constraints'];
                             } else {
                                 item.constraints = c;
@@ -1213,14 +1215,14 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                         $log.warn("ERROR parsing constraints", scope.state.parameters.edit.constraints, e);
                         scope.state.parameters.edit.errors.push({ message: "Invalid constraint JSON" });
                     }
-                    
+
                     // empty values are removed
                     if (item.description === '') {
                         delete item['description'];
-                    } 
+                    }
                     if (item.label === '') {
                         delete item['label'];
-                    } 
+                    }
                     if (item.default === '') {
                         if (scope.state.parameters.edit.original.default!=='') {
                             // don't delete if default was explicitly set in yaml as "";
@@ -1230,7 +1232,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     }
                 }
             }
-            
+
             let localParams = scope.parameters;
             let result = [];
             for (let paramRef of localParams) {
