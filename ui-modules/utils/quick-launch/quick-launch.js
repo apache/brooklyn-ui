@@ -46,7 +46,7 @@ export function quickLaunchDirective() {
         },
         controller: ['$scope', '$http', '$location', 'brSnackbar', 'brBrandInfo' , 'quickLaunchOverrides', controller]
     };
-
+f
     function controller($scope, $http, $location, brSnackbar, brBrandInfo, quickLaunchOverrides) {
 
         let quickLaunch = this;
@@ -117,7 +117,9 @@ export function quickLaunchDirective() {
                         if (configValue !== '') {
                             $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = configValue;
                         } else {
-                            $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = config.defaultValue === "undefined" ? null : config.defaultValue;
+                            $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = (typeof config.defaultValue === "undefined")
+                                ? '<REPLACE>'
+                                : config.defaultValue;
                         }
                     }
                     return result;
@@ -175,7 +177,7 @@ export function quickLaunchDirective() {
         }
 
         function addNewConfigKey({ name, type }) {
-            console.log('$item', {name, type })
+            // console.log('$item', {name, type })
             if ($scope.model.newKey && $scope.model.newKey.length > 0) {
                 let newConfigValue = null;
                 if ($scope.configMap.hasOwnProperty($scope.model.newKey) &&
@@ -209,14 +211,14 @@ export function quickLaunchDirective() {
             } else {
                 let planText = $scope.app.plan.data || "{}";
                 let result = {};
-                
+
                 // this is set if we're able to parse the plan's text definition, and then:
                 // - we've had to override a field from the plan's text definition, because a value is set _and_ different; or
                 // - the plan's text definition is indented or JSON rather than YAML (not outdented yaml)
-                // and in either case we use the result _object_ ... 
+                // and in either case we use the result _object_ ...
                 // unless we didn't actually change anything, in which case this is ignored
                 let cannotUsePlanText = false;
-                
+
                 if (validate) {
                     result = yaml.safeLoad(planText);
                     if (typeof result !== 'object') {
@@ -230,9 +232,9 @@ export function quickLaunchDirective() {
                         !planText.startsWith(property) && !planText.includes('\n'+property+':')
                     );
                 }
-                
+
                 let newApp = {};
-                
+
                 let newName = $scope.model.name || $scope.app.displayName;
                 if (newName && newName != result.name) {
                     newApp.name = newName;
@@ -241,7 +243,7 @@ export function quickLaunchDirective() {
                         cannotUsePlanText = true;
                     }
                 }
-                
+
                 let newLocation = $scope.model.location;
                 if (newLocation && newLocation != result.location) {
                     newApp.location = newLocation;
@@ -270,7 +272,7 @@ export function quickLaunchDirective() {
                         newApp[BROOKLYN_CONFIG] = newConfig;
                     }
                 }
-                
+
                 // prefer to use the actual yaml input, but if it's not possible
                 let tryMergeByConcatenate =
                     Object.keys(newApp).length ?
@@ -323,8 +325,8 @@ export function quickLaunchDirective() {
             delete $scope.model.deployError;
         }
 
-        function isRequired(config) {
-            return Array.isArray(config.constraints) && config.constraints.includes('required');
+        function isRequired({ constraints }) { // checks if a config field object is required based on its constraints
+            return Array.isArray(constraints) && constraints.includes('required');
         }
     }
 
