@@ -45,7 +45,7 @@ export function logbook() {
         $scope.waitingResponse = false;
 
         $scope.logtext = '';
-        $scope.logEntries = '';
+        $scope.logEntries = [];
 
         let vm = this;
         let refreshFunction = null;
@@ -177,9 +177,27 @@ export function logbook() {
 
             logbookApi.logbookQuery(params, true).then((logEntries) => {
 
-                // TODO: implement logic for make output as table.
+                if ($scope.isLatest && $scope.logEntries.length !== 0) {
+                    if (logEntries.length > 0) {
 
-                $scope.logEntries = logEntries;
+                        // Calculate date-time to display up to. Note, calendar does not take into account milliseconds,
+                        // round down to seconds.
+                        let latestDateTimeToDisplay = Math.floor(logEntries.slice(-1)[0].datetime / DEFAULT_NUMBER_OF_ITEMS) * DEFAULT_NUMBER_OF_ITEMS;
+
+                        // Display new log entries.
+                        let newLogEntries = logEntries.filter(entry => entry.datetime <= latestDateTimeToDisplay);
+                        $scope.logEntries = $scope.logEntries.concat(newLogEntries).slice(-DEFAULT_NUMBER_OF_ITEMS);
+
+                        // Cache next date-time to query tail from.
+                        dateTimeToAutoUpdateFrom = new Date(latestDateTimeToDisplay);
+                    } else {
+                        // Or re-set the cache.
+                        dateTimeToAutoUpdateFrom = '';
+                    }
+                } else {
+                    $scope.logEntries = logEntries;
+                }
+
                 $scope.logtext = covertLogEntriesToString($scope.logEntries);
                 scrollToMostRecentRecords();
             }, (error) => {
