@@ -144,21 +144,30 @@ f
         function deployApp() {
             $scope.deploying = true;
 
-            Promise.resolve(buildYaml()).then(appYaml => {
-                quickLaunch.planSender(appYaml)
-                    .then((response) => {
-                        if ($scope.callback) {
-                            $scope.callback.apply({}, [{state: 'SUCCESS', data: response.data}]);
-                        } else {
-                            brSnackbar.create('Application Deployed');
-                        }
-                        $scope.deploying = false;
-                    })
-                    .catch((err) => {
-                        $scope.model.deployError = err.data.message;
-                        $scope.deploying = false;
-                    });
-            });
+            Promise.resolve(buildYaml())
+                .then(appYaml => {
+                    quickLaunch.planSender(appYaml)
+                        .then((response) => {
+                            if ($scope.callback) {
+                                $scope.callback.apply({}, [{state: 'SUCCESS', data: response.data}]);
+                            } else {
+                                brSnackbar.create('Application Deployed');
+                            }
+                            $scope.deploying = false;
+                        })
+                        .catch(({ data }) => {
+                            // handling API error
+                            handleDeployError({ message: data.message });
+                        });
+                })
+                .catch(err => {
+                    handleDeployError(err);
+                });
+        }
+
+        function handleDeployError(error) {
+            $scope.model.deployError = error.message;
+            $scope.deploying = false;
         }
 
         // add config handler
