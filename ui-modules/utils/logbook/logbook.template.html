@@ -71,8 +71,10 @@
     </div>
 </form>
 
-<div ng-show="logEntries.length > 0">
-    <pre class="logbook-text auto-scrollable">{{logtext}}</pre>
+<div ng-show="logEntries.length > 0 || logtext">
+    <pre ng-show="logEntries.length === 0" class="logbook-text auto-scrollable">{{logtext}}</pre>
+    <pre ng-show="logEntries.length > 0" class="logbook-text auto-scrollable"><pre class="logbook-item" ng-repeat="item in logEntries track by item.id">{{vm.covertLogEntryToString(item)}}</pre></pre>
+
     <div class="form-group">
         <br/>
         <label>Filters:</label>

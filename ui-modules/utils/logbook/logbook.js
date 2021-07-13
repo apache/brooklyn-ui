@@ -50,7 +50,7 @@ export function logbook() {
         let vm = this;
         let refreshFunction = null;
         let autoScrollableElements = Array.from($element.find('pre')).filter(item => item.classList.contains('auto-scrollable'));
-        let dateTimeToAutoUpdateFrom = ''; // TODO: use this date to optimize 'tail' queries to reduce the network traffic.
+        let dateTimeToAutoUpdateFrom = '';
 
         // Set up cancellation of auto-scrolling on scrolling up.
         autoScrollableElements.forEach(item => {
@@ -66,26 +66,6 @@ export function logbook() {
                 item.addEventListener("DOMMouseScroll", wheelHandler, false);
             }
         });
-
-        vm.queryTail = () => {
-            let autoUpdate = !$scope.autoUpdate; // Calculate new value.
-
-            if (autoUpdate) {
-                $scope.isAutoScroll = true;
-                resetQueryParameters();
-                doQuery();
-            }
-
-            $scope.autoUpdate = autoUpdate; // Set new value.
-        }
-
-        vm.queryHead = () => {
-            $scope.waitingResponse = true;
-            $scope.autoUpdate = false;
-            $scope.isLatest = false;
-            $scope.logtext = 'Loading...';
-            doQuery();
-        }
 
         $scope.$watch('allLevels', (value) => {
             if (!value) {
@@ -108,12 +88,6 @@ export function logbook() {
                 $scope.allLevels = true;
             } else if (selected > 0) {
                 $scope.allLevels = false;
-            }
-        }, true);
-
-        $scope.$watch('logFields', (newVal, oldVal) => {
-            if ($scope.logEntries !== "") {
-                $scope.logtext = covertLogEntriesToString($scope.logEntries);
             }
         }, true);
 
@@ -162,6 +136,62 @@ export function logbook() {
         ];
 
         /**
+         * Queries latest log items with applied search parameters.
+         */
+        vm.queryTail = () => {
+            let autoUpdate = !$scope.autoUpdate; // Calculate new value.
+
+            if (autoUpdate) {
+                $scope.isAutoScroll = true;
+                resetQueryParameters();
+                doQuery();
+            }
+
+            $scope.autoUpdate = autoUpdate; // Set new value.
+        }
+
+        /**
+         * Queries first log items with applied search parameters.
+         */
+        vm.queryHead = () => {
+            $scope.waitingResponse = true;
+            $scope.autoUpdate = false;
+            $scope.isLatest = false;
+            $scope.logtext = 'Loading...';
+            $scope.logEntries = [];
+            doQuery();
+        }
+
+        /**
+         * Converts log entry to string.
+         *
+         * @param {Object} entry The log entry to convert.
+         * @returns {String} log entry converted to string.
+         */
+        vm.covertLogEntryToString = (entry) => {
+            let fieldsToShow = getCheckedBoxes($scope.logFields);
+            let outputLine = [];
+            if (fieldsToShow.includes('datetime') && entry.timestamp)
+                outputLine.push(entry.timestamp);
+            if (fieldsToShow.includes('taskId') && entry.taskId)
+                outputLine.push(entry.taskId);
+            if (fieldsToShow.includes('entityIds') && entry.entityIds)
+                outputLine.push(entry.entityIds);
+            if (fieldsToShow.includes('level') && entry.level)
+                outputLine.push(entry.level);
+            if (fieldsToShow.includes('bundleId') && entry.bundleId)
+                outputLine.push(entry.bundleId);
+            if (fieldsToShow.includes('class') && entry.class)
+                outputLine.push(entry.class);
+            if (fieldsToShow.includes('threadName') && entry.threadName)
+                outputLine.push(entry.threadName);
+            if (fieldsToShow.includes('message') && entry.message)
+                outputLine.push(entry.message);
+
+            return outputLine.join(' ');
+        }
+
+        /**
          * Performs a logbook query.
          */
         function doQuery() {
@@ -178,6 +208,10 @@ export function logbook() {
 
             logbookApi.logbookQuery(params, true).then((logEntries) => {
 
+                // TODO: generate IDs in the backend, and remove this workaround.
+                const generateId = () => Math.random().toString(36).slice(2);
+                logEntries.forEach(item => item.id = generateId());
+
                 if ($scope.isLatest && $scope.logEntries.length !== 0) {
                     if (logEntries.length > 0) {
 
@@ -186,7 +220,7 @@ export function logbook() {
                         let latestDateTimeToDisplay = Math.floor(logEntries.slice(-1)[0].datetime / DEFAULT_NUMBER_OF_ITEMS) * DEFAULT_NUMBER_OF_ITEMS;
 
                         // Display new log entries.
-                        let newLogEntries = logEntries.filter(entry => entry.datetime <= latestDateTimeToDisplay);
+                        let newLogEntries = logEntries.filter(({datetime}) => datetime <= latestDateTimeToDisplay);
                         $scope.logEntries = $scope.logEntries.concat(newLogEntries).slice(-DEFAULT_NUMBER_OF_ITEMS);
 
                         // Cache next date-time to query tail from.
@@ -199,7 +233,6 @@ export function logbook() {
                     $scope.logEntries = logEntries;
                 }
 
-                $scope.logtext = covertLogEntriesToString($scope.logEntries);
                 scrollToMostRecentRecords();
             }, (error) => {
                 $scope.logtext = 'Error getting the logs: \n' + error.error.message;
@@ -207,39 +240,6 @@ export function logbook() {
             }).finally(() => {
                 $scope.waitingResponse = false;
             });
-        }
-
-        /**
-         * Converts log entries to string.
-         *
-         * @param {Array.<Object>} logEntries The log entries to convert.
-         * @returns {String} log entries converted to string.
-         */
-        function covertLogEntriesToString(logEntries) {
-            let output = [];
-            const fieldsToShow = getCheckedBoxes($scope.logFields);
-            logEntries.forEach(entry => {
-                let outputLine = [];
-                if (fieldsToShow.includes('datetime') && entry.timestamp)
-                    outputLine.push(entry.timestamp);
-                if (fieldsToShow.includes('taskId') && entry.taskId)
-                    outputLine.push(entry.taskId);
-                if (fieldsToShow.includes('entityIds') && entry.entityIds)
-                    outputLine.push(entry.entityIds);
-                if (fieldsToShow.includes('level') && entry.level)
-                    outputLine.push(entry.level);
-                if (fieldsToShow.includes('bundleId') && entry.bundleId)
-                    outputLine.push(entry.bundleId);
-                if (fieldsToShow.includes('class') && entry.class)
-                    outputLine.push(entry.class);
-                if (fieldsToShow.includes('threadName') && entry.threadName)
-                    outputLine.push(entry.threadName);
-                if (fieldsToShow.includes('message') && entry.message)
-                    outputLine.push(entry.message);
-
-                output.push(outputLine.join(' '));
-            })
-            return output.length > 0 ? output.join('\n') : 'No results';
         }
 
         /**
@@ -283,7 +283,7 @@ export function logbook() {
          */
         function scrollToMostRecentRecords() {
             $scope.$applyAsync(() => {
-                if ($scope.logtext && $scope.isAutoScroll) {
+                if ($scope.logEntries.length > 0 && $scope.isAutoScroll) {
                     autoScrollableElements.forEach(item => item.scrollTop = item.scrollHeight);
                 }
             });

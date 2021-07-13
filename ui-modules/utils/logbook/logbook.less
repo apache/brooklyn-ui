@@ -41,9 +41,21 @@ br-logbook {
   }
 
   .logbook-text {
-    padding: 10px;
+    padding: 5px;
     min-width: 100%;
     height: 500px;
+  }
+
+  .logbook-item {
+    all: revert;
+    margin: 0;
+    background: @gray;
+    color: @gray-lighter;
+    .monospace();
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
   }
 
   pre {
@@ -52,10 +64,6 @@ br-logbook {
     color: @gray-lighter;
     .monospace();
     padding: 0.8em 0.8em 1.2em;
-    white-space: pre-wrap;
-    white-space: -moz-pre-wrap;
-    white-space: -o-pre-wrap;
-    word-wrap: break-word;
   }
 
   .log-action {
