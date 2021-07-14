@@ -40,9 +40,6 @@ brooklyn-quick-launch {
       font-size: 10px;
       color: @gray-light;
     }
-    .dropdown-menu {
-      width: auto;
-    }
   }
 
   .quick-launch-section {
@@ -134,5 +131,16 @@ brooklyn-quick-launch {
 
   .quick-launch-actions {
     padding: @modal-inner-padding;
+
+    .note {
+      &:extend(.text-secondary, .text-left, .font-italics);
+      // negative position equal to height prevents asymmetric top padding for btn group under it, when the note is invisible
+      position: absolute;
+      transform: translateY(-100%);
+    }
+
+    .dropdown-menu {
+      width: auto;
+    }
   }
 }

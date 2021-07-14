@@ -32,32 +32,6 @@
         <p class="media-subheading">{{app.version || "Latest"}}</p>
     </div>
 </div>
-<nav class="quick-launch-type">
-    <div class="text-secondary text-right font-italics" ng-class="{invisible: !yamlViewDisplayed}">
-        <small><em>Returning to form will reverse changes done in the YAML Editor</em></small>
-    </div>
-    <div class="text-right">
-        <div class="btn-group" uib-dropdown>
-            <button class="btn btn-default " ng-if="!yamlViewDisplayed && transitionsShown()" ng-disabled="deploying" ng-click="showEditor()">
-                View as YAML
-            </button>
-            <button class="btn btn-default " ng-if="yamlViewDisplayed && transitionsShown()" ng-disabled="deploying" ng-click="hideEditor()">
-                View as Form
-            </button>
-            <button ng-if="!args.noComposerButton" id="composer-actions" type="button" class="btn btn-default" uib-dropdown-toggle>
-                <span><i class="fa fa-bars"></i></span>
-            </button>
-            <ul ng-if="!args.noComposerButton" class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="composer-actions">
-                <li role="menuitem">
-                    <a ng-click="openComposer($event, false)" href="#"><i class="fa fa-link"></i> Open in Composer</a>
-                </li>
-                <li ng-if="!simpleComposerOnly" role="menuitem">
-                    <a ng-click="openComposer($event, true)" href="#"><i class="fa fa-link"></i> Open in Composer (expanded)</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
 
 <div ng-show="!yamlViewDisplayed">
     <form name="deploy" novalidate>
@@ -165,7 +139,31 @@
 
 
 <div class="quick-launch-actions">
-    <button class="btn btn-lg btn-success pull-right" ng-disabled="(deploy.$invalid || deploying) && !yamlViewDisplayed" ng-click="deployApp()">{{deploying ? 'Deploying&hellip;' : 'Deploy'}}</button>
+    <small class="note" ng-class="{invisible: !yamlViewDisplayed}">
+        <em>Returning to form will reverse changes done in the YAML Editor</em>
+    </small>
+    <div>
+        <span class="btn-group" uib-dropdown>
+            <button class="btn btn-lg btn-default " ng-if="!yamlViewDisplayed && transitionsShown()" ng-disabled="deploying" ng-click="showEditor()">
+                Edit as YAML
+            </button>
+            <button class="btn btn-lg btn-default " ng-if="yamlViewDisplayed && transitionsShown()" ng-disabled="deploying" ng-click="hideEditor()">
+                Back to Form
+            </button>
+            <button ng-if="!args.noComposerButton" id="composer-actions" type="button" class="btn btn-lg btn-default" uib-dropdown-toggle>
+                <span><i class="fa fa-bars"></i></span>
+            </button>
+            <ul ng-if="!args.noComposerButton" class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="composer-actions">
+                <li role="menuitem">
+                    <a ng-click="openComposer($event, false)" href="#"><i class="fa fa-link"></i> Open in Composer</a>
+                </li>
+                <li ng-if="!simpleComposerOnly" role="menuitem">
+                    <a ng-click="openComposer($event, true)" href="#"><i class="fa fa-link"></i> Open in Composer (expanded)</a>
+                </li>
+            </ul>
+        </span>
+        <button class="btn btn-lg btn-success pull-right" ng-disabled="(deploy.$invalid || deploying) && !yamlViewDisplayed" ng-click="deployApp()">{{deploying ? 'Deploying&hellip;' : 'Deploy'}}</button>
+    </div>
 </div>
 
 <!--TYPEAHEAD TEMPLATES :: START-->
