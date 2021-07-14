@@ -118,37 +118,35 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
 
     function nodeManagementModalController($scope, $uibModalInstance, node) {
 
-        let vm = this;
+        $scope.node = node;
+        $scope.newPriority = node.priority;
+        $scope.newStatus = node.status;
+        $scope.statuses = ["MASTER", "STANDBY", "HOT_STANDBY", "HOT_BACKUP"];
+        $scope.now = Date.now();
+        $scope.showEditOptions = false;
 
-        vm.node = node;
-        vm.newPriority = node.priority;
-        vm.newStatus = node.status;
-        vm.statuses = ["MASTER", "STANDBY", "HOT_STANDBY", "HOT_BACKUP"];
-        vm.now = Date.now();
-        vm.showEditOptions = false;
-
-        vm.applyChangesAndQuit = function () {
+        $scope.applyChangesAndQuit = function () {
             let promiseList = [];
-            if (vm.node.priority !== vm.newPriority) {
-                let result = serverApi.setHaPriority(vm.newPriority);
+            if ($scope.node.priority !== $scope.newPriority) {
+                let result = serverApi.setHaPriority($scope.newPriority);
                 promiseList.push(result);
             }
-            if (vm.node.status !== vm.newStatus) {
-                let result = serverApi.setHaStatus(vm.newStatus);
+            if ($scope.node.status !== $scope.newStatus) {
+                let result = serverApi.setHaStatus($scope.newStatus);
                 promiseList.push(result);
             }
             $uibModalInstance.close(promiseList);
 
         }
 
-        vm.cancelAndQuit = function () {
-            vm.newPriority = vm.node.priority;
-            vm.newStatus = vm.node.status;
+        $scope.cancelAndQuit = function () {
+            $scope.newPriority = $scope.node.priority;
+            $scope.newStatus = $scope.node.status;
             $uibModalInstance.dismiss();
         }
 
-        vm.setShowEditOptions = function (showEditOptions) {
-            vm.showEditOptions = showEditOptions;
+        $scope.doShowEditOptions = function () {
+            $scope.showEditOptions = true;
         }
 
     }

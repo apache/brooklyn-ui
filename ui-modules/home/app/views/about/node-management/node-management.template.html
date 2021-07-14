@@ -22,49 +22,49 @@
     <div></div>
     <ul class="list-group">
         <li class="list-group-item">
-            <span class="badge node-management-badge">{{vm.node.nodeId}}</span>
+            <span class="badge node-management-badge">{{node.nodeId}}</span>
             <h4 class="list-group-item-heading">Node ID</h4>
         </li>
 
         <li class="list-group-item">
-            <span class="badge node-management-badge">{{vm.node.remoteTimestamp | timeAgoFilter}}</span>
+            <span class="badge node-management-badge">{{node.remoteTimestamp | timeAgoFilter}}</span>
             <h4 class="list-group-item-heading">Last active</h4>
         </li>
 
         <li class="list-group-item">
             <span class="badge node-management-badge"
-                  ng-style="(vm.newStatus !== vm.node.status) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
-                <div ng-if="!vm.showEditOptions">{{vm.newStatus}}</div>
-                <div ng-if="vm.showEditOptions">
+                  ng-style="(newStatus !== node.status) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
+                <div ng-if="!showEditOptions">{{newStatus}}</div>
+                <div ng-if="showEditOptions">
                     <select class="form-control property-change-box"
-                            ng-style="(vm.newStatus !== vm.node.status) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}"
-                            ng-options="status for status in vm.statuses" ng-init="vm.newStatus"
-                            ng-model="vm.newStatus">
+                            ng-style="(newStatus !== node.status) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}"
+                            ng-options="status for status in statuses" ng-init="newStatus"
+                            ng-model="newStatus">
                     </select>
-                    <label style="font-size:small">Update status... (current: {{vm.node.status}})
+                    <label style="font-size:small">Update status... (current: {{node.status}})
                     </label>
                 </div>
 
             </span>
             <h4 class="list-group-item-heading">Status</h4>
-            <br ng-if="vm.showEditOptions">
-            <br ng-if="vm.showEditOptions">
-            <p class="master-change-warning" ng-show="vm.node.status === 'MASTER' && vm.newStatus !== 'MASTER'">Warning!
+            <br ng-if="showEditOptions">
+            <br ng-if="showEditOptions">
+            <p class="master-change-warning" ng-show="node.status === 'MASTER' && newStatus !== 'MASTER'">Warning!
                 Applying changes will de-mote this node from being Master and a new Master will be elected from other
                 management nodes.</p>
-            <p class="master-change-warning" ng-show="vm.node.status !== 'MASTER' && vm.newStatus === 'MASTER'">Warning!
+            <p class="master-change-warning" ng-show="node.status !== 'MASTER' && newStatus === 'MASTER'">Warning!
                 Applying changes will de-mote the current Master and this node will be forcibly made the new Master.</p>
         </li>
 
-        <li class="list-group-item" ng-style="vm.showEditOptions && {'min-height': '80px'}">
+        <li class="list-group-item" ng-style="showEditOptions && {'min-height': '80px'}">
 
             <span class="badge node-management-badge"
-                  ng-style="(vm.newPriority !== vm.node.priority) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
-                <div ng-if="!vm.showEditOptions">{{vm.newPriority}}</div>
-                <div ng-if="vm.showEditOptions">
-                    <input class="form-control property-change-box" type="number" ng-model="vm.newPriority"
-                           ng-style="(vm.newPriority !== vm.node.priority) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
-                        <label style="font-size:small">Update priority... (current: {{vm.node.priority}})
+                  ng-style="(newPriority !== node.priority) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
+                <div ng-if="!showEditOptions">{{newPriority}}</div>
+                <div ng-if="showEditOptions">
+                    <input class="form-control property-change-box" type="number" ng-model="newPriority"
+                           ng-style="(newPriority !== node.priority) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
+                        <label style="font-size:small">Update priority... (current: {{node.priority}})
                         </label>
                     </input>
                 </div>
@@ -75,14 +75,14 @@
     </ul>
     <div class="node-management-actions">
         <button class="btn btn-lg btn-danger btn-default pull-right" style="margin-left: 1em; margin-right: 1em"
-                ng-click="vm.cancelAndQuit()">Cancel</button>
+                ng-click="cancelAndQuit()">Cancel</button>
         <button class="btn btn-lg btn-default pull-right" style="margin-left: 1em;"
-                ng-if="!vm.showEditOptions"
-                ng-click="vm.showEditOptions = !vm.showEditOptions">Edit</button>
+                ng-if="!showEditOptions"
+                ng-click="doShowEditOptions()">Edit</button>
         <button class="btn btn-lg btn-success btn-default pull-right" style="margin-left: 1em"
-                ng-if="vm.showEditOptions"
-                ng-disabled="(vm.newPriority === vm.node.priority) && (vm.newStatus === vm.node.status)"
-                ng-click="vm.applyChangesAndQuit()">Apply</button>
+                ng-if="showEditOptions"
+                ng-disabled="(newPriority === node.priority) && (newStatus === node.status)"
+                ng-click="applyChangesAndQuit()">Apply</button>
     </div>
 
 </div>
