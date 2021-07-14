@@ -118,21 +118,24 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
 
     function nodeManagementModalController($scope, $uibModalInstance, node) {
 
+        // newStatus and newPriority are required to belong to the instance of the modal
+        let vm = this;
+        vm.newPriority = node.priority;
+        vm.newStatus = node.status;
+        
         $scope.node = node;
-        $scope.newPriority = node.priority;
-        $scope.newStatus = node.status;
         $scope.statuses = ["MASTER", "STANDBY", "HOT_STANDBY", "HOT_BACKUP"];
         $scope.now = Date.now();
         $scope.showEditOptions = false;
 
         $scope.applyChangesAndQuit = function () {
             let promiseList = [];
-            if ($scope.node.priority !== $scope.newPriority) {
-                let result = serverApi.setHaPriority($scope.newPriority);
+            if ($scope.node.priority !== vm.newPriority) {
+                let result = serverApi.setHaPriority(vm.newPriority);
                 promiseList.push(result);
             }
-            if ($scope.node.status !== $scope.newStatus) {
-                let result = serverApi.setHaStatus($scope.newStatus);
+            if ($scope.node.status !== vm.newStatus) {
+                let result = serverApi.setHaStatus(vm.newStatus);
                 promiseList.push(result);
             }
             $uibModalInstance.close(promiseList);
@@ -140,8 +143,8 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
         }
 
         $scope.cancelAndQuit = function () {
-            $scope.newPriority = $scope.node.priority;
-            $scope.newStatus = $scope.node.status;
+            vm.newPriority = $scope.node.priority;
+            vm.newStatus = $scope.node.status;
             $uibModalInstance.dismiss();
         }
 
@@ -166,7 +169,7 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
         let removeNodes = serverApi.removeHaTerminatedNodes();
         removeNodes.then(data => {
             for (const node in $scope.states.nodes) {
-                if ($scope.states.nodes[node].status === "TERMINATED") $scope.expectedNodeCounter--;
+                if ($scope.states.nodes[node].status === "TERMINATED" || $scope.states.nodes[node].status === "FAILED") $scope.expectedNodeCounter--;
             }
             let event = new CustomEvent('update-states', {});
             $scope.container.dispatchEvent(event);

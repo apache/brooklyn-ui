@@ -33,40 +33,36 @@
 
         <li class="list-group-item">
             <span class="badge node-management-badge"
-                  ng-style="(newStatus !== node.status) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
-                <div ng-if="!showEditOptions">{{newStatus}}</div>
+                  ng-style="(vm.newStatus !== node.status) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
+                <div ng-if="!showEditOptions">{{vm.newStatus}}</div>
                 <div ng-if="showEditOptions">
                     <select class="form-control property-change-box"
-                            ng-style="(newStatus !== node.status) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}"
-                            ng-options="status for status in statuses" ng-init="newStatus"
-                            ng-model="newStatus">
+                            ng-style="(vm.newStatus !== node.status) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}"
+                            ng-options="status for status in statuses"
+                            ng-model="vm.newStatus">
                     </select>
-                    <label style="font-size:small">Update status... (current: {{node.status}})
-                    </label>
                 </div>
 
             </span>
             <h4 class="list-group-item-heading">Status</h4>
             <br ng-if="showEditOptions">
             <br ng-if="showEditOptions">
-            <p class="master-change-warning" ng-show="node.status === 'MASTER' && newStatus !== 'MASTER'">Warning!
+            <p class="master-change-warning" ng-show="node.status === 'MASTER' && vm.newStatus !== 'MASTER'">Warning!
                 Applying changes will de-mote this node from being Master and a new Master will be elected from other
                 management nodes.</p>
-            <p class="master-change-warning" ng-show="node.status !== 'MASTER' && newStatus === 'MASTER'">Warning!
+            <p class="master-change-warning" ng-show="node.status !== 'MASTER' && vm.newStatus === 'MASTER'">Warning!
                 Applying changes will de-mote the current Master and this node will be forcibly made the new Master.</p>
         </li>
 
         <li class="list-group-item" ng-style="showEditOptions && {'min-height': '80px'}">
 
             <span class="badge node-management-badge"
-                  ng-style="(newPriority !== node.priority) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
-                <div ng-if="!showEditOptions">{{newPriority}}</div>
+                  ng-style="(vm.newPriority && vm.newPriority !== node.priority) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
+                <div ng-if="!showEditOptions">{{vm.newPriority}}</div>
                 <div ng-if="showEditOptions">
-                    <input class="form-control property-change-box" type="number" ng-model="newPriority"
-                           ng-style="(newPriority !== node.priority) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
-                        <label style="font-size:small">Update priority... (current: {{node.priority}})
-                        </label>
-                    </input>
+                    <input class="form-control property-change-box" type="number" ng-model="vm.newPriority"
+                           ng-style="(vm.newPriority && vm.newPriority !== node.priority) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}"
+                           placeholder="(Can not be blank)"/>
                 </div>
             </span>
             <h4 class="list-group-item-heading">Priority</h4>
@@ -81,7 +77,7 @@
                 ng-click="doShowEditOptions()">Edit</button>
         <button class="btn btn-lg btn-success btn-default pull-right" style="margin-left: 1em"
                 ng-if="showEditOptions"
-                ng-disabled="(newPriority === node.priority) && (newStatus === node.status)"
+                ng-disabled="!vm.newPriority || (vm.newPriority === node.priority && vm.newStatus === node.status)"
                 ng-click="applyChangesAndQuit()">Apply</button>
     </div>
 
