@@ -183,19 +183,20 @@ export function quickLaunchDirective() {
         }
 
         function addNewConfigKey() {
-            if ($scope.model.newKey && $scope.model.newKey.length > 0) {
+            const { newKey } = $scope.model;
+            if (newKey && newKey.length > 0) {
                 let newConfigValue = null;
-                if ($scope.configMap.hasOwnProperty($scope.model.newKey) &&
-                    $scope.configMap[$scope.model.newKey].hasOwnProperty('defaultValue')) {
-                    newConfigValue = $scope.configMap[$scope.model.newKey].defaultValue;
+                const defaultValue = get($scope, `configMap[${newKey}].defaultValue`, null);
+                const isBoolean = get($scope, `configMap[${newKey}].type`) === 'java.lang.Boolean';
+
+                if (defaultValue) {
+                    newConfigValue = defaultValue;
                 }
-                if ($scope.configMap.hasOwnProperty($scope.model.newKey) &&
-                    $scope.configMap[$scope.model.newKey].type === 'java.lang.Boolean' &&
-                    newConfigValue === null) {
+                if (isBoolean && newConfigValue === null) {
                     newConfigValue = false;
                 }
 
-                if (!$scope.entityToDeploy.hasOwnProperty(BROOKLYN_CONFIG)) {
+                if (!$scope.entityToDeploy[BROOKLYN_CONFIG]) {
                     $scope.entityToDeploy[BROOKLYN_CONFIG] = {};
                 }
                 $scope.entityToDeploy[BROOKLYN_CONFIG][$scope.model.newKey] = newConfigValue;
