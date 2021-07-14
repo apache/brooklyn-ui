@@ -64,10 +64,9 @@ export function aboutStateConfig($stateProvider) {
 export function aboutStateController($scope, $element, $q, $uibModal, brBrandInfo, version, states, serverApi) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
     $scope.getBrandedText = brBrandInfo.getBrandedText;
-    this.serverApi = serverApi;
-    this.serverVersion = version.data;
-    this.states = states.data;
-    this.buildInfo = {
+    $scope.serverVersion = version.data;
+    $scope.states = states.data;
+    $scope.buildInfo = {
         buildVersion: BUILD_VERSION,
         buildName: BUILD_NAME,
         buildBranch: BUILD_BRANCH,
@@ -75,34 +74,31 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
         brooklynVersion: BROOKLYN_VERSION,
     };
 
-    this.container = $element[0];
-    this.now = Date.now();
-    this.expectedNodeCounter = Object.keys(this.states.nodes).length;
-    this.template = 'haStatusTemplate';
+    $scope.container = $element[0];
+    $scope.now = Date.now();
+    $scope.expectedNodeCounter = Object.keys($scope.states.nodes).length;
+    $scope.template = 'haStatusTemplate';
 
     let modalInstance = null;
 
-    this.openDialog = function (states, nodeId, serverApi, container) {
+    $scope.openDialog = function (states, container) {
         if (!modalInstance) {
             modalInstance = $uibModal.open({
                 template: nodeManagementTemplate,
-                controller: ['$scope', '$uibModalInstance', 'node', 'serverApi', nodeManagementController],
+                controller: ['$scope', '$uibModalInstance', 'node', nodeManagementModalController],
                 controllerAs: 'vm',
                 backdrop: 'static',
                 windowClass: 'quick-launch-modal',
                 size: 'md',
                 resolve: {
                     node: function () {
-                        return states.nodes[nodeId];
-                    },
-                    serverApi: function () {
-                        return serverApi;
+                        return states.nodes[states.ownId];
                     }
                 }
             });
             modalInstance.result.then(
                 (promiseList) => {
-                    this.template = 'spinnerTemplate';
+                    $scope.template = 'spinnerTemplate';
                     Promise.allSettled(promiseList).then((values) => {
                         let event = new CustomEvent('update-states', {});
                         container.dispatchEvent(event);
@@ -110,7 +106,7 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
                     modalInstance = null;
                 },
                 () => {
-                    this.template = 'spinnerTemplate';
+                    $scope.template = 'spinnerTemplate';
                     let event = new CustomEvent('update-states', {});
                     container.dispatchEvent(event);
                     modalInstance = null;
@@ -120,7 +116,7 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
 
     };
 
-    function nodeManagementController($scope, $uibModalInstance, node, serverApi) {
+    function nodeManagementModalController($scope, $uibModalInstance, node) {
 
         let vm = this;
 
@@ -130,16 +126,6 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
         vm.statuses = ["MASTER", "STANDBY", "HOT_STANDBY", "HOT_BACKUP"];
         vm.now = Date.now();
         vm.showEditOptions = false;
-
-        vm.setHaStatus = function () {
-            let result = serverApi.setHaStatus(vm.newStatus);
-            vm.node.status = vm.newStatus;
-        }
-
-        vm.setHaPriority = function () {
-            let result = serverApi.setHaPriority(vm.newPriority);
-            vm.node.priority = vm.newPriority;
-        }
 
         vm.applyChangesAndQuit = function () {
             let promiseList = [];
@@ -167,38 +153,38 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
 
     }
 
-    this.removeNode = function (nodeId) {
-        this.template = 'spinnerTemplate';
+    $scope.removeNode = function (nodeId) {
+        $scope.template = 'spinnerTemplate';
         let removeNode = serverApi.removeHaTerminatedNode(nodeId);
         removeNode.then(data => {
-            this.expectedNodeCounter--;
+            $scope.expectedNodeCounter--;
             let event = new CustomEvent('update-states', {});
-            this.container.dispatchEvent(event);
+            $scope.container.dispatchEvent(event);
         });
     }
 
-    this.removeAllTerminatedNodes = function () {
-        this.template = 'spinnerTemplate';
+    $scope.removeAllTerminatedNodes = function () {
+        $scope.template = 'spinnerTemplate';
         let removeNodes = serverApi.removeHaTerminatedNodes();
         removeNodes.then(data => {
-            for (const node in this.states.nodes) {
-                if (this.states.nodes[node].status === "TERMINATED") this.expectedNodeCounter--;
+            for (const node in $scope.states.nodes) {
+                if ($scope.states.nodes[node].status === "TERMINATED") $scope.expectedNodeCounter--;
             }
             let event = new CustomEvent('update-states', {});
-            this.container.dispatchEvent(event);
+            $scope.container.dispatchEvent(event);
         });
     }
 
     $element.bind('update-states', (event) => {
         let updateStates = serverApi.getHaStates();
         updateStates.then(data => {
-            if (Object.keys(data.data.nodes).length === this.expectedNodeCounter) {
-                this.states = data.data;
-                this.now = Date.now();
-                this.template = 'haStatusTemplate';
+            if (Object.keys(data.data.nodes).length === $scope.expectedNodeCounter) {
+                $scope.states = data.data;
+                $scope.now = Date.now();
+                $scope.template = 'haStatusTemplate';
             } else {
                 let event = new CustomEvent('update-states', {});
-                this.container.dispatchEvent(event);
+                $scope.container.dispatchEvent(event);
             }
         })
     })
