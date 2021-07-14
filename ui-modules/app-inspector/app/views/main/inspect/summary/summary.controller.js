@@ -74,16 +74,32 @@ export function summaryController($scope, $state, $stateParams, $q, $http, brSna
         vm.error.config = 'Cannot load configuration for entity with ID: ' + entityId;
     });
 
-    entityApi.entityConfigInfo(applicationId, entityId).then((response)=> {
-        vm.configInfo = response.data;
-        vm.error.config = undefined;
-        observers.push(response.subscribe((response)=> {
+    vm.configResolved = false;
+
+    vm.refreshConfig = (initialSubscription) => {
+        entityApi.entityConfigInfo(applicationId, entityId, !vm.configResolved).then((response) => {
             vm.configInfo = response.data;
             vm.error.config = undefined;
-        }));
-    }).catch((error)=> {
-        vm.error.config = 'Cannot load configuration information for entity with ID: ' + entityId;
-    });
+            let processConfig = (response) => {
+                vm.configInfo = response.data;
+                vm.error.config = undefined;
+            };
+
+            if (initialSubscription) {
+                observers.push(response.subscribe(processConfig));
+            } else {
+                processConfig(response);
+            }
+        }).catch((error) => {
+            vm.error.config = 'Cannot load configuration information for entity with ID: ' + entityId;
+        });
+    }
+    vm.refreshConfig(true);
+
+    vm.toggleConfigResolved = () => {
+        vm.configResolved = !vm.configResolved;
+        vm.refreshConfig(false);
+    }
 
     entityApi.entitySpecList(applicationId, entityId).then((response)=> {
         vm.specList = response.data;
