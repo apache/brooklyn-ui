@@ -78,8 +78,10 @@ function EntityApi($http, $q) {
     function getEntityConfigInfo(applicationId, entityId) {
         return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/config', {observable: true, ignoreLoadingBar: true});
     }
-    function getEntityConfigState(applicationId, entityId) {
-        return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/config/current-state?raw=true', {observable: true, ignoreLoadingBar: true});
+
+    function getEntityConfigState(applicationId, entityId, skipResolution) {
+        skipResolution = skipResolution ? true : false;
+        return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/config/current-state?suppressSecrets=true&skipResolution='+skipResolution, {observable: true, ignoreLoadingBar: true});
     }
     function getEntitySpec(applicationId, entityId) {
         return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/spec', {observable: true, ignoreLoadingBar: true});
