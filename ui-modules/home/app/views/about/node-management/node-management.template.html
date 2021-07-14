@@ -34,7 +34,7 @@
         <li class="list-group-item">
             <span class="badge node-management-badge"
                   ng-style="(vm.newStatus !== vm.node.status) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
-                <div ng-if="vm.showEditOptions===false">{{vm.newStatus}}</div>
+                <div ng-if="!vm.showEditOptions">{{vm.newStatus}}</div>
                 <div ng-if="vm.showEditOptions">
                     <select class="form-control property-change-box"
                             ng-style="(vm.newStatus !== vm.node.status) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}"
@@ -60,7 +60,7 @@
 
             <span class="badge node-management-badge"
                   ng-style="(vm.newPriority !== vm.node.priority) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
-                <div ng-if="vm.showEditOptions===false">{{vm.newPriority}}</div>
+                <div ng-if="!vm.showEditOptions">{{vm.newPriority}}</div>
                 <div ng-if="vm.showEditOptions">
                     <input class="form-control property-change-box" type="number" ng-model="vm.newPriority"
                            ng-style="(vm.newPriority !== vm.node.priority) && {'background-color' : '#f0ad4e'} || {'background-color' : 'gray'}">
@@ -78,7 +78,7 @@
                 ng-click="vm.cancelAndQuit()">Cancel</button>
         <button class="btn btn-lg btn-default pull-right" style="margin-left: 1em;"
                 ng-if="!vm.showEditOptions"
-                ng-click="vm.setShowEditOptions(true)">Edit</button>
+                ng-click="vm.showEditOptions = !vm.showEditOptions">Edit</button>
         <button class="btn btn-lg btn-success btn-default pull-right" style="margin-left: 1em"
                 ng-if="vm.showEditOptions"
                 ng-disabled="(vm.newPriority === vm.node.priority) && (vm.newStatus === vm.node.status)"
