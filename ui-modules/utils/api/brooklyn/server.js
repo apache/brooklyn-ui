@@ -66,7 +66,7 @@ function ServerApi($http, $q, cache) {
         return $http.get('/v1/server/up/extended', angular.extend({cache: cache}, config));
     }
 
-    function setHaStatus(state, config) {
+    function setHaStatus(state) {
         return $http({
             method: 'POST',
             url: '/v1/server/ha/state',
@@ -80,7 +80,7 @@ function ServerApi($http, $q, cache) {
         });
     }
 
-    function setHaPriority(priority, config) {
+    function setHaPriority(priority) {
         return $http({
             method: 'POST',
             url: '/v1/server/ha/priority',
@@ -98,7 +98,7 @@ function ServerApi($http, $q, cache) {
         return $http.post('/v1/server/ha/states/clear', angular.extend({cache: cache}, config));
     }
 
-    function removeHaTerminatedNode(nodeId, config){
+    function removeHaTerminatedNode(nodeId){
         return $http({
             method: 'POST',
             url: '/v1/server/ha/states/clear/node',
