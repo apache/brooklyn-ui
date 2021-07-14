@@ -49,18 +49,25 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
     };
 
     function link($scope, $element) {
-        let blueprintGraph = new D3Blueprint($element[0], {shouldShowNode: composerOverrides.shouldShowNode}).center();
+        let container = $element[0];
+        let blueprintGraph = new D3Blueprint(container, {shouldShowNode: composerOverrides.shouldShowNode}).center();
 
         // allow downstream to configure this directive and/or scope
         (composerOverrides.configureDesignerDirective || function () {})($scope, $element, blueprintGraph);
 
         $scope.blueprint = blueprintService.get();
-        $scope.$watch('blueprint', () => {
-            redrawGraph();
-        }, true);
 
         blueprintService.refreshBlueprintMetadata().then(() => {
             redrawGraph();
+
+            // Start watching blueprint changes after metadata is refreshed. Metadata is changed many times while being
+            // refreshed, no need to re-draw on every change.
+            $scope.$watch('blueprint', () => {
+                redrawGraph();
+            }, true);
+
+            // Broadcast 'd3.metadata-refreshed' event, allow downstream to react on this event.
+            $scope.$broadcast('d3.metadata-refreshed');
         });
 
         $scope.selectedEntity = null;
@@ -107,6 +114,9 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
                     $state.go('main.graphical');
                 });
             });
+
+            // Broadcast 'd3.removed' event, allow downstream to react on this event.
+            $scope.$broadcast('d3.removed');
         });
 
         $scope.$on('$stateChangeSuccess', (event, toState, toParams, fromState, fromParams, options) => {
@@ -170,7 +180,7 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
         });
 
         $element.bind('move-entity', function (event) {
-            if (!event.detail.isNewParent) { // Do not remove, this event is intercepted in branded versions.
+            if (!event.detail.isNewParent) { // Do not remove, this event is intercepted in customized versions.
                 return;
             }
             let currentNode = blueprintService.find(event.detail.nodeId);
@@ -203,38 +213,46 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
 
         $element.bind('drop-external-node', event => {
             let draggedItem = paletteDragAndDropService.draggedItem();
-            let target = blueprintService.find(event.detail.parentId);
+            let targetEntity = blueprintService.find(event.detail.parentId);
 
             if (draggedItem.supertypes.includes(EntityFamily.ENTITY.superType)) {
                 let targetIndex = event.detail.targetIndex;
                 let newEntity = blueprintService.populateEntityFromApi(new Entity(), draggedItem);
                 if (targetIndex >= 0) {
-                    target.insertChild(newEntity, targetIndex);
+                    targetEntity.insertChild(newEntity, targetIndex);
                 } else {
-                    target.addChild(newEntity);
+                    targetEntity.addChild(newEntity);
                 }
                 blueprintService.refreshEntityMetadata(newEntity, EntityFamily.ENTITY).then(() => {
+                    container.dispatchEvent(new CustomEvent('new-entity-created', {
+                        detail: {
+                            nodeId: newEntity._id,
+                            parentId: targetEntity._id
+                        }
+                    }));
                     $state.go(graphicalEditEntityState, {entityId: newEntity._id});
                 });
             }
             else if (draggedItem.supertypes.includes(EntityFamily.POLICY.superType)) {
                 let newPolicy = blueprintService.populateEntityFromApi(new Entity(), draggedItem);
-                target.addPolicy(newPolicy);
+                targetEntity.addPolicy(newPolicy);
                 blueprintService.refreshEntityMetadata(newPolicy, EntityFamily.POLICY).then(() => {
-                    $state.go(graphicalEditPolicyState, {entityId: target._id, policyId: newPolicy._id});
+                    $state.go(graphicalEditPolicyState, {entityId: targetEntity._id, policyId: newPolicy._id});
                 });
             }
             else if (draggedItem.supertypes.includes(EntityFamily.ENRICHER.superType)) {
                 let newEnricher = blueprintService.populateEntityFromApi(new Entity(), draggedItem);
-                target.addEnricher(newEnricher);
+                targetEntity.addEnricher(newEnricher);
                 blueprintService.refreshEntityMetadata(newEnricher, EntityFamily.ENRICHER).then(() => {
-                    $state.go(graphicalEditEnricherState, {entityId: target._id, enricherId: newEnricher._id});
+                    $state.go(graphicalEditEnricherState, {entityId: targetEntity._id, enricherId: newEnricher._id});
                 });
             }
             else if (draggedItem.supertypes.includes(EntityFamily.LOCATION.superType)) {
-                blueprintService.populateLocationFromApi(target, draggedItem);
-                $state.go(graphicalEditEntityState, {entityId: target._id});
+                blueprintService.populateLocationFromApi(targetEntity, draggedItem);
+                $state.go(graphicalEditEntityState, {entityId: targetEntity._id});
             }
+
+            // Refresh relationships & redraw.
             blueprintService.refreshAllRelationships().then(()=> {
                 redrawGraph();
             });

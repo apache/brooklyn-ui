@@ -224,38 +224,30 @@ export function bundleDescriptionFilter() {
     }
 }
 
+const highlightToHTML = ({ count, labelOne, labelMany }) =>
+    `<span class="highlight-count">${count}</span>&nbsp;<span class="highlight-label">${count === 1 ? labelOne : labelMany}</span>`;
+
 export function bundleHighlightsFilter($sce) {
     return function(input) {
-        let highlights = [];
+        let highlights = [
+            { count:0, labelOne: 'entity', labelMany: 'entities' },
+            { count:0, labelOne: 'policy', labelMany: 'policies' },
+            { count:0, labelOne: 'enricher', labelMany: 'enrichers' },
+        ];
 
         if (input && input.types) {
-            let entities = input.types.filter(type => type.supertypes.includes('org.apache.brooklyn.api.entity.Entity')).length;
-            let policies = input.types.filter(type => type.supertypes.includes('org.apache.brooklyn.api.policy.Policy')).length;
-            let enrichers = input.types.filter(type => type.supertypes.includes('org.apache.brooklyn.api.sensor.Enricher')).length;
-
-            if (entities > 0) {
-                highlights.push({
-                    label: (entities==1 ? 'entity' : 'entities'),
-                    count: entities
-                });
-            }
-            if (policies > 0) {
-                highlights.push({
-                    label: (policies==1 ? 'policy' : 'policies'),
-                    count: policies
-                });
-            }
-            if (enrichers > 0) {
-                highlights.push({
-                    label: (enrichers==1 ? 'enricher' : 'enrichers'),
-                    count: enrichers
-                });
-            }
+            input.types.forEach(({supertypes}) => {
+                if (supertypes.includes('org.apache.brooklyn.api.entity.Entity')) highlights[0].count++;
+                if (supertypes.includes('org.apache.brooklyn.api.entity.Policy')) highlights[1].count++;
+                if (supertypes.includes('org.apache.brooklyn.api.sensor.Enricher')) highlights[2].count++;
+            })
         }
 
-        return $sce.trustAsHtml(highlights.map(highlight => {
-            return `<span class="highlight-count">${highlight.count}</span>&nbsp;<span class="highlight-label">${highlight.label}</span>`
-        }).join('&nbsp;'));
+        return $sce.trustAsHtml(highlights
+            .filter(({ count }) => count)
+            .map(highlightToHTML)
+            .join('&nbsp;')
+        );
     };
 }
 

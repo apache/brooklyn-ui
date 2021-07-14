@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 import angular from 'angular';
 import moment from "moment";
 import uiRouter from 'angular-ui-router';
@@ -25,6 +26,7 @@ import brInterstitialSpinner from 'brooklyn-ui-utils/interstitial-spinner/inters
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./about.template.html";
 import nodeManagementTemplate from "./node-management/node-management.template.html";
+
 
 const MODULE_NAME = 'states.about';
 const BROOKLYN_VERSION = __BROOKLYN_VERSION__;

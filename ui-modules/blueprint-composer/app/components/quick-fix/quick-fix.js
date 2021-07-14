@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
- 
+
 import angular from 'angular';
 
 const MODULE_NAME = 'brooklyn.components.quick-fix.quick-fix';
@@ -38,6 +38,31 @@ export function computeQuickFixes(blueprintService, allIssues) {
             let v = allIssues.errors.byMessage[key];
             if (!v) {
                 v = allIssues.errors.byMessage[key] = {
+                    group: issue.group,
+                    ref: issue.ref,
+                    message: issue.message,
+                    issues: [],
+                    quickFixes: {},
+                };
+            }
+
+            let issueO = {
+                issue,
+                //quickFixes: {},
+            }
+            v.issues.push(issueO);
+
+            computeQuickFixesForIssue(issue, issue.entity, blueprintService, v.quickFixes)
+        });
+    });
+
+    allIssues.warnings.byMessage = {};
+    Object.values(allIssues.warnings.byEntity).forEach(list => {
+        list.forEach(issue => {
+            let key = issue.group+":"+issue.ref+":"+issue.message;
+            let v = allIssues.warnings.byMessage[key];
+            if (!v) {
+                v = allIssues.warnings.byMessage[key] = {
                     group: issue.group,
                     ref: issue.ref,
                     message: issue.message,
@@ -89,6 +114,26 @@ const QUICK_FIX_PROPOSERS = {
             }
             proposals.clear_config.issues.push(issue);
         },
+    },
+    explicit_config: {
+        propose: (qfdef, issue, entity, blueprintService, proposals) => {
+            if (!issue.ref) {
+                return;
+            }
+            if (!proposals) {
+                proposals = {};
+            }
+
+            if (!proposals.explicit_config) {
+                proposals.explicit_config = {
+                    text: 'Set explicit config from parent',
+                    tooltip: `This will set the config "${issue.ref}" to its parent value, explicitly`,
+                    apply: (issue, entity) => (entity || issue.entity).addConfig(issue.ref, `$brooklyn:parent().config("${issue.ref}")`),
+                    issues: []
+                };
+            }
+            proposals.explicit_config.issues.push(issue);
+        }
     },
     set_from_key: {
         propose: proposeSetFromKey()
@@ -353,7 +398,7 @@ export function getQuickFixProposer(type) {
 export function getQuickFixHintsForIssue(issue, entity) {
     if (issue.group === 'config') {
         let hints = (entity.miscData.get('ui-composer-hints') || {})['config-quick-fixes'] || [];
-        hints = hints.filter(h => h.key === issue.ref);
+        hints = hints.filter(h => new RegExp(h.key).test(issue.ref));
         if (!hints.length) return null;
         hints = hints.filter(h => !h['message-regex'] || new RegExp(h['message-regex']).test(issue.message));
         return hints;

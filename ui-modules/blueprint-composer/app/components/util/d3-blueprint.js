@@ -24,7 +24,8 @@ import marked from 'marked';
 import _ from 'lodash';
 
 export function D3Blueprint(container, options) {
-    let _svg = d3.select(container).append('svg').attr('class', 'blueprint-canvas');
+    let _container = d3.select(container);
+    let _svg = _container.append('svg').attr('class', 'blueprint-canvas');
     let _mirror = _svg.append('path').style('display', 'none');
     let _zoomGroup = _svg.append('g').attr('class', 'zoom-group');
     let _parentGroup = _zoomGroup.append('g').attr('class', 'parent-group');
@@ -433,7 +434,7 @@ export function D3Blueprint(container, options) {
                             nodeId: node.data._id,
                             parentId: parentId,
                             targetIndex: dropZone.getAttribute('targetIndex'),
-                            isNewParent: true // used to intercept this event in branded versions, do not remove.
+                            isNewParent: true // used to intercept this event in customized versions, do not remove.
                         }
                     });
                     container.dispatchEvent(event);
@@ -546,7 +547,7 @@ export function D3Blueprint(container, options) {
         let root = d3.hierarchy(blueprint);
         tree(root);
 
-        _d3DataHolder.nodes = root.descendants();
+        _d3DataHolder.nodes = root.descendants().reverse();
         _d3DataHolder.links = root.links();
         _d3DataHolder.relationships = relationships;
 
@@ -776,11 +777,43 @@ export function D3Blueprint(container, options) {
         let relationData = _relationGroup.selectAll('.relation')
             .data(_d3DataHolder.visible.relationships, (d)=>(d.source._id + '_related_to_' + d.target._id));
 
-        relationData.enter().insert('path')
-            .attr('class', 'relation')
+        let relationDataEntered = relationData.enter();
+
+        // Draw the relationship path
+        relationDataEntered.insert('path')
+            .attr('class', (d) => ('relation ' + d.pathSelector))
+            .attr('id', (d)=>(d.source._id + '-' + d.target._id))
             .attr('opacity', 0)
             .attr('from', (d)=>(d.source._id))
             .attr('to', (d)=>(d.target._id));
+
+        // Draw the relationship label that follows the path, somewhere in the middle.
+        // NOTE `textPath` DECREASES THE UI PERFORMANCE, USE LABELS WITH CAUTION.
+        let relationDataLabelsEntered = relationDataEntered.filter(d => d.label);
+        relationDataLabelsEntered.insert('text') // Add text layer of '&#9608;'s to erase the area on the path.
+            .attr('class', (d) => (d.labelSelector))
+            .attr('dominant-baseline', 'middle')
+            .attr('text-anchor', 'middle')
+            .attr('font-family', 'monospace')
+            .attr('fill', '#f5f6fa') // colour of the canvas
+                .insert('textPath')
+                .attr('xlink:href', (d)=>('#' + d.source._id + '-' + d.target._id))
+                .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
+                .html((d) => ('&#9608;'.repeat(d.label.length + 2)));
+        relationDataLabelsEntered.insert('text') // Add label text on top of '&#9608;'s which is on top of the path.
+            .attr('class', (d) => (d.labelSelector))
+            .attr('dominant-baseline', 'middle')
+            .attr('text-anchor', 'middle')
+            .attr('font-family', 'monospace')
+                .insert('textPath')
+                .attr('class', 'relation-text') // `relation-text` class is required for styling effects
+                .attr('from', (d) => (d.source._id)) // `from` class is required for styling effects used along with `relation-text`
+                .attr('to', (d) => (d.target._id)) // `to` class is required for styling effects used along with `relation-text`
+                .attr('xlink:href', (d)=>('#' + d.source._id + '-' + d.target._id))
+                .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
+                .html((d) => (' ' + d.label + ' '));
+
+        // Draw the transition
         relationData.transition()
             .duration(_configHolder.transition)
             .attr('opacity', 1)
@@ -804,6 +837,7 @@ export function D3Blueprint(container, options) {
 
                 return `M ${sourceNode.x},${sourceY} A ${dr},${dr} 0 0,${sweep} ${m.x},${m.y}`;
             });
+
         relationData.exit()
             .transition()
             .duration(_configHolder.transition)
@@ -1083,39 +1117,71 @@ export function D3Blueprint(container, options) {
     function selectNode(id) {
         _svg.selectAll('.entity.selected').classed('selected', false);
         _svg.selectAll('.relation.highlight').classed('highlight', false);
+        _svg.selectAll('.relation-text.highlight').classed('highlight', false);
         _svg.select(`#entity-${id}`).classed('selected', true);
         _svg.selectAll(`.relation[from='${id}']`).classed('highlight', true);
         _svg.selectAll(`.relation[to='${id}']`).classed('highlight', true);
+        _svg.selectAll(`.relation-text[from='${id}']`).classed('highlight', true);
+        _svg.selectAll(`.relation-text[to='${id}']`).classed('highlight', true);
         return this;
     }
 
     function unselectNode() {
         _svg.selectAll('.entity.selected').classed('selected', false);
         _svg.selectAll('.relation.highlight').classed('highlight', false);
+        _svg.selectAll('.relation-text.highlight').classed('highlight', false);
         return this;
     }
 
     /**
      * Draw menu with a confirmation request on the canvas for a node with a specified ID, under the node, in the middle.
+     *
+     * Single-selection mode offers choices as buttons:
      *  _________________________
      * | Confirmation message |X|| <- 'close' button
      * | ________                |
-     * ||Choice 1|               |
+     * ||Choice 1|               | <- e.g. Button with confirmation choice 'Choice 1'
      * | --------'               |
      * ||Choice 2|               |
      * | --------'               |
      * ||Etc.    |               |
      * '-------------------------'
      *
+     * Multi-selection mode offers choices as check-boxes and confirmation button.
+     *  _________________________
+     * | Confirmation message |X||
+     * | _                       |
+     * || | Choice 1             | <- e.g. Checkbox with confirmation choice 'Choice 1'
+     * | -                       |
+     * || | Choice 2             |
+     * | -                       |
+     * || | Etc.                 |
+     * | --------                |
+     * ||Apply    |              | <- Button to apply confirmed choices.
+     * '-------------------------'
+     *
+     * Confirmation choice is pre-selected for a single option in multi-selected mode.
+     *  _________________________
+     * | Confirmation message |X||
+     * | _                       |
+     * ||X| Choice 1             | <- Checkbox with pre-selected confirmation choice 'Choice 1'
+     * | --------                |
+     * ||Apply    |              | <- Button to apply confirmed choice.
+     * '-------------------------'
+     *
+     * Apply button is disabled until at least one choice is selected in the multi-selection mode.
+     *
      * @param {String} id The ID of a node to draw confirmation menu for.
      * @param {String} message The confirmation message.
-     * @param {Array.<String>} choices The confirmation choices.
-     * @param {Function} callback The confirmation callback with a boolean parameter, true if confirmed (Yes),
-     *        false if denied (No), null otherwise (ignored).
+     * @param {Array.<String|Object>} choices The confirmation choices as plain strings or objects that implement toString
+     *        to display choice options. Use objects with distinct *.id value for choices that return same toString value.
+     * @param {Function} callback The callback with confirmed choice in the single-selection mode, or with {Array.<String>}
+     *        of confirmed choices in the multi-selection mode.
+     * @param {Boolean} isMultiSelection Indicates if confirmation selection is multi-selection, single-selection is default.
      */
-    function confirmNode(id, message, choices, callback = (confirmedChoice) => {}) {
+    function confirmNode(id, message, choices, callback, isMultiSelection = false) {
 
-        if (!id || !message || !Array.isArray(choices) || choices.length === 0) {
+        if (!id || !message || !Array.isArray(choices) || choices.length === 0 || typeof callback !== 'function') {
             console.error(`Cannot draw confirmation menu with message '${message}' for entity '${id}' offering array of choices:`, choices);
             return;
         }
@@ -1126,7 +1192,7 @@ export function D3Blueprint(container, options) {
         let confirmationElement = nodeData.append('foreignObject')
             .style('overflow', 'inherit')
             .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-            .attr('x', -(size/2)) // position in the middle
+            .attr('x', -(size / 2)) // position in the middle
             .attr('y', 70) // below the node
             .attr('width', size)
             .attr('height', size);
@@ -1151,9 +1217,12 @@ export function D3Blueprint(container, options) {
                 }
                 confirmationElement.remove();
                 confirmationElement = null;
+            } else {
+                // NOOP. The user user clicks on the 'X' button or elsewhere on the canvas to close the menu.
             }
         }
 
+        // Add 'X' close button at the top-right.
         let close = () => reply(null);
         confirmation
             .append('xhtml:i')
@@ -1163,14 +1232,87 @@ export function D3Blueprint(container, options) {
             .attr('class', 'fa fa-fw fa-times remove-spec-configuration')
             .on('click', close);
 
-        choices.forEach(choice => {
-            let confirmChoice = () => reply(choice);
-            confirmation
+        // Listen to 'click-svg' to close the menu when user clicks elsewhere on the canvas.
+        _container.on('click-svg', close);
+
+        // Render the menu content based on multi-selection condition.
+        if (isMultiSelection) {
+
+            let confirmedChoices = new Set();
+            let applyButton = null;
+
+            // Render the menu with check-boxes.
+            let toggleCheckbox = function () {
+
+                // NOTE! VALUE IN THE CHECKBOX IS IDENTIFIED BY A PLAIN STRING VALUE IF CHOICE OPTION IS NOT AN OBJECT
+                // THAT HAS A DISTINCT `.id` FIELD WITH IMPLEMENTED `toString` TO DISPLAY THE OPTION TEXT, OR IF IT IS
+                // AN OBJECT THAT IMPLEMENTS `toString` ONLY. OPERATOR '==' IS USED FOR CASES WHEN `.id` TYPE IS NOT A
+                // STRING OT IT IS NOT PRESENT.
+                let tickedChoice = choices.find(c => (c.id && c.id == this.id) || c == this.id);
+                if (this.checked) {
+                    confirmedChoices.add(tickedChoice);
+                } else {
+                    confirmedChoices.delete(tickedChoice);
+                }
+                if (confirmedChoices.size === 0) {
+                    applyButton.attr('disabled', ''); // Disable 'Apply' button.
+                } else {
+                    applyButton.attr('disabled', null); // Enable 'Apply' button.
+                }
+            }
+
+            // Add check-boxes.
+            choices.forEach(choice => {
+
+                // Add check-box for every `choice` option.
+                let confirmationCheckboxDiv = confirmation
+                    .append('xhtml:div')
+                    .attr('class', 'checkbox');
+                let input = confirmationCheckboxDiv
+                    .append('xhtml:input')
+                    .style('margin-left', '0px')
+                    .attr('type', 'checkbox')
+                    .attr('id', (choice.id || choice))
+                    .attr('value', choice)
+                    .on('change', toggleCheckbox);
+
+                // Pre-select the single element in the check-box area.
+                if (choices.length === 1) {
+                    input.attr('checked','');
+                    confirmedChoices.add(choice);
+                }
+
+                // Display the label with choice text.
+                confirmationCheckboxDiv
+                    .append('xhtml:label')
+                    .html(choice);
+            });
+
+            // Add 'Apply' button at the end.
+            let confirmChoice = () => reply(Array.from(confirmedChoices));
+            applyButton = confirmation
                 .append('xhtml:button')
                 .attr('class', 'btn btn-outline btn-primary node-confirmation-button')
-                .html(choice)
+                .html('Apply')
                 .on('click', confirmChoice);
-        });
+
+            // Disable 'Apply' button until at least one option is selected.
+            if (choices.length > 1) {
+                applyButton.attr('disabled', '');
+            }
+
+        } else {
+
+            // Render the menu with buttons.
+            choices.forEach(choice => {
+                let confirmChoice = () => reply(choice);
+                confirmation
+                    .append('xhtml:button')
+                    .attr('class', 'btn btn-outline btn-primary node-confirmation-button')
+                    .html(choice)
+                    .on('click', confirmChoice);
+            });
+        }
 
         // The following is not required just now.
         //const MENU_TIMEOUT_MS = 60000;
@@ -1186,6 +1328,7 @@ export function D3Blueprint(container, options) {
             .filter(r => r.source.hasAncestor(node.data) || r.target.hasAncestor(node.data))
             .forEach(r => {
                 _relationGroup.selectAll(`.relation[from='${r.source._id}'][to='${r.target._id}']`).classed('hidden', true);
+                _relationGroup.selectAll(`.relation-text[from='${r.source._id}'][to='${r.target._id}']`).classed('hidden', true);
             });
     }
 
@@ -1194,6 +1337,7 @@ export function D3Blueprint(container, options) {
      */
     function showRelationships() {
         _relationGroup.selectAll('.relation').classed('hidden', false);
+        _relationGroup.selectAll('.relation-text').classed('hidden', false);
     }
 
     /**

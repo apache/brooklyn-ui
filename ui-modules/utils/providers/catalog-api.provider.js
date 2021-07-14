@@ -59,14 +59,17 @@ class CatalogApiProvider extends CatalogApi {
         this.$q = $q;
     }
 
-    create(data, params, opts) {
+    create(data, params={}, opts={}) {
         let deferred = this.$q.defer();
-        this.$http(angular.extend({
+        this.$http({
             method: 'POST',
             url: `${this.host}/v1/catalog`,
-            data: data,
-            params: Object.assign({}, params)
-        }, opts || {})).then(new SuccessHandler(deferred)).catch(new ErrorHandler(deferred));
+            data,
+            params,
+            ...opts,
+        })
+        .then(new SuccessHandler(deferred))
+        .catch(new ErrorHandler(deferred));
         return deferred.promise;
     }
 

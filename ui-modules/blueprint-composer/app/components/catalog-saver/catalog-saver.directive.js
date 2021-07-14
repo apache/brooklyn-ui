@@ -62,10 +62,22 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $f
         link: link
     };
 
-    function getSuggestedVersionToSaveFromBlueprint(entity, metadata, scope) {
-        if (!scope.config.version && (entity.hasVersion() || metadata.has('version'))) {
-            scope.config.version = entity.version || metadata.get('version');
+    // TODO We might need to refactor the controller and directive around this to structure it better
+    function updateBundleConfig(entity, metadata, config) {
+        // the name or can be inherited if root node is a known application type we are editing
+        // (normally in those cases $scope.config will already be set by caller, but maybe not always)
+        if (!config.name && entity.hasName()) {
+            config.name = entity.name;
         }
+        // the ID can be set in the UI or can be inherited if root node is a known application type we are editing
+        // (normally in those cases $scope.config will already be set by caller, but maybe not always)
+        if (!config.symbolicName && (entity.hasId() || metadata.has('id'))) {
+            config.symbolicName = entity.id || metadata.get('id');
+        }
+        if (!config.version && (entity.hasVersion() || metadata.has('version'))) {
+            config.version = entity.version || metadata.get('version');
+        }
+        config.bundle =  config.bundle || config.symbolicName;
     }
 
     function link($scope, $element) {
@@ -93,22 +105,7 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $f
             }
             if (!$scope.isNewFromTemplate()) {
                 // (these should only be set if not making something new from a template, as the entity items will refer to the template)
-
-                // the name and the ID can be set in the UI, 
-                // or all can be inherited if root node is a known application type we are editting 
-                // (normally in those cases $scope.config will already be set by caller, but maybe not always) 
-                if (!$scope.config.name && entity.hasName()) {
-                    $scope.config.name = entity.name;
-                }
-                if (!$scope.config.symbolicName && (entity.hasId() || metadata.has('id'))) {
-                    $scope.config.symbolicName = entity.id || metadata.get('id');
-                }
-                (composerOverrides.getSuggestedVersionToSaveFromBlueprint || getSuggestedVersionToSaveFromBlueprint)(entity, metadata, $scope);
-                if (!$scope.config.bundle) {
-                    if ($scope.config.symbolicName) {
-                        $scope.config.bundle = $scope.config.symbolicName;
-                    }
-                }
+                (composerOverrides.updateBundleConfig || updateBundleConfig)(entity,metadata, $scope.config);
             }
 
             // Override this callback to update configuration data elsewhere
@@ -146,7 +143,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         saving: false,
         force: false
     };
-
+    /* Derived properties & calculators, will be updated whenever $scope.state.view changes */
     $scope.getTitle = () => {
         switch ($scope.state.view) {
             case VIEWS.form:
@@ -166,23 +163,35 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
     };
 
     $scope.title = $scope.getTitle();
+    $scope.catalogURL = $scope.getCatalogURL();
+
+    $scope.$watch('state.view', (newValue, oldValue) => {
+        if (newValue !== oldValue) {
+            $scope.title = $scope.getTitle();
+            $scope.catalogURL = $scope.getCatalogURL();
+        }
+    });
+    /* END Derived properties */
+
     $scope.save = () => {
         $scope.state.saving = true;
         $scope.state.error = undefined;
 
         let bom = createBom();
-        paletteApi.create(bom, {forceUpdate: $scope.state.force}).then((savedItem) => {
-            if (!angular.isArray($scope.config.versions)) {
-                $scope.config.versions = [];
-            }
-            $scope.config.versions.push($scope.config.version);
-            $scope.state.view = VIEWS.saved;
-            $scope.catalogURL = $scope.getCatalogURL();
-        }).catch(error => {
-            $scope.state.error = error.error.message;
-        }).finally(() => {
-            $scope.state.saving = false;
-        });
+        paletteApi.create(bom, { forceUpdate: $scope.state.force })
+            .then((savedItem) => {
+                if (!angular.isArray($scope.config.versions)) {
+                    $scope.config.versions = [];
+                }
+                $scope.config.versions.push($scope.config.version);
+                $scope.state.view = VIEWS.saved;
+            })
+            .catch(error => {
+                $scope.state.error = error.error.message;
+            })
+            .finally(() => {
+                $scope.state.saving = false;
+            });
     };
 
 
@@ -240,7 +249,6 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         $scope.updateDefaults(newVals[0]);
         $scope.form.name.$validate();
         $scope.buttonText = $scope.buttonTextFn();
-        $scope.title = $scope.getTitle();
     });
 }
 
