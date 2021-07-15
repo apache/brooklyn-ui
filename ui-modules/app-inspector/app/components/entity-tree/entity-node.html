@@ -60,6 +60,17 @@
                 <td><b>Number of children</b></td>
                 <td>{{nodesInCurrentView()}}</td>
             </tr>
+            <tr ng-repeat="(key, value) in (entity.sensors && entity.sensors['deployment.metadata']) || [] track by key">
+                <td ng-switch="key">
+                    <strong ng-switch-when="user">Deployed by</strong>
+                    <strong ng-switch-when="deploy_time">Deployed at</strong>
+                    <strong ng-switch-default>{{key}}</strong>
+                </td>
+                <td ng-switch="key">
+                    <span ng-switch-when="deploy_time">{{value | timeAgoFilter}}</span>
+                    <span ng-switch-default>{{value}}</span>
+                </td>
+            </tr>
         </table>
     </script>
 </div>
