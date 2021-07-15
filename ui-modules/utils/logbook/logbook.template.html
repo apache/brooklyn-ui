@@ -22,13 +22,13 @@
         <div class="col-md-12">
             <label>Search parameters:</label>
             <label>
-                <input type="checkbox" ng-model="allLevels" class="">All</label>
+                <input type="checkbox" ng-model="search.allLevels" class="">All</label>
             </label>
-            <label ng-repeat="level in logLevels">
+            <label ng-repeat="level in search.logLevels">
                 <input type="checkbox" ng-model="level.selected" class="">{{level.name}}</label>
             </label>
             <label>
-                <input type="checkbox" ng-model="isLatest" ng-disabled="autoUpdate">Query latest</label>
+                <input type="checkbox" ng-model="search.latest">Query latest</label>
             </label>
         </div>
     </div>
@@ -36,32 +36,32 @@
     <div class="row">
         <div class="col-md-2">
             <label for="dateTimeFrom">Query from:</label>
-            <input id="dateTimeFrom" type="datetime-local" ng-model="dateTimeFrom" ng-disabled="autoUpdate" class="form-control">
+            <input id="dateTimeFrom" type="datetime-local" ng-model="search.dateTimeFrom" class="form-control">
         </div>
         <div class="col-md-2">
             <label for="dateTimeTo">Query to:</label>
-            <input id="dateTimeTo" type="datetime-local" ng-model="dateTimeTo" ng-disabled="autoUpdate" class="form-control">
+            <input id="dateTimeTo" type="datetime-local" ng-model="search.dateTimeTo" class="form-control">
         </div>
         <div class="col-md-2">
             <label for="numberOfItems">Query number of lines:</label>
-            <input id="numberOfItems" type="number" ng-model="numberOfItems" ng-disabled="autoUpdate" class="form-control" min="1">
+            <input id="numberOfItems" type="number" ng-model="search.numberOfItems" class="form-control" min="1" max="10000">
         </div>
         <div class="col-md-6">
             <label for="searchPhrase">Search phrase:</label>
             <div class="input-group">
-                <input id="searchPhrase" type="text" ng-model="searchPhrase" class="form-control" placeholder="(None)">
+                <input id="searchPhrase" type="text" ng-model="search.phrase" class="form-control" placeholder="(None)">
                 <div class="input-group-btn">
                     <div class="btn-group" uib-dropdown keyboard-nav="true">
-                        <button class="btn btn-default btn-primary" ng-click="vm.queryHead()" ng-disabled="waitingResponse || autoUpdate">Query</button>
+                        <button ng-show="!autoRefresh" class="btn btn-default btn-primary" ng-click="vm.singleQuery()" ng-disabled="waitingResponse || autoRefresh">Query</button>
                     </div>
                     <div class="btn-group" uib-dropdown keyboard-nav="true">
-                        <button class="btn btn-default btn-accent" ng-click="vm.queryTail()" ng-disabled="waitingResponse">
-                            <span ng-show="!autoUpdate" class="log-tail log-action">
-                                Tail
+                        <button class="btn btn-default btn-accent" ng-click="vm.autoQuery()" ng-disabled="waitingResponse">
+                            <span ng-show="!autoRefresh" class="log-tail log-action">
+                                Auto-refresh
                             </span>
-                            <span ng-show="autoUpdate" class="log-action" ng-class="{'active': autoUpdate}"
-                                  uib-tooltip="Stop auto-update" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
-                                <i class="fa fa-refresh" ng-class="autoUpdate ? 'fa-spin' : ''"></i>
+                            <span ng-show="autoRefresh" class="log-action" ng-class="{'active': autoRefresh}"
+                                  uib-tooltip="Stop auto-refresh" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
+                                <i class="fa fa-refresh" ng-class="autoRefresh ? 'fa-spin' : ''"></i>
                             </span>
                         </button>
                     </div>
@@ -72,8 +72,8 @@
 </form>
 
 <div ng-show="logEntries.length > 0 || logtext">
-    <pre ng-show="logEntries.length === 0" class="logbook-text auto-scrollable">{{logtext}}</pre>
-    <pre ng-show="logEntries.length > 0" class="logbook-text auto-scrollable"><pre class="logbook-item" ng-repeat="item in logEntries track by item.id">{{vm.covertLogEntryToString(item)}}</pre></pre>
+    <pre ng-show="logEntries.length === 0" class="logbook-text">{{logtext}}</pre>
+    <pre ng-show="logEntries.length > 0" class="logbook-text auto-scrollable"><pre class="logbook-item" ng-repeat="item in logEntries track by item.id" id="{{item.id}}" ng-click="vm.logEntryOnClick(item)" ng-class="{'pinned': item.isPinned}">{{vm.covertLogEntryToString(item)}}</pre></pre>
 
     <div class="form-group">
         <br/>
