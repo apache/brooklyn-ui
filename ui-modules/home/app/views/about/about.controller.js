@@ -100,15 +100,13 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
                 (promiseList) => {
                     $scope.template = 'spinnerTemplate';
                     Promise.allSettled(promiseList).then((values) => {
-                        let event = new CustomEvent('update-states', {});
-                        container.dispatchEvent(event);
+                        container.dispatchEvent(new CustomEvent('update-states', {}));
                     });
                     modalInstance = null;
                 },
                 () => {
                     $scope.template = 'spinnerTemplate';
-                    let event = new CustomEvent('update-states', {});
-                    container.dispatchEvent(event);
+                    container.dispatchEvent(new CustomEvent('update-states', {}));
                     modalInstance = null;
                 }
             );
@@ -159,8 +157,7 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
         let removeNode = serverApi.removeHaTerminatedNode(nodeId);
         removeNode.then(data => {
             $scope.expectedNodeCounter--;
-            let event = new CustomEvent('update-states', {});
-            $scope.container.dispatchEvent(event);
+            $scope.container.dispatchEvent(new CustomEvent('update-states', {}));
         });
     }
 
@@ -168,24 +165,22 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
         $scope.template = 'spinnerTemplate';
         let removeNodes = serverApi.removeHaTerminatedNodes();
         removeNodes.then(data => {
-            for (const node in $scope.states.nodes) {
-                if ($scope.states.nodes[node].status === "TERMINATED" || $scope.states.nodes[node].status === "FAILED") $scope.expectedNodeCounter--;
-            }
-            let event = new CustomEvent('update-states', {});
-            $scope.container.dispatchEvent(event);
+            Object.values($scope.states.nodes).forEach( ({ status }) => {
+                if (status === "TERMINATED" || status === "FAILED") $scope.expectedNodeCounter--;
+            });
+            $scope.container.dispatchEvent(new CustomEvent('update-states', {}));
         });
     }
 
     $element.bind('update-states', (event) => {
         let updateStates = serverApi.getHaStates();
-        updateStates.then(data => {
-            if (Object.keys(data.data.nodes).length === $scope.expectedNodeCounter) {
-                $scope.states = data.data;
+        updateStates.then(({ data }) => {
+            if (Object.keys(data.nodes).length === $scope.expectedNodeCounter) {
+                $scope.states = data;
                 $scope.now = Date.now();
                 $scope.template = 'haStatusTemplate';
             } else {
-                let event = new CustomEvent('update-states', {});
-                $scope.container.dispatchEvent(event);
+                $scope.container.dispatchEvent(new CustomEvent('update-states', {}));
             }
         })
     })
