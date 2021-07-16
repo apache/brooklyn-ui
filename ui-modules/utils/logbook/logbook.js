@@ -37,13 +37,10 @@ export function logbook() {
 
     function controller($scope, $element, $interval, brBrandInfo, logbookApi) {
 
-        const DEFAULT_NUMBER_OF_ITEMS = 1000;
-
         let vm = this;
         let refreshFunction = null;
         let autoScrollableElement = Array.from($element.find('pre')).find(item => item.classList.contains('auto-scrollable'));
         let isNewQueryParameters = true; // Fresh start, new parameters!
-        let dateTimeToAutoRefreshFrom = '';
         let datetimeToScrollTo = null;
 
         // Set up cancellation of auto-scrolling down.
@@ -81,7 +78,7 @@ export function logbook() {
             latest: true,
             dateTimeFrom: '',
             dateTimeTo: '',
-            numberOfItems: DEFAULT_NUMBER_OF_ITEMS,
+            numberOfItems: 1000,
             phrase: ''
         };
 
@@ -113,6 +110,7 @@ export function logbook() {
             if ($scope.search.latest) {
                 scrollToMostRecentLogEntry();
             } else {
+                $scope.isAutoScrollDown = false;
                 scrollToFirstLogEntry();
             }
         }, true);
@@ -189,9 +187,9 @@ export function logbook() {
          */
         function cacheDatetimeToScrollTo() {
             let element = Array.from($element.find('pre')).find(item => item.offsetTop > (autoScrollableElement.scrollTop + autoScrollableElement.offsetTop - 1));
-            let firstLogEntryInTheVisibleArea = $scope.logEntries.find(item => item.id === element.id);
+            let firstLogEntryInTheVisibleArea = $scope.logEntries.find(logEntry => logEntry.lineId === element.id);
             if (firstLogEntryInTheVisibleArea) {
-                datetimeToScrollTo = firstLogEntryInTheVisibleArea.datetime;
+                datetimeToScrollTo = getLogEntryTimestamp(firstLogEntryInTheVisibleArea);
             }
         }
 
@@ -219,43 +217,43 @@ export function logbook() {
                 tail: $scope.search.latest,
                 searchPhrase: $scope.search.phrase,
                 numberOfItems: $scope.search.numberOfItems,
-                dateTimeFrom: isTail() && !isNewQueryParameters ? dateTimeToAutoRefreshFrom : $scope.search.dateTimeFrom,
+                dateTimeFrom: isTail() && !isNewQueryParameters ? getLogEntryTimestamp($scope.logEntries.slice(-1)[0]) : $scope.search.dateTimeFrom,
                 dateTimeTo: $scope.search.dateTimeTo,
             }
 
-            logbookApi.logbookQuery(params, true).then((logEntries) => {
+            logbookApi.logbookQuery(params, true).then((newLogEntries) => {
 
-                // Assign unique IDs for new log entries.
-                logEntries.forEach(item => item.id = generateLogEntryId());
+                if (newLogEntries.length > 0 && isTail() && $scope.autoRefresh && !isNewQueryParameters) {
 
-                if (logEntries.length > 0 && isTail() && $scope.autoRefresh && !isNewQueryParameters) {
+                    // Use line IDs to resolve the overlap, if any.
+                    let lastLogEntryDisplayed = $scope.logEntries[$scope.logEntries.length - 1];
+                    let indexOfLogEntryInTheNewBatch = newLogEntries.findIndex(({lineId}) => lineId === lastLogEntryDisplayed.lineId);
+                    if (indexOfLogEntryInTheNewBatch >= 0) {
 
-                    // Calculate date-time to display up to. Note, calendar does not take into account milliseconds, round down to seconds.
-                    let dateTimeOfLastLogEntry = Math.floor(logEntries.slice(-1)[0].datetime / DEFAULT_NUMBER_OF_ITEMS) * DEFAULT_NUMBER_OF_ITEMS;
-                    let dateTimeFrom = new Date($scope.search.dateTimeFrom).getTime();
+                        // Append new log entries without overlap.
+                        $scope.logEntries = $scope.logEntries.concat(newLogEntries.slice(indexOfLogEntryInTheNewBatch + 1));
 
-                    if (dateTimeOfLastLogEntry > dateTimeFrom) {
-
-                        // Display new log entries.
-                        let newLogEntries = logEntries.filter(({datetime}) => datetime <= dateTimeOfLastLogEntry);
-                        $scope.logEntries = $scope.logEntries.concat(newLogEntries).slice(-DEFAULT_NUMBER_OF_ITEMS);
-
-                        // Optimize auto-refresh: cache next date-time to query tail from, if it is still a tail.
-                        dateTimeToAutoRefreshFrom = dateTimeOfLastLogEntry;
 
                     } else {
-                        // Or re-set the cached value.
-                        dateTimeToAutoRefreshFrom = '';
+
+                        // Append all new log entries, there is no overlap.
+                        $scope.logEntries = $scope.logEntries.concat(newLogEntries)
                     }
-                } else {
-                    $scope.logEntries = logEntries;
+
+                    // Display not more of lines than was requested.
+                    $scope.logEntries.slice(-$scope.search.numberOfItems);
+
+                } else if (isNewQueryParameters) {
+
+                    // New query, re-draw all entries.
+                    $scope.logEntries = newLogEntries;
                 }
 
                 // Auto-scroll.
                 if ($scope.logEntries.length > 0) {
                     if ($scope.isAutoScrollDown) {
                         scrollToMostRecentLogEntry();
-                    } else if (datetimeToScrollTo && datetimeToScrollTo >= $scope.logEntries[0].datetime) {
+                    } else if (datetimeToScrollTo && datetimeToScrollTo >= getLogEntryTimestamp($scope.logEntries[0])) {
                         scrollToLogEntryWithDateTime(datetimeToScrollTo);
                     }
                 }
@@ -273,6 +271,16 @@ export function logbook() {
             }).finally(() => {
                 $scope.waitingResponse = false;
             });
+        }
+
+        /**
+         * Extracts timestamp from the log entry.
+         *
+         * @param logEntry The log entry.
+         * @returns {number} The extracted date-time.
+         */
+        function getLogEntryTimestamp(logEntry) {
+            return logEntry.datetime || Date.parse(logEntry.timestamp.replace(',', '.'))
         }
 
         /**
@@ -309,7 +317,6 @@ export function logbook() {
         function stopAutoRefresh() {
             if (refreshFunction) {
                 $interval.cancel(refreshFunction);
-                dateTimeToAutoRefreshFrom = '';
             }
         }
 
@@ -340,20 +347,12 @@ export function logbook() {
             $scope.$applyAsync(() => {
                 let logEntryWithDateTimeToScrollTo = $scope.logEntries.find(item => item.datetime >= datetime);
                 if (logEntryWithDateTimeToScrollTo) {
-                    let elementWithDateTimeToScrollTo = Array.from($element.find('pre')).find(item => item.id === logEntryWithDateTimeToScrollTo.id);
+                    let elementWithDateTimeToScrollTo = Array.from($element.find('pre')).find(element => element.id === logEntryWithDateTimeToScrollTo.lineId);
                     if (logEntryWithDateTimeToScrollTo) {
                         autoScrollableElement.scrollTop = elementWithDateTimeToScrollTo.offsetTop - autoScrollableElement.offsetTop;
                     }
                 }
             });
-        }
-
-        /**
-         * @returns {String} Randomly generated log book entry ID.
-         */
-        function generateLogEntryId() {
-            const LOG_ENTRY_PREFIX = 'le-';
-            return LOG_ENTRY_PREFIX + Math.random().toString(36).slice(2);
         }
 
         /**

@@ -82,5 +82,5 @@
 
 <div ng-show="logEntries.length > 0 || logtext">
     <pre ng-show="logEntries.length === 0" class="logbook-text">{{logtext}}</pre>
-    <pre ng-show="logEntries.length > 0" class="logbook-text auto-scrollable" ng-class="{'word-wrap': wordwrap}"><pre class="logbook-item" ng-repeat="item in logEntries track by item.id" id="{{item.id}}" ng-click="vm.logEntryOnClick(item)" level="{{item.level}}" ng-class="{'pinned': item.isPinned}">{{vm.covertLogEntryToString(item)}}</pre></pre>
+    <pre ng-show="logEntries.length > 0" class="logbook-text auto-scrollable" ng-class="{'word-wrap': wordwrap}"><pre class="logbook-item" ng-repeat="item in logEntries track by item.lineId" id="{{item.lineId}}" ng-click="vm.logEntryOnClick(item)" level="{{item.level}}" ng-class="{'pinned': item.isPinned}">{{vm.covertLogEntryToString(item)}}</pre></pre>
 </div>
