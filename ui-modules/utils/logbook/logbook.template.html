@@ -19,21 +19,6 @@
 
 <form class="form-group">
     <div class="row">
-        <div class="col-md-12">
-            <label>Search parameters:</label>
-            <label>
-                <input type="checkbox" ng-model="search.allLevels" class="">All</label>
-            </label>
-            <label ng-repeat="level in search.logLevels">
-                <input type="checkbox" ng-model="level.selected" class="">{{level.name}}</label>
-            </label>
-            <label>
-                <input type="checkbox" ng-model="search.latest">Query latest</label>
-            </label>
-        </div>
-    </div>
-    <br/>
-    <div class="row">
         <div class="col-md-2">
             <label for="dateTimeFrom">Query from:</label>
             <input id="dateTimeFrom" type="datetime-local" ng-model="search.dateTimeFrom" class="form-control">
@@ -43,7 +28,7 @@
             <input id="dateTimeTo" type="datetime-local" ng-model="search.dateTimeTo" class="form-control">
         </div>
         <div class="col-md-2">
-            <label for="numberOfItems">Query number of lines:</label>
+            <label for="numberOfItems">Number of lines:</label>
             <input id="numberOfItems" type="number" ng-model="search.numberOfItems" class="form-control" min="1" max="10000">
         </div>
         <div class="col-md-6">
@@ -51,18 +36,42 @@
             <div class="input-group">
                 <input id="searchPhrase" type="text" ng-model="search.phrase" class="form-control" placeholder="(None)">
                 <div class="input-group-btn">
-                    <div class="btn-group" uib-dropdown keyboard-nav="true">
+                    <div class="btn-group">
                         <button ng-show="!autoRefresh" class="btn btn-default btn-primary" ng-click="vm.singleQuery()" ng-disabled="waitingResponse || autoRefresh">Query</button>
                     </div>
-                    <div class="btn-group" uib-dropdown keyboard-nav="true">
-                        <button class="btn btn-default btn-accent" ng-click="vm.autoQuery()" ng-disabled="waitingResponse">
-                            <span ng-show="!autoRefresh" class="log-tail log-action">
-                                Auto-refresh
-                            </span>
-                            <span ng-show="autoRefresh" class="log-action" ng-class="{'active': autoRefresh}"
-                                  uib-tooltip="Stop auto-refresh" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
-                                <i class="fa fa-refresh" ng-class="autoRefresh ? 'fa-spin' : ''"></i>
-                            </span>
+                    <div class="btn-group">
+                        <button class="btn btn-default btn-accent" ng-click="vm.autoQuery()" ng-disabled="waitingResponse" uib-tooltip="{{autoRefresh ? 'Stop' : 'Start'}} auto-query">
+                            <i class="fa fa-refresh" ng-class="autoRefresh ? 'fa-spin' : ''"></i>
+                        </button>
+                    </div>
+                    <div class="btn-group" uib-dropdown auto-close="outsideClick">
+                        <button id="logbook-search-parameters" type="button" class="btn btn-default btn-accent" ng-disabled="waitingResponse" uib-dropdown-toggle uib-tooltip="Query log levels">
+                            <i class="fa fa-sliders"></i>
+                        </button>
+                        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="logbook-search-parameters">
+                            <li role="menuitem" ng-repeat="logLevel in search.logLevels" ng-class="{'active': logLevel.selected}" class="layer">
+                                <a ng-click="logLevel.selected = !logLevel.selected"><i class="fa fa-fw" ng-class="{'fa-circle': logLevel.selected, 'fa-circle-thin': !logLevel.selected}"></i> {{logLevel.name}}</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="btn-group">
+                        <button id="logbook-tail" type="button" ng-click="search.latest = !search.latest" class="btn btn-default btn-accent" uib-dropdown-toggle ng-disabled="waitingResponse" uib-tooltip="Query {{search.latest ? 'tail' : 'head'}}">
+                            <i class="fa fa-share" ng-class="{'fa-rotate-90': search.latest, 'fa-rotate-270': !search.latest}"></i>
+                        </button>
+                    </div>
+                    <div class="btn-group" uib-dropdown auto-close="outsideClick">
+                        <button id="logbook-filters" type="button" class="btn btn-default btn-accent" uib-dropdown-toggle uib-tooltip="Toggle log filters">
+                            <i class="fa fa-filter"></i>
+                        </button>
+                        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="logbook-filters">
+                            <li role="menuitem" ng-repeat="logField in logFields track by logField.name" ng-class="{'active': logField.selected}" class="layer">
+                                <a ng-click="logField.selected = !logField.selected"><i class="fa fa-fw" ng-class="{'fa-circle': logField.selected, 'fa-circle-thin': !logField.selected}"></i> {{logField.name}}</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="btn-group">
+                        <button id="logbook-wrap" type="button" ng-click="wordwrap = !wordwrap" class="btn btn-default btn-accent" uib-dropdown-toggle uib-tooltip="Word wrap {{wordwrap ? 'enabled' : 'disabled'}}">
+                            <i class="fa fa-rotate-180" ng-class="{'fa-align-right': wordwrap, ' fa-align-justify': !wordwrap}"></i>
                         </button>
                     </div>
                 </div>
@@ -73,13 +82,5 @@
 
 <div ng-show="logEntries.length > 0 || logtext">
     <pre ng-show="logEntries.length === 0" class="logbook-text">{{logtext}}</pre>
-    <pre ng-show="logEntries.length > 0" class="logbook-text auto-scrollable"><pre class="logbook-item" ng-repeat="item in logEntries track by item.id" id="{{item.id}}" ng-click="vm.logEntryOnClick(item)" ng-class="{'pinned': item.isPinned}">{{vm.covertLogEntryToString(item)}}</pre></pre>
-
-    <div class="form-group">
-        <br/>
-        <label>Filters:</label>
-        <label ng-repeat="field in logFields">
-            <input type="checkbox"  ng-model="field.selected" class="">{{field.name}}</label>
-        </label>
-    </div>
+    <pre ng-show="logEntries.length > 0" class="logbook-text auto-scrollable"><pre class="logbook-item" ng-repeat="item in logEntries track by item.id" id="{{item.id}}" ng-click="vm.logEntryOnClick(item)" level="{{item.level}}" ng-class="{'word-wrap': wordwrap, 'pinned': item.isPinned}">{{vm.covertLogEntryToString(item)}}</pre></pre>
 </div>

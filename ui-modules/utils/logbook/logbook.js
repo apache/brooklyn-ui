@@ -64,17 +64,17 @@ export function logbook() {
         $scope.autoRefresh = false;
         $scope.waitingResponse = false;
         $scope.logtext = '';
+        $scope.wordwrap = true;
         $scope.logEntries = [];
 
         // Initialize search parameters.
         $scope.search = {
-            allLevels: true,
             logLevels: [
-                {"name": "Info", "value": "INFO", "selected": false},
-                {"name": "Warn", "value": "WARN", "selected": false},
-                {"name": "Error", "value": "ERROR", "selected": false},
-                {"name": "Fatal", "value": "FATAL", "selected": false},
-                {"name": "Debug", "value": "DEBUG", "selected": false},
+                {name: 'Info',  value: 'INFO',  selected: true},
+                {name: 'Warn',  value: 'WARN',  selected: true},
+                {name: 'Error', value: 'ERROR', selected: true},
+                {name: 'Fatal', value: 'FATAL', selected: true},
+                {name: 'Debug', value: 'DEBUG', selected: true},
             ],
             latest: true,
             dateTimeFrom: '',
@@ -86,45 +86,32 @@ export function logbook() {
         // Define search result filters.
         $scope.fieldsToShow = ['datetime', 'class', 'message']
         $scope.logFields = [
-            {"name": "Timestamp", "value": "datetime", "selected": true},
-            {"name": "Task ID", "value": "taskId", "selected": false},
-            {"name": "Entity IDs", "value": "entityIds", "selected": false},
-            {"name": "Log level", "value": "level", "selected": true},
-            {"name": "Bundle ID", "value": "bundleId", "selected": false},
-            {"name": "Class", "value": "class", "selected": true},
-            {"name": "Thread name", "value": "threadName", "selected": false},
-            {"name": "Message", "value": "message", "selected": true},
+            {name: 'Timestamp',   value: 'datetime',   selected: true},
+            {name: 'Task ID',     value: 'taskId',     selected: false},
+            {name: 'Entity IDs',  value: 'entityIds',  selected: false},
+            {name: 'Log level',   value: 'level',      selected: true},
+            {name: 'Bundle ID',   value: 'bundleId',   selected: false},
+            {name: 'Class',       value: 'class',      selected: true},
+            {name: 'Thread name', value: 'threadName', selected: false},
+            {name: 'Message',     value: 'message',    selected: true},
         ];
 
         // Watch for search parameters changes.
-        $scope.$watch('search.allLevels', (newVal) => {
-            if (!newVal) {
-                if (getCheckedBoxes($scope.search.logLevels).length === 0) {
-                    $scope.allLevels = true;
-                } else {
-                    return;
-                }
-            }
-            for (let i = 0; i < $scope.search.logLevels.length; ++i) {
-                $scope.search.logLevels[i].selected = false;
-            }
-        });
-        $scope.$watch('search.logLevels', (newVal) => {
-            let selected = newVal.reduce(function (s, c) {
-                return s + (c.selected ? 1 : 0);
-            }, 0);
-            if (selected === newVal.length || selected === 0) {
-                $scope.search.allLevels = true;
-            } else if (selected > 0) {
-                $scope.search.allLevels = false;
-            }
-        }, true);
         $scope.$watch('search', () => {
             // Restart the auto-refresh.
             if ($scope.autoRefresh) {
                 stopAutoRefresh();
                 vm.singleQuery();
                 startAutoRefresh();
+            }
+        }, true);
+
+        $scope.$watch('search.latest', () => {
+            datetimeToScrollTo = null;
+            if ($scope.search.latest) {
+                scrollToMostRecentLogEntry();
+            } else {
+                scrollToFirstLogEntry();
             }
         }, true);
 
@@ -225,7 +212,7 @@ export function logbook() {
          */
         function doQuery() {
 
-            const levels = $scope.search.allLevels ? ['ALL'] : getCheckedBoxes($scope.search.logLevels);
+            const levels = getCheckedBoxes($scope.search.logLevels);
 
             const params = {
                 levels: levels,
@@ -268,7 +255,7 @@ export function logbook() {
                 if ($scope.logEntries.length > 0) {
                     if ($scope.isAutoScrollDown) {
                         scrollToMostRecentLogEntry();
-                    } else if (datetimeToScrollTo) {
+                    } else if (datetimeToScrollTo && datetimeToScrollTo >= $scope.logEntries[0].datetime) {
                         scrollToLogEntryWithDateTime(datetimeToScrollTo);
                     }
                 }
@@ -332,6 +319,15 @@ export function logbook() {
         function scrollToMostRecentLogEntry() {
             $scope.$applyAsync(() => {
                 autoScrollableElement.scrollTop = autoScrollableElement.scrollHeight;
+            });
+        }
+
+        /**
+         * Scrolls up to the first log entry.
+         */
+        function scrollToFirstLogEntry() {
+            $scope.$applyAsync(() => {
+                autoScrollableElement.scrollTop = 0;
             });
         }
 

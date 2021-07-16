@@ -21,6 +21,10 @@
 
 br-logbook {
 
+  @warning-log-color: @brand-warning;
+  @error-log-color: @brand-danger;
+  @debug-log-color: @brand-info;
+
   display: block;
   position: relative;
 
@@ -52,18 +56,37 @@ br-logbook {
     background: @gray;
     color: @gray-lighter;
     .monospace();
-    white-space: pre-wrap;
-    white-space: -moz-pre-wrap;
-    white-space: -o-pre-wrap;
-    word-wrap: break-word;
     &:hover {
       background: @gray-light;
       color: @gray-lighter;
+      width: max-content;
     }
     &.pinned {
       background: @gray-lighter;
       color: @gray;
     }
+    &.word-wrap {
+      white-space: pre-wrap;
+      white-space: -moz-pre-wrap;
+      white-space: -o-pre-wrap;
+      word-wrap: break-word;
+      &:hover {
+        width: auto;
+      }
+    }
+  }
+
+  pre[level=WARN] {
+    color: @warning-log-color;
+  }
+  pre[level=DEBUG] {
+    color: @debug-log-color;
+  }
+  pre[level=ERROR] {
+    color: @error-log-color;
+  }
+  pre[level=FATAL] {
+    color: @error-log-color;
   }
 
   pre {
@@ -80,5 +103,37 @@ br-logbook {
     .fa {
       color: white;
     }
+  }
+
+  .dropdown-menu {
+    cursor: pointer;
+  }
+
+  .tooltip-inner {
+    min-width: 150px;
+  }
+
+  .fa-rotate-90 {
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    transform: rotate(90deg);
+  }
+
+  .fa-rotate-180 {
+    -webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+    transform: rotate(180deg);
+  }
+
+  .fa-rotate-270 {
+    -webkit-transform: rotate(270deg);
+    -moz-transform: rotate(270deg);
+    -ms-transform: rotate(270deg);
+    -o-transform: rotate(270deg);
+    transform: rotate(270deg);
   }
 }
