@@ -50,7 +50,6 @@ export function logbook() {
         if (autoScrollableElement.addEventListener) {
             let wheelHandler = () => {
                 $scope.$apply(() => {
-                    cacheDatetimeToScrollTo();
                     $scope.isAutoScrollDown = (autoScrollableElement.scrollTop + autoScrollableElement.offsetHeight) >= autoScrollableElement.scrollHeight;
                 });
             }
@@ -222,6 +221,8 @@ export function logbook() {
                 dateTimeFrom: isTail() && !isNewQueryParameters ? dateTimeToAutoRefreshFrom : $scope.search.dateTimeFrom,
                 dateTimeTo: $scope.search.dateTimeTo,
             }
+
+            cacheDatetimeToScrollTo();
 
             logbookApi.logbookQuery(params, true).then((logEntries) => {
 
