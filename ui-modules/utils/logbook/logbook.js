@@ -85,9 +85,9 @@ export function logbook() {
         };
 
         // Define search result filters.
-        $scope.fieldsToShow = ['datetime', 'class', 'message']
+        $scope.fieldsToShow = ['timestamp', 'class', 'message']
         $scope.logFields = [
-            {name: 'Timestamp',   value: 'datetime',   selected: true},
+            {name: 'Timestamp',   value: 'timestamp',  selected: true},
             {name: 'Task ID',     value: 'taskId',     selected: false},
             {name: 'Entity IDs',  value: 'entityIds',  selected: false},
             {name: 'Log level',   value: 'level',      selected: true},
@@ -175,27 +175,13 @@ export function logbook() {
          * @returns {String} log entry converted to string.
          */
         vm.covertLogEntryToString = (entry) => {
-            let fieldsToShow = getCheckedBoxes($scope.logFields);
-            let outputLine = [];
-            if (fieldsToShow.includes('datetime') && entry.timestamp)
-                outputLine.push(entry.timestamp);
-            if (fieldsToShow.includes('taskId') && entry.taskId)
-                outputLine.push(entry.taskId);
-            if (fieldsToShow.includes('entityIds') && entry.entityIds)
-                outputLine.push(entry.entityIds);
-            if (fieldsToShow.includes('level') && entry.level)
-                outputLine.push(entry.level);
-            if (fieldsToShow.includes('bundleId') && entry.bundleId)
-                outputLine.push(entry.bundleId);
-            if (fieldsToShow.includes('class') && entry.class)
-                outputLine.push(entry.class);
-            if (fieldsToShow.includes('threadName') && entry.threadName)
-                outputLine.push(entry.threadName);
-            if (fieldsToShow.includes('message') && entry.message)
-                outputLine.push(entry.message);
-
-            return outputLine.join(' ');
-        };
+            return getCheckedBoxes($scope.logFields).reduce((output, fieldKey) => {
+                    if (entry[fieldKey]) {
+                        output.push(entry[fieldKey])
+                    }
+                    return output;
+                }, []).join(' ');
+        }
 
         /**
          * Caches the datetime of the first item in the visible area of the query result.
