@@ -84,11 +84,15 @@ export function taskListDirective() {
 }
 
 export function timeAgoFilter() {
-    return function (input) {
+    function timeAgo(input) {
         if (input) {
             return moment(input).fromNow();
         }
     }
+
+    timeAgo.$stateful = true;
+
+    return timeAgo;
 }
 export function durationFilter() {
     return function (input) {
