@@ -210,6 +210,9 @@ export function logbook() {
                 return;
             }
 
+            let dateFrom = $scope.search.dateTimeFrom && new Date($scope.search.dateTimeFrom).toISOString();
+            let dateTimeTo = $scope.search.dateTimeTo && new Date($scope.search.dateTimeTo).toISOString();
+
             const levels = getCheckedBoxes($scope.search.logLevels);
 
             const params = {
@@ -217,8 +220,8 @@ export function logbook() {
                 tail: $scope.search.latest,
                 searchPhrase: $scope.search.phrase,
                 numberOfItems: $scope.search.numberOfItems,
-                dateTimeFrom: isTail() && !isNewQueryParameters ? getLogEntryTimestamp($scope.logEntries.slice(-1)[0]) : $scope.search.dateTimeFrom,
-                dateTimeTo: $scope.search.dateTimeTo,
+                dateTimeFrom: isTail() && !isNewQueryParameters ? $scope.logEntries.slice(-1)[0].timestamp : dateFrom,
+                dateTimeTo: dateTimeTo,
             }
 
             logbookApi.logbookQuery(params, true).then((newLogEntries) => {
