@@ -29,7 +29,7 @@
         </div>
         <div class="col-md-2">
             <label for="numberOfItems">Number of lines:</label>
-            <input id="numberOfItems" type="number" ng-model="search.numberOfItems" class="form-control" min="1" max="10000">
+            <input id="numberOfItems" type="number" ng-model="search.numberOfItems" class="form-control" required placeholder="({{minNumberOfItems}} - {{maxNumberOfItems}})" min="{{minNumberOfItems}}" max="{{maxNumberOfItems}}">
         </div>
         <div class="col-md-6">
             <label for="searchPhrase">Search phrase:</label>
@@ -37,10 +37,10 @@
                 <input id="searchPhrase" type="text" ng-model="search.phrase" class="form-control" placeholder="(None)">
                 <div class="input-group-btn">
                     <div class="btn-group">
-                        <button ng-show="!autoRefresh" class="btn btn-default btn-primary" ng-click="vm.singleQuery()" ng-disabled="waitingResponse || autoRefresh">Query</button>
+                        <button ng-show="!autoRefresh" class="btn btn-default btn-primary" ng-click="vm.singleQuery()" ng-disabled="waitingResponse || autoRefresh || !vm.isValidNumber()">Query</button>
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-default btn-accent" ng-click="vm.autoQuery()" ng-disabled="waitingResponse" uib-tooltip="{{autoRefresh ? 'Stop' : 'Start'}} auto-query">
+                        <button class="btn btn-default btn-accent" ng-click="vm.autoQuery()" ng-disabled="waitingResponse || (!autoRefresh && !vm.isValidNumber())" uib-tooltip="{{autoRefresh ? 'Stop' : 'Start'}} auto-query">
                             <i class="fa fa-refresh" ng-class="autoRefresh ? 'fa-spin' : ''"></i>
                         </button>
                     </div>

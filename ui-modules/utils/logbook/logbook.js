@@ -65,6 +65,8 @@ export function logbook() {
         $scope.logtext = '';
         $scope.wordwrap = true;
         $scope.logEntries = [];
+        $scope.minNumberOfItems = 1;
+        $scope.maxNumberOfItems = 10000;
 
         // Initialize search parameters.
         $scope.search = {
@@ -124,6 +126,13 @@ export function logbook() {
         });
 
         $scope.$on('$destroy', stopAutoRefresh);
+
+        /**
+         * @returns {boolean} True if number of items is a number and within a supported range, false otherwise.
+         */
+        vm.isValidNumber =() => {
+            return $scope.search.numberOfItems >= $scope.minNumberOfItems && $scope.search.numberOfItems <= $scope.maxNumberOfItems;
+        }
 
         /**
          * Handles the click event on the log entry.
@@ -210,6 +219,11 @@ export function logbook() {
          * Performs a logbook query.
          */
         function doQuery() {
+
+            if (!vm.isValidNumber()) {
+                console.error('number of items is invalid', $scope.search.numberOfItems)
+                return;
+            }
 
             const levels = getCheckedBoxes($scope.search.logLevels);
 

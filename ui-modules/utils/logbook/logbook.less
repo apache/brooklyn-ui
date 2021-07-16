@@ -28,10 +28,14 @@ br-logbook {
   display: block;
   position: relative;
 
-  input.logbook{
+  input.logbook {
     width: 90px;
     margin: 5px;
     display: inline-block;
+  }
+
+  input:invalid {
+    background-color: lighten(@brand-danger, 30%);
   }
 
   #level{
