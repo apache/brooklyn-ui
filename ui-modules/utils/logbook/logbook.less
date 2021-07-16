@@ -48,6 +48,12 @@ br-logbook {
     padding: 5px;
     min-width: 100%;
     height: 500px;
+    &.word-wrap {
+      white-space: pre-wrap;
+      white-space: -moz-pre-wrap;
+      white-space: -o-pre-wrap;
+      word-wrap: break-word;
+    }
   }
 
   .logbook-item {
@@ -59,21 +65,14 @@ br-logbook {
     &:hover {
       background: @gray-light;
       color: @gray-lighter;
-      width: max-content;
+      width: auto;
     }
     &.pinned {
       background: @gray-lighter;
       color: @gray;
     }
-    &.word-wrap {
-      white-space: pre-wrap;
-      white-space: -moz-pre-wrap;
-      white-space: -o-pre-wrap;
-      word-wrap: break-word;
-      &:hover {
-        width: auto;
-      }
-    }
+    white-space: inherit;
+    word-wrap: inherit;
   }
 
   pre[level=WARN] {
