@@ -210,8 +210,10 @@ export function logbook() {
                 return;
             }
 
-            let dateFrom = $scope.search.dateTimeFrom && new Date($scope.search.dateTimeFrom).toISOString();
-            let dateTimeTo = $scope.search.dateTimeTo && new Date($scope.search.dateTimeTo).toISOString();
+            // Exclude timezone from date-times.
+            const ISO_DATETIME_LENGTH = '0000-00-00T00:00:00.000'.length;
+            let dateFrom = $scope.search.dateTimeFrom && new Date($scope.search.dateTimeFrom).toISOString().slice(0, ISO_DATETIME_LENGTH);
+            let dateTimeTo = $scope.search.dateTimeTo && new Date($scope.search.dateTimeTo).toISOString().slice(0, ISO_DATETIME_LENGTH);
 
             const levels = getCheckedBoxes($scope.search.logLevels);
 
@@ -220,7 +222,7 @@ export function logbook() {
                 tail: $scope.search.latest,
                 searchPhrase: $scope.search.phrase,
                 numberOfItems: $scope.search.numberOfItems,
-                dateTimeFrom: isTail() && !isNewQueryParameters ? $scope.logEntries.slice(-1)[0].timestamp : dateFrom,
+                dateTimeFrom: isTail() && !isNewQueryParameters ? $scope.logEntries.slice(-1)[0].timestamp.replace(',', '.') : dateFrom,
                 dateTimeTo: dateTimeTo,
             }
 
@@ -241,6 +243,7 @@ export function logbook() {
 
                         // Append all new log entries, there is no overlap.
                         $scope.logEntries = $scope.logEntries.concat(newLogEntries)
+
                     }
 
                     // Display not more of lines than was requested.
