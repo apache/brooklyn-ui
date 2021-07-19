@@ -34,6 +34,7 @@ import brooklynUserManagement from 'brooklyn-ui-utils/user-management/user-manag
 import brYamlEditor from "brooklyn-ui-utils/yaml-editor/yaml-editor";
 import brWebNotifications from 'brooklyn-ui-utils/web-notifications/web-notifications';
 import brExpandablePanel from 'brooklyn-ui-utils/expandable-panel/expandable-panel';
+import brLogbook from 'brooklyn-ui-utils/logbook/logbook';
 
 import "angular-xeditable";
 import apiProvider from "components/providers/api.provider";
@@ -64,7 +65,11 @@ import brandAngularJs from 'brand-angular-js';
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
-angular.module('brooklynAppInspector', [ngResource, ngCookies, ngSanitize, uiRouter, brCore, brUtilsGeneral, brServerStatus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brSensitiveField, brooklynUserManagement, brYamlEditor, brWebNotifications, brExpandablePanel, 'xeditable', apiProvider, entityTree, loadingState, configSensorTable, entityEffector, entityPolicy, breadcrumbNavigation, taskList, taskSunburst, stream, adjunctsList, managementDetail, brandAngularJs])
+angular.module('brooklynAppInspector', [ngResource, ngCookies, ngSanitize, uiRouter, brCore, brUtilsGeneral,
+    brServerStatus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brSensitiveField, brooklynUserManagement,
+    brYamlEditor, brWebNotifications, brExpandablePanel, 'xeditable', brLogbook, apiProvider, entityTree, loadingState,
+    configSensorTable, entityEffector, entityPolicy, breadcrumbNavigation, taskList, taskSunburst, stream, adjunctsList,
+    managementDetail, brandAngularJs])
     .provider('catalogApi', catalogApiProvider)
     .provider('apiObserverInterceptor', apiObserverInterceptorProvider)
     .filter('specToLabel', specToLabelFilter)
