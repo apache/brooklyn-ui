@@ -19,10 +19,11 @@
 
 import angular from 'angular';
 import template from './logbook.template.html';
+import brooklynApi from '../brooklyn.api/brooklyn.api';
 
 const MODULE_NAME = 'brooklyn.component.logbook';
 
-angular.module(MODULE_NAME, [])
+angular.module(MODULE_NAME, [brooklynApi])
     .directive('brLogbook', logbook);
 
 export default MODULE_NAME;
@@ -31,6 +32,10 @@ export function logbook() {
 
     return {
         template: template,
+        restrict: 'E',
+        scope: {
+            searchId: '@',
+        },
         controller: ['$scope', '$element', '$interval', 'brBrandInfo', 'logbookApi', controller],
         controllerAs: 'vm'
     };
@@ -228,7 +233,7 @@ export function logbook() {
             const params = {
                 levels: levels,
                 tail: $scope.search.latest,
-                searchPhrase: $scope.search.phrase,
+                searchPhrases: [$scope.search.phrase, $scope.searchId].filter(phrase => phrase),
                 numberOfItems: $scope.search.numberOfItems,
                 dateTimeFrom: dateTimeFrom,
                 dateTimeTo: dateTimeTo,
