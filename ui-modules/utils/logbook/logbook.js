@@ -41,7 +41,7 @@ export function logbook() {
         let refreshFunction = null;
         let autoScrollableElement = Array.from($element.find('pre')).find(item => item.classList.contains('auto-scrollable'));
         let isNewQueryParameters = true; // Fresh start, new parameters!
-        let datetimeToScrollTo = null;
+        let datetimeToScrollTo = '';
 
         // Set up cancellation of auto-scrolling down.
         if (autoScrollableElement.addEventListener) {
@@ -97,39 +97,28 @@ export function logbook() {
 
         // Watch for search parameters changes.
         $scope.$watch('search', () => {
-            // Restart the auto-refresh.
+            isNewQueryParameters = true;
             if ($scope.autoRefresh) {
-                stopAutoRefresh();
-                vm.singleQuery();
-                startAutoRefresh();
+                $scope.logEntries = [];
             }
         }, true);
 
         $scope.$watch('search.latest', () => {
-            datetimeToScrollTo = null;
+            datetimeToScrollTo = '';
+            $scope.isAutoScrollDown = $scope.search.latest;
             if ($scope.search.latest) {
                 scrollToMostRecentLogEntry();
             } else {
-                $scope.isAutoScrollDown = false;
                 scrollToFirstLogEntry();
             }
         }, true);
-
-        // Watch for auto-update events.
-        $scope.$watch('autoRefresh', () => {
-            if ($scope.autoRefresh) {
-                startAutoRefresh();
-            } else {
-                stopAutoRefresh();
-            }
-        });
 
         $scope.$on('$destroy', stopAutoRefresh);
 
         /**
          * @returns {boolean} True if number of items is a number and within a supported range, false otherwise.
          */
-        vm.isValidNumber =() => {
+        vm.isValidNumber = () => {
             return $scope.search.numberOfItems >= $scope.minNumberOfItems && $scope.search.numberOfItems <= $scope.maxNumberOfItems;
         }
 
@@ -149,8 +138,10 @@ export function logbook() {
             let autoRefresh = !$scope.autoRefresh; // Calculate new value first.
 
             if (autoRefresh) {
-                $scope.isAutoScrollDown = true;
-                doQuery();
+                vm.singleQuery();
+                startAutoRefresh();
+            } else {
+                stopAutoRefresh();
             }
 
             $scope.autoRefresh = autoRefresh; // Now, set the new value.
@@ -161,7 +152,6 @@ export function logbook() {
          */
         vm.singleQuery = () => {
             isNewQueryParameters = true;
-            $scope.waitingResponse = true;
             $scope.logtext = 'Loading...';
             $scope.logEntries = [];
             doQuery();
@@ -205,15 +195,23 @@ export function logbook() {
          */
         function doQuery() {
 
+            // Do not start new query until one is in progress.
+            if ($scope.waitingResponse) {
+                return;
+            }
+            $scope.waitingResponse = true;
+
             if (!vm.isValidNumber()) {
                 console.error('number of items is invalid', $scope.search.numberOfItems)
                 return;
             }
 
-            // Exclude timezone from date-times.
-            const ISO_DATETIME_LENGTH = '0000-00-00T00:00:00.000'.length;
-            let dateFrom = $scope.search.dateTimeFrom && new Date($scope.search.dateTimeFrom).toISOString().slice(0, ISO_DATETIME_LENGTH);
-            let dateTimeTo = $scope.search.dateTimeTo && new Date($scope.search.dateTimeTo).toISOString().slice(0, ISO_DATETIME_LENGTH);
+            // Take into account timezone offset of the browser.
+            let dateTimeFrom = getUtcTimestamp($scope.search.dateTimeFrom);
+            let dateTimeTo = getUtcTimestamp($scope.search.dateTimeTo)
+            if (isTail() && !isNewQueryParameters && $scope.logEntries.length > 0) {
+                dateTimeFrom = getUtcTimestamp(getLogEntryTimestamp($scope.logEntries.slice(-1)[0]))
+            }
 
             const levels = getCheckedBoxes($scope.search.logLevels);
 
@@ -222,13 +220,24 @@ export function logbook() {
                 tail: $scope.search.latest,
                 searchPhrase: $scope.search.phrase,
                 numberOfItems: $scope.search.numberOfItems,
-                dateTimeFrom: isTail() && !isNewQueryParameters ? $scope.logEntries.slice(-1)[0].timestamp.replace(',', '.') : dateFrom,
+                dateTimeFrom: dateTimeFrom,
                 dateTimeTo: dateTimeTo,
             }
 
+            let isNewQueryParametersForThisQuery = isNewQueryParameters;
+
             logbookApi.logbookQuery(params, true).then((newLogEntries) => {
 
-                if (newLogEntries.length > 0 && isTail() && $scope.autoRefresh && !isNewQueryParameters) {
+                if (isNewQueryParametersForThisQuery) {
+
+                    // New query.
+
+                    // Re-draw all entries.
+                    $scope.logEntries = newLogEntries;
+
+                } else if (newLogEntries.length > 0 && $scope.logEntries.length > 0 && isTail() && $scope.autoRefresh) {
+
+                    // Tail query.
 
                     // Use line IDs to resolve the overlap, if any.
                     let lastLogEntryDisplayed = $scope.logEntries[$scope.logEntries.length - 1];
@@ -249,10 +258,6 @@ export function logbook() {
                     // Display not more of lines than was requested.
                     $scope.logEntries.slice(-$scope.search.numberOfItems);
 
-                } else if (isNewQueryParameters) {
-
-                    // New query, re-draw all entries.
-                    $scope.logEntries = newLogEntries;
                 }
 
                 // Auto-scroll.
@@ -286,7 +291,24 @@ export function logbook() {
          * @returns {number} The extracted date-time.
          */
         function getLogEntryTimestamp(logEntry) {
-            return logEntry.datetime || Date.parse(logEntry.timestamp.replace(',', '.'))
+            return Date.parse(logEntry.timestamp.replace(',', '.'))
+        }
+
+        /**
+         * Extracts UTC timestamp from the date.
+         *
+         * @param {Date|number} date The date to get UTC timestamp of.
+         * @returns {number|undefined} The UTC timestamp.
+         */
+        function getUtcTimestamp(date) {
+            const timezoneOffsetMs = new Date().getTimezoneOffset() * 60 * 1000;
+            if (date instanceof Date) {
+                return date.valueOf() - timezoneOffsetMs;
+            } else if (typeof date === 'number') {
+                return date - timezoneOffsetMs;
+            } else {
+                return undefined;
+            }
         }
 
         /**
@@ -351,7 +373,7 @@ export function logbook() {
          */
         function scrollToLogEntryWithDateTime(datetime) {
             $scope.$applyAsync(() => {
-                let logEntryWithDateTimeToScrollTo = $scope.logEntries.find(item => item.datetime >= datetime);
+                let logEntryWithDateTimeToScrollTo = $scope.logEntries.find(logEntry => getLogEntryTimestamp(logEntry) >= datetime);
                 if (logEntryWithDateTimeToScrollTo) {
                     let elementWithDateTimeToScrollTo = Array.from($element.find('pre')).find(element => element.id === logEntryWithDateTimeToScrollTo.lineId);
                     if (logEntryWithDateTimeToScrollTo) {
