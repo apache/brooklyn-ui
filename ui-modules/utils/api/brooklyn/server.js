@@ -45,6 +45,11 @@ function ServerApi($http, $q, cache) {
     this.getHaStates = getHaStates;
     this.getUpExtended = getUpExtended;
 
+    this.setHaStatus = setHaStatus;
+    this.setHaPriority = setHaPriority;
+    this.removeHaTerminatedNodes = removeHaTerminatedNodes;
+    this.removeHaTerminatedNode = removeHaTerminatedNode;
+
     function getVersion(config) {
         return $http.get('/v1/server/version', angular.extend({cache: cache}, config));
     }
@@ -59,5 +64,51 @@ function ServerApi($http, $q, cache) {
 
     function getUpExtended(config) {
         return $http.get('/v1/server/up/extended', angular.extend({cache: cache}, config));
+    }
+
+    function setHaStatus(state) {
+        return $http({
+            method: 'POST',
+            url: '/v1/server/ha/state',
+            data: 'mode=' + state,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json',
+                'Brooklyn-Allow-Non-Master-Access': 'true',
+            }
+
+        });
+    }
+
+    function setHaPriority(priority) {
+        return $http({
+            method: 'POST',
+            url: '/v1/server/ha/priority',
+            data: 'priority=' + priority,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json',
+                'Brooklyn-Allow-Non-Master-Access': 'true',
+            }
+
+        });
+    }
+
+    function removeHaTerminatedNodes(config){
+        return $http.post('/v1/server/ha/states/clear', angular.extend({cache: cache}, config));
+    }
+
+    function removeHaTerminatedNode(nodeId){
+        return $http({
+            method: 'POST',
+            url: '/v1/server/ha/states/clear/node',
+            data: 'nodeId=' + nodeId,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json',
+                'Brooklyn-Allow-Non-Master-Access': 'true',
+            }
+
+        });
     }
 }
