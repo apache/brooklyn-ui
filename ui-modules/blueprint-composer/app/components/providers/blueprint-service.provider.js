@@ -811,8 +811,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
      * @param {String} providerName The relationships provider name.
      * @param {Object} entityRelationshipsProvider The {Entity} relationships provider. The provider must implement the
      * method `apply({Entity})` which takes {Entity} as an argument and returns array of relationships found in the
-     * format [{source: {Entity}, target: {Entity}}], or an empty array []. The method also receives an array of
-     * relationships discovered by previous providers so far `apply({Entity}, [{source: {Entity}, target: {Entity}}])`.
+     * format [{source: {Entity}, target: {Entity}}], or an empty array [].
      */
     function addEntityRelationshipsProvider(providerName, entityRelationshipsProvider) {
         if (typeof entityRelationshipsProvider.apply !== 'function' || !providerName) {
