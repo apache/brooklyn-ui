@@ -40,7 +40,7 @@ export function logbook() {
         let vm = this;
         let refreshFunction = null;
         let autoScrollableElement = Array.from($element.find('pre')).find(item => item.classList.contains('auto-scrollable'));
-        let isNewQueryParameters = true; // Fresh start, new parameters!
+        let queryParametersChanged = 1; // Fresh start, new parameters!
         let datetimeToScrollTo = '';
 
         // Set up cancellation of auto-scrolling down.
@@ -97,9 +97,9 @@ export function logbook() {
 
         // Watch for search parameters changes.
         $scope.$watch('search', () => {
-            isNewQueryParameters = true;
+            queryParametersChanged++;
             if ($scope.autoRefresh) {
-                $scope.logEntries = [];
+                displayInProgress();
             }
         }, true);
 
@@ -151,9 +151,8 @@ export function logbook() {
          * Performs a single query with search parameters selected.
          */
         vm.singleQuery = () => {
-            isNewQueryParameters = true;
-            $scope.logtext = 'Loading...';
-            $scope.logEntries = [];
+            queryParametersChanged = 1;
+            displayInProgress();
             doQuery();
         };
 
@@ -184,6 +183,14 @@ export function logbook() {
         }
 
         /**
+         * Displays 'Loading...' text in query result area.
+         */
+        function displayInProgress() {
+            $scope.logtext = 'Loading...';
+            $scope.logEntries = [];
+        }
+
+        /**
          * @returns {boolean} true if current query is a tail request, false otherwise.
          */
         function isTail() {
@@ -195,21 +202,24 @@ export function logbook() {
          */
         function doQuery() {
 
-            // Do not start new query until one is in progress.
-            if ($scope.waitingResponse) {
-                return;
+            if ($scope.autoRefresh && queryParametersChanged > 1) {
+                queryParametersChanged = 1;
+                displayInProgress();
+                return; // User is still editing query parameters.
             }
-            $scope.waitingResponse = true;
 
             if (!vm.isValidNumber()) {
                 console.error('number of items is invalid', $scope.search.numberOfItems)
                 return;
             }
 
+            let isNewQueryParameters = queryParametersChanged > 0; // new parameters!
+            queryParametersChanged = 0; // reset the count.
+
             // Take into account timezone offset of the browser.
             let dateTimeFrom = getUtcTimestamp($scope.search.dateTimeFrom);
             let dateTimeTo = getUtcTimestamp($scope.search.dateTimeTo)
-            if (isTail() && !isNewQueryParameters && $scope.logEntries.length > 0) {
+            if (isTail() && !isNewQueryParameters && !isEmpty($scope.logEntries)) {
                 dateTimeFrom = getUtcTimestamp(getLogEntryTimestamp($scope.logEntries.slice(-1)[0]))
             }
 
@@ -224,18 +234,16 @@ export function logbook() {
                 dateTimeTo: dateTimeTo,
             }
 
-            let isNewQueryParametersForThisQuery = isNewQueryParameters;
-
             logbookApi.logbookQuery(params, true).then((newLogEntries) => {
 
-                if (isNewQueryParametersForThisQuery) {
+                if (isNewQueryParameters) {
 
                     // New query.
 
                     // Re-draw all entries.
                     $scope.logEntries = newLogEntries;
 
-                } else if (newLogEntries.length > 0 && $scope.logEntries.length > 0 && isTail() && $scope.autoRefresh) {
+                } else if (!isEmpty(newLogEntries) && !isEmpty($scope.logEntries) && isTail() && $scope.autoRefresh) {
 
                     // Tail query.
 
@@ -261,7 +269,7 @@ export function logbook() {
                 }
 
                 // Auto-scroll.
-                if ($scope.logEntries.length > 0) {
+                if (!isEmpty($scope.logEntries.length)) {
                     if ($scope.isAutoScrollDown) {
                         scrollToMostRecentLogEntry();
                     } else if (datetimeToScrollTo && datetimeToScrollTo >= getLogEntryTimestamp($scope.logEntries[0])) {
@@ -269,10 +277,9 @@ export function logbook() {
                     }
                 }
 
-                // Re-set marker for search parameters changes after auto-scroll.
-                isNewQueryParameters = false;
-
-                if ($scope.logEntries.length === 0) {
+                // Display 'No results' if user stopped editing search parameters, it can be the case that previous query
+                // result was empty when the user resumed editing of search parameters.
+                if (isEmpty($scope.logEntries) && queryParametersChanged === 0) {
                     $scope.logtext = 'No results.';
                 }
 
@@ -312,6 +319,13 @@ export function logbook() {
         }
 
         /**
+         * @returns {boolean} true if array is empty, false otherwise.
+         */
+        function isEmpty(array) {
+            return array.length === 0;
+        }
+
+        /**
          * Gets all checked boxes from the group of elements.
          *
          * @param {Object} checkBoxGroup The checkbox group.
@@ -333,7 +347,7 @@ export function logbook() {
         function startAutoRefresh() {
             refreshFunction = $interval(() => {
                 // Do a new query only if parameters have changed or it is a tail.
-                if (isNewQueryParameters || isTail()) {
+                if (queryParametersChanged > 0 || isTail()) {
                     doQuery();
                 }
             }, 1000);
@@ -384,12 +398,13 @@ export function logbook() {
         }
 
         /**
-         * Pins the log entry. Pinned log entry is displayed even if it is not present in the new query, until unpinned.
+         * Pins the log entry. Pinned log entries are displayed even if they are not present in the new query, positioned
+         * in the right order, until unpinned.
          *
          * @param {Object} logEntry The log entry to pin.
          */
         function pinLogEntry(logEntry) {
-            // TODO: reserved for future. Pinning requires unique IDs assigned to log entries in the backed.
+            // TODO: reserved for future.
             // logEntry.isPinned = !logEntry.isPinned;
         }
     }
