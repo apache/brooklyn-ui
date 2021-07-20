@@ -63,32 +63,32 @@ export function summaryController($scope, $state, $stateParams, $q, $http, brSna
         vm.error.entity = 'Cannot load entity with ID: ' + entityId;
     });
 
-    entityApi.entityConfigState(applicationId, entityId).then((response)=> {
-        vm.config = response.data;
-        vm.error.config = undefined;
-        observers.push(response.subscribe((response)=> {
-            vm.config = response.data;
-            vm.error.config = undefined;
-        }));
-    }).catch((error)=> {
-        vm.error.config = 'Cannot load configuration for entity with ID: ' + entityId;
-    });
-
     vm.configResolved = false;
 
     vm.refreshConfig = (initialSubscription) => {
-        entityApi.entityConfigInfo(applicationId, entityId, !vm.configResolved).then((response) => {
-            vm.configInfo = response.data;
-            vm.error.config = undefined;
+        entityApi.entityConfigState(applicationId, entityId, !vm.configResolved).then((response)=> {
+            let processConfig = (response) => {
+                vm.config = response.data;
+                vm.error.config = undefined;
+            };
+
+            processConfig(response);
+            if (initialSubscription) {
+                observers.push(response.subscribe(processConfig));
+            }
+        }).catch((error)=> {
+            vm.error.config = 'Cannot load configuration for entity with ID: ' + entityId;
+        });
+
+        entityApi.entityConfigInfo(applicationId, entityId).then((response) => {
             let processConfig = (response) => {
                 vm.configInfo = response.data;
                 vm.error.config = undefined;
             };
 
+            processConfig(response);
             if (initialSubscription) {
                 observers.push(response.subscribe(processConfig));
-            } else {
-                processConfig(response);
             }
         }).catch((error) => {
             vm.error.config = 'Cannot load configuration information for entity with ID: ' + entityId;
