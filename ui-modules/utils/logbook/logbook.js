@@ -81,8 +81,8 @@ export function logbook() {
                 {name: 'Debug', value: 'DEBUG', selected: true},
             ],
             latest: true,
-            dateTimeFrom: '',
-            dateTimeTo: '',
+            dateTimeFrom: null,
+            dateTimeTo: null,
             numberOfItems: 1000,
             phrase: ''
         };
