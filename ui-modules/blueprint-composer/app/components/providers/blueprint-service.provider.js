@@ -110,11 +110,11 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
 
     // Add relationships provider based on Entity spec
     addEntityRelationshipsProvider('spec', {
-        apply: (entity, relationships) => {
+        apply: (entity) => {
             return Array.from(entity.config.values())
                 .filter(config => config && config[DSL_ENTITY_SPEC] && config[DSL_ENTITY_SPEC] instanceof Entity)
                 .map(config => config[DSL_ENTITY_SPEC])
-                .reduce((relationships, spec) => relationships.concat(getRelationships(spec)), relationships);
+                .reduce((relationships, spec) => relationships.concat(getRelationships(spec)), []);
         }
     });
 
@@ -811,8 +811,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
      * @param {String} providerName The relationships provider name.
      * @param {Object} entityRelationshipsProvider The {Entity} relationships provider. The provider must implement the
      * method `apply({Entity})` which takes {Entity} as an argument and returns array of relationships found in the
-     * format [{source: {Entity}, target: {Entity}}], or an empty array []. The method also receives an array of
-     * relationships discovered by previous providers so far `apply({Entity}, [{source: {Entity}, target: {Entity}}])`.
+     * format [{source: {Entity}, target: {Entity}}], or an empty array [].
      */
     function addEntityRelationshipsProvider(providerName, entityRelationshipsProvider) {
         if (typeof entityRelationshipsProvider.apply !== 'function' || !providerName) {
@@ -832,7 +831,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
 
         // Aggregate relationships discovered by Entity relationships providers.
         for (let provider of Object.values(entityRelationshipProviders)) {
-            relationships = relationships.concat(provider.apply(entity, relationships));
+            relationships = relationships.concat(provider.apply(entity));
         }
 
         // Iterate over children and reduct.
