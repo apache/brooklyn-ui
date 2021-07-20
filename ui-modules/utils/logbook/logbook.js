@@ -37,170 +37,245 @@ export function logbook() {
 
     function controller($scope, $element, $interval, brBrandInfo, logbookApi) {
 
-        const DEFAULT_NUMBER_OF_ITEMS = 1000;
-
-        $scope.isAutoScroll = true; // Auto-scroll by default.
-        $scope.isLatest = true; // Indicates whether to query tail (last number of lines) or head (by default).
-        $scope.autoUpdate = false;
-        $scope.waitingResponse = false;
-
-        $scope.logtext = '';
-        $scope.logEntries = [];
-
         let vm = this;
         let refreshFunction = null;
-        let autoScrollableElements = Array.from($element.find('pre')).filter(item => item.classList.contains('auto-scrollable'));
-        let dateTimeToAutoUpdateFrom = ''; // TODO: use this date to optimize 'tail' queries to reduce the network traffic.
+        let autoScrollableElement = Array.from($element.find('pre')).find(item => item.classList.contains('auto-scrollable'));
+        let isNewQueryParameters = true; // Fresh start, new parameters!
+        let datetimeToScrollTo = '';
 
-        // Set up cancellation of auto-scrolling on scrolling up.
-        autoScrollableElements.forEach(item => {
-            if (item.addEventListener) {
-                let wheelHandler = () => {
-                    $scope.$apply(() => {
-                        $scope.isAutoScroll = (item.scrollTop + item.offsetHeight) >= item.scrollHeight;
-                    });
-                }
-                // Chrome, Safari, Opera
-                item.addEventListener("mousewheel", wheelHandler, false);
-                // Firefox
-                item.addEventListener("DOMMouseScroll", wheelHandler, false);
+        // Set up cancellation of auto-scrolling down.
+        if (autoScrollableElement.addEventListener) {
+            let wheelHandler = () => {
+                $scope.$apply(() => {
+                    cacheDatetimeToScrollTo();
+                    $scope.isAutoScrollDown = (autoScrollableElement.scrollTop + autoScrollableElement.offsetHeight) >= autoScrollableElement.scrollHeight;
+                });
             }
-        });
-
-        vm.queryTail = () => {
-            let autoUpdate = !$scope.autoUpdate; // Calculate new value.
-
-            if (autoUpdate) {
-                $scope.isAutoScroll = true;
-                resetQueryParameters();
-                doQuery();
-            }
-
-            $scope.autoUpdate = autoUpdate; // Set new value.
+            // Chrome, Safari, Opera
+            autoScrollableElement.addEventListener("mousewheel", wheelHandler, false);
+            // Firefox
+            autoScrollableElement.addEventListener("DOMMouseScroll", wheelHandler, false);
         }
 
-        vm.queryHead = () => {
-            $scope.waitingResponse = true;
-            $scope.autoUpdate = false;
-            $scope.isLatest = false;
-            $scope.logtext = 'Loading...';
-            doQuery();
-        }
+        $scope.isAutoScrollDown = true; // Auto-scroll down, by default.
+        $scope.autoRefresh = false;
+        $scope.waitingResponse = false;
+        $scope.logtext = '';
+        $scope.wordwrap = true;
+        $scope.logEntries = [];
+        $scope.minNumberOfItems = 1;
+        $scope.maxNumberOfItems = 10000;
 
-        $scope.$watch('allLevels', (value) => {
-            if (!value) {
-                if (getCheckedBoxes($scope.logLevels).length === 0) {
-                    $scope.allLevels = true;
-                } else {
-                    return;
-                }
-            }
-            for (let i = 0; i < $scope.logLevels.length; ++i) {
-                $scope.logLevels[i].selected = false;
-            }
-        });
+        // Initialize search parameters.
+        $scope.search = {
+            logLevels: [
+                {name: 'Info',  value: 'INFO',  selected: true},
+                {name: 'Warn',  value: 'WARN',  selected: true},
+                {name: 'Error', value: 'ERROR', selected: true},
+                {name: 'Fatal', value: 'FATAL', selected: true},
+                {name: 'Debug', value: 'DEBUG', selected: true},
+            ],
+            latest: true,
+            dateTimeFrom: '',
+            dateTimeTo: '',
+            numberOfItems: 1000,
+            phrase: ''
+        };
 
-        $scope.$watch('logLevels', (newVal, oldVal) => {
-            let selected = newVal.reduce(function (s, c) {
-                return s + (c.selected ? 1 : 0);
-            }, 0);
-            if (selected === newVal.length || selected === 0) {
-                $scope.allLevels = true;
-            } else if (selected > 0) {
-                $scope.allLevels = false;
-            }
-        }, true);
-
-        $scope.$watch('logFields', (newVal, oldVal) => {
-            if ($scope.logEntries !== "") {
-                $scope.logtext = covertLogEntriesToString($scope.logEntries);
-            }
-        }, true);
-
-        $scope.$watch('autoUpdate', ()=> {
-            if ($scope.autoUpdate) {
-                refreshFunction = $interval(doQuery, 1000);
-            } else {
-                cancelAutoUpdate();
-            }
-        });
-
-        $scope.$on('$destroy', cancelAutoUpdate);
-
-        // Watch the 'isAutoScroll' and auto-scroll down if enabled.
-        $scope.$watch('isAutoScroll', () => {
-            if ($scope.isAutoScroll) {
-                scrollToMostRecentRecords();
-            }
-        });
-
-        // Initialize query parameters, reset them.
-        resetQueryParameters();
-
-        // Initialize the reset of search parameters.
-        $scope.allLevels = true
-        $scope.logLevels = [
-            {"name": "Info", "value": "INFO", "selected": false},
-            {"name": "Warn", "value": "WARN", "selected": false},
-            {"name": "Error", "value": "ERROR", "selected": false},
-            {"name": "Fatal", "value": "FATAL", "selected": false},
-            {"name": "Debug", "value": "DEBUG", "selected": false},
-        ];
-        $scope.searchPhrase = '';
-
-        // Initialize filters.
-        $scope.fieldsToShow = ['datetime', 'class', 'message']
+        // Define search result filters.
+        $scope.fieldsToShow = ['timestamp', 'class', 'message']
         $scope.logFields = [
-            {"name": "Timestamp", "value": "datetime", "selected": true},
-            {"name": "Task ID", "value": "taskId", "selected": false},
-            {"name": "Entity IDs", "value": "entityIds", "selected": false},
-            {"name": "Log level", "value": "level", "selected": true},
-            {"name": "Bundle ID", "value": "bundleId", "selected": false},
-            {"name": "Class", "value": "class", "selected": true},
-            {"name": "Thread name", "value": "threadName", "selected": false},
-            {"name": "Message", "value": "message", "selected": true},
+            {name: 'Timestamp',   value: 'timestamp',  selected: true},
+            {name: 'Task ID',     value: 'taskId',     selected: false},
+            {name: 'Entity IDs',  value: 'entityIds',  selected: false},
+            {name: 'Log level',   value: 'level',      selected: true},
+            {name: 'Bundle ID',   value: 'bundleId',   selected: false},
+            {name: 'Class',       value: 'class',      selected: true},
+            {name: 'Thread name', value: 'threadName', selected: false},
+            {name: 'Message',     value: 'message',    selected: true},
         ];
+
+        // Watch for search parameters changes.
+        $scope.$watch('search', () => {
+            isNewQueryParameters = true;
+            if ($scope.autoRefresh) {
+                $scope.logEntries = [];
+            }
+        }, true);
+
+        $scope.$watch('search.latest', () => {
+            datetimeToScrollTo = '';
+            $scope.isAutoScrollDown = $scope.search.latest;
+            if ($scope.search.latest) {
+                scrollToMostRecentLogEntry();
+            } else {
+                scrollToFirstLogEntry();
+            }
+        }, true);
+
+        $scope.$on('$destroy', stopAutoRefresh);
+
+        /**
+         * @returns {boolean} True if number of items is a number and within a supported range, false otherwise.
+         */
+        vm.isValidNumber = () => {
+            return $scope.search.numberOfItems >= $scope.minNumberOfItems && $scope.search.numberOfItems <= $scope.maxNumberOfItems;
+        }
+
+        /**
+         * Handles the click event on the log entry.
+         *
+         * @param {Object} logEntry The clicked log entry data.
+         */
+        vm.logEntryOnClick = (logEntry) => {
+            pinLogEntry(logEntry);
+        };
+
+        /**
+         * Starts an auto-query. Performs new query each time search parameters change.
+         */
+        vm.autoQuery = () => {
+            let autoRefresh = !$scope.autoRefresh; // Calculate new value first.
+
+            if (autoRefresh) {
+                vm.singleQuery();
+                startAutoRefresh();
+            } else {
+                stopAutoRefresh();
+            }
+
+            $scope.autoRefresh = autoRefresh; // Now, set the new value.
+        };
+
+        /**
+         * Performs a single query with search parameters selected.
+         */
+        vm.singleQuery = () => {
+            isNewQueryParameters = true;
+            $scope.logtext = 'Loading...';
+            $scope.logEntries = [];
+            doQuery();
+        };
+
+        /**
+         * Converts log entry to string.
+         *
+         * @param {Object} entry The log entry to convert.
+         * @returns {String} log entry converted to string.
+         */
+        vm.covertLogEntryToString = (entry) => {
+            return getCheckedBoxes($scope.logFields).reduce((output, fieldKey) => {
+                    if (entry[fieldKey]) {
+                        output.push(entry[fieldKey])
+                    }
+                    return output;
+                }, []).join(' ');
+        }
+
+        /**
+         * Caches the datetime of the first item in the visible area of the query result.
+         */
+        function cacheDatetimeToScrollTo() {
+            let element = Array.from($element.find('pre')).find(item => item.offsetTop > (autoScrollableElement.scrollTop + autoScrollableElement.offsetTop - 1));
+            let firstLogEntryInTheVisibleArea = $scope.logEntries.find(logEntry => logEntry.lineId === element.id);
+            if (firstLogEntryInTheVisibleArea) {
+                datetimeToScrollTo = getLogEntryTimestamp(firstLogEntryInTheVisibleArea);
+            }
+        }
+
+        /**
+         * @returns {boolean} true if current query is a tail request, false otherwise.
+         */
+        function isTail() {
+            return $scope.search.latest && !$scope.search.dateTimeTo;
+        }
 
         /**
          * Performs a logbook query.
          */
         function doQuery() {
-            const levels = $scope.allLevels ? ['ALL'] : getCheckedBoxes($scope.logLevels);
+
+            // Do not start new query until one is in progress.
+            if ($scope.waitingResponse) {
+                return;
+            }
+            $scope.waitingResponse = true;
+
+            if (!vm.isValidNumber()) {
+                console.error('number of items is invalid', $scope.search.numberOfItems)
+                return;
+            }
+
+            // Take into account timezone offset of the browser.
+            let dateTimeFrom = getUtcTimestamp($scope.search.dateTimeFrom);
+            let dateTimeTo = getUtcTimestamp($scope.search.dateTimeTo)
+            if (isTail() && !isNewQueryParameters && $scope.logEntries.length > 0) {
+                dateTimeFrom = getUtcTimestamp(getLogEntryTimestamp($scope.logEntries.slice(-1)[0]))
+            }
+
+            const levels = getCheckedBoxes($scope.search.logLevels);
 
             const params = {
                 levels: levels,
-                tail: $scope.isLatest,
-                searchPhrase: $scope.searchPhrase,
-                numberOfItems: $scope.numberOfItems,
-                dateTimeFrom: $scope.isLatest ? dateTimeToAutoUpdateFrom : $scope.dateTimeFrom,
-                dateTimeTo: $scope.isLatest ? '' : $scope.dateTimeTo,
+                tail: $scope.search.latest,
+                searchPhrase: $scope.search.phrase,
+                numberOfItems: $scope.search.numberOfItems,
+                dateTimeFrom: dateTimeFrom,
+                dateTimeTo: dateTimeTo,
             }
 
-            logbookApi.logbookQuery(params, true).then((logEntries) => {
+            let isNewQueryParametersForThisQuery = isNewQueryParameters;
 
-                if ($scope.isLatest && $scope.logEntries.length !== 0) {
-                    if (logEntries.length > 0) {
+            logbookApi.logbookQuery(params, true).then((newLogEntries) => {
 
-                        // Calculate date-time to display up to. Note, calendar does not take into account milliseconds,
-                        // round down to seconds.
-                        let latestDateTimeToDisplay = Math.floor(logEntries.slice(-1)[0].datetime / DEFAULT_NUMBER_OF_ITEMS) * DEFAULT_NUMBER_OF_ITEMS;
+                if (isNewQueryParametersForThisQuery) {
 
-                        // Display new log entries.
-                        let newLogEntries = logEntries.filter(entry => entry.datetime <= latestDateTimeToDisplay);
-                        $scope.logEntries = $scope.logEntries.concat(newLogEntries).slice(-DEFAULT_NUMBER_OF_ITEMS);
+                    // New query.
 
-                        // Cache next date-time to query tail from.
-                        dateTimeToAutoUpdateFrom = new Date(latestDateTimeToDisplay);
+                    // Re-draw all entries.
+                    $scope.logEntries = newLogEntries;
+
+                } else if (newLogEntries.length > 0 && $scope.logEntries.length > 0 && isTail() && $scope.autoRefresh) {
+
+                    // Tail query.
+
+                    // Use line IDs to resolve the overlap, if any.
+                    let lastLogEntryDisplayed = $scope.logEntries[$scope.logEntries.length - 1];
+                    let indexOfLogEntryInTheNewBatch = newLogEntries.findIndex(({lineId}) => lineId === lastLogEntryDisplayed.lineId);
+                    if (indexOfLogEntryInTheNewBatch >= 0) {
+
+                        // Append new log entries without overlap.
+                        $scope.logEntries = $scope.logEntries.concat(newLogEntries.slice(indexOfLogEntryInTheNewBatch + 1));
+
+
                     } else {
-                        // Or re-set the cache.
-                        dateTimeToAutoUpdateFrom = '';
+
+                        // Append all new log entries, there is no overlap.
+                        $scope.logEntries = $scope.logEntries.concat(newLogEntries)
+
                     }
-                } else {
-                    $scope.logEntries = logEntries;
+
+                    // Display not more of lines than was requested.
+                    $scope.logEntries.slice(-$scope.search.numberOfItems);
+
                 }
 
-                $scope.logtext = covertLogEntriesToString($scope.logEntries);
-                scrollToMostRecentRecords();
+                // Auto-scroll.
+                if ($scope.logEntries.length > 0) {
+                    if ($scope.isAutoScrollDown) {
+                        scrollToMostRecentLogEntry();
+                    } else if (datetimeToScrollTo && datetimeToScrollTo >= getLogEntryTimestamp($scope.logEntries[0])) {
+                        scrollToLogEntryWithDateTime(datetimeToScrollTo);
+                    }
+                }
+
+                // Re-set marker for search parameters changes after auto-scroll.
+                isNewQueryParameters = false;
+
+                if ($scope.logEntries.length === 0) {
+                    $scope.logtext = 'No results.';
+                }
+
             }, (error) => {
                 $scope.logtext = 'Error getting the logs: \n' + error.error.message;
                 console.log(JSON.stringify(error));
@@ -210,36 +285,30 @@ export function logbook() {
         }
 
         /**
-         * Converts log entries to string.
+         * Extracts timestamp from the log entry.
          *
-         * @param {Array.<Object>} logEntries The log entries to convert.
-         * @returns {String} log entries converted to string.
+         * @param logEntry The log entry.
+         * @returns {number} The extracted date-time.
          */
-        function covertLogEntriesToString(logEntries) {
-            let output = [];
-            const fieldsToShow = getCheckedBoxes($scope.logFields);
-            logEntries.forEach(entry => {
-                let outputLine = [];
-                if (fieldsToShow.includes('datetime') && entry.timestamp)
-                    outputLine.push(entry.timestamp);
-                if (fieldsToShow.includes('taskId') && entry.taskId)
-                    outputLine.push(entry.taskId);
-                if (fieldsToShow.includes('entityIds') && entry.entityIds)
-                    outputLine.push(entry.entityIds);
-                if (fieldsToShow.includes('level') && entry.level)
-                    outputLine.push(entry.level);
-                if (fieldsToShow.includes('bundleId') && entry.bundleId)
-                    outputLine.push(entry.bundleId);
-                if (fieldsToShow.includes('class') && entry.class)
-                    outputLine.push(entry.class);
-                if (fieldsToShow.includes('threadName') && entry.threadName)
-                    outputLine.push(entry.threadName);
-                if (fieldsToShow.includes('message') && entry.message)
-                    outputLine.push(entry.message);
+        function getLogEntryTimestamp(logEntry) {
+            return Date.parse(logEntry.timestamp.replace(',', '.'))
+        }
 
-                output.push(outputLine.join(' '));
-            })
-            return output.length > 0 ? output.join('\n') : 'No results';
+        /**
+         * Extracts UTC timestamp from the date.
+         *
+         * @param {Date|number} date The date to get UTC timestamp of.
+         * @returns {number|undefined} The UTC timestamp.
+         */
+        function getUtcTimestamp(date) {
+            const timezoneOffsetMs = new Date().getTimezoneOffset() * 60 * 1000;
+            if (date instanceof Date) {
+                return date.valueOf() - timezoneOffsetMs;
+            } else if (typeof date === 'number') {
+                return date - timezoneOffsetMs;
+            } else {
+                return undefined;
+            }
         }
 
         /**
@@ -259,34 +328,69 @@ export function logbook() {
         }
 
         /**
-         * Resets query parameters.
+         * Starts the auto-refresh of the logbook content.
          */
-        function resetQueryParameters() {
-            $scope.numberOfItems = DEFAULT_NUMBER_OF_ITEMS;
-            $scope.dateTimeFrom = '';
-            $scope.dateTimeTo = '';
-            $scope.isLatest = true;
+        function startAutoRefresh() {
+            refreshFunction = $interval(() => {
+                // Do a new query only if parameters have changed or it is a tail.
+                if (isNewQueryParameters || isTail()) {
+                    doQuery();
+                }
+            }, 1000);
         }
 
         /**
-         * Cancels the auto-update of the logbook content.
+         * Stops the auto-refresh of the logbook content.
          */
-        function cancelAutoUpdate() {
+        function stopAutoRefresh() {
             if (refreshFunction) {
                 $interval.cancel(refreshFunction);
-                dateTimeToAutoUpdateFrom = '';
             }
         }
 
         /**
-         * Scrolls down to the most recent records.
+         * Scrolls down to the most recent log entry.
          */
-        function scrollToMostRecentRecords() {
+        function scrollToMostRecentLogEntry() {
             $scope.$applyAsync(() => {
-                if ($scope.logtext && $scope.isAutoScroll) {
-                    autoScrollableElements.forEach(item => item.scrollTop = item.scrollHeight);
+                autoScrollableElement.scrollTop = autoScrollableElement.scrollHeight;
+            });
+        }
+
+        /**
+         * Scrolls up to the first log entry.
+         */
+        function scrollToFirstLogEntry() {
+            $scope.$applyAsync(() => {
+                autoScrollableElement.scrollTop = 0;
+            });
+        }
+
+        /**
+         * Scrolls down or up to the log entry with the closets datetime of interest.
+         *
+         * @param {Object} datetime The datetime of the log entry to scroll to.
+         */
+        function scrollToLogEntryWithDateTime(datetime) {
+            $scope.$applyAsync(() => {
+                let logEntryWithDateTimeToScrollTo = $scope.logEntries.find(logEntry => getLogEntryTimestamp(logEntry) >= datetime);
+                if (logEntryWithDateTimeToScrollTo) {
+                    let elementWithDateTimeToScrollTo = Array.from($element.find('pre')).find(element => element.id === logEntryWithDateTimeToScrollTo.lineId);
+                    if (logEntryWithDateTimeToScrollTo) {
+                        autoScrollableElement.scrollTop = elementWithDateTimeToScrollTo.offsetTop - autoScrollableElement.offsetTop;
+                    }
                 }
             });
+        }
+
+        /**
+         * Pins the log entry. Pinned log entry is displayed even if it is not present in the new query, until unpinned.
+         *
+         * @param {Object} logEntry The log entry to pin.
+         */
+        function pinLogEntry(logEntry) {
+            // TODO: reserved for future. Pinning requires unique IDs assigned to log entries in the backed.
+            // logEntry.isPinned = !logEntry.isPinned;
         }
     }
 }

@@ -17,6 +17,6 @@
 # under the License.
 name: Catalog
 slug: ${project.artifactId}
-icon: fa-book
+icon: fa-list
 types:
 - home-ui-module
