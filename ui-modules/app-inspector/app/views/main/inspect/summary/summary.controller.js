@@ -25,11 +25,11 @@ export const summaryState = {
     name: 'main.inspect.summary',
     url: '/summary',
     template: template,
-    controller: ['$scope', '$state', '$stateParams', '$q', '$http', 'brSnackbar', 'entityApi', 'locationApi', 'iconService', summaryController],
+    controller: ['$scope', '$state', '$stateParams', '$q', '$http', '$httpParamSerializer', 'brSnackbar', 'entityApi', 'locationApi', 'iconService', summaryController],
     controllerAs: 'vm'
 };
 
-export function summaryController($scope, $state, $stateParams, $q, $http, brSnackbar, entityApi, locationApi, iconService) {
+export function summaryController($scope, $state, $stateParams, $q, $http, $httpParamSerializer, brSnackbar, entityApi, locationApi, iconService) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
     const {
@@ -73,7 +73,7 @@ export function summaryController($scope, $state, $stateParams, $q, $http, brSna
                 },
                 paramSerializer: (params) => {
                     params.skipResolution = !vm.configResolved;
-                    return params;
+                    return $httpParamSerializer(params);
                 },
                 }).then((response)=> {
             let processConfig = (response) => {

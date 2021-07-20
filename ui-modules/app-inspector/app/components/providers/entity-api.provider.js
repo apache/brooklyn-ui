@@ -79,7 +79,7 @@ function EntityApi($http, $q) {
         return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/config', {observable: true, ignoreLoadingBar: true});
     }
 
-    function getEntityConfigState(applicationId, entityId, options) { // transform request object
+    function getEntityConfigState(applicationId, entityId, options) {
         return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + `/config/current-state`,
             Object.assign({observable: true, ignoreLoadingBar: true}, options || {}) );
     }
