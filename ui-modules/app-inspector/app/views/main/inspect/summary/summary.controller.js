@@ -67,14 +67,14 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
 
     vm.refreshConfig = (initialSubscription) => {
         entityApi.entityConfigState(applicationId, entityId, {
-                params: {
-                    suppressSecrets: true,
-                    skipResolution: !vm.configResolved,
-                },
-                paramSerializer: (params) => {
-                    params.skipResolution = !vm.configResolved;
-                    return $httpParamSerializer(params);
-                },
+                    params: {
+                        suppressSecrets: true,
+                        skipResolution: !vm.configResolved,
+                    },
+                    paramSerializer: (params) => $httpParamSerializer({
+                        ...params,
+                        skipResolution: !vm.configResolved
+                    }),
                 }).then((response)=> {
             let processConfig = (response) => {
                 vm.config = response.data;

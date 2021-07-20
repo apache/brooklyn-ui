@@ -78,10 +78,11 @@ function EntityApi($http, $q) {
     function getEntityConfigInfo(applicationId, entityId) {
         return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/config', {observable: true, ignoreLoadingBar: true});
     }
-
-    function getEntityConfigState(applicationId, entityId, options) {
-        return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + `/config/current-state`,
-            Object.assign({observable: true, ignoreLoadingBar: true}, options || {}) );
+    function getEntityConfigState(applicationId, entityId, options={}) {
+        return $http.get(
+            `/v1/applications/${applicationId}/entities/${entityId}/config/current-state`,
+            { ...options, observable: true, ignoreLoadingBar: true }
+        );
     }
     function getEntitySpec(applicationId, entityId) {
         return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/spec', {observable: true, ignoreLoadingBar: true});
