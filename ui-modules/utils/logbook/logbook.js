@@ -91,6 +91,8 @@ export function logbook() {
         $scope.fieldsToShow = ['timestamp', 'class', 'message']
         $scope.logFields = [
             {name: 'Timestamp',   value: 'timestamp',  selected: true},
+            {name: 'Task ID',     value: 'taskId',     selected: false},
+            {name: 'Entity IDs',  value: 'entityIds',  selected: false},
             {name: 'Log level',   value: 'level',      selected: true},
             {name: 'Bundle ID',   value: 'bundleId',   selected: false},
             {name: 'Class',       value: 'class',      selected: true},
