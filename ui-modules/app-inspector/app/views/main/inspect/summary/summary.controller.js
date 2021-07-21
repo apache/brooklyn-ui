@@ -25,11 +25,11 @@ export const summaryState = {
     name: 'main.inspect.summary',
     url: '/summary',
     template: template,
-    controller: ['$scope', '$state', '$stateParams', '$q', '$http', 'brSnackbar', 'entityApi', 'locationApi', 'iconService', summaryController],
+    controller: ['$scope', '$state', '$stateParams', '$q', '$http', '$httpParamSerializer', 'brSnackbar', 'entityApi', 'locationApi', 'iconService', summaryController],
     controllerAs: 'vm'
 };
 
-export function summaryController($scope, $state, $stateParams, $q, $http, brSnackbar, entityApi, locationApi, iconService) {
+export function summaryController($scope, $state, $stateParams, $q, $http, $httpParamSerializer, brSnackbar, entityApi, locationApi, iconService) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
     const {
@@ -63,32 +63,41 @@ export function summaryController($scope, $state, $stateParams, $q, $http, brSna
         vm.error.entity = 'Cannot load entity with ID: ' + entityId;
     });
 
-    entityApi.entityConfigState(applicationId, entityId).then((response)=> {
-        vm.config = response.data;
-        vm.error.config = undefined;
-        observers.push(response.subscribe((response)=> {
-            vm.config = response.data;
-            vm.error.config = undefined;
-        }));
-    }).catch((error)=> {
-        vm.error.config = 'Cannot load configuration for entity with ID: ' + entityId;
-    });
-
     vm.configResolved = false;
 
     vm.refreshConfig = (initialSubscription) => {
-        entityApi.entityConfigInfo(applicationId, entityId, !vm.configResolved).then((response) => {
-            vm.configInfo = response.data;
-            vm.error.config = undefined;
+        entityApi.entityConfigState(applicationId, entityId, {
+                    params: {
+                        suppressSecrets: true,
+                        skipResolution: !vm.configResolved,
+                    },
+                    paramSerializer: (params) => $httpParamSerializer({
+                        ...params,
+                        skipResolution: !vm.configResolved
+                    }),
+                }).then((response)=> {
+            let processConfig = (response) => {
+                vm.config = response.data;
+                vm.error.config = undefined;
+            };
+
+            processConfig(response);
+            if (initialSubscription) {
+                observers.push(response.subscribe(processConfig));
+            }
+        }).catch((error)=> {
+            vm.error.config = 'Cannot load configuration for entity with ID: ' + entityId;
+        });
+
+        entityApi.entityConfigInfo(applicationId, entityId).then((response) => {
             let processConfig = (response) => {
                 vm.configInfo = response.data;
                 vm.error.config = undefined;
             };
 
+            processConfig(response);
             if (initialSubscription) {
                 observers.push(response.subscribe(processConfig));
-            } else {
-                processConfig(response);
             }
         }).catch((error) => {
             vm.error.config = 'Cannot load configuration information for entity with ID: ' + entityId;
