@@ -179,6 +179,10 @@
                         <pre>{{vm.model.activity.detailedStatus}}</pre>
                     </br-collapsible>
 
+                    <br-collapsible state="vm.model.accordion.logbookOpen">
+                        <heading> Logbook (activity)</heading>
+                        <br-logbook search-id="{{vm.model.activityId}}"></br-logbook>
+                    </br-collapsible>
                 </div>
             </div>
         </div>
