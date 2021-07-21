@@ -774,18 +774,38 @@ export function D3Blueprint(container, options) {
     function drawRelationships() {
         showRelationships();
 
+        // Generates unique relation ID string.
+        const getRelationId = (relationDataItem) => (relationDataItem.source._id + '_related_to_' + relationDataItem.target._id);
+
+        // Group relationships per direction, as a key.
+        let relationshipsPerDirection = new Map();
+        _d3DataHolder.visible.relationships.forEach(relation => {
+            const directionKey = getRelationId(relation);
+            if (!relationshipsPerDirection.has(directionKey)) {
+                relationshipsPerDirection.set(directionKey, []);
+            }
+            relationshipsPerDirection.get(directionKey).push(relation.label);
+        });
+
+        // Calculates offset for label, based on number of labels in the same direction.
+        const getLabelOffset = (relationDataItem) => {
+            const directionKey = getRelationId(relationDataItem);
+            let labelIndex = relationshipsPerDirection.get(directionKey).findIndex(label => label === relationDataItem.label);
+            return labelIndex > 0 ? labelIndex * -12 : 0;
+        };
+
         let relationData = _relationGroup.selectAll('.relation')
-            .data(_d3DataHolder.visible.relationships, (d)=>(d.source._id + '_related_to_' + d.target._id));
+            .data(_d3DataHolder.visible.relationships, (d) => getRelationId(d));
 
         let relationDataEntered = relationData.enter();
 
         // Draw the relationship path
         relationDataEntered.insert('path')
             .attr('class', (d) => ('relation ' + d.pathSelector))
-            .attr('id', (d)=>(d.source._id + '-' + d.target._id))
+            .attr('id', (d) => getRelationId(d))
             .attr('opacity', 0)
-            .attr('from', (d)=>(d.source._id))
-            .attr('to', (d)=>(d.target._id));
+            .attr('from', (d) => (d.source._id))
+            .attr('to', (d) => (d.target._id));
 
         // Draw the relationship label that follows the path, somewhere in the middle.
         // NOTE `textPath` DECREASES THE UI PERFORMANCE, USE LABELS WITH CAUTION.
@@ -797,9 +817,11 @@ export function D3Blueprint(container, options) {
             .attr('font-family', 'monospace')
             .attr('fill', '#f5f6fa') // colour of the canvas
                 .insert('textPath')
-                .attr('xlink:href', (d)=>('#' + d.source._id + '-' + d.target._id))
+                .attr('xlink:href', (d) => ('#' + getRelationId(d)))
                 .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
-                .html((d) => ('&#9608;'.repeat(d.label.length + 2)));
+                    .insert('tspan')
+                    .attr('dy', (d) => getLabelOffset(d))
+                    .html((d) => ('&#9608;'.repeat(d.label.length + 2)));
         relationDataLabelsEntered.insert('text') // Add label text on top of '&#9608;'s which is on top of the path.
             .attr('class', (d) => (d.labelSelector))
             .attr('dominant-baseline', 'middle')
@@ -809,9 +831,11 @@ export function D3Blueprint(container, options) {
                 .attr('class', 'relation-text') // `relation-text` class is required for styling effects
                 .attr('from', (d) => (d.source._id)) // `from` class is required for styling effects used along with `relation-text`
                 .attr('to', (d) => (d.target._id)) // `to` class is required for styling effects used along with `relation-text`
-                .attr('xlink:href', (d)=>('#' + d.source._id + '-' + d.target._id))
+                .attr('xlink:href', (d) => ('#' + getRelationId(d)))
                 .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
-                .html((d) => (' ' + d.label + ' '));
+                    .insert('tspan')
+                    .attr('dy', (d) => getLabelOffset(d))
+                    .html((d) => (' ' + d.label + ' '));
 
         // Draw the transition
         relationData.transition()
