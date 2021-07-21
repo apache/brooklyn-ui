@@ -782,15 +782,15 @@ export function D3Blueprint(container, options) {
         _d3DataHolder.visible.relationships.forEach(relation => {
             const directionKey = getRelationId(relation);
             if (!relationshipsPerDirection.has(directionKey)) {
-                relationshipsPerDirection.set(directionKey, []);
+                relationshipsPerDirection.set(directionKey, new Set());
             }
-            relationshipsPerDirection.get(directionKey).push(relation.label);
+            relationshipsPerDirection.get(directionKey).add(relation.label);
         });
 
         // Calculates offset for label, based on number of labels in the same direction.
         const getLabelOffset = (relationDataItem) => {
             const directionKey = getRelationId(relationDataItem);
-            let labelIndex = relationshipsPerDirection.get(directionKey).findIndex(label => label === relationDataItem.label);
+            let labelIndex = Array.from(relationshipsPerDirection.get(directionKey)).indexOf(relationDataItem.label);
             return labelIndex > 0 ? labelIndex * -12 : 0;
         };
 
