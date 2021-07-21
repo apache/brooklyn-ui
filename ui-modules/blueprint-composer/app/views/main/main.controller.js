@@ -48,7 +48,7 @@ export const LAYERS = [
         active: true
     },
     {
-        id: 'relationships',
+        id: 'node-relationships',
         label: 'Relationships',
         selector: '.relation-selector',
         active: true
