@@ -775,7 +775,7 @@ export function D3Blueprint(container, options) {
         showRelationships();
 
         // Generates unique relation ID string.
-        const getRelationId = (relationDataItem) => (relationDataItem.source._id + '_related_to_' + relationDataItem.target._id);
+        const getRelationId = (relationDataItem) => (relationDataItem.source._id + '-' + relationDataItem.target._id);
 
         // Group relationships per direction, as a key.
         let relationshipsPerDirection = {};
@@ -795,7 +795,8 @@ export function D3Blueprint(container, options) {
         };
 
         let relationData = _relationGroup.selectAll('.relation')
-            .data(_d3DataHolder.visible.relationships, (d) => getRelationId(d));
+            .data(_d3DataHolder.visible.relationships); // Draw every path, same path can be under different filter.
+            // Previously was -> .data(_d3DataHolder.visible.relationships), (d) => (d.source._id + '_related_to_' + d.target._id));
 
         let relationDataEntered = relationData.enter();
 
