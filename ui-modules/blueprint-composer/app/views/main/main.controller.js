@@ -90,7 +90,7 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
     };
     vm.layers.forEach(l => vm.onLayerActive(l, l.active));
 
-    $scope.$watch('vm.layers', ()=> {
+    const applyFilters = () => {
         vm.layers.forEach(layer => {
             document.querySelectorAll(layer.selector).forEach(node => {
                 // TODO does $watch approach give any newly created nodes/relationships the right display?
@@ -99,7 +99,7 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
                 //     // layers could supply custom layer behaviour (including via composer overrides)
                 //     layer.apply(node, layer, angular.element(node));
                 // } else {
-                    angular.element(node).css('display', layer.active ? 'block' : 'none');
+                angular.element(node).css('display', layer.active ? 'block' : 'none');
                 // }
             });
         });
@@ -110,7 +110,11 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
                 $log.error('Cannot save layers preferences: ' + ex.message);
             }
         }
-    }, true);
+    };
+
+    // Re-apply filters when selected filters changed or graph is changed.
+    $scope.$watch('vm.layers', () => applyFilters(), true);
+    $scope.$on('graph.changed', () => applyFilters());
 
     vm.parseError = false;
     $scope.$on('yaml.lint', (event, error)=>{

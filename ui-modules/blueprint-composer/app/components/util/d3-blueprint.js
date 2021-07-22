@@ -577,6 +577,7 @@ export function D3Blueprint(container, options) {
         drawSpecNodeGroup();
         drawGhostNode();
         drawDropZoneGroup();
+        container.dispatchEvent(new CustomEvent('graph-redrawn', {}));
         return this;
     }
 

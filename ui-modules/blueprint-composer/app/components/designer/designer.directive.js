@@ -211,6 +211,8 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
             $scope.$broadcast('d3.remove', event.detail.entity);
         });
 
+        $element.bind('graph-redrawn', () => $scope.$root.$broadcast('graph.changed'));
+
         $element.bind('drop-external-node', event => {
             let draggedItem = paletteDragAndDropService.draggedItem();
             let targetEntity = blueprintService.find(event.detail.parentId);
