@@ -21,7 +21,7 @@ import yaml from 'js-yaml';
 import brAutofocus from '../autofocus/autofocus';
 import brYamlEditor from '../yaml-editor/yaml-editor';
 import template from './quick-launch.html';
-import { get } from 'lodash';
+import { get, isEmpty } from 'lodash';
 // stringifyUrl unavailable, possible webpack issue
 import { stringify } from 'query-string';
 
@@ -61,10 +61,21 @@ export function quickLaunchDirective() {
             ],
         });
         quickLaunch.planSender = (appYaml) => $http.post('/v1/applications', appYaml);
+        quickLaunch.checkForLocationTags = checkForLocationTags;
+        quickLaunch.loadLocation = () => {
+            const { args, model, locations=[] } = $scope;
+            if (args.location) { // inline Location definition passed
+                model.location = args.location;
+            } else if (locations.length === 1) {
+                model.location = locations[0].id; // predefined/uploaded Location objects, ID prop is sufficient
+            }
+        };
+
 
         $scope.simpleComposerOnly = false;
         $scope.formEnabled = true;
         $scope.editorEnabled = !$scope.args.noEditButton;
+        $scope.forceFormOnly = false;
         $scope.deploying = false;
         $scope.model = {
             newConfigFormOpen: false,
@@ -75,12 +86,6 @@ export function quickLaunchDirective() {
         };
         $scope.args = $scope.args || {};
 
-        if ($scope.args.location) { // inline Location definition passed
-            $scope.model.location = $scope.args.location;
-        } else if (get($scope.locations, 'length') === 1) {
-            $scope.model.location = $scope.locations[0].id; // predefined/uploaded Location objects, ID prop is sufficient
-        }
-
         $scope.toggleNewConfigForm = toggleNewConfigForm;
         $scope.addNewConfigKey = addNewConfigKey;
         $scope.deleteConfigField = deleteConfigField;
@@ -89,9 +94,10 @@ export function quickLaunchDirective() {
         $scope.openComposer = openComposer;
         $scope.hideEditor = hideEditor;
         $scope.clearError = () => { delete $scope.model.deployError; };
-        $scope.transitionsShown = () => $scope.editorEnabled && $scope.formEnabled;
+        $scope.transitionsShown = () => $scope.editorEnabled && $scope.formEnabled && !$scope.forceFormOnly;
 
         $scope.$watch('app', () => {
+            quickLaunch.loadLocation($scope);
             $scope.clearError();
             $scope.editorYaml = $scope.app.plan.data;
 
@@ -102,7 +108,7 @@ export function quickLaunchDirective() {
 
             // enable wizard if it's parseble and doesn't specify a location
             // (if it's not parseable, or it specifies a location, then the YAML view is displayed)
-            $scope.formEnabled = parsedPlan!==null && !checkForLocationTags(parsedPlan);
+            $scope.formEnabled = $scope.forceFormOnly || (parsedPlan!==null && !checkForLocationTags(parsedPlan));
             $scope.yamlViewDisplayed = !$scope.formEnabled;
 
             $scope.entityToDeploy = {
@@ -112,12 +118,12 @@ export function quickLaunchDirective() {
             if ($scope.app.config) {
                 $scope.configMap = $scope.app.config.reduce((result, config) => {
                     result[config.name] = config;
-                    const configValue = get(parsedPlan, `services[0][${BROOKLYN_CONFIG}][${config.name}]`);
+                    const configValue = parseConfigValue(get(parsedPlan, `services[0][${BROOKLYN_CONFIG}][${config.name}]`));
 
                     if (typeof configValue !== 'undefined') {
                         $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = configValue;
                     } else if (config.pinned || (isRequired(config) && (typeof config.defaultValue !== 'undefined'))) {
-                        $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = get(config, 'defaultValue', null);
+                        $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = parseConfigValue(get(config, 'defaultValue', null));
                     }
                     return result;
                 }, {});
@@ -173,6 +179,13 @@ export function quickLaunchDirective() {
             if ($scope.model.newConfigFormOpen) {
                 delete $scope.model.newKey;
             }
+        }
+
+        // serialize value if it happens to be a complex object
+        function parseConfigValue(item) {
+            return (typeof item === 'object' && !isEmpty(item))
+                ? JSON.stringify(item)
+                : item;
         }
 
         function deleteConfigField(key) {
@@ -338,9 +351,11 @@ export function quickLaunchDirective() {
         return Array.isArray(constraints) && constraints.includes('required');
     }
 
+    // recursive function returning the value of the first `location` property found via DFS, or false
+    // if no such property exists.
     function checkForLocationTags(planSegment) {
         if (!planSegment) return false;
-        if (planSegment.location) return true;
+        if (planSegment.location) return planSegment.location;
 
         return checkForLocationTags(planSegment['brooklyn.children']) || checkForLocationTags(planSegment.services);
     }

@@ -139,7 +139,7 @@
 
 
 <div class="quick-launch-actions">
-    <small class="note" ng-class="{invisible: !yamlViewDisplayed}">
+    <small class="note" ng-class="{invisible: !(yamlViewDisplayed && transitionsShown())}">
         <em>Returning to form will reverse changes done in the YAML Editor</em>
     </small>
     <div>
