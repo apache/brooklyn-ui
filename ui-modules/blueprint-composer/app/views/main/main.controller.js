@@ -28,6 +28,9 @@ import {graphicalEditSpecState} from './graphical/edit/spec/edit.spec.controller
 import bottomSheetTemplate from './bottom-sheet.template.html';
 import {ISSUE_LEVEL} from '../../components/util/model/issue.model';
 
+const PATHS_SELECTOR_ID = 'relationships-arcs';
+const LABELS_SELECTOR_ID = 'relationships-labels';
+
 export const LAYERS = [
     {
         id: 'locations',
@@ -48,9 +51,15 @@ export const LAYERS = [
         active: true
     },
     {
-        id: 'node-relationships',
-        label: 'Relationships',
-        selector: '.relation-selector',
+        id: PATHS_SELECTOR_ID,
+        label: 'Relationship arcs',
+        selector: '.relation-arc',
+        active: true
+    },
+    {
+        id: LABELS_SELECTOR_ID,
+        label: 'Relationship labels',
+        selector: '.relation-label',
         active: true
     },
     {
@@ -110,8 +119,33 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
         }
     };
 
+    // Relationship arcs and labels.
+    let isRelationshipArcsLayerActive = true;
+    let isRelationshipLabelsLayerActive = true;
+
     // Re-apply filters when selected filters changed or graph is changed.
-    $scope.$watch('vm.layers', () => applyFilters(), true);
+    $scope.$watch('vm.layers', () => {
+        applyFilters();
+
+        let relationshipArcsLayer = vm.layers.find(l => l.id === PATHS_SELECTOR_ID);
+        let relationshipLabelsLayer = vm.layers.find(l => l.id === LABELS_SELECTOR_ID);
+
+        // Turning on labels turns on arcs.
+        if (relationshipLabelsLayer.active && !isRelationshipLabelsLayerActive) {
+            relationshipArcsLayer.active = true;
+        }
+
+        // Turning off arcs turns off labels.
+        if (!relationshipArcsLayer.active && isRelationshipArcsLayerActive) {
+            relationshipLabelsLayer.active = false;
+        }
+
+        // Update cached state for arc and labels.
+        isRelationshipArcsLayerActive = relationshipArcsLayer.active;
+        isRelationshipLabelsLayerActive = relationshipLabelsLayer.active;
+
+    }, true);
+
     $scope.$on('layers.filter', () => applyFilters());
 
     vm.parseError = false;
