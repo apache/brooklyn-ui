@@ -93,8 +93,6 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
     const applyFilters = () => {
         vm.layers.forEach(layer => {
             document.querySelectorAll(layer.selector).forEach(node => {
-                // TODO does $watch approach give any newly created nodes/relationships the right display?
-
                 // if (layer.apply) {
                 //     // layers could supply custom layer behaviour (including via composer overrides)
                 //     layer.apply(node, layer, angular.element(node));
