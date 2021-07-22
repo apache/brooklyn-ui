@@ -880,7 +880,7 @@ export function D3Blueprint(container, options) {
 
         let relationLabelsEntered = _relationLabels.selectAll('.relation-label').data(labelsData).enter();
 
-        const getLabelText = (d) => (d.label + (d.labels.size > 1 ? ' +' + (d.labels.size - 1) + ' others' : ''));
+        const getLabelText = (d) => (d.label + (d.labels.size > 1 ? ' +' + (d.labels.size - 1) + ' other' : ''));
 
         relationLabelsEntered.insert('text') // Add text layer of '&#9608;'s to erase the area on the path for label text.
             .attr('class', (d) => ('relation-label ' + d.labelSelector))
