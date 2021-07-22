@@ -114,7 +114,7 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
 
     // Re-apply filters when selected filters changed or graph is changed.
     $scope.$watch('vm.layers', () => applyFilters(), true);
-    $scope.$on('graph.changed', () => applyFilters());
+    $scope.$on('layers.filter', () => applyFilters());
 
     vm.parseError = false;
     $scope.$on('yaml.lint', (event, error)=>{
