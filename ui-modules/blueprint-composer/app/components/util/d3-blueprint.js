@@ -795,21 +795,22 @@ export function D3Blueprint(container, options) {
         showRelationships();
 
         const getPathId = ({ source, target }) => `${source._id}-${target._id}`;
-        const getRelationId = (d) => (getPathId(d) + '-' + d.pathSelector);
+        const PATH_SELECTOR = 'relation-arc';
+        const LABEL_SELECTOR = 'relation-label';
 
         // ====== RELATIONSHIP ARCS ===========
 
         // Data of unique relationships for arcs, even if they are at the same path.
         let arcsData = Object.values(_d3DataHolder.visible.relationships.reduce((accumulator, d) => {
-            accumulator[getRelationId(d)] = d;
+            accumulator[getPathId(d)] = d;
             return accumulator;
         }, {}));
 
-        let relationArcs = _relationArcs.selectAll('.relation').data(arcsData, (d) => getRelationId(d));
+        let relationArcs = _relationArcs.selectAll('.relation').data(arcsData, (d) => getPathId(d));
 
         relationArcs.enter().insert('path')
-            .attr('class', (d) => ('relation ' + d.pathSelector))
-            .attr('id', (d) => getRelationId(d))
+            .attr('class', 'relation ' + PATH_SELECTOR)
+            .attr('id', (d) => getPathId(d))
             .attr('opacity', 0)
             .attr('from', (d) => (d.source._id))
             .attr('to', (d) => (d.target._id));
@@ -848,55 +849,67 @@ export function D3Blueprint(container, options) {
         // Draw relationship labels that follow paths, somewhere in the middle of paths.
         // NOTE <textPath/> DECREASES THE UI PERFORMANCE, USE LABELS WITH CAUTION.
 
-        _relationLabels.selectAll('.relation-label').remove(); // Re-draw labels every time, required to refresh changes.
+        _relationLabels.selectAll('.' + LABEL_SELECTOR).remove(); // Re-draw labels every time, required to refresh changes.
 
-        // Group unique relationships per path.
-        let relationshipsPerPath = {};
+        // Group unique labels per path.
+        let labelsPerPath = {};
         _d3DataHolder.visible.relationships.forEach(d => {
             const key = getPathId(d);
-            if (!relationshipsPerPath[key]) {
-                relationshipsPerPath[key] = new Set();
+            if (!labelsPerPath[key]) {
+                labelsPerPath[key] = new Set();
             }
-            relationshipsPerPath[key].add(getRelationId(d));
+            labelsPerPath[key].add(d.label);
         });
+
+        const getLabelId = (d) => (getPathId(d) + '-' + d.label);
+
+        // Data of unique labels with info about other labels at the same path.
+        let labelsData = _d3DataHolder.visible.relationships.reduce((accumulator, d) => {
+            const pathKey = getPathId(d);
+            const labelsCollectedForPath = Object.keys(accumulator).filter(k => k.startsWith(pathKey)).length;
+            if (labelsCollectedForPath < 3) { // max 3 labels to display
+                const labelKey = getLabelId(d);
+                accumulator[labelKey] = d;
+                accumulator[labelKey].labels = Array.from(labelsPerPath[pathKey]); // path labels.
+                accumulator[labelKey].labelIndex = labelsCollectedForPath; // label index at path.
+            }
+            return accumulator;
+        }, {});
 
         const OFFSET_RATIO_PX = -12;
         const getLabelOffset = (d) => {
-            let labelIndex = Array.from(relationshipsPerPath[getPathId(d)]).indexOf(getRelationId(d));
+            let labelIndex = labelsData[getLabelId(d)].labels.indexOf(d.label);
             return labelIndex > 0 ? labelIndex * OFFSET_RATIO_PX : 0;
         };
 
-        // Data of unique labels per path, even if they are part of different relationships at the same path.
-        let labelsData = Object.values(_d3DataHolder.visible.relationships.reduce((accumulator, d) => {
-            const key = getRelationId(d);
-            if (accumulator[key]) {
-                accumulator[key].labels.add(d.label)
-            } else {
-                accumulator[key] = d;
-                accumulator[key].labels = new Set([d.label]);
+        let relationLabelsEntered = _relationLabels.selectAll('.' + LABEL_SELECTOR).data(Object.values(labelsData)).enter();
+
+        // Returns label text for up to 3 labels at the same path.
+        const getLabelText = (d) => {
+            let labelText = '';
+            if (d.labelIndex === 0 && d.labels.length > 2) {
+                labelText = ' +' + (d.labels.length - 2) + ' other';
+            } else if (d.labelIndex < 3) {
+                labelText = d.label;
             }
-            return accumulator;
-        }, {}));
-
-        let relationLabelsEntered = _relationLabels.selectAll('.relation-label').data(labelsData).enter();
-
-        const getLabelText = (d) => (d.label + (d.labels.size > 1 ? ' +' + (d.labels.size - 1) + ' other' : ''));
+            return labelText;
+        };
 
         relationLabelsEntered.insert('text') // Add text layer of '&#9608;'s to erase the area on the path for label text.
-            .attr('class', (d) => ('relation-label ' + d.labelSelector))
+            .attr('class', LABEL_SELECTOR)
             .attr('dominant-baseline', 'middle')
             .attr('text-anchor', 'middle')
             .attr('font-family', 'monospace')
             .attr('fill', CANVAS_COLOR)
             .insert('textPath')
-            .attr('xlink:href', (d) => ('#' + getRelationId(d)))
+            .attr('xlink:href', (d) => ('#' + getPathId(d)))
             .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
             .insert('tspan')
             .attr('dy', (d) => getLabelOffset(d))
             .html((d) => ('&#9608;'.repeat(getLabelText(d).length + 2)));
 
         relationLabelsEntered.insert('text') // Add label text on top of '&#9608;'s which is on top of the path.
-            .attr('class', (d) => ('relation-label ' + d.labelSelector))
+            .attr('class', LABEL_SELECTOR)
             .attr('dominant-baseline', 'middle')
             .attr('text-anchor', 'middle')
             .attr('font-family', 'monospace')
@@ -904,20 +917,20 @@ export function D3Blueprint(container, options) {
             .attr('from', (d) => (d.source._id))
             .attr('to', (d) => (d.target._id))
             .attr('class', 'relation-text') // `relation-text` class is required for styling effects
-            .attr('xlink:href', (d) => ('#' + getRelationId(d)))
+            .attr('xlink:href', (d) => ('#' + getPathId(d)))
             .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
             .insert('tspan')
             .attr('dy', (d) => getLabelOffset(d))
             .on('mouseover', function(d) {
-                if (d.labels.size > 1) {
+                if (d.labels.length > 1) {
                     _canvasTooltip.transition()
                         .duration(200)
                         .style("opacity", 1);
-                    _canvasTooltip.html(Array.from(d.labels).join('<br>'));
+                    _canvasTooltip.html(d.labels.join('<br>'));
                 }
             })
             .on('mouseout', function(d) {
-                if (d.labels.size > 1) {
+                if (d.labels.length > 1) {
                     _canvasTooltip.html('');
                     _canvasTooltip.transition()
                         .duration(500)
