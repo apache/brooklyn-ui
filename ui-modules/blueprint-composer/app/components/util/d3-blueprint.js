@@ -39,6 +39,19 @@ export function D3Blueprint(container, options) {
     let _nodeGroup = _parentGroup.append('g').attr('class', 'node-group');
     let _cloneGroup = _parentGroup.append('g').attr('class', 'clone-group');
 
+    const CANVAS_COLOR = '#f5f6fa';
+
+    // Define section for the tooltip.
+    let _canvasTooltip = _container.append('span')
+        .attr('class', 'tooltip')
+        .style('opacity', 0)
+        .style('background', CANVAS_COLOR)
+        .style('font-size', '20px')
+        .attr('font-family', 'monospace')
+        .style('bottom', '50px')
+        .style('left', '500px')
+        .html('');
+
     let _dragState = {
         dragInProgress: false,
         dragStarted: false,
@@ -837,45 +850,50 @@ export function D3Blueprint(container, options) {
 
         _relationLabels.selectAll('.relation-label').remove(); // Re-draw labels every time, required to refresh changes.
 
-        // Group unique labels per path.
-        let labelsPerPath = {};
+        // Group unique relationships per path.
+        let relationshipsPerPath = {};
         _d3DataHolder.visible.relationships.forEach(d => {
             const key = getPathId(d);
-            if (!labelsPerPath[key]) {
-                labelsPerPath[key] = new Set();
+            if (!relationshipsPerPath[key]) {
+                relationshipsPerPath[key] = new Set();
             }
-            labelsPerPath[key].add(d.label);
+            relationshipsPerPath[key].add(getRelationId(d));
         });
 
+        const OFFSET_RATIO_PX = -12;
         const getLabelOffset = (d) => {
-            let labelIndex = Array.from(labelsPerPath[getPathId(d)]).indexOf(d.label);
-            return labelIndex > 0 ? labelIndex * -12 : 0;
+            let labelIndex = Array.from(relationshipsPerPath[getPathId(d)]).indexOf(getRelationId(d));
+            return labelIndex > 0 ? labelIndex * OFFSET_RATIO_PX : 0;
         };
 
         // Data of unique labels per path, even if they are part of different relationships at the same path.
         let labelsData = Object.values(_d3DataHolder.visible.relationships.reduce((accumulator, d) => {
-            const key = getPathId(d) + d.label;
-            accumulator[key] = d;
+            const key = getRelationId(d);
+            if (accumulator[key]) {
+                accumulator[key].labels.add(d.label)
+            } else {
+                accumulator[key] = d;
+                accumulator[key].labels = new Set([d.label]);
+            }
             return accumulator;
         }, {}));
 
         let relationLabelsEntered = _relationLabels.selectAll('.relation-label').data(labelsData).enter();
 
-        // TODO: limit the number of labels that can be displayed for a path. Consider displaying up to 2-3 labels and
-        //       if there are more relationships in a single path - display '+ N others' at the end.
+        const getLabelText = (d) => (d.label + (d.labels.size > 1 ? ' +' + (d.labels.size - 1) + ' others' : ''));
 
         relationLabelsEntered.insert('text') // Add text layer of '&#9608;'s to erase the area on the path for label text.
             .attr('class', (d) => ('relation-label ' + d.labelSelector))
             .attr('dominant-baseline', 'middle')
             .attr('text-anchor', 'middle')
             .attr('font-family', 'monospace')
-            .attr('fill', '#f5f6fa') // colour of the canvas
+            .attr('fill', CANVAS_COLOR)
             .insert('textPath')
             .attr('xlink:href', (d) => ('#' + getRelationId(d)))
             .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
             .insert('tspan')
             .attr('dy', (d) => getLabelOffset(d))
-            .html((d) => ('&#9608;'.repeat(d.label.length + 2)));
+            .html((d) => ('&#9608;'.repeat(getLabelText(d).length + 2)));
 
         relationLabelsEntered.insert('text') // Add label text on top of '&#9608;'s which is on top of the path.
             .attr('class', (d) => ('relation-label ' + d.labelSelector))
@@ -890,7 +908,23 @@ export function D3Blueprint(container, options) {
             .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
             .insert('tspan')
             .attr('dy', (d) => getLabelOffset(d))
-            .html((d) => d.label);
+            .on('mouseover', function(d) {
+                if (d.labels.size > 1) {
+                    _canvasTooltip.transition()
+                        .duration(200)
+                        .style("opacity", 1);
+                    _canvasTooltip.html(Array.from(d.labels).join('<br>'));
+                }
+            })
+            .on('mouseout', function(d) {
+                if (d.labels.size > 1) {
+                    _canvasTooltip.html('');
+                    _canvasTooltip.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+                }
+            })
+            .html((d) => getLabelText(d));
     }
 
     function drawGhostNode() {
