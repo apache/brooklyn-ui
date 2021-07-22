@@ -781,17 +781,14 @@ export function D3Blueprint(container, options) {
 
         showRelationships();
 
-        const getPathId = (d) => (d.source._id + '-' + d.target._id);
+        const getPathId = ({ source, target }) => `${source._id}-${target._id}`;
         const getRelationId = (d) => (getPathId(d) + '-' + d.pathSelector);
 
         // ====== RELATIONSHIP ARCS ===========
 
+        // Data of unique relationships for arcs, even if they are at the same path.
         let arcsData = Object.values(_d3DataHolder.visible.relationships.reduce((accumulator, d) => {
-            accumulator[getRelationId(d)] = {
-                source: d.source,
-                target: d.target,
-                pathSelector: d.pathSelector
-            };
+            accumulator[getRelationId(d)] = d;
             return accumulator;
         }, {}));
 
@@ -855,15 +852,10 @@ export function D3Blueprint(container, options) {
             return labelIndex > 0 ? labelIndex * -12 : 0;
         };
 
+        // Data of unique labels per path, even if they are part of different relationships at the same path.
         let labelsData = Object.values(_d3DataHolder.visible.relationships.reduce((accumulator, d) => {
             const key = getPathId(d) + d.label;
-            accumulator[key] = {
-                source: d.source,
-                target: d.target,
-                pathSelector: d.pathSelector,
-                labelSelector: d.labelSelector,
-                label: d.label
-            };
+            accumulator[key] = d;
             return accumulator;
         }, {}));
 
