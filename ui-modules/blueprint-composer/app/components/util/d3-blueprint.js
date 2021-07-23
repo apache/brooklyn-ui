@@ -39,18 +39,12 @@ export function D3Blueprint(container, options) {
     let _nodeGroup = _parentGroup.append('g').attr('class', 'node-group');
     let _cloneGroup = _parentGroup.append('g').attr('class', 'clone-group');
 
-    const CANVAS_COLOR = '#f5f6fa';
-
-    // Define section for the tooltip.
-    let _canvasTooltip = _container.append('span')
-        .attr('class', 'tooltip')
-        .style('opacity', 0)
-        .style('background', CANVAS_COLOR)
-        .style('font-size', '20px')
-        .attr('font-family', 'monospace')
-        .style('bottom', '50px')
-        .style('left', '500px')
-        .html('');
+    let _canvasTooltip = _container.append('div').attr('class', 'panel panel-default')
+        .style('position', 'absolute')
+        .style('visibility', 'hidden')
+        .style('z-index', 10);
+    _canvasTooltip.append('div').attr('class', 'panel-heading');
+    _canvasTooltip.append('div').attr('class', 'panel-body');
 
     let _dragState = {
         dragInProgress: false,
@@ -862,13 +856,14 @@ export function D3Blueprint(container, options) {
         });
 
         const getLabelId = (d) => (getPathId(d) + '-' + d.label);
+        const MAX_LABELS_TO_DISPLAY = 2;
 
         // Data of unique labels with info about other labels at the same path.
         let labelsData = _d3DataHolder.visible.relationships.reduce((accumulator, d) => {
             const pathKey = getPathId(d);
+            const labelKey = getLabelId(d);
             const labelsCollectedForPath = Object.keys(accumulator).filter(k => k.startsWith(pathKey)).length;
-            if (labelsCollectedForPath < 3) { // max 3 labels to display
-                const labelKey = getLabelId(d);
+            if (labelsCollectedForPath <= MAX_LABELS_TO_DISPLAY && !accumulator[labelKey]) {
                 accumulator[labelKey] = d;
                 accumulator[labelKey].labels = Array.from(labelsPerPath[pathKey]); // path labels.
                 accumulator[labelKey].labelIndex = labelsCollectedForPath; // label index at path.
@@ -876,6 +871,7 @@ export function D3Blueprint(container, options) {
             return accumulator;
         }, {});
 
+        const CANVAS_COLOR = '#f5f6fa';
         const OFFSET_RATIO_PX = -12;
         const getLabelOffset = (d) => {
             let labelIndex = labelsData[getLabelId(d)].labels.indexOf(d.label);
@@ -887,9 +883,9 @@ export function D3Blueprint(container, options) {
         // Returns label text for up to 3 labels at the same path.
         const getLabelText = (d) => {
             let labelText = '';
-            if (d.labelIndex === 0 && d.labels.length > 2) {
-                labelText = ' +' + (d.labels.length - 2) + ' other';
-            } else if (d.labelIndex < 3) {
+            if (d.labelIndex === 0 && d.labels.length > MAX_LABELS_TO_DISPLAY) {
+                labelText = ' +' + (d.labels.length - MAX_LABELS_TO_DISPLAY) + ' other';
+            } else if (d.labelIndex <= MAX_LABELS_TO_DISPLAY) {
                 labelText = d.label;
             }
             return labelText;
@@ -905,8 +901,8 @@ export function D3Blueprint(container, options) {
             .attr('xlink:href', (d) => ('#' + getPathId(d)))
             .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
             .insert('tspan')
-            .attr('dy', (d) => getLabelOffset(d))
-            .html((d) => ('&#9608;'.repeat(getLabelText(d).length + 2)));
+            .attr('dy', getLabelOffset)
+            .html((d) => ('&#9608;'.repeat(getLabelText(d).length + 2))); // +2 spaces for padding
 
         relationLabelsEntered.insert('text') // Add label text on top of '&#9608;'s which is on top of the path.
             .attr('class', LABEL_SELECTOR)
@@ -920,24 +916,21 @@ export function D3Blueprint(container, options) {
             .attr('xlink:href', (d) => ('#' + getPathId(d)))
             .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
             .insert('tspan')
-            .attr('dy', (d) => getLabelOffset(d))
-            .on('mouseover', function(d) {
-                if (d.labels.length > 1) {
-                    _canvasTooltip.transition()
-                        .duration(200)
-                        .style("opacity", 1);
-                    _canvasTooltip.html(d.labels.join('<br>'));
+            .attr('dy', getLabelOffset)
+            .on('mouseover', d => {
+                if (d.labels.length > MAX_LABELS_TO_DISPLAY) {
+                    _canvasTooltip.style('visibility', 'visible');
+                    _canvasTooltip.select('.panel-heading').html('Relationships')
+                    _canvasTooltip.select('.panel-body').html(() => d.labels.join('<br>'));
                 }
             })
-            .on('mouseout', function(d) {
-                if (d.labels.length > 1) {
-                    _canvasTooltip.html('');
-                    _canvasTooltip.transition()
-                        .duration(500)
-                        .style("opacity", 0);
-                }
+            .on('mousemove', () => {
+                _canvasTooltip.style('top', `${event.pageY - 100}px`).style('left',`${event.pageX - 40}px`);
             })
-            .html((d) => getLabelText(d));
+            .on('mouseout', () => {
+                _canvasTooltip.style('visibility', 'hidden');
+            })
+            .html(getLabelText);
     }
 
     function drawGhostNode() {
