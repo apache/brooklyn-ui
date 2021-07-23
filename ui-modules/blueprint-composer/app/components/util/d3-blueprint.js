@@ -184,8 +184,8 @@ export function D3Blueprint(container, options) {
                 }
             },
             relationship: {
-                pathSelector: 'relation-arc',
-                labelSelector: 'relation-label',
+                pathClass: 'relation-arc',
+                labelClass: 'relation-label',
                 labelBackgroundColor: '#f5f6fa',
                 labelsToDisplay: 2,
                 labelOffsetPx: -12
@@ -808,7 +808,7 @@ export function D3Blueprint(container, options) {
         let relationArcs = _relationArcs.selectAll('.relation').data(arcsData, (d) => getPathId(d));
 
         relationArcs.enter().insert('path')
-            .attr('class', 'relation ' + _configHolder.nodes.relationship.pathSelector)
+            .attr('class', 'relation ' + _configHolder.nodes.relationship.pathClass)
             .attr('id', (d) => getPathId(d))
             .attr('opacity', 0)
             .attr('from', (d) => (d.source._id))
@@ -848,7 +848,7 @@ export function D3Blueprint(container, options) {
         // Draw relationship labels that follow paths, somewhere in the middle of paths.
         // NOTE <textPath/> DECREASES THE UI PERFORMANCE, USE LABELS WITH CAUTION.
 
-        _relationLabels.selectAll('.' + _configHolder.nodes.relationship.labelSelector).remove(); // Re-draw labels every time, required to refresh changes.
+        _relationLabels.selectAll('.' + _configHolder.nodes.relationship.labelClass).remove(); // Re-draw labels every time, required to refresh changes.
 
         // Group unique labels per path.
         let labelsPerPath = {};
@@ -880,7 +880,7 @@ export function D3Blueprint(container, options) {
             return labelIndex > 0 ? labelIndex * _configHolder.nodes.relationship.labelOffsetPx : 0;
         };
 
-        let relationLabelsEntered = _relationLabels.selectAll('.' + _configHolder.nodes.relationship.labelSelector)
+        let relationLabelsEntered = _relationLabels.selectAll('.' + _configHolder.nodes.relationship.labelClass)
             .data(Object.values(labelsData)).enter();
 
         // Returns label text for up to 3 labels at the same path.
@@ -895,7 +895,7 @@ export function D3Blueprint(container, options) {
         };
 
         relationLabelsEntered.insert('text') // Add text layer of '&#9608;'s to erase the area on the path for label text.
-            .attr('class', _configHolder.nodes.relationship.labelSelector)
+            .attr('class', _configHolder.nodes.relationship.labelClass)
             .attr('dominant-baseline', 'middle')
             .attr('text-anchor', 'middle')
             .attr('font-family', 'monospace')
@@ -908,7 +908,7 @@ export function D3Blueprint(container, options) {
             .html((d) => ('&#9608;'.repeat(getLabelText(d).length + 2))); // +2 spaces for padding
 
         relationLabelsEntered.insert('text') // Add label text on top of '&#9608;'s which is on top of the path.
-            .attr('class', _configHolder.nodes.relationship.labelSelector)
+            .attr('class', _configHolder.nodes.relationship.labelClass)
             .attr('dominant-baseline', 'middle')
             .attr('text-anchor', 'middle')
             .attr('font-family', 'monospace')
