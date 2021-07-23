@@ -31,11 +31,20 @@ export function D3Blueprint(container, options) {
     let _parentGroup = _zoomGroup.append('g').attr('class', 'parent-group');
     let _linkGroup = _parentGroup.append('g').attr('class', 'link-group');
     let _relationGroup = _parentGroup.append('g').attr('class', 'relation-group');
+    let _relationArcs = _relationGroup.append('g').attr('class', 'relation-arcs');
+    let _relationLabels = _relationGroup.append('g').attr('class', 'relation-labels');
     let _specNodeGroup = _parentGroup.append('g').attr('class', 'spec-node-group');
     let _dropZoneGroup = _parentGroup.append('g').attr('class', 'dropzone-group');
     let _ghostNodeGroup = _parentGroup.append('g').attr('class', 'ghost-node-group');
     let _nodeGroup = _parentGroup.append('g').attr('class', 'node-group');
     let _cloneGroup = _parentGroup.append('g').attr('class', 'clone-group');
+
+    let _canvasTooltip = _container.append('div').attr('class', 'panel panel-default')
+        .style('position', 'absolute')
+        .style('visibility', 'hidden')
+        .style('z-index', 10);
+    _canvasTooltip.append('div').attr('class', 'panel-heading');
+    _canvasTooltip.append('div').attr('class', 'panel-body');
 
     let _dragState = {
         dragInProgress: false,
@@ -174,6 +183,13 @@ export function D3Blueprint(container, options) {
                     styleInnerDiv: "margin: auto 0;",  // center top/down but not left-right by default
                 }
             },
+            relationship: {
+                pathClass: 'relation-arc',
+                labelClass: 'relation-label',
+                labelBackgroundColor: '#f5f6fa',
+                labelsToDisplay: 2,
+                labelOffsetPx: -12
+            }
         },
         transition: 300,
         grid: {
@@ -575,6 +591,7 @@ export function D3Blueprint(container, options) {
         drawSpecNodeGroup();
         drawGhostNode();
         drawDropZoneGroup();
+        container.dispatchEvent(new CustomEvent('graph-redrawn', {}));
         return this;
     }
 
@@ -771,50 +788,33 @@ export function D3Blueprint(container, options) {
         return node;
     }
 
+    /**
+     * Draws new relationships as arcs and labels. Updates existing ones.
+     */
     function drawRelationships() {
+
         showRelationships();
 
-        let relationData = _relationGroup.selectAll('.relation')
-            .data(_d3DataHolder.visible.relationships, (d)=>(d.source._id + '_related_to_' + d.target._id));
+        const getPathId = ({ source, target }) => `${source._id}-${target._id}`;
 
-        let relationDataEntered = relationData.enter();
+        // ====== RELATIONSHIP ARCS ===========
 
-        // Draw the relationship path
-        relationDataEntered.insert('path')
-            .attr('class', (d) => ('relation ' + d.pathSelector))
-            .attr('id', (d)=>(d.source._id + '-' + d.target._id))
+        // Data of unique relationships for arcs, even if they are at the same path.
+        let arcsData = Object.values(_d3DataHolder.visible.relationships.reduce((accumulator, d) => {
+            accumulator[getPathId(d)] = d;
+            return accumulator;
+        }, {}));
+
+        let relationArcs = _relationArcs.selectAll('.relation').data(arcsData, (d) => getPathId(d));
+
+        relationArcs.enter().insert('path')
+            .attr('class', 'relation ' + _configHolder.nodes.relationship.pathClass)
+            .attr('id', (d) => getPathId(d))
             .attr('opacity', 0)
-            .attr('from', (d)=>(d.source._id))
-            .attr('to', (d)=>(d.target._id));
+            .attr('from', (d) => (d.source._id))
+            .attr('to', (d) => (d.target._id));
 
-        // Draw the relationship label that follows the path, somewhere in the middle.
-        // NOTE `textPath` DECREASES THE UI PERFORMANCE, USE LABELS WITH CAUTION.
-        let relationDataLabelsEntered = relationDataEntered.filter(d => d.label);
-        relationDataLabelsEntered.insert('text') // Add text layer of '&#9608;'s to erase the area on the path.
-            .attr('class', (d) => (d.labelSelector))
-            .attr('dominant-baseline', 'middle')
-            .attr('text-anchor', 'middle')
-            .attr('font-family', 'monospace')
-            .attr('fill', '#f5f6fa') // colour of the canvas
-                .insert('textPath')
-                .attr('xlink:href', (d)=>('#' + d.source._id + '-' + d.target._id))
-                .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
-                .html((d) => ('&#9608;'.repeat(d.label.length + 2)));
-        relationDataLabelsEntered.insert('text') // Add label text on top of '&#9608;'s which is on top of the path.
-            .attr('class', (d) => (d.labelSelector))
-            .attr('dominant-baseline', 'middle')
-            .attr('text-anchor', 'middle')
-            .attr('font-family', 'monospace')
-                .insert('textPath')
-                .attr('class', 'relation-text') // `relation-text` class is required for styling effects
-                .attr('from', (d) => (d.source._id)) // `from` class is required for styling effects used along with `relation-text`
-                .attr('to', (d) => (d.target._id)) // `to` class is required for styling effects used along with `relation-text`
-                .attr('xlink:href', (d)=>('#' + d.source._id + '-' + d.target._id))
-                .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
-                .html((d) => (' ' + d.label + ' '));
-
-        // Draw the transition
-        relationData.transition()
+        relationArcs.transition()
             .duration(_configHolder.transition)
             .attr('opacity', 1)
             .attr('stroke', 'red')
@@ -838,11 +838,103 @@ export function D3Blueprint(container, options) {
                 return `M ${sourceNode.x},${sourceY} A ${dr},${dr} 0 0,${sweep} ${m.x},${m.y}`;
             });
 
-        relationData.exit()
+        relationArcs.exit()
             .transition()
             .duration(_configHolder.transition)
             .attr('opacity', 0)
             .remove();
+
+        // ====== RELATIONSHIP LABELS =========
+        // Draw relationship labels that follow paths, somewhere in the middle of paths.
+        // NOTE <textPath/> DECREASES THE UI PERFORMANCE, USE LABELS WITH CAUTION.
+
+        _relationLabels.selectAll('.' + _configHolder.nodes.relationship.labelClass).remove(); // Re-draw labels every time, required to refresh changes.
+
+        // Group unique labels per path.
+        let labelsPerPath = {};
+        _d3DataHolder.visible.relationships.forEach(d => {
+            const key = getPathId(d);
+            if (!labelsPerPath[key]) {
+                labelsPerPath[key] = new Set();
+            }
+            labelsPerPath[key].add(d.label);
+        });
+
+        const getLabelId = (d) => (getPathId(d) + '-' + d.label);
+
+        // Data of unique labels with info about other labels at the same path.
+        let labelsData = _d3DataHolder.visible.relationships.reduce((accumulator, d) => {
+            const pathKey = getPathId(d);
+            const labelKey = getLabelId(d);
+            const labelsCollectedForPath = Object.keys(accumulator).filter(k => k.startsWith(pathKey)).length;
+            if (labelsCollectedForPath <= _configHolder.nodes.relationship.labelsToDisplay && !accumulator[labelKey]) {
+                accumulator[labelKey] = d;
+                accumulator[labelKey].labels = Array.from(labelsPerPath[pathKey]); // path labels.
+                accumulator[labelKey].labelIndex = labelsCollectedForPath; // label index at path.
+            }
+            return accumulator;
+        }, {});
+
+        const getLabelOffset = (d) => {
+            let labelIndex = labelsData[getLabelId(d)].labels.indexOf(d.label);
+            return labelIndex > 0 ? labelIndex * _configHolder.nodes.relationship.labelOffsetPx : 0;
+        };
+
+        let relationLabelsEntered = _relationLabels.selectAll('.' + _configHolder.nodes.relationship.labelClass)
+            .data(Object.values(labelsData)).enter();
+
+        // Returns label text for up to 3 labels at the same path.
+        const getLabelText = (d) => {
+            let labelText = '';
+            if (d.labelIndex === 0 && d.labels.length > _configHolder.nodes.relationship.labelsToDisplay) {
+                labelText = ' +' + (d.labels.length - _configHolder.nodes.relationship.labelsToDisplay) + ' other';
+            } else if (d.labelIndex <= _configHolder.nodes.relationship.labelsToDisplay) {
+                labelText = d.label;
+            }
+            return labelText;
+        };
+
+        relationLabelsEntered.insert('text') // Add text layer of '&#9608;'s to erase the area on the path for label text.
+            .attr('class', _configHolder.nodes.relationship.labelClass)
+            .attr('dominant-baseline', 'middle')
+            .attr('text-anchor', 'middle')
+            .attr('font-family', 'monospace')
+            .attr('fill', _configHolder.nodes.relationship.labelBackgroundColor)
+            .insert('textPath')
+            .attr('xlink:href', (d) => ('#' + getPathId(d)))
+            .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
+            .insert('tspan')
+            .attr('dy', getLabelOffset)
+            .html((d) => ('&#9608;'.repeat(getLabelText(d).length + 2))); // +2 spaces for padding
+
+        relationLabelsEntered.insert('text') // Add label text on top of '&#9608;'s which is on top of the path.
+            .attr('class', _configHolder.nodes.relationship.labelClass)
+            .attr('dominant-baseline', 'middle')
+            .attr('text-anchor', 'middle')
+            .attr('font-family', 'monospace')
+            .insert('textPath')
+            .attr('from', (d) => (d.source._id))
+            .attr('to', (d) => (d.target._id))
+            .attr('class', 'relation-text') // `relation-text` class is required for styling effects
+            .attr('xlink:href', (d) => ('#' + getPathId(d)))
+            .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
+            .insert('tspan')
+            .attr('dy', getLabelOffset)
+            .style('z-index', 9)
+            .on('mouseover', d => {
+                if (d.labels.length > _configHolder.nodes.relationship.labelsToDisplay) {
+                    _canvasTooltip.style('visibility', 'visible');
+                    _canvasTooltip.select('.panel-heading').html('Relationships')
+                    _canvasTooltip.select('.panel-body').html(() => d.labels.join('<br>'));
+                }
+            })
+            .on('mousemove', () => {
+                _canvasTooltip.style('top', `${event.pageY - 100}px`).style('left',`${event.pageX - 40}px`);
+            })
+            .on('mouseout', () => {
+                _canvasTooltip.style('visibility', 'hidden');
+            })
+            .html(getLabelText);
     }
 
     function drawGhostNode() {
