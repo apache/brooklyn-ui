@@ -183,6 +183,13 @@ export function D3Blueprint(container, options) {
                     styleInnerDiv: "margin: auto 0;",  // center top/down but not left-right by default
                 }
             },
+            relationship: {
+                pathSelector: 'relation-arc',
+                labelSelector: 'relation-label',
+                labelBackgroundColor: '#f5f6fa',
+                labelsToDisplay: 2,
+                labelOffsetPx: -12
+            }
         },
         transition: 300,
         grid: {
@@ -789,8 +796,6 @@ export function D3Blueprint(container, options) {
         showRelationships();
 
         const getPathId = ({ source, target }) => `${source._id}-${target._id}`;
-        const PATH_SELECTOR = 'relation-arc';
-        const LABEL_SELECTOR = 'relation-label';
 
         // ====== RELATIONSHIP ARCS ===========
 
@@ -803,7 +808,7 @@ export function D3Blueprint(container, options) {
         let relationArcs = _relationArcs.selectAll('.relation').data(arcsData, (d) => getPathId(d));
 
         relationArcs.enter().insert('path')
-            .attr('class', 'relation ' + PATH_SELECTOR)
+            .attr('class', 'relation ' + _configHolder.nodes.relationship.pathSelector)
             .attr('id', (d) => getPathId(d))
             .attr('opacity', 0)
             .attr('from', (d) => (d.source._id))
@@ -843,7 +848,7 @@ export function D3Blueprint(container, options) {
         // Draw relationship labels that follow paths, somewhere in the middle of paths.
         // NOTE <textPath/> DECREASES THE UI PERFORMANCE, USE LABELS WITH CAUTION.
 
-        _relationLabels.selectAll('.' + LABEL_SELECTOR).remove(); // Re-draw labels every time, required to refresh changes.
+        _relationLabels.selectAll('.' + _configHolder.nodes.relationship.labelSelector).remove(); // Re-draw labels every time, required to refresh changes.
 
         // Group unique labels per path.
         let labelsPerPath = {};
@@ -856,14 +861,13 @@ export function D3Blueprint(container, options) {
         });
 
         const getLabelId = (d) => (getPathId(d) + '-' + d.label);
-        const MAX_LABELS_TO_DISPLAY = 2;
 
         // Data of unique labels with info about other labels at the same path.
         let labelsData = _d3DataHolder.visible.relationships.reduce((accumulator, d) => {
             const pathKey = getPathId(d);
             const labelKey = getLabelId(d);
             const labelsCollectedForPath = Object.keys(accumulator).filter(k => k.startsWith(pathKey)).length;
-            if (labelsCollectedForPath <= MAX_LABELS_TO_DISPLAY && !accumulator[labelKey]) {
+            if (labelsCollectedForPath <= _configHolder.nodes.relationship.labelsToDisplay && !accumulator[labelKey]) {
                 accumulator[labelKey] = d;
                 accumulator[labelKey].labels = Array.from(labelsPerPath[pathKey]); // path labels.
                 accumulator[labelKey].labelIndex = labelsCollectedForPath; // label index at path.
@@ -871,32 +875,31 @@ export function D3Blueprint(container, options) {
             return accumulator;
         }, {});
 
-        const CANVAS_COLOR = '#f5f6fa';
-        const OFFSET_RATIO_PX = -12;
         const getLabelOffset = (d) => {
             let labelIndex = labelsData[getLabelId(d)].labels.indexOf(d.label);
-            return labelIndex > 0 ? labelIndex * OFFSET_RATIO_PX : 0;
+            return labelIndex > 0 ? labelIndex * _configHolder.nodes.relationship.labelOffsetPx : 0;
         };
 
-        let relationLabelsEntered = _relationLabels.selectAll('.' + LABEL_SELECTOR).data(Object.values(labelsData)).enter();
+        let relationLabelsEntered = _relationLabels.selectAll('.' + _configHolder.nodes.relationship.labelSelector)
+            .data(Object.values(labelsData)).enter();
 
         // Returns label text for up to 3 labels at the same path.
         const getLabelText = (d) => {
             let labelText = '';
-            if (d.labelIndex === 0 && d.labels.length > MAX_LABELS_TO_DISPLAY) {
-                labelText = ' +' + (d.labels.length - MAX_LABELS_TO_DISPLAY) + ' other';
-            } else if (d.labelIndex <= MAX_LABELS_TO_DISPLAY) {
+            if (d.labelIndex === 0 && d.labels.length > _configHolder.nodes.relationship.labelsToDisplay) {
+                labelText = ' +' + (d.labels.length - _configHolder.nodes.relationship.labelsToDisplay) + ' other';
+            } else if (d.labelIndex <= _configHolder.nodes.relationship.labelsToDisplay) {
                 labelText = d.label;
             }
             return labelText;
         };
 
         relationLabelsEntered.insert('text') // Add text layer of '&#9608;'s to erase the area on the path for label text.
-            .attr('class', LABEL_SELECTOR)
+            .attr('class', _configHolder.nodes.relationship.labelSelector)
             .attr('dominant-baseline', 'middle')
             .attr('text-anchor', 'middle')
             .attr('font-family', 'monospace')
-            .attr('fill', CANVAS_COLOR)
+            .attr('fill', _configHolder.nodes.relationship.labelBackgroundColor)
             .insert('textPath')
             .attr('xlink:href', (d) => ('#' + getPathId(d)))
             .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
@@ -905,7 +908,7 @@ export function D3Blueprint(container, options) {
             .html((d) => ('&#9608;'.repeat(getLabelText(d).length + 2))); // +2 spaces for padding
 
         relationLabelsEntered.insert('text') // Add label text on top of '&#9608;'s which is on top of the path.
-            .attr('class', LABEL_SELECTOR)
+            .attr('class', _configHolder.nodes.relationship.labelSelector)
             .attr('dominant-baseline', 'middle')
             .attr('text-anchor', 'middle')
             .attr('font-family', 'monospace')
@@ -917,8 +920,9 @@ export function D3Blueprint(container, options) {
             .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
             .insert('tspan')
             .attr('dy', getLabelOffset)
+            .style('z-index', 9)
             .on('mouseover', d => {
-                if (d.labels.length > MAX_LABELS_TO_DISPLAY) {
+                if (d.labels.length > _configHolder.nodes.relationship.labelsToDisplay) {
                     _canvasTooltip.style('visibility', 'visible');
                     _canvasTooltip.select('.panel-heading').html('Relationships')
                     _canvasTooltip.select('.panel-body').html(() => d.labels.join('<br>'));
