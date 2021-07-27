@@ -60,6 +60,7 @@ export function quickLaunchDirective() {
                 angular.copy($scope.entityToDeploy)
             ],
         });
+        quickLaunch.buildYaml = buildYaml;
         quickLaunch.planSender = (appYaml) => $http.post('/v1/applications', appYaml);
         quickLaunch.buildComposerYaml = buildComposerYaml;
         quickLaunch.getGraphicalComposerQuery = getGraphicalComposerQuery;
@@ -150,7 +151,7 @@ export function quickLaunchDirective() {
         function deployApp() {
             $scope.deploying = true;
 
-            Promise.resolve(buildYaml())
+            Promise.resolve(quickLaunch.buildYaml())
                 .then(appYaml => {
                     quickLaunch.planSender(appYaml)
                         .then((response) => {
@@ -221,9 +222,9 @@ export function quickLaunchDirective() {
             $scope.model.newConfigFormOpen = false;
         }
 
-        function buildYaml() {
+        function buildYaml(extensions=true) {
             // converting JSON to YAML text and then passing through postprocessors, if any
-            return [yaml.safeDump, ...quickLaunch.yamlPostProcessors]
+            return [yaml.safeDump, ...(extensions ? quickLaunch.yamlPostProcessors : [])]
                 .reduce((prev, cur) => Promise.resolve(prev).then(cur), quickLaunch.buildNewApp());
         }
 
@@ -306,12 +307,12 @@ export function quickLaunchDirective() {
         function buildComposerYaml(expanded, validate=true) {
             return expanded
                 ? getComposerExpandedYaml(validate)
-                : angular.copy($scope.editorYaml);
+                : quickLaunch.buildYaml();
         }
 
         function showEditor() {
-            Promise.resolve(buildYaml())
-                .then(appPlan=>{
+            Promise.resolve(quickLaunch.buildYaml())
+                .then(appPlan => {
                     $scope.editorYaml = appPlan;
                     $scope.yamlViewDisplayed = true;
                     $scope.$apply(); // making sure that $scope is updated from async context
@@ -349,29 +350,19 @@ export function quickLaunchDirective() {
         }
 
         function getGraphicalComposerQuery({ expanded, validate=true }) {
-            return new Promise((resolve, reject) => {
-                try {
-                    resolve({
-                        format: $scope.app.plan.format,
-                        yaml: quickLaunch.buildComposerYaml(expanded, validate),
-                    });
-                } catch (err) {
-                    reject(err);
-                }
-            })
+            return Promise.resolve(quickLaunch.buildComposerYaml(expanded, validate))
+                .then(yaml => ({
+                    format: $scope.app.plan.format,
+                    yaml,
+                }));
         }
 
         function getYamlComposerQuery({ expanded, validate=true, yamlPrefix='' }) {
-            return new Promise((resolve, reject) => {
-                try {
-                    resolve({
-                        format: $scope.app.plan.format,
-                        yaml: yamlPrefix + quickLaunch.buildComposerYaml(expanded, validate),
-                    });
-                } catch (err) {
-                    reject(err);
-                }
-            })
+            return Promise.resolve(quickLaunch.buildComposerYaml(expanded, validate))
+                .then(yaml => ({
+                    format: $scope.app.plan.format,
+                    yaml: yamlPrefix + yaml,
+                }));
         }
     }
 
