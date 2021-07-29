@@ -78,11 +78,12 @@
                     <div class="form-group" ng-class="{'has-error': deploy[key].$invalid && deploy[key].$touched}" ng-switch-when="java.lang.Enum">
                         <label for="{{key}}">{{key}} <i ng-click="deleteConfigField(key)" class="fa fa-trash form-delete"></i></label>
                         <select class="form-control" id="{{key}}" name="{{key}}"
-                                ng-options="s.value as s.description for s in configMap[key].possibleValues"
-                                ng-model="entityToDeploy['brooklyn.config'][key]"
-                                ng-required="isRequired(configMap[key])"
-                                ng-disabled="deploying"
-                                auto-focus="focus === key"></select>
+                            ng-options="s.value as s.description for s in configMap[key].possibleValues"
+                            ng-model="entityToDeploy['brooklyn.config'][key]"
+                            ng-required="isRequired(configMap[key])"
+                            ng-disabled="deploying"
+                            auto-focus="focus === key">
+                        </select>
                         <small class="help-block" ng-show="deploy.$submitted || deploy[key].$touched">
                             <span ng-if="deploy[key].$error.required">You must enter a value</span>
                         </small>
@@ -114,16 +115,17 @@
                 <div class="form-group">
                     <label for="newKey">Enter new config key</label>
                     <input class="form-control" id="newKey" name="newKey" ng-model="model.newKey"
-                           autocomplete="off"
-                           uib-typeahead="config.name for config in app.config | filter:$viewValue"
-                           typeahead-popup-template-url="DropdownTemplate.html"
-                           typeahead-template-url="ConfigTemplate.html"
-                           typeahead-show-hint="true"
-                           typeahead-min-length="0"
-                           typeahead-focus-on-select="false"
-                           typeahead-on-select="addNewConfigKey($item, $model, $label, $event)"
-                           auto-focus="model.newConfigFormOpen"
-                           required />
+                        autocomplete="off"
+                        uib-typeahead="config.name for config in app.config | filter:$viewValue"
+                        typeahead-popup-template-url="DropdownTemplate.html"
+                        typeahead-template-url="ConfigTemplate.html"
+                        typeahead-show-hint="true"
+                        typeahead-min-length="0"
+                        typeahead-focus-on-select="false"
+                        typeahead-on-select="addNewConfigKey($item, $model, $label, $event)"
+                        auto-focus="model.newConfigFormOpen"
+                        required
+                    />
                 </div>
                 <input type="submit" value="submit" class="hidden"/>
             </form>
@@ -135,11 +137,33 @@
     <br-yaml-editor value="editorYaml" enable-auto-complete></br-yaml-editor>
 </div>
 
+
 <div class="quick-launch-actions">
-    <button class="btn btn-lg btn-default" ng-if="yamlViewDisplayed && appHasWizard" ng-disabled="deploying" ng-click="hideEditor()">Back</button>
-    <button class="btn btn-lg btn-default" ng-if="editorEnabled && (!yamlViewDisplayed && !args.noEditButton)" ng-disabled="deploying" ng-click="showEditor()">YAML</button>
-    <button class="btn btn-lg btn-default" ng-if="!args.noComposerButton" ng-disabled="deploying" ng-click="openComposer()">Open in Composer</button>
-    <button class="btn btn-lg btn-success pull-right" ng-disabled="(deploy.$invalid || deploying) && !yamlViewDisplayed" ng-click="deployApp()">{{deploying ? 'Deploying&hellip;' : 'Deploy'}}</button>
+    <small class="note" ng-class="{invisible: !(yamlViewDisplayed && transitionsShown())}">
+        <em>Returning to form will reverse changes done in the YAML Editor</em>
+    </small>
+    <div>
+        <span class="btn-group" uib-dropdown>
+            <button class="btn btn-lg btn-default " ng-if="!yamlViewDisplayed && transitionsShown()" ng-disabled="deploying" ng-click="showEditor()">
+                Edit as YAML
+            </button>
+            <button class="btn btn-lg btn-default " ng-if="yamlViewDisplayed && transitionsShown()" ng-disabled="deploying" ng-click="hideEditor()">
+                Back to Form
+            </button>
+            <button ng-if="!args.noComposerButton" id="composer-actions" type="button" class="btn btn-lg btn-default" uib-dropdown-toggle>
+                <span><i class="fa fa-bars"></i></span>
+            </button>
+            <ul ng-if="!args.noComposerButton" class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="composer-actions">
+                <li role="menuitem">
+                    <a ng-click="openComposer($event, false)" href="#"><i class="fa fa-link"></i> Open in Composer</a>
+                </li>
+                <li ng-if="!simpleComposerOnly" role="menuitem">
+                    <a ng-click="openComposer($event, true)" href="#"><i class="fa fa-link"></i> Open in Composer (expanded)</a>
+                </li>
+            </ul>
+        </span>
+        <button class="btn btn-lg btn-success pull-right" ng-disabled="(deploy.$invalid || deploying) && !yamlViewDisplayed" ng-click="deployApp()">{{deploying ? 'Deploying&hellip;' : 'Deploy'}}</button>
+    </div>
 </div>
 
 <!--TYPEAHEAD TEMPLATES :: START-->

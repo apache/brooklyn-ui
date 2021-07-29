@@ -98,11 +98,11 @@
                 </uib-tab>
 
                 <uib-tab heading="Config" ng-if="isNonEmpty(type.config)">
-                    <br-table ng-model="type.config" columns="tables.config.columns" col-width="20"></br-table>
+                    <br-table ng-model="type.config" columns="tables.config" col-width="20"></br-table>
                 </uib-tab>
                 
                 <uib-tab heading="Sensors" ng-if="isNonEmpty(type.sensors)">
-                    <br-table ng-model="type.sensors" columns="tables.sensors.columns" col-width="20"></br-table>
+                    <br-table ng-model="type.sensors" columns="tables.sensors" col-width="20"></br-table>
                 </uib-tab>
                 
                 <!-- DASHBOARD STATUS TEMPLATE :: START -->
@@ -118,7 +118,7 @@
                 </script>
                 
                 <uib-tab heading="Effectors" ng-if="isNonEmpty(type.effectors)">
-                    <br-table ng-model="type.effectors" columns="tables.effectors.columns" col-width="20"></br-table>
+                    <br-table ng-model="type.effectors" columns="tables.effectors" col-width="20"></br-table>
                 </uib-tab>
 
                 <uib-tab heading="Blueprint" ng-if="isNonEmpty(type.specList)">
