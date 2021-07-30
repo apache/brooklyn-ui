@@ -1030,7 +1030,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 }
                 if (val.match(/^[0-9]*\.([0-9]*0)?$/)) {
                     // if user enters "3.0" or "1." we should treat it as a string to prevent
-                    // yaml editor from simplifying it to be "3" or "1".
+                    // CAMP editor from simplifying it to be "3" or "1".
                     throw 'decimal ending with dot or 0, eg version, treat as string';
                 }
                 // numbers and booleans are unquoted

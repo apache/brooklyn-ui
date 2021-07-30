@@ -209,7 +209,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
             itemType: $scope.config.itemType,
             item: blueprint
         };
-        // tags can now be added to a blueprint created in the YAML Editor
+        // tags can now be added to a blueprint created in the CAMP Editor
         let tags = [];
         if(blueprint.tags) {
             tags = blueprint.tags;

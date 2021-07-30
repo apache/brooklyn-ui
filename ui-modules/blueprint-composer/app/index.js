@@ -124,7 +124,7 @@ function tabConfig(tabServiceProvider, composerOverridesProvider) {
         stateKey: 'main.graphical'
     });
     tabServiceProvider.addTab('yaml', {
-        title: 'YAML Editor',
+        title: 'CAMP Editor',
         icon: 'fa-pencil',
         stateKey: 'main.yaml_camp',
     });

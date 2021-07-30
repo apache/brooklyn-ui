@@ -192,7 +192,7 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
 
         $scope.initialYamlFormat = $stateParams.format;
         if($scope.initialYamlFormat && Array.isArray(edit.type.specList) && edit.type.specList.length > 0 && edit.type.specList[0].format === $scope.initialYamlFormat) {
-            yaml = edit.type.specList[0].contents; // for YAML editor
+            yaml = edit.type.specList[0].contents; // for CAMP editor
         }  else {
             // for graphical editor
             yaml = edit.type.plan.data;
@@ -218,7 +218,7 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
             try {
                 blueprintService.setFromYaml(yaml);
             } catch (e) {
-                console.warn("YAML supplied for editing is not valid for a blueprint. It will be ignored unless opened in the YAML editor:", e);
+                console.warn("YAML supplied for editing is not valid for a blueprint. It will be ignored unless opened in the CAMP editor:", e);
                 blueprintService.reset();
                 $scope.initialYaml = yaml;
             }

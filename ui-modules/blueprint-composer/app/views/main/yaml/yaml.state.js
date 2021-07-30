@@ -33,7 +33,7 @@ export const yamlCampState = {
     controller: ['$scope', 'blueprintService', 'brSnackbar', yamlCampStateController],
     controllerAs: 'vm',
     data: {
-        label: 'YAML Editor'
+        label: 'CAMP Editor'
     }
 };
 
