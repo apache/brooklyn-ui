@@ -92,6 +92,8 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
             let name = item.name;
             if (attrs.length > 0) {
                 name += ` (${attrs.join(', ')})`;
+            } else {
+                name += ` (${item.entity.id || item.id})`;
             }
 
             return {
