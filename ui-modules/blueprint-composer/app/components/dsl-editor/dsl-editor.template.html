@@ -56,7 +56,7 @@
 
         <div class="list-group">
             <a href="#" class="list-group-item" ng-repeat="item in items | filter:predicate | orderBy:state.orderBy.property as results track by $index" ng-click="selectItem(item, $event)" ng-class="{'active': item === state.item}"
-               uib-tooltip="{{item.description}}" tooltip-placement="right" tooltip-append-to-body="true">
+               uib-tooltip="{{item.description}}" tooltip-placement="left" tooltip-append-to-body="true">
                 <h4 class="list-group-item-heading">
                     <i class="fa" ng-class="{'fa-cog': item.type === DSL_KINDS.CONFIG, 'fa-rss': item.type === DSL_KINDS.SENSOR, 'fa-crosshairs': item.type === DSL_KINDS.ENTITY}"></i>
                     {{item.name}}
