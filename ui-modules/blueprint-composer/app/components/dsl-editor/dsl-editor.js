@@ -278,76 +278,87 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
         }
     }
 
-    function getConfigItems(entity, definition) {
-        let config = entity.miscData.get('config').filter(config => config !== definition).map(config => {
-            return {
-                id: config.name,
-                type: DSL_KINDS.CONFIG,
-                entity: entity,
-                name: config.name,
-                description: config.description
-            };
-        });
-
-        let params = entity.miscData.get('parameters').filter(param => param !== definition).map(param => {
-            return {
-                id: param.name,
-                type: DSL_KINDS.CONFIG,
-                entity: entity,
-                name: param.name,
-                description: param.description
-            };
-        });
-        
-        config = config.concat(params);
-
-        config = Object.values(entity.getClusterMemberspecEntities()).reduce((acc, spec) => {
-            return acc.concat(getConfigItems(spec, definition));
-        }, config);
-
-        return entity.children.reduce((acc, child) => {
-            return acc.concat(getConfigItems(child, definition));
-        }, config);
+    function entityPropertyParserFor(type, filterFunc=()=>true) {
+        return (entity, propertyName) => entity.miscData.get(propertyName)
+            .filter(filterFunc)
+            .map(({ name, description }) => ({
+                id: name,
+                type,
+                entity,
+                name,
+                description,
+            }));
     }
 
-    function getSensorItems(entity) {
-        let sensors = entity.miscData.get('sensors').map(sensor => {
-            return {
-                id: sensor.name,
-                type: DSL_KINDS.SENSOR,
-                entity: entity,
-                name: sensor.name,
-                description: sensor.description
-            };
-        });
+    function uniqueItems(items) {
+        const IDs = new Set();
 
-        sensors = Object.values(entity.getClusterMemberspecEntities()).reduce((acc, spec) => {
-            return acc.concat(getSensorItems(spec));
-        }, sensors);
-
-        return entity.children.reduce((acc, child) => {
-            return acc.concat(getSensorItems(child));
-        }, sensors);
+        return items.filter(({ id }) => {
+            if (IDs.has(id)) return false;
+            IDs.add(id);
+            return true;
+        })
     }
 
-    function getEntityItems(entity, type) {
-        let entities = [];
+    function getConfigItems(entity, definition, nested=false) {
+        const parseAsConfig = entityPropertyParserFor(DSL_KINDS.CONFIG, item=>item !== definition);
 
-        entities.push({
+        const result = [
+            ...parseAsConfig(entity, 'config'),
+            ...parseAsConfig(entity, 'parameters'),
+        ];
+
+        Object.values(entity.getClusterMemberspecEntities() || {}).forEach(member => {
+            result.push(...getConfigItems(member, definition, true));
+        });
+
+        (entity.children || []).forEach(child => {
+            result.push(...getConfigItems(child, definition, true));
+        });
+
+        return nested
+            ? result
+            : uniqueItems(result); // only need to check distinct items once, not in every recursion
+    }
+
+    function getSensorItems(entity, nested=false) {
+        const parseAsSensors = entityPropertyParserFor(DSL_KINDS.SENSOR);
+
+        const result = parseAsSensors(entity, 'sensors');
+
+        Object.values(entity.getClusterMemberspecEntities() || {}).forEach(member => {
+            result.push(...getSensorItems(member, true));
+        });
+
+        (entity.children || []).forEach(child => {
+            result.push(...getSensorItems(child, true));
+        });
+
+        return nested
+            ? result
+            : uniqueItems(result);
+    }
+
+    function getEntityItems(entity, nested=false) {
+        const result = [{
             id: entity._id,
             type: DSL_KINDS.ENTITY,
             entity: entity,
             name: entity.miscData.get('typeName') || $filter('entityName')(entity) || 'New application',
             description: entity.description
+        }];
+
+        Object.values(entity.getClusterMemberspecEntities() || {}).forEach(member => {
+            result.push(...getEntityItems(member, true));
         });
 
-        entities = Object.values(entity.getClusterMemberspecEntities()).reduce((acc, spec) => {
-            return acc.concat(getEntityItems(spec, type));
-        }, entities);
+        (entity.children || []).forEach(child => {
+            result.push(...getEntityItems(child, true));
+        });
 
-        return entity.children.reduce((acc, child) => {
-            return acc.concat(getEntityItems(child, type));
-        }, entities);
+        return nested
+            ? result
+            : uniqueItems(result);
     }
 
     function getScopedDsl(entity, targetEntity, state) {
