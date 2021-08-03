@@ -89,13 +89,11 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
                 attrs.push('parent');
             }
 
-            let name = item.name;
-            if (attrs.length > 0) {
-                name += ` (${attrs.join(', ')})`;
-            }
+            let { name, entity, id } = item;
+            name += attrs.length > 0 ? ` (${attrs.join(', ')})` : ` (${entity.id || id})`;
 
             return {
-                id: item.id,
+                id,
                 label: name,
                 scope: 'On specific entity'
             };

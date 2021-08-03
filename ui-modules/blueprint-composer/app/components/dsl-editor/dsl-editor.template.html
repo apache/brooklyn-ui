@@ -56,15 +56,15 @@
 
         <div class="list-group">
             <a href="#" class="list-group-item" ng-repeat="item in items | filter:predicate | orderBy:state.orderBy.property as results track by $index" ng-click="selectItem(item, $event)" ng-class="{'active': item === state.item}"
-               uib-tooltip="{{item.description}}" tooltip-placement="right" tooltip-append-to-body="true">
+               uib-tooltip="{{item.description}}" tooltip-placement="left" tooltip-append-to-body="true">
                 <h4 class="list-group-item-heading">
                     <i class="fa" ng-class="{'fa-cog': item.type === DSL_KINDS.CONFIG, 'fa-rss': item.type === DSL_KINDS.SENSOR, 'fa-crosshairs': item.type === DSL_KINDS.ENTITY}"></i>
                     {{item.name}}
-                    <span ng-if="item.type === DSL_KINDS.ENTITY && item.entity.id">(ID: {{item.entity.id}})</span>
                 </h4>
                 <p class="list-group-item-entity text-right text-muted">
                     <img ng-src="{{item.entity.icon}}" alt="{{item.entity.miscData.get('typeName') || (item.entity | entityName) || 'New application'}} logo" class="list-group-item-entity-icon" />
                     {{item.entity.miscData.get('typeName') || (item.entity | entityName) || 'New application'}}
+                    <span ng-if="item.entity.id || item.entity._id">({{item.entity.id || item.entity._id}})</span>
                 </p>
             </a>
 
