@@ -280,36 +280,45 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
         }
     }
 
-    function getConfigItems(entity, definition) {
-        let config = entity.miscData.get('config').filter(config => config !== definition).map(config => {
-            return {
-                id: config.name,
+    function getEntityConfigPropertyItems (entity, definition, propertyName) {
+        return entity.miscData.get(propertyName)
+            .filter(item => item !== definition)
+            .map(({ name, description }) => ({
+                id: name,
                 type: DSL_KINDS.CONFIG,
-                entity: entity,
-                name: config.name,
-                description: config.description
-            };
+                entity,
+                name,
+                description,
+            }));
+    };
+
+    function uniqueConfigItems(items) {
+        const IDs = new Set();
+
+        return items.filter(({ id }) => {
+            if (IDs.has(id)) return false;
+            IDs.add(id);
+            return true;
+        })
+    }
+
+    function getConfigItems(entity, definition, nested=false) {
+        const result = [
+            ...getEntityConfigPropertyItems(entity, definition, 'config'),
+            ...getEntityConfigPropertyItems(entity, definition, 'parameters'),
+        ];
+
+        Object.values(entity.getClusterMemberspecEntities() || {}).forEach(member => {
+            result.push(...getConfigItems(member, definition, true));
         });
 
-        let params = entity.miscData.get('parameters').filter(param => param !== definition).map(param => {
-            return {
-                id: param.name,
-                type: DSL_KINDS.CONFIG,
-                entity: entity,
-                name: param.name,
-                description: param.description
-            };
+        (entity.children || []).forEach(child => {
+            result.push(...getConfigItems(child, definition, true));
         });
-        
-        config = config.concat(params);
 
-        config = Object.values(entity.getClusterMemberspecEntities()).reduce((acc, spec) => {
-            return acc.concat(getConfigItems(spec, definition));
-        }, config);
-
-        return entity.children.reduce((acc, child) => {
-            return acc.concat(getConfigItems(child, definition));
-        }, config);
+        return nested
+            ? result
+            : uniqueConfigItems(result); // only need to check distinct items once, not in every recursion
     }
 
     function getSensorItems(entity) {
