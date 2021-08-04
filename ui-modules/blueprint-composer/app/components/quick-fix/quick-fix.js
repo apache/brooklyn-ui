@@ -128,7 +128,7 @@ const QUICK_FIX_PROPOSERS = {
                 proposals.explicit_config = {
                     text: 'Set explicit config from parent',
                     tooltip: `This will set the config "${issue.ref}" to its parent value, explicitly`,
-                    apply: (issue, entity) => (entity || issue.entity).addConfig(issue.ref, `$brooklyn:parent().config("${issue.ref}")`),
+                    apply: (issue, entity) => (entity || issue.entity).addConfig(issue.ref, `$brooklyn:component("${(entity || issue.entity).id}").config("${issue.ref}")`),
                     issues: []
                 };
             }
