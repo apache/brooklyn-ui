@@ -69,7 +69,6 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                         });
                     }
                     if (config instanceof Array) {
-                        console.log('Array',config)
                         config
                             .filter(item => item instanceof Dsl)
                             .reduce((set, config) => {
@@ -446,16 +445,17 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                     if (!k || !Array.isArray(k)) return false;
                     return k.some(isSet);
                 }
-                let hasDefault = () => angular.isDefined(config.defaultValue);
+                const hasDefault = (typeof config.default) !== 'undefined';
+
                 switch (key) {
                     case 'Predicates.notNull()':
                     case 'Predicates.notNull':
-                        if (!isSet() && !hasDefault()) {
+                        if (!isSet() && !hasDefault) {
                             message = `<samp>${config.name}</samp> is required`;
                         }
                         break;
                     case 'required':
-                        if (!isSet() && !hasDefault() && val()!='') {
+                        if (!isSet() && !hasDefault && val()!='') {
                             message = `<samp>${config.name}</samp> is required`;
                         }
                         break;
