@@ -62,7 +62,7 @@
                     {{item.name}}
                 </h4>
                 <p class="list-group-item-entity text-right text-muted">
-                    <img ng-src="{{item.entity.icon}}" alt="{{item.entity.miscData.get('typeName') || (item.entity | entityName) || 'New application'}} logo" class="list-group-item-entity-icon" />
+                    <img ng-if="item.entity.icon" ng-src="{{item.entity.icon}}" class="list-group-item-entity-icon"/>
                     {{item.entity.miscData.get('typeName') || (item.entity | entityName) || 'New application'}}
                     <span ng-if="item.entity.id || item.entity._id">({{item.entity.id || item.entity._id}})</span>
                 </p>
