@@ -365,9 +365,6 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
         if (entity === targetEntity) {
             return new Dsl(KIND.TARGET, TARGET.SELF);
         }
-        if (entity.parent === targetEntity) {
-            return new Dsl(KIND.TARGET, TARGET.PARENT);
-        }
 
         if (!targetEntity.hasId()) {
             if (brUtilsGeneral.isNonEmpty(state.entityId)) {
