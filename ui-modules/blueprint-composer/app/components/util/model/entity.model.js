@@ -685,7 +685,17 @@ function addConfigKeyDefinition(param, overwrite, skipUpdatesDuringBatch) {
         let key = (param || {}).name;
         if (!key) throw new Error("'name' field must be included when adding parameter; was", param);
 
-        allConfig[key] = Object.assign(allConfig[key] || {}, param, overwrite ? null : allConfig[key]);
+        let paramMapped = Object.assign({}, param);
+        let configDef = allConfig[key] || {};
+        if (typeof paramMapped.default !== 'undefined') {
+            /* Annoyingly, in parameters, we call the default value "default",
+             * but in config, we call them "defaultValue";
+             * when params are merged to config we need to rename
+             */
+            paramMapped.defaultValue = paramMapped.default;
+            delete paramMapped['default'];
+        }
+        allConfig[key] = Object.assign(configDef, paramMapped, overwrite ? null : configDef);
     }
     if (!skipUpdatesDuringBatch) {
         this.miscData.set('config', Object.values(allConfig));

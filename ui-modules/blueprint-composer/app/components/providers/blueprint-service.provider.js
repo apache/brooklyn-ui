@@ -445,7 +445,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                     if (!k || !Array.isArray(k)) return false;
                     return k.some(isSet);
                 }
-                const hasDefault = (typeof config.default) !== 'undefined';
+                const hasDefault = (typeof config.defaultValue) !== 'undefined';
 
                 switch (key) {
                     case 'Predicates.notNull()':
