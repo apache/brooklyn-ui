@@ -323,7 +323,7 @@
           <div ng-if="model.miscData.get('config').length === 0">
             <h4>No configuration</h4>
             <p class="buttons">
-                <button class="btn btn-sm btn-success" ng-click="specEditor.addConfigKey(state.config.search)" ng-if="state.config.search">
+                <button class="btn btn-sm btn-success" ng-click="specEditor.addConfigKey(state.config.search)" ng-if="state.config.search && state.config.search!=''">
                         <i class="fa fa-plus"></i> Add '{{state.config.search}}'
                 </button>
             </p>
@@ -332,7 +332,7 @@
             <h4>No matching configuration</h4>
             <p class="buttons">
                 <button class="btn btn-sm btn-default" ng-if="state.config.search.length > 0" ng-click="state.config.search = ''">Clear search</button>
-                <button class="btn btn-sm btn-default" ng-click="specEditor.addConfigKey(state.config.search)" ng-if="!specEditor.getConfig(state.config.search)">
+                <button class="btn btn-sm btn-default" ng-click="specEditor.addConfigKey(state.config.search)" ng-if="state.config.search && state.config.search!='' && !specEditor.getConfig(state.config.search)">
                         <i class="fa fa-plus"></i> Add '{{state.config.search}}'
                 </button>
                 <button class="btn btn-sm btn-success" ng-if="!state.config.filter.values.all" ng-click="state.config.filter.values.all = true">
