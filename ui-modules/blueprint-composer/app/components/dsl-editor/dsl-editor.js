@@ -366,6 +366,10 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
             return new Dsl(KIND.TARGET, TARGET.SELF);
         }
 
+        if (blueprintService.get() === targetEntity) {
+            return new Dsl(KIND.TARGET, TARGET.SCOPEROOT);
+        }
+
         if (!targetEntity.hasId()) {
             if (brUtilsGeneral.isNonEmpty(state.entityId)) {
                 targetEntity.id = state.entityId;
