@@ -160,6 +160,8 @@ export function designerDirective($log, $state, $q, $rootScope, iconGenerator, c
                         const blueprint = blueprintService.get();
                         if (blueprint.isInDslEdit) {
                             $rootScope.$broadcast('d3.entity-selected', event.detail.entity);
+                            blueprintGraph.hideShadow();
+                            blueprintGraph.dropShadow(event.detail.entity._id);
                         } else {
                             $state.go(graphicalEditEntityState, {entityId: event.detail.entity._id});
                         }
