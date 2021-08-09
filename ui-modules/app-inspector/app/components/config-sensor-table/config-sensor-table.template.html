@@ -37,8 +37,9 @@
 
             </td>
             <td sensitive-field field-name="{{item.key}}" class="copyable-value">
-                <span ng-bind-html="item.value | brLinky:mapInfo[item.key]"></span>
-                <button class="btn btn-default btn-sm pull-right" ngclipboard ngclipboard-success="onClipboardSuccess(e)" ngclipboard-error="onClipboardError(e)" data-clipboard-text="{{item.value}}" uib-tooltip="Copied!" tooltip-trigger="{'copied': 'mouseleave'}" tooltip-placement="left">
+                <span ng-if="item.value === null"><i>value not set</i></span>
+                <span ng-if="item.value !== null" ng-bind-html="item.value | brLinky:mapInfo[item.key]"></span>
+                <button ng-if="item.value !== null" class="btn btn-default btn-sm pull-right" ngclipboard ngclipboard-success="onClipboardSuccess(e)" ngclipboard-error="onClipboardError(e)" data-clipboard-text="{{item.value}}" uib-tooltip="Copied!" tooltip-trigger="{'copied': 'mouseleave'}" tooltip-placement="left">
                     <i class="fa fa-clipboard"></i>
                 </button>
             </td>
