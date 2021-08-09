@@ -276,6 +276,9 @@ export function designerDirective($log, $state, $q, $rootScope, iconGenerator, c
             } else {
                 blueprintGraph.unselect();
             }
+            if (!$scope.blueprint.isInDslEdit) {
+                blueprintGraph.hideShadow();
+            }
         }
     }
 }
