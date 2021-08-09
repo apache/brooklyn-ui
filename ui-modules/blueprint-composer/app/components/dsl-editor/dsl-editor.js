@@ -69,6 +69,18 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
     };
 
     function link(scope) {
+
+        const blueprint = blueprintService.get();
+        blueprint.isInDslEdit = true;
+
+        scope.$on('$destroy', () => {
+            blueprint.isInDslEdit = false;
+        });
+
+        scope.$on('d3.entity-selected', (event, entity) => {
+            scope.state.filter = scope.filters.find(filter => filter.id === entity._id);
+        });
+
         scope.DSL_KINDS = DSL_KINDS;
 
         scope.kinds = Object.values(DSL_KINDS);

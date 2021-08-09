@@ -1226,6 +1226,32 @@ export function D3Blueprint(container, options) {
     }
 
     /**
+     * Drop the shadow over node with ID specified, or all nodes if ID is not specified.
+     * @param id The ID of the node to drop shadow over.
+     */
+    function dropShadow(id) {
+        console.log('[drop]', id);
+        if (id) {
+            _svg.select(`#entity-${id}`).classed('drop-shadow', true);
+        } else {
+            _svg.selectAll('.entity').classed('drop-shadow', true);
+        }
+    }
+
+    /**
+     * Hide the shadow of node with ID specified, or all nodes if ID is not specified.
+     * @param id The ID of the node to hide shadow of.
+     */
+    function hideShadow(id) {
+        console.log('[hide]', id);
+        if (id) {
+            _svg.select(`#entity-${id}`).classed('drop-shadow', false);
+        } else {
+            _svg.selectAll('.entity').classed('drop-shadow', false);
+        }
+    }
+
+    /**
      * Draw menu with a confirmation request on the canvas for a node with a specified ID, under the node, in the middle.
      *
      * Single-selection mode offers choices as buttons:
@@ -1462,6 +1488,8 @@ export function D3Blueprint(container, options) {
         center: center,
         select: selectNode,
         confirm: confirmNode,
-        unselect: unselectNode
+        unselect: unselectNode,
+        dropShadow: dropShadow,
+        hideShadow: hideShadow,
     };
 }

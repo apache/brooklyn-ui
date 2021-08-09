@@ -31,12 +31,12 @@ const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
 const TAG = 'DIRECTIVE :: DESIGNER :: ';
 
 angular.module(MODULE_NAME, [])
-    .directive('designer', ['$log', '$state', '$q', 'iconGenerator', 'catalogApi', 'blueprintService', 'brSnackbar', 'paletteDragAndDropService', 'composerOverrides', designerDirective])
+    .directive('designer', ['$log', '$state', '$q', '$rootScope', 'iconGenerator', 'catalogApi', 'blueprintService', 'brSnackbar', 'paletteDragAndDropService', 'composerOverrides', designerDirective])
     .run(['$templateCache', templateCache]);
 
 export default MODULE_NAME;
 
-export function designerDirective($log, $state, $q, iconGenerator, catalogApi, blueprintService, brSnackbar, paletteDragAndDropService, composerOverrides) {
+export function designerDirective($log, $state, $q, $rootScope, iconGenerator, catalogApi, blueprintService, brSnackbar, paletteDragAndDropService, composerOverrides) {
     return {
         restrict: 'E',
         templateUrl: function (tElement, tAttrs) {
@@ -157,7 +157,14 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
                 $log.debug(TAG + 'edit node ' + event.detail.entity._id, event.detail.entity);
                 switch (event.detail.entity.family) {
                     case EntityFamily.ENTITY:
-                        $state.go(graphicalEditEntityState, {entityId: event.detail.entity._id});
+                        const blueprint = blueprintService.get();
+                        if (blueprint.isInDslEdit) {
+                            $rootScope.$broadcast('d3.entity-selected', event.detail.entity);
+                            blueprintGraph.hideShadow();
+                            blueprintGraph.dropShadow(event.detail.entity._id);
+                        } else {
+                            $state.go(graphicalEditEntityState, {entityId: event.detail.entity._id});
+                        }
                         break;
                     case EntityFamily.SPEC:
                         $state.go(graphicalEditSpecState, {entityId: event.detail.entity.parent._id, specId: event.detail.entity._id});
@@ -268,6 +275,9 @@ export function designerDirective($log, $state, $q, iconGenerator, catalogApi, b
                 blueprintGraph.select($scope.selectedEntity._id);
             } else {
                 blueprintGraph.unselect();
+            }
+            if (!$scope.blueprint.isInDslEdit) {
+                blueprintGraph.hideShadow();
             }
         }
     }
