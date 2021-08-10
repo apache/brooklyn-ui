@@ -1230,7 +1230,6 @@ export function D3Blueprint(container, options) {
      * @param id The ID of the node to drop shadow over.
      */
     function dropShadow(id) {
-        console.log('[drop]', id);
         if (id) {
             _svg.select(`#entity-${id}`).classed('drop-shadow', true);
         } else {
@@ -1243,7 +1242,6 @@ export function D3Blueprint(container, options) {
      * @param id The ID of the node to hide shadow of.
      */
     function hideShadow(id) {
-        console.log('[hide]', id);
         if (id) {
             _svg.select(`#entity-${id}`).classed('drop-shadow', false);
         } else {
