@@ -305,9 +305,11 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
     function uniqueItems(items) {
         const IDs = new Set();
 
-        return items.filter(({ id }) => {
-            if (IDs.has(id)) return false;
-            IDs.add(id);
+        // filtering with both own and parent's ID in case we have same-type child nodes
+        return items.filter(({ id, entity }) => {
+            const marker = id + ':' + (entity.id || '-');
+            if (IDs.has(marker)) return false;
+            IDs.add(marker);
             return true;
         })
     }
