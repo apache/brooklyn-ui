@@ -43,7 +43,10 @@ export const mainState = {
         catalogApps: ['catalogApi', (catalogApi) => {
             return catalogApi.getTypes({params: {supertype: 'org.apache.brooklyn.api.entity.Application'}}).then(
                 applications => filterCatalogQuickLaunch(applications.filter(application => application.template))
-            );
+            ).catch(prob => {
+                console.warn("Error initializing: ", prob);
+                return [];
+            });
         }]
     }
 };
