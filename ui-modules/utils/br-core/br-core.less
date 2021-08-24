@@ -19,3 +19,14 @@
 @import (reference) "~bootstrap/less/bootstrap";
 
 @import "style/_components";
+
+.mozilla-td-scroll-fix {
+  /* scroll on a td doesn't work on mozilla; wrapping content in a div with this class fixes that.
+   * see: https://stackoverflow.com/questions/14547722/how-to-control-overflow-of-table-cell-in-firefox
+   *      https://lists.w3.org/Archives/Public/www-style/2006Mar/0030.html#replies
+   */
+  margin: -8px;
+  padding: 8px;
+  overflow: auto;
+}
+

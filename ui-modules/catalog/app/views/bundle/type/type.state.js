@@ -154,7 +154,7 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
         effectors: { header: 'Effector' },
     }, {
         field: 'name',
-        template: '<samp>{{ item.name }}</samp>',
+        template: '<div class="mozilla-td-scroll-fix"><samp>{{ item.name }}</samp></div>',
         width: 100,
         colspan: 3,
     });
@@ -171,7 +171,7 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
         effectors: { field: 'returnType' },
     }, {
         field: 'type',
-        template: '<span class="label-color column-for-type oneline label label-success">{{ item[column.field] }}</span>',
+        template: '<div class="mozilla-td-scroll-fix"><span class="label-color column-for-type oneline label label-success">{{ item[column.field] }}</span></div>',
         colspan: 3,
     } );
 
@@ -183,7 +183,7 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
         field: 'description',
         width: 150,
         colspan: 6,
-        template: '<md-field raw-data="::item[column.field]"></md-field>',
+        template: '<div class="mozilla-td-scroll-fix"><md-field raw-data="::item[column.field]"></md-field></div>',
         tdClass: 'column-for-description',
     });
 
@@ -191,7 +191,7 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
         config: {
             field: 'defaultValue',
             colspan: 3,
-            template: '<samp>{{ item.defaultValue }}</samp>',
+            template: '<div class="mozilla-td-scroll-fix"><samp>{{ item.defaultValue }}</samp></div>',
         },
     });
 
@@ -237,7 +237,7 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
             width: 120,
             colspan: 2,
             hidden: true,
-            template: '<samp>{{ item.constraints }}</samp>',
+            template: '<div class="mozilla-td-scroll-fix"><samp>{{ item.constraints }}</samp></div>',
         }
     });
     addColumn({
