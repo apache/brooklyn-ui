@@ -28,9 +28,11 @@
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>
 
+    <!--
     <listener>
         <listener-class>org.apache.brooklyn.ui.modularity.module.api.UiModuleListener</listener-class>
     </listener>
+    -->
 
     <!--FILTERS :: START-->
     <filter>
@@ -55,5 +57,5 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
     <!--FILTERS :: END-->
-  
+
 </web-app>
