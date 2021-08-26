@@ -225,7 +225,7 @@ export function logbook() {
             let dateTimeFrom = getUtcTimestamp($scope.search.dateTimeFrom);
             let dateTimeTo = getUtcTimestamp($scope.search.dateTimeTo)
             if (isTail() && !isNewQueryParameters && !isEmpty($scope.logEntries)) {
-                dateTimeFrom = getUtcTimestamp(getLogEntryTimestamp($scope.logEntries.slice(-1)[0]))
+                dateTimeFrom = getLogEntryTimestamp($scope.logEntries.slice(-1)[0])
             }
 
             const levels = getCheckedBoxes($scope.search.logLevels);
