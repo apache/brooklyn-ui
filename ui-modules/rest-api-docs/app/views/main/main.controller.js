@@ -18,6 +18,7 @@
  */
 import angular from 'angular';
 import uiRouter from 'angular-ui-router';
+import SwaggerUI from 'swagger-ui';
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from './main.template.html';
 
@@ -41,7 +42,8 @@ export function mainStateConfig($stateProvider) {
 }
 
 export function mainStateController($scope, $log, $cookies) {
-    let swaggerUi = new SwaggerUi({
+    console.log('SwaggerUI', SwaggerUI)
+    let swaggerUi = SwaggerUI({
         url: '/v1/apidoc/swagger.json',
         dom_id: 'swagger-ui-container',
         supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],

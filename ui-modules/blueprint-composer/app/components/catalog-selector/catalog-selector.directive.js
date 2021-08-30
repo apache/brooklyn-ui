@@ -268,24 +268,25 @@ export function catalogSelectorDirective() {
         // Init
         $scope.items = [];
         function getDisplayTags(tags) {
-            if (!tags || !tags.length || !tags.reduce) return tags;
-            return tags.reduce((result, tag) => {
-                if (!(/[=:\[\]()]/.exec(tag))) {
-                    result.push(tag);
-                }
-                return result;
-            }, []);
+            if (!Array.isArray(tags) || !tags.length) return tags;
+            return tags.filter(tag => !(/[=:\[\]()]/.exec(tag)));
         }
+
         $scope.getItems().then((items)=> {
             // add displayTags, as any tag that doesn't contain = : or ( ) [ ]
             // any tag that is an object will be eliminated as it is toStringed to make [ object object ]
+            // add display name=symbolicName for those that don't have one, to avoid issues with the 'Name' property sorting
             items.forEach(item => {
                 if (item.tags) {
                     item.displayTags = getDisplayTags(item.tags);
                 }
+                if(!item.displayName) {
+                    item.displayName = item.symbolicName;
+                }
             });
             $scope.items = items;
         });
+
         $scope.lastUsedText = (item) => {
             if (item==null) return "";
             let l = (Number)(item.lastUsed);
