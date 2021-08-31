@@ -86,7 +86,7 @@
 
         <div ng-if="vm.location.items">
             <div ng-if="vm.location.items.length !== 0 || !vm.location.multi">
-                <p>This entity is associated with <em><ng-pluralize count="vm.location.items.length" when="{'0': 'no locations', 'one': 'this location {} ', 'other': 'these locations'}"></ng-pluralize></em></p>
+                <p>This entity is associated with <em><ng-pluralize count="vm.location.items.length" when="{'0': 'no locations', 'one': 'this location ', 'other': 'these locations'}"></ng-pluralize></em></p>
                 <ul>
                     <li ng-repeat="item in vm.location.items track by item.id">
                         <span ng-if="item.id"> Location Id: <strong>{{item.id | specToLabel:vm.metadata}}</strong> </span>
