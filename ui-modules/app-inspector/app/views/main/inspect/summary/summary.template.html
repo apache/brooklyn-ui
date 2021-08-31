@@ -86,13 +86,27 @@
 
         <div ng-if="vm.location.items">
             <div ng-if="vm.location.items.length !== 0 || !vm.location.multi">
-                <p>This entity is running on <em><ng-pluralize count="vm.location.items.length" when="{'0': 'no locations', 'one': '{} location', 'other': '{} locations'}"></ng-pluralize></em></p>
-                <ul>
-                    <li ng-repeat="item in vm.location.items track by item.id">
-                        <strong>{{item.config['spec.final'] | specToLabel:vm.metadata}}</strong>
-                        <span ng-if="item.config.availabilityZone">in <code>{{item.config.availabilityZone}}</code> availability zone</span>
-                    </li>
-                </ul>
+                <p>This entity is associated with <ng-pluralize count="vm.location.items.length" when="{'0': 'no locations', 'one': 'this location ', 'other': 'these locations'}"></ng-pluralize></p>
+                    <div ng-repeat="item in vm.location.items track by item.id" style="padding:5px 1em;">
+                        <div class="panel panel-default" >
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Location ID: <strong>{{item.id | specToLabel:vm.metadata}}</strong></h3>
+                            </div>
+                            <table class="table-bordered" >
+                                <tbody>
+                                    <tr ng-if="item.name">  <td> Name </td>  <td> {{item.name | specToLabel:vm.metadata}}</td> </tr>
+                                    <tr ng-if="item.config['spec.final']"> <td> Environment </td><td> {{item.config['spec.final'] | specToLabel:vm.metadata}}</td> </tr>
+                                    <tr ng-if="item.spec"> <td>Spec</td>  <td> {{item.spec | specToLabel:vm.metadata}}</td> </tr>
+                                    <tr ng-if="item.type"> <td>Type</td>  <td>  {{item.type | specToLabel:vm.metadata}}</td> </tr>
+                                    <tr ng-if="item.config.address"> <td>Address</td>  <td>  {{item.config.address | specToLabel:vm.metadata}}</td> </tr>
+                                    <tr ng-if="item.config.endpoint"> <td>Endpoint</td>  <td>  <a href="{{item.config.endpoint | specToLabel:vm.metadata}}">{{item.config['endpoint'] | specToLabel:vm.metadata}} </a></td> </tr>
+                                    <tr ng-if="item.config.availabilityZone"> <td>Availability Zone</td>  <td> <code>{{item.config.availabilityZone}}</code></td></tr>
+                                    <tr ng-if="item.config.region"> <td>Region </td><td>{{item.config.region}}</td></tr>
+                                    <tr ng-if="item.config.identity"> <td>Identity </td><td> <code>{{item.config.identity}}</code></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
             </div>
             <div ng-if="vm.location.multi">
                 <p class="location-multi">This entity is part of a multi-location deployment. <a class="btn btn-link more" ng-click="vm.expandMultiLocation()" ng-if="!vm.subLocations.requested">Know more.</a></p>
