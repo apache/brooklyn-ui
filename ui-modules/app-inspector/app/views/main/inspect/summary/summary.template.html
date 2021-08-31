@@ -91,13 +91,13 @@
                     <li ng-repeat="item in vm.location.items track by item.id">
                         <span ng-if="item.id"> Location Id: <strong>{{item.id | specToLabel:vm.metadata}}</strong> </span>
                         <ul>
-                            <li ng-if="item.name"> <span> Name:  {{item.name | specToLabel:vm.metadata}}</span> </li>
+                            <li ng-if="item.name"> <span>Name:  {{item.name | specToLabel:vm.metadata}}</span> </li>
                             <li ng-if="item.config['spec.final']"> <span> Environment:  {{item.config['spec.final'] | specToLabel:vm.metadata}}</span> </li>
-                            <li ng-if="item.spec"> <span> Spec:  {{item.spec | specToLabel:vm.metadata}}</span> </li>
-                            <li ng-if="item.type"> <span> Type:  {{item.type | specToLabel:vm.metadata}}</span> </li>
-                            <li ng-if="item.config['address']"> <span> Address:  {{item.config['address'] | specToLabel:vm.metadata}}</span> </li>
-                            <li ng-if="item.config['endpoint']"> <span> Endpoint:  {{item.config['endpoint'] | specToLabel:vm.metadata}}</span> </li>
-                            <li ng-if="item.config.availabilityZone">in <code>{{item.config.availabilityZone}}</code> availability zone</li>
+                            <li ng-if="item.spec"> <span>Spec:  {{item.spec | specToLabel:vm.metadata}}</span> </li>
+                            <li ng-if="item.type"> <span>Type:  {{item.type | specToLabel:vm.metadata}}</span> </li>
+                            <li ng-if="item.config['address']"> <span>Address:  {{item.config['address'] | specToLabel:vm.metadata}}</span> </li>
+                            <li ng-if="item.config['endpoint']"> <span>Endpoint:  {{item.config['endpoint'] | specToLabel:vm.metadata}}</span> </li>
+                            <li ng-if="item.config['availabilityZone']">Availability Zone: <code>{{item.config['availabilityZone']}}</code></li>
                         </ul>
                     </li>
                 </ul>
