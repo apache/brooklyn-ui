@@ -34,7 +34,8 @@ export function logbook() {
         template: template,
         restrict: 'E',
         scope: {
-            searchId: '@',
+            taskId: '@',
+            entityId: '@',
         },
         controller: ['$scope', '$element', '$interval', 'brBrandInfo', 'logbookApi', controller],
         controllerAs: 'vm'
@@ -233,7 +234,9 @@ export function logbook() {
             const params = {
                 levels: levels,
                 tail: $scope.search.latest,
-                searchPhrases: [$scope.search.phrase, $scope.searchId].filter(phrase => phrase),
+                searchPhrase: $scope.search.phrase,
+                taskId: $scope.taskId,
+                entityId: $scope.entityId,
                 numberOfItems: $scope.search.numberOfItems,
                 dateTimeFrom: dateTimeFrom,
                 dateTimeTo: dateTimeTo,
