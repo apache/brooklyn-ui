@@ -92,9 +92,8 @@
                             <div class="panel-heading">
                                 <h3 class="panel-title">Location ID: <strong>{{item.id | specToLabel:vm.metadata}}</strong></h3>
                             </div>
-                            <div class="panel-body">
-                                <table class="status table-bordered">
-                                    <tbody>
+                            <table class="table-bordered">
+                                <tbody>
                                     <tr ng-if="item.name">  <td> Name </td>  <td> {{item.name | specToLabel:vm.metadata}}</td> </tr>
                                     <tr ng-if="item.config['spec.final']"> <td> Environment </td><td> {{item.config['spec.final'] | specToLabel:vm.metadata}}</td> </tr>
                                     <tr ng-if="item.spec"> <td>Spec</td>  <td> {{item.spec | specToLabel:vm.metadata}}</td> </tr>
@@ -104,9 +103,8 @@
                                     <tr ng-if="item.config['availabilityZone']"> <td>Availability Zone</td>  <td> <code>{{item.config['availabilityZone']}}</code></td></tr>
                                     <tr ng-if="item.config['region']"> <td>Region </td><td>{{item.config['region']}}</td></tr>
                                     <tr ng-if="item.config['identity']"> <td>Identity </td><td> <code>{{item.config['identity']}}</code></td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                                </tbody>
+                            </table>
                         </div>
                         <br/>
                     </div>
