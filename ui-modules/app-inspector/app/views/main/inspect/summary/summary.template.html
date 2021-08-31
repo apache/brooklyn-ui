@@ -87,12 +87,12 @@
         <div ng-if="vm.location.items">
             <div ng-if="vm.location.items.length !== 0 || !vm.location.multi">
                 <p>This entity is associated with <ng-pluralize count="vm.location.items.length" when="{'0': 'no locations', 'one': 'this location ', 'other': 'these locations'}"></ng-pluralize></p>
-                    <div ng-repeat="item in vm.location.items track by item.id">
-                        <div class="panel panel-default">
+                    <div ng-repeat="item in vm.location.items track by item.id" style="padding:5px 1em;">
+                        <div class="panel panel-default" >
                             <div class="panel-heading">
                                 <h3 class="panel-title">Location ID: <strong>{{item.id | specToLabel:vm.metadata}}</strong></h3>
                             </div>
-                            <table class="table-bordered">
+                            <table class="table-bordered" >
                                 <tbody>
                                     <tr ng-if="item.name">  <td> Name </td>  <td> {{item.name | specToLabel:vm.metadata}}</td> </tr>
                                     <tr ng-if="item.config['spec.final']"> <td> Environment </td><td> {{item.config['spec.final'] | specToLabel:vm.metadata}}</td> </tr>
