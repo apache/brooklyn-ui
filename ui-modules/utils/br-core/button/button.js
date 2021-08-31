@@ -120,6 +120,14 @@ const MODULE_NAME = 'core.button';
  *         <br-button type="btn-danger">Danger button</br-button>
  *     </file>
  * </example>
+ *
+ * @example
+ * ### Download button
+ * <example module="br.core">
+ *     <file name="index.html">
+ *         <br-button type="btn-info" is-download="true">Download button</br-button>
+ *     </file>
+ * </example>
  */
 angular.module(MODULE_NAME, [angularBootstrap])
     .directive('brButton', brButton);
@@ -132,7 +140,8 @@ export function brButton() {
         scope: {
             type: '@',
             link: '@',
-            click: '&onClick'
+            click: '&onClick',
+            isDownload: '<?'
         },
         transclude: true,
         template: template,
