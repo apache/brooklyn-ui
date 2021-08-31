@@ -98,15 +98,14 @@
                                     <tr ng-if="item.config['spec.final']"> <td> Environment </td><td> {{item.config['spec.final'] | specToLabel:vm.metadata}}</td> </tr>
                                     <tr ng-if="item.spec"> <td>Spec</td>  <td> {{item.spec | specToLabel:vm.metadata}}</td> </tr>
                                     <tr ng-if="item.type"> <td>Type</td>  <td>  {{item.type | specToLabel:vm.metadata}}</td> </tr>
-                                    <tr ng-if="item.config['address']"> <td>Address</td>  <td>  {{item.config['address'] | specToLabel:vm.metadata}}</td> </tr>
-                                    <tr ng-if="item.config['endpoint']"> <td>Endpoint</td>  <td>  <a href="{{item.config['endpoint'] | specToLabel:vm.metadata}}">{{item.config['endpoint'] | specToLabel:vm.metadata}} </a></td> </tr>
-                                    <tr ng-if="item.config['availabilityZone']"> <td>Availability Zone</td>  <td> <code>{{item.config['availabilityZone']}}</code></td></tr>
-                                    <tr ng-if="item.config['region']"> <td>Region </td><td>{{item.config['region']}}</td></tr>
-                                    <tr ng-if="item.config['identity']"> <td>Identity </td><td> <code>{{item.config['identity']}}</code></td></tr>
+                                    <tr ng-if="item.config.address"> <td>Address</td>  <td>  {{item.config.address | specToLabel:vm.metadata}}</td> </tr>
+                                    <tr ng-if="item.config.endpoint"> <td>Endpoint</td>  <td>  <a href="{{item.config.endpoint | specToLabel:vm.metadata}}">{{item.config['endpoint'] | specToLabel:vm.metadata}} </a></td> </tr>
+                                    <tr ng-if="item.config.availabilityZone"> <td>Availability Zone</td>  <td> <code>{{item.config.availabilityZone}}</code></td></tr>
+                                    <tr ng-if="item.config.region"> <td>Region </td><td>{{item.config.region}}</td></tr>
+                                    <tr ng-if="item.config.identity"> <td>Identity </td><td> <code>{{item.config.identity}}</code></td></tr>
                                 </tbody>
                             </table>
                         </div>
-                        <br/>
                     </div>
             </div>
             <div ng-if="vm.location.multi">
