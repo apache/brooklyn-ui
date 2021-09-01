@@ -158,10 +158,13 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
     $scope.$on('blueprint.reset', () => {
         vm.saveToCatalogConfig = {};
         blueprintService.reset();
-        $state.go(vm.isYamlMode() ? $state : graphicalState, {}, {inherit: false, reload: true});
+        $state.go(vm.isYamlMode() ? $state.current : graphicalState, {}, {inherit: false, reload: true});
     });
     $scope.$on('blueprint.deploy', () => {
         vm.deployApplication();
+    });
+    $scope.$on('blueprint.continue', () => {
+        blueprintService.refreshBlueprintMetadata();
     });
 
     vm.saveToCatalogConfig = {};

@@ -30,7 +30,8 @@ const TEMPLATE_MODAL_URL = 'blueprint-composer/component/catalog-saver/modal.htm
 
 const REASONS = {
     new: 0,
-    deploy: 1
+    deploy: 1,
+    continue: 2,
 };
 const VIEWS = {
     form: 0,
@@ -126,6 +127,9 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $f
                         break;
                     case REASONS.deploy:
                         $rootScope.$broadcast('blueprint.deploy');
+                        break;
+                    case REASONS.continue:
+                        $rootScope.$broadcast('blueprint.continue');
                         break;
                 }
             });
