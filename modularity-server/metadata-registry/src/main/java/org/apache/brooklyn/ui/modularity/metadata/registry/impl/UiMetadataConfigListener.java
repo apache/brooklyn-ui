@@ -33,11 +33,11 @@ import static com.google.common.base.Predicates.not;
 
 @Component(
         name = "Brooklyn UI Metadata",
-        configurationPid = UiMetadataConfigListener.PID, configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true,
+        configurationPid = UiMetadataConfigListener.PID, configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true,
         property = {UiMetadataRegistry.METADATA_TYPE + ":String=" + UiMetadataRegistry.METADATA_TYPE_DEFAULT}
 )
 public class UiMetadataConfigListener {
-    static final String PID = "org.apache.brooklyn.ui.metadata";
+    static final String PID = "org.apache.brooklyn.ui.modularity.metadata";
     private static final Logger logger = LoggerFactory.getLogger(UiMetadataConfigListener.class);
     private static final List<String> EXCLUDE = Arrays.asList(
             "felix.fileinstall.filename", "service.factoryPid", "component.name", "component.id"
@@ -46,28 +46,45 @@ public class UiMetadataConfigListener {
     @Reference
     private UiMetadataRegistry metadataRegistry;
 
+    protected String getId(final Map<String, String> properties) {
+        return properties.containsKey(UiMetadataRegistry.METADATA_ID) ? 
+                        properties.get(UiMetadataRegistry.METADATA_ID) : properties.get("service.pid");
+    }
+
     @Activate
     public void activate(final Map<String, String> properties) {
-        modified(properties);
+        if (getId(properties)==null) {
+            logger.debug("Skipping recording of metadata config for irrelevant activation record: "+properties);
+        } else {
+            modified(properties);
+        }
     }
 
     @Modified
     public void modified(final Map<String, String> properties) {
+        String id = getId(properties);
+        if (id==null) {
+            logger.warn("Skipping update of UI metadata because ID is not specified: "+properties);
+            return;
+        }
         metadataRegistry.modifyMetadata(
                 properties.containsKey(UiMetadataRegistry.METADATA_TYPE) ?
                         properties.get(UiMetadataRegistry.METADATA_TYPE) : UiMetadataRegistry.METADATA_TYPE_DEFAULT,
-                properties.containsKey(UiMetadataRegistry.METADATA_ID) ?
-                        properties.get(UiMetadataRegistry.METADATA_ID) : properties.get("service.pid"),
+                id,
                 Maps.filterKeys(properties, not(in(EXCLUDE)))
         );
     }
     
     @Deactivate
     public void deactivate(final Map<String, String> properties) {
+        String id = getId(properties);
+        if (id==null) {
+            logger.debug("Skipping deactivation of UI metadata because ID is not specified: "+properties);
+            return;
+        }
         metadataRegistry.unregisterMetadata(
                 properties.containsKey(UiMetadataRegistry.METADATA_TYPE) ?
                         properties.get(UiMetadataRegistry.METADATA_TYPE) : UiMetadataRegistry.METADATA_TYPE_DEFAULT,
-                properties.containsKey(UiMetadataRegistry.METADATA_ID) ?
-                        properties.get(UiMetadataRegistry.METADATA_ID) : properties.get("service.pid"));
+                id);
     }
 }

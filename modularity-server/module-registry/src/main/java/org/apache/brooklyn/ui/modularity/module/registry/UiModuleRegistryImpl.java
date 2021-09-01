@@ -37,6 +37,10 @@ public class UiModuleRegistryImpl implements UiModuleRegistry {
     private final ConcurrentHashMap<String, UiModule> registry = new ConcurrentHashMap<>();
 
     public void register(final UiModule uiModule) {
+        if (uiModule.getId()==null) {
+            LOG.error("Skipping invalid Brooklyn UI module "+uiModule, new Throwable("source of error"));
+            return;
+        }
         LOG.info("Registering new Brooklyn web component [{}] [{}]", uiModule.getId(), uiModule.getName());
         registry.put(uiModule.getId(), uiModule);
     }

@@ -259,6 +259,7 @@ public class UiModuleListener implements ServletContextListener {
         }
         @SuppressWarnings("unchecked")
         Map<String, ?> config = (Map<String, ?>) new Yaml().load(is);
+        LOG.debug("Creating Brooklyn UI module definition for "+path+"; "+config+" / "+is);
         return UiModuleImpl.createFromMap(config).path(path);
     }
 }
