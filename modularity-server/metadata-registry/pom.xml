@@ -114,10 +114,9 @@
                     <exportScr>true</exportScr>
                     <instructions>
 
-      <!-- exportScr and below from https://felix.apache.org/documentation/faqs/apache-felix-bundle-plugin-faq.html -->
-      <!-- Enable processing of OSGI DS component annotations -->
+      <!-- exportScr above and below from https://felix.apache.org/documentation/faqs/apache-felix-bundle-plugin-faq.html -->
+      <!-- Enable processing of OSGI DS component and metatype annotations - only needed for some type of tests it seems but no harm in having it -->
       <_dsannotations>*</_dsannotations>
-      <!-- Enable processing of OSGI metatype annotations -->
       <_metatypeannotations>*</_metatypeannotations>
 
                         <Import-Package>

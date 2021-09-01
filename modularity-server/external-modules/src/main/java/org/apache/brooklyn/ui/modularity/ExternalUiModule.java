@@ -41,7 +41,7 @@ import com.google.common.collect.ImmutableList;
 @Component(
         name = ExternalUiModule.PID,
         configurationPid = ExternalUiModule.PID,
-        configurationPolicy = ConfigurationPolicy.REQUIRE,
+        configurationPolicy = ConfigurationPolicy.REQUIRE,  // only trigger if there is a corresponding PID config admin, setting up an external ui module?
         immediate = true
 )
 public class ExternalUiModule implements UiModule {
@@ -71,7 +71,12 @@ public class ExternalUiModule implements UiModule {
 
     @Activate
     public void activate(final Map<String, String> properties) {
-        this.setModuleProperties(properties);
+        if (!properties.containsKey(KEY_URL) && properties.containsKey("component.id")) {
+            // activation properties aren't usually for a module; do this check to suppress warning
+            LOG.debug("Not setting module properties for activation properties "+properties);
+        } else {
+            this.setModuleProperties(properties);
+        }
     }
 
     @Modified
@@ -90,7 +95,8 @@ public class ExternalUiModule implements UiModule {
         }
 
         if (issues.size() > 0) {
-            throw new IllegalArgumentException("Invalid UI module [" + properties.get(KEY_ID) + "] ... " + issues.toString());
+            LOG.error("Invalid UI module (ignoring) [" + properties.get(KEY_ID) + "] ... " + issues.toString()+"; properties: "+properties, new Throwable("source of error"));
+            return;
         }
 
         this.id = properties.get(KEY_ID);

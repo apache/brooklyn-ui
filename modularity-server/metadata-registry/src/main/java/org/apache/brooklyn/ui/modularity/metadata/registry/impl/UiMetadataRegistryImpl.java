@@ -53,7 +53,6 @@ public class UiMetadataRegistryImpl implements UiMetadataRegistry {
 
     @Override
     public Map<String, Map<String, String>> getByType(final String type) {
-        logger.error(type);
         return metadataTable.row(type);
     }
 
