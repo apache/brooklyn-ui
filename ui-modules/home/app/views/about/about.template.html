@@ -55,6 +55,15 @@
             </ul>
 
             <h2>
+                Persistence State Management
+            </h2>
+
+            <button ng-click="importPersistence()"
+                    class="btn btn-sm btn-default">Import new persistence data</button>
+            <button ng-click="exportPersistence()"
+                    class="btn btn-sm btn-default">Export current persistence data</button>
+
+            <h2>
                 HA status
                 <button ng-if="states.nodes[states.ownId].status === 'MASTER'"
                         ng-click="removeAllTerminatedNodes()" class="btn btn-sm btn-default"

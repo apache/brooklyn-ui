@@ -1,0 +1,54 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="brooklyn-persistence-importer">
+    <i class="fa fa-times target-close pull-right" ng-click="close()"></i>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 text-center">
+                <p><i class="fa fa-3x fa-upload"></i></p>
+                <p>
+                    <input type="file" name="files" id="files" multiple custom-on-change="filesChanged" />
+                    <label for="files" ng-click="choose()"><strong>Choose files</strong><span class="drag-upload"> or drag & drop them here</span>.</label>
+                </p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12 text-muted upload-item" ng-repeat="selectedFile in selectedFiles" ng-init="isDetailsCollapsed = true">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped" role="progressbar" ng-class="{'active': !selectedFile.error && !selectedFile.result, 'progress-bar-danger': selectedFile.error, 'progress-bar-success': selectedFile.result}" style="width: 100%">
+                        <span ng-if="!selectedFile.result && !selectedFile.error">Importing</span> {{selectedFile.name}}
+                    </div>
+                </div>
+                <p ng-click="isDetailsCollapsed = !isDetailsCollapsed" class="upload-item-details-link"><i class="fa fa-info-circle"></i> {{isDetailsCollapsed ? 'View' : 'hide'}} details</p>
+                <div uib-collapse="isDetailsCollapsed" class="upload-item-details">
+                    <p ng-if="selectedFile.result">Successfully imported the following items:
+                        <ul class="fa-ul">
+                            <li ng-repeat="(key, item) in selectedFile.result track by key">
+                                <i class="fa-li fa fa-check-square"></i>
+                                <a ng-href="{{getPersistenceItemUrl(item)}}">{{item.itemType}} {{item.symbolicName}}:{{item.version}}</a>
+                            </li>
+                        </ul>
+                    </p>
+                    <p ng-if="selectedFile.error">{{selectedFile.error}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
