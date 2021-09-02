@@ -83,10 +83,6 @@ export function aboutStateController($scope, $rootScope, $element, $q, $uibModal
         $rootScope.$broadcast('open-persistence-importer');
     }
 
-    $scope.exportPersistence = function () {
-        // TODO
-    }
-
     let modalInstance = null;
 
     $scope.openDialog = function (states, container) {

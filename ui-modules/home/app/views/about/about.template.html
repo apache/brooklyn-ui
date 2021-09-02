@@ -58,10 +58,12 @@
                 Persistence State Management
             </h2>
 
-            <button ng-click="importPersistence()"
-                    class="btn btn-sm btn-default">Import new persistence data</button>
-            <button ng-click="exportPersistence()"
-                    class="btn btn-sm btn-default">Export current persistence data</button>
+            <a ng-click="importPersistence()"
+               class="btn btn-default"
+               uib-tooltip="Imports new persistence data">Import</a>
+            <a ng-href="/v1/server/ha/persist/export?origin=AUTO" role="button"
+               class="btn btn-default" ng-class="type" download
+               uib-tooltip="Downloads the current persistence state into a zip archive">Export</a>
 
             <h2>
                 HA status

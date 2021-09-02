@@ -137,21 +137,10 @@ export function persistenceImporterDirective($compile, brooklynPersistenceImport
  */
 export function persistenceImporterService($q, serverApi) {
     let extensions = {
-        'bom': {
-            headers: {'Content-Type': 'application/yaml'}
-        },
-        'yml': {
-            headers: {'Content-Type': 'application/yaml'}
-        },
-        'yaml': {
-            headers: {'Content-Type': 'application/yaml'}
-        },
         'zip' : {
-            headers: {'Content-Type': 'application/x-zip'},
-            transformRequest: angular.identity
-        },
-        'jar' : {
-            headers: {'Content-Type': 'application/x-jar'},
+            headers: {  'Content-Type': 'multipart/form-data',
+                        'Accept': 'application/json',
+                        'Brooklyn-Allow-Non-Master-Access': 'true'},
             transformRequest: angular.identity
         }
     };
@@ -189,8 +178,7 @@ export function persistenceImporterService($q, serverApi) {
                 reader.addEventListener('load', ()=> {
                     try {
                         let rawData = new Uint8Array(reader.result);
-                        let data = ['zip', 'jar'].indexOf(extension) > -1 ? rawData : String.fromCharCode.apply(null, rawData);
-                        serverApi.create(data, {}, options).then((response)=> {
+                        serverApi.importPersistenceData(rawData, options).then((response)=> {
                             defer.resolve(response);
                         }).catch((response)=> {
                             defer.reject('Cannot upload item to the persistence: ' + response.error.message);

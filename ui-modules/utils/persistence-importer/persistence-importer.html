@@ -16,6 +16,10 @@
   specific language governing permissions and limitations
   under the License.
 -->
+
+<!--
+TODO - Merge with implementation for catalog uploader for a reusable general uploader directive
+-->
 <div class="brooklyn-persistence-importer">
     <i class="fa fa-times target-close pull-right" ng-click="close()"></i>
     <div class="container">
@@ -23,8 +27,8 @@
             <div class="col-sm-12 text-center">
                 <p><i class="fa fa-3x fa-upload"></i></p>
                 <p>
-                    <input type="file" name="files" id="files" multiple custom-on-change="filesChanged" />
-                    <label for="files" ng-click="choose()"><strong>Choose files</strong><span class="drag-upload"> or drag & drop them here</span>.</label>
+                    <input type="file" name="files" id="files" custom-on-change="filesChanged" />
+                    <label for="files" ng-click="choose()"><strong>Choose file</strong><span class="drag-upload"> or drag & drop it here</span>.</label>
                 </p>
             </div>
         </div>

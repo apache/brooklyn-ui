@@ -50,6 +50,8 @@ function ServerApi($http, $q, cache) {
     this.removeHaTerminatedNodes = removeHaTerminatedNodes;
     this.removeHaTerminatedNode = removeHaTerminatedNode;
 
+    this.importPersistenceData = importPersistenceData;
+
     function getVersion(config) {
         return $http.get('/v1/server/version', angular.extend({cache: cache}, config));
     }
@@ -110,5 +112,9 @@ function ServerApi($http, $q, cache) {
             }
 
         });
+    }
+
+    function importPersistenceData(data, opts) {
+        return $http.post('v1/server/ha/persist/import', data, opts);
     }
 }
