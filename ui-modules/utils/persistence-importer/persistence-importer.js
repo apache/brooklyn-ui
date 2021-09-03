@@ -181,9 +181,11 @@ export function persistenceImporterService($q, serverApi) {
                         serverApi.importPersistenceData(rawData, options).then((response)=> {
                             defer.resolve(response);
                         }).catch((response)=> {
+                            file.error = response;
                             defer.reject('Cannot upload item to the persistence: ' + response.error.message);
                         });
                     } catch (error) {
+                        file.error = error;
                         defer.reject('Cannot read file: ' + error.message);
                     }
                 }, false);

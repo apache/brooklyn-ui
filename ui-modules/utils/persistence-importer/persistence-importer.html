@@ -37,20 +37,13 @@ TODO - Merge with implementation for catalog uploader for a reusable general upl
             <div class="col-sm-12 text-muted upload-item" ng-repeat="selectedFile in selectedFiles" ng-init="isDetailsCollapsed = true">
                 <div class="progress">
                     <div class="progress-bar progress-bar-striped" role="progressbar" ng-class="{'active': !selectedFile.error && !selectedFile.result, 'progress-bar-danger': selectedFile.error, 'progress-bar-success': selectedFile.result}" style="width: 100%">
-                        <span ng-if="!selectedFile.result && !selectedFile.error">Importing</span> {{selectedFile.name}}
+                        <span ng-if="!selectedFile.result && !selectedFile.error">Importing</span>
+                        <span ng-if="selectedFile.error">Error importing</span>
+                        <span ng-if="selectedFile.result">Successfully imported</span> {{selectedFile.name}}
                     </div>
                 </div>
-                <p ng-click="isDetailsCollapsed = !isDetailsCollapsed" class="upload-item-details-link"><i class="fa fa-info-circle"></i> {{isDetailsCollapsed ? 'View' : 'hide'}} details</p>
-                <div uib-collapse="isDetailsCollapsed" class="upload-item-details">
-                    <p ng-if="selectedFile.result">Successfully imported the following items:
-                        <ul class="fa-ul">
-                            <li ng-repeat="(key, item) in selectedFile.result track by key">
-                                <i class="fa-li fa fa-check-square"></i>
-                                <a ng-href="{{getPersistenceItemUrl(item)}}">{{item.itemType}} {{item.symbolicName}}:{{item.version}}</a>
-                            </li>
-                        </ul>
-                    </p>
-                    <p ng-if="selectedFile.error">{{selectedFile.error}}</p>
+                <div>
+                    <span ng-if="selectedFile.error">Error details: {{selectedFile.error.data.message}}</span>
                 </div>
             </div>
         </div>
