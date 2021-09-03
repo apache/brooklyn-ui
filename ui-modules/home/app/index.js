@@ -35,6 +35,7 @@ import mainDeployState from 'views/main/deploy/deploy.controller';
 import aboutState from 'views/about/about.controller';
 import brLogbook from 'brooklyn-ui-utils/logbook/logbook';
 import quickLaunchOverrides from 'brooklyn-ui-utils/providers/quick-launch-overrides.provider';
+import brooklynPersistenceImporter from 'brooklyn-ui-utils/persistence-importer/persistence-importer';
 
 import brandAngularJs from 'brand-angular-js';
 
@@ -42,7 +43,7 @@ const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
 angular.module('brooklynHome', [ngAnimate, ngCookies, uiRouter, brCore, brServerStatus, brIconGenerator,
     brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, brooklynQuickLaunch, mainState, mainDeployState,
-    aboutState, brLogbook, quickLaunchOverrides, brandAngularJs])
+    aboutState, brLogbook, quickLaunchOverrides, brooklynPersistenceImporter, brandAngularJs])
     .config(['$urlRouterProvider', '$logProvider', '$compileProvider', applicationConfig])
     .run(['$http', httpConfig]);
 

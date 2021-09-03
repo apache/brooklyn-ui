@@ -45,7 +45,7 @@ export const aboutState = {
     name: 'about',
     url: '/about',
     template: template,
-    controller: ['$scope', '$element', '$q', '$uibModal', 'brBrandInfo', 'version', 'states', 'serverApi', aboutStateController],
+    controller: ['$scope', '$rootScope', '$element', '$q', '$uibModal', 'brBrandInfo', 'version', 'states', 'serverApi', aboutStateController],
     controllerAs: 'vm',
     resolve: {
         version: ['serverApi', (serverApi) => {
@@ -61,7 +61,7 @@ export function aboutStateConfig($stateProvider) {
     $stateProvider.state(aboutState);
 }
 
-export function aboutStateController($scope, $element, $q, $uibModal, brBrandInfo, version, states, serverApi) {
+export function aboutStateController($scope, $rootScope, $element, $q, $uibModal, brBrandInfo, version, states, serverApi) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
     $scope.getBrandedText = brBrandInfo.getBrandedText;
     $scope.serverVersion = version.data;
@@ -78,6 +78,10 @@ export function aboutStateController($scope, $element, $q, $uibModal, brBrandInf
     $scope.now = Date.now();
     $scope.expectedNodeCounter = Object.keys($scope.states.nodes).length;
     $scope.template = 'haStatusTemplate';
+
+    $scope.importPersistence = function () {
+        $rootScope.$broadcast('open-persistence-importer');
+    }
 
     let modalInstance = null;
 

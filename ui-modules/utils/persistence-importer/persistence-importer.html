@@ -1,0 +1,51 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<!--
+TODO - Merge with implementation for catalog uploader for a reusable general uploader directive
+-->
+<div class="brooklyn-persistence-importer">
+    <i class="fa fa-times target-close pull-right" ng-click="close()"></i>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 text-center">
+                <p><i class="fa fa-3x fa-upload"></i></p>
+                <p>
+                    <input type="file" name="files" id="files" custom-on-change="filesChanged" />
+                    <label for="files" ng-click="choose()"><strong>Choose file</strong><span class="drag-upload"> or drag & drop it here</span>.</label>
+                </p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12 text-muted upload-item" ng-repeat="selectedFile in selectedFiles" ng-init="isDetailsCollapsed = true">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped" role="progressbar" ng-class="{'active': !selectedFile.error && !selectedFile.result, 'progress-bar-danger': selectedFile.error, 'progress-bar-success': selectedFile.result}" style="width: 100%">
+                        <span ng-if="!selectedFile.result && !selectedFile.error">Importing</span>
+                        <span ng-if="selectedFile.error">Error importing</span>
+                        <span ng-if="selectedFile.result">Successfully imported</span> {{selectedFile.name}}
+                    </div>
+                </div>
+                <div>
+                    <span ng-if="selectedFile.error">Error details: {{selectedFile.error.data.message}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

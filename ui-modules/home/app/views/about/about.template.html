@@ -55,6 +55,17 @@
             </ul>
 
             <h2>
+                Persistence State Management
+            </h2>
+
+            <a ng-click="importPersistence()"
+               class="btn btn-default"
+               uib-tooltip="Imports new persistence data">Import</a>
+            <a ng-href="/v1/server/ha/persist/export?origin=AUTO" role="button"
+               class="btn btn-default" ng-class="type" download
+               uib-tooltip="Downloads the current persistence state into a zip archive">Export</a>
+
+            <h2>
                 HA status
                 <button ng-if="states.nodes[states.ownId].status === 'MASTER'"
                         ng-click="removeAllTerminatedNodes()" class="btn btn-sm btn-default"
