@@ -80,6 +80,15 @@ export function mainStateController($scope, $http, $state, $stateParams, $log, $
         let ua = window.navigator.userAgent;
         if (ua.indexOf('MSIE ') >= 0 || ua.indexOf(' Edge/') >= 0 || ua.indexOf(' Trident/') >= 0) {
             document.execCommand('ClearAuthenticationCache', 'false');
+        } else if (ua.indexOf('Mozilla') >= 0) {
+            console.log('logging out')
+            $http({
+                method: 'GET',
+                url: '/',
+                headers: {
+                    'Authorization': 'Basic ' + btoa("logout:logout")
+                }
+            });
         }
     }
 
