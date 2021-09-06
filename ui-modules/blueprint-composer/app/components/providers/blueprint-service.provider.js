@@ -162,7 +162,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
         }
         setBlueprintFromJson(newBlueprint);
         $log.debug(TAG + 'Blueprint set from YAML', blueprint);
-        // do we need to refresh the blueprint now?  see comments in yaml.state.js and on refreshBlueprint; think not.
+        refreshBlueprintMetadata(); // needed to prevent graph child nodes from disappearing when the "Add to catalog" modal is opened
     }
 
     function getBlueprint() {
