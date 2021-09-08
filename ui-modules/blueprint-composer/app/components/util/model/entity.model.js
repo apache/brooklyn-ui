@@ -695,7 +695,8 @@ function addConfigKeyDefinition(param, overwrite, skipUpdatesDuringBatch) {
             paramMapped.defaultValue = paramMapped.default;
             delete paramMapped['default'];
         }
-        allConfig[key] = Object.assign(configDef, paramMapped, overwrite ? null : configDef);
+        // making sure we assign to empty object to avoid conflicts with config items' properties like `type`
+        allConfig[key] = Object.assign({}, configDef, paramMapped, overwrite ? null : configDef);
     }
     if (!skipUpdatesDuringBatch) {
         this.miscData.set('config', Object.values(allConfig));
