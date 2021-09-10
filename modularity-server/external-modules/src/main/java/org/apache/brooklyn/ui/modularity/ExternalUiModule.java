@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableList;
 
 @Component(
-        name = ExternalUiModule.PID,
+        // name = ExternalUiModule.PID,  // omitting the name / using default seems to prevent warning about it being unable to be installed?
         configurationPid = ExternalUiModule.PID,
         configurationPolicy = ConfigurationPolicy.REQUIRE,  // only trigger if there is a corresponding PID config admin, setting up an external ui module?
         immediate = true

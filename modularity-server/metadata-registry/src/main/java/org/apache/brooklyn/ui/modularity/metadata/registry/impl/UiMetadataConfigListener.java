@@ -32,7 +32,7 @@ import static com.google.common.base.Predicates.in;
 import static com.google.common.base.Predicates.not;
 
 @Component(
-        name = "Brooklyn UI Metadata",
+        //name = "Brooklyn UI Metadata", // omitting the name / using default seems to prevent warning about it being unable to be installed?
         configurationPid = UiMetadataConfigListener.PID, configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true,
         property = {UiMetadataRegistry.METADATA_TYPE + ":String=" + UiMetadataRegistry.METADATA_TYPE_DEFAULT}
 )
