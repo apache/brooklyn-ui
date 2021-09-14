@@ -85,7 +85,6 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                             .filter(objectKey => config[objectKey] instanceof Dsl)
                             .reduce((set, objectKey) => {
                                 if(config[key]) {  // when config[objectKey] value is a DSL, but the config does not have a [key] property
-                                    console.log("testing this: " , config[key], key, config, objectKey);
                                     config[key].relationships.forEach((entity) => {
                                         if (entity !== null) {
                                             set.add({entity: entity, name: key});
