@@ -32,13 +32,13 @@ import static com.google.common.base.Predicates.in;
 import static com.google.common.base.Predicates.not;
 
 @Component(
-        //name = "Brooklyn UI Metadata", // omitting the name / using default seems to prevent warning about it being unable to be installed?
+        //name = "Brooklyn UI Metadata", // name as class is common and the default
         configurationPid = UiMetadataConfigListener.PID, configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true,
         property = {UiMetadataRegistry.METADATA_TYPE + ":String=" + UiMetadataRegistry.METADATA_TYPE_DEFAULT}
 )
 public class UiMetadataConfigListener {
     static final String PID = "org.apache.brooklyn.ui.modularity.metadata";
-    private static final Logger logger = LoggerFactory.getLogger(UiMetadataConfigListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(PID);
     private static final List<String> EXCLUDE = Arrays.asList(
             "felix.fileinstall.filename", "service.factoryPid", "component.name", "component.id"
     );
@@ -53,6 +53,7 @@ public class UiMetadataConfigListener {
 
     @Activate
     public void activate(final Map<String, String> properties) {
+        logger.debug("Activate "+this+": "+properties);
         if (getId(properties)==null) {
             logger.debug("Skipping recording of metadata config for irrelevant activation record: "+properties);
         } else {
@@ -62,6 +63,7 @@ public class UiMetadataConfigListener {
 
     @Modified
     public void modified(final Map<String, String> properties) {
+        logger.debug("Modified "+this+": "+properties);
         String id = getId(properties);
         if (id==null) {
             logger.warn("Skipping update of UI metadata because ID is not specified: "+properties);
@@ -77,6 +79,7 @@ public class UiMetadataConfigListener {
     
     @Deactivate
     public void deactivate(final Map<String, String> properties) {
+        logger.debug("Deactivate "+this+": "+properties);
         String id = getId(properties);
         if (id==null) {
             logger.debug("Skipping deactivation of UI metadata because ID is not specified: "+properties);
