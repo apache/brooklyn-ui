@@ -84,13 +84,12 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                         Object.keys(config)
                             .filter(objectKey => config[objectKey] instanceof Dsl)
                             .reduce((set, objectKey) => {
-                                if(config[key]) {  // when config[objectKey] value is a DSL, but the config does not have a [key] property
-                                    config[key].relationships.forEach((entity) => {
+                                    config[objectKey].relationships.forEach((entity) => {
                                         if (entity !== null) {
+                                            // name is the name of a complex relationship, and it consists of a property name, not its members. That is why here, name is set to 'key' not 'objectKey'.
                                             set.add({entity: entity, name: key});
                                         }
                                     });
-                                }
                                 return set;
                             }, set);
                     }
