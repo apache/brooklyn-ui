@@ -84,11 +84,13 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                         Object.keys(config)
                             .filter(objectKey => config[objectKey] instanceof Dsl)
                             .reduce((set, objectKey) => {
-                                config[key].relationships.forEach((entity)=> {
-                                    if (entity !== null) {
-                                        set.add({entity: entity, name: key});
-                                    }
-                                });
+                                if(config[key]) {  // when config[objectKey] value is a DSL, but the config does not have a [key] property
+                                    config[key].relationships.forEach((entity) => {
+                                        if (entity !== null) {
+                                            set.add({entity: entity, name: key});
+                                        }
+                                    });
+                                }
                                 return set;
                             }, set);
                     }
@@ -590,7 +592,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                     resolve(parsed);
                 }
             } catch (ex) {
-                $log.debug("Cannot detect whether this is a DSL expression; assuming not", ex);
+                $log.debug("Cannot detect whether this is a DSL expression; assuming not: " + input, ex);
                 reject(ex, input);
             }
         });
