@@ -72,11 +72,11 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                         config
                             .filter(item => item instanceof Dsl)
                             .reduce((set, config) => {
-                                    config.relationships.forEach((entity) => {
-                                        if (entity !== null) {
-                                            set.add({entity: entity, name: key});
-                                        }
-                                    });
+                                config.relationships.forEach((entity) => {
+                                    if (entity !== null) {
+                                        set.add({entity: entity, name: key});
+                                    }
+                                });
                                 return set;
                             }, set);
                     }
