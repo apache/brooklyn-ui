@@ -72,11 +72,11 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                         config
                             .filter(item => item instanceof Dsl)
                             .reduce((set, config) => {
-                                config.relationships.forEach((entity) => {
-                                    if (entity !== null) {
-                                        set.add({entity: entity, name: key});
-                                    }
-                                });
+                                    config.relationships.forEach((entity) => {
+                                        if (entity !== null) {
+                                            set.add({entity: entity, name: key});
+                                        }
+                                    });
                                 return set;
                             }, set);
                     }
@@ -84,11 +84,14 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                         Object.keys(config)
                             .filter(objectKey => config[objectKey] instanceof Dsl)
                             .reduce((set, objectKey) => {
-                                config[key].relationships.forEach((entity)=> {
-                                    if (entity !== null) {
-                                        set.add({entity: entity, name: key});
-                                    }
-                                });
+                                if(config[key]) {  // when config[objectKey] value is a DSL, but the config does not have a [key] property
+                                    console.log("testing this: " , config[key], key, config, objectKey);
+                                    config[key].relationships.forEach((entity) => {
+                                        if (entity !== null) {
+                                            set.add({entity: entity, name: key});
+                                        }
+                                    });
+                                }
                                 return set;
                             }, set);
                     }
@@ -590,7 +593,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                     resolve(parsed);
                 }
             } catch (ex) {
-                $log.debug("Cannot detect whether this is a DSL expression; assuming not", ex);
+                $log.debug("Cannot detect whether this is a DSL expression; assuming not: " + input, ex);
                 reject(ex, input);
             }
         });
