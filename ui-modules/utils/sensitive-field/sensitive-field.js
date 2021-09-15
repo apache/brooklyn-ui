@@ -19,7 +19,6 @@
 import angular from 'angular';
 
 const MODULE_NAME = 'brooklyn.component.sensitive-field';
-export const SENSITIVE_FIELD_REGEX = /^.*(passw(or)?d|credentials?|secret|private|access\.certs?|access\.keys?).*$/i;
 const CLASS_NAME = 'sensitive-field';
 const CLASS_NAME_SHOW = 'sensitive-field-show';
 
@@ -28,6 +27,26 @@ angular.module(MODULE_NAME, [])
 
 export default MODULE_NAME;
 
+var SENSITIVE_FIELDS = ['password','passwd','credential','secret','private','access.certs','access.keys'];
+var SENSITIVE_FIELDS_BLOCKED = false;
+
+export function isSensitiveFieldPlaintextValueBlocked() {
+    return SENSITIVE_FIELDS_BLOCKED;
+}
+export function isSensitiveFieldName(name) {
+    if (!name && !name.toLowerCase) return false;
+    let ln = name.toLowerCase();
+    return !! SENSITIVE_FIELDS.find(f => ln.indexOf(f)>=0);
+}
+export function setSensitiveFields(list, blocked) {
+    let old = SENSITIVE_FIELDS;
+    if (blocked === true || blocked === false) {
+        SENSITIVE_FIELDS_BLOCKED = blocked;
+    }
+    if (list) SENSITIVE_FIELDS = list;
+    return old;
+}
+
 export function SensitiveFieldDirective() {
     return {
         restrict: 'A',
@@ -35,7 +54,7 @@ export function SensitiveFieldDirective() {
         link: link
     };
     function link($scope, $element) {
-        if (SENSITIVE_FIELD_REGEX.test($scope.fieldName.trim()) || $scope.hideValue) {
+        if (isSensitiveFieldName($scope.fieldName.trim()) || $scope.hideValue) {
             $element.addClass(CLASS_NAME);
             $element.bind('click', clickEventHandler);
         } else {

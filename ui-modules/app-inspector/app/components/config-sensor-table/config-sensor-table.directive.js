@@ -20,7 +20,7 @@ import angular from "angular";
 import ngSanitize from "angular-sanitize";
 import ngClipboard from "ngclipboard";
 import template from "./config-sensor-table.template.html";
-import { SENSITIVE_FIELD_REGEX } from "brooklyn-ui-utils/sensitive-field/sensitive-field";
+import { isSensitiveFieldName } from "brooklyn-ui-utils/sensitive-field/sensitive-field";
 
 const MODULE_NAME = 'inspector.config-sensor.table';
 
@@ -44,7 +44,7 @@ export function configSensorTableDirective(brSnackbar) {
     function link(scope) {
         scope.items = [];
         scope.mapInfo = {};
-        scope.WARNING_TEXT = 'This value is identified as potentially sensitive based on the name and so it ' +
+        scope.WARNING_TEXT = 'This value is identified as potentially sensitive based on the name and so is ' +
             'blurred here by default. However it is supplied in the blueprint as plaintext which is not secure. An ' +
             'external provider should be used to store this value with a DSL expression supplied in the blueprint to ' +
             'retrieve the value.';
@@ -85,7 +85,7 @@ export function brLinkyFilter($filter, $state, $sanitize) {
         } else if (!angular.isString(input)) {
             return angular.toJson(input);
         } else if (angular.isObject(key) && angular.isString(key.name)
-            && (key.name.indexOf('ssh') > -1 || SENSITIVE_FIELD_REGEX.test(key.name))) {
+            && (key.name.indexOf('ssh') > -1 || isSensitiveFieldName(key.name))) {
             return input;
         } else if (angular.isObject(key) && key.links && key.links.hasOwnProperty('action:open')) {
             let matches = key.links['action:open'].match(/\#\/v1\/applications\/([^\/]+)\/entities\/([^\/]+)/i);
