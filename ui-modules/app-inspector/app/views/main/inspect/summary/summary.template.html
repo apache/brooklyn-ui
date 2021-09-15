@@ -186,15 +186,15 @@
         </heading>
 
         <div>
-            <loading-state error="vm.error.config" ng-if="!vm.config"></loading-state>
-            <config-sensor-table data="vm.config" info="vm.configInfo" ng-if="vm.config"></config-sensor-table>
+            <loading-state error="vm.error.configItems" ng-if="!vm.configItems"></loading-state>
+            <config-sensor-table data="vm.configItems" info="vm.configInfo" ng-if="vm.configItems"></config-sensor-table>
         </div>
         <div class="table-option-footer">
-            <button ng-click="vm.toggleConfigResolved()" ng-class="{ 'btn-outline': !vm.configResolved, 'btn-accent': vm.configResolved }">
-                <span ng-if="vm.configResolved" uib-tooltip="Show unresolved DSL values">
+            <button ng-click="vm.toggleConfigResolved()" ng-class="{ 'btn-outline': !vm.showResolvedConfig, 'btn-accent': vm.showResolvedConfig }">
+                <span ng-if="vm.showResolvedConfig" uib-tooltip="Show unresolved DSL values">
                     <i class="fa fa-code"></i>
                 </span>
-                <span ng-if="!vm.configResolved" uib-tooltip="Show resolved values">
+                <span ng-if="!vm.showResolvedConfig" uib-tooltip="Show resolved values">
                     <i class="fa fa-code"></i>
                 </span>
             </button>

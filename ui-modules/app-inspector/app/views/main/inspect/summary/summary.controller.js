@@ -20,6 +20,7 @@ import angular from "angular";
 import map from "lodash/map";
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./summary.template.html";
+import { SENSITIVE_FIELD_REGEX } from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
 
 export const summaryState = {
     name: 'main.inspect.summary',
@@ -47,6 +48,9 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
         'service.problems': 'Service problem',
         'service.notUp.indicators': 'Service indicator'
     };
+    // the eventual entries to share with the sensor table component
+    vm.configItems = null;
+    vm.configItemsInfo = null;
 
     let observers = [];
 
@@ -63,51 +67,82 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
         vm.error.entity = 'Cannot load entity with ID: ' + entityId;
     });
 
-    vm.configResolved = false;
+    vm.showResolvedConfig = false;
 
-    vm.refreshConfig = (initialSubscription) => {
-        entityApi.entityConfigState(applicationId, entityId, {
-                    params: {
-                        suppressSecrets: true,
-                        skipResolution: !vm.configResolved,
-                    },
-                    paramSerializer: (params) => $httpParamSerializer({
-                        ...params,
-                        skipResolution: !vm.configResolved
-                    }),
-                }).then((response)=> {
-            let processConfig = (response) => {
-                vm.config = response.data;
-                vm.error.config = undefined;
-            };
-
-            processConfig(response);
-            if (initialSubscription) {
-                observers.push(response.subscribe(processConfig));
-            }
-        }).catch((error)=> {
-            vm.error.config = 'Cannot load configuration for entity with ID: ' + entityId;
-        });
-
-        entityApi.entityConfigInfo(applicationId, entityId).then((response) => {
-            let processConfig = (response) => {
-                vm.configInfo = response.data;
-                vm.error.config = undefined;
-            };
-
-            processConfig(response);
-            if (initialSubscription) {
-                observers.push(response.subscribe(processConfig));
-            }
-        }).catch((error) => {
-            vm.error.config = 'Cannot load configuration information for entity with ID: ' + entityId;
+    function getConfigState(resolved=false) {
+        return entityApi.entityConfigState(applicationId, entityId, {
+            params: {
+                suppressSecrets: true,
+                skipResolution: !resolved,
+            },
+            paramSerializer: (params) => $httpParamSerializer({
+                ...params,
+                skipResolution: !resolved,
+            }),
         });
     }
-    vm.refreshConfig(true);
+
+    function getConfigInfo() {
+        return entityApi.entityConfigInfo(applicationId, entityId);
+    }
+
+    // no return
+    vm.refreshConfig = () => {
+        const handleError = (message) => {
+            vm.error.configItems = message;
+            vm.configItems = null;
+            vm.configItemsInfo = null;
+        }
+
+        const successHandler = (key) => (response) => {
+            vm[key] = response.data;
+            vm.error.configItems = null;
+
+            // TODO: ideally move this to a $watch block
+            if (vm.config && vm.configResolved && vm.configInfo) {
+                vm.configItems = Object.entries(vm.showResolvedConfig ? vm.configResolved : vm.config)
+                    .map(([key, value]) => ({
+                        key,
+                        value,
+                        // marking as unsafe if the field name looks sensitive
+                        // and the unresolved value does *not* come from a secure external source
+                        isUnsafe: SENSITIVE_FIELD_REGEX.test(key.trim()) &&
+                            !vm.config[key].toString().startsWith('$brooklyn:'),
+                    }));
+            }
+        }
+
+        Promise.allSettled([getConfigState(), getConfigState(true), getConfigInfo()])
+            .then(([configResult, configResolvedResult, configInfoResult]) => {
+                if (configResult.status === 'rejected') {
+                    handleError(`Could not load configuration for entity with ID: ${entityId}`);
+                } else if (configResolvedResult.status === 'rejected') {
+                    handleError(`Could not load resolved configuration for entity with ID: ${entityId}`);
+                } else if (configInfoResult.status === 'rejected') {
+                    handleError(`Could not load resolved configuration information for entity with ID: ${entityId}`);
+                } else { // all 200-OK case
+                    vm.error.configItems = undefined; // clearing error flag
+                    // set configItems && configItemsInfo
+
+                    const configHandler = successHandler('config');
+                    const configResolvedHandler = successHandler('configResolved');
+                    const configInfoHandler = successHandler('configInfo');
+
+                    configHandler(configResult.value);
+                    configResolvedHandler(configResolvedResult.value);
+                    configInfoHandler(configInfoResult.value);
+
+                    // making sure that changes are propagated to table.
+                    $scope.$apply();
+                }
+            });
+    }
+
+    vm.refreshConfig();
 
     vm.toggleConfigResolved = () => {
-        vm.configResolved = !vm.configResolved;
-        vm.refreshConfig(false);
+        vm.showResolvedConfig = !vm.showResolvedConfig;
+        vm.refreshConfig();
     }
 
     entityApi.entitySpecList(applicationId, entityId).then((response)=> {
