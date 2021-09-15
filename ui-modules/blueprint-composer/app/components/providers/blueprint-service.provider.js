@@ -84,11 +84,12 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                         Object.keys(config)
                             .filter(objectKey => config[objectKey] instanceof Dsl)
                             .reduce((set, objectKey) => {
-                                config[key].relationships.forEach((entity)=> {
-                                    if (entity !== null) {
-                                        set.add({entity: entity, name: key});
-                                    }
-                                });
+                                    config[objectKey].relationships.forEach((entity) => {
+                                        if (entity !== null) {
+                                            // name is the name of a complex relationship, and it consists of a property name, not its members. That is why here, name is set to 'key' not 'objectKey'.
+                                            set.add({entity: entity, name: key});
+                                        }
+                                    });
                                 return set;
                             }, set);
                     }
@@ -590,7 +591,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                     resolve(parsed);
                 }
             } catch (ex) {
-                $log.debug("Cannot detect whether this is a DSL expression; assuming not", ex);
+                $log.debug("Cannot detect whether this is a DSL expression; assuming not: " + input, ex);
                 reject(ex, input);
             }
         });
