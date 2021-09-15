@@ -127,9 +127,9 @@
         </div>
     </div>
 
-    <div uib-alert class="alert-danger" ng-if="state.error" dismiss-on-timeout="10000" close="state.error = undefined">
+    <div uib-alert class="alert-danger" ng-if="state.error" close="state.error = undefined">
         <h4>Failed to save</h4>
-        <p>{{state.error}}</p>
+        <p class="error-scroll">{{state.error}}</p>
     </div>
 </div>
 
