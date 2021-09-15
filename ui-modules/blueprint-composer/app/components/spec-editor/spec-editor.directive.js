@@ -28,7 +28,7 @@ import brooklynDslEditor from '../dsl-editor/dsl-editor';
 import brooklynDslViewer from '../dsl-viewer/dsl-viewer';
 import template from './spec-editor.template.html';
 import {graphicalState} from '../../views/main/graphical/graphical.state';
-import {SENSITIVE_FIELD_REGEX} from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
+import {isSensitiveFieldName} from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
 import {computeQuickFixesForIssue} from '../quick-fix/quick-fix';
 import scriptTagDecorator from 'brooklyn-ui-utils/script-tag-non-overwrite/script-tag-non-overwrite';
 
@@ -772,7 +772,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         };
         specEditor.isSensitiveField = (item) => {
             // should the field support masking
-            return SENSITIVE_FIELD_REGEX.test(item.name);
+            return isSensitiveFieldName(item.name);
         };
         specEditor.isHiddenSensitiveField = (item) => {
             // is the field currently in a masked state
