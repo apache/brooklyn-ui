@@ -36,29 +36,24 @@ export function configSensorTableDirective(brSnackbar) {
         template: template,
         scope: {
             data: '=',
-            info: '='
+            info: '=',
         },
-        link: link
+        link,
     };
 
     function link(scope) {
         scope.items = [];
         scope.mapInfo = {};
-        scope.$watch('data', ()=> {
-            if (angular.isObject(scope.data)) {
-                scope.items = [];
-                Object.keys(scope.data).forEach((key)=> {
-                    scope.items.push({
-                        key: key,
-                        value: scope.data[key]
-                    });
-                });
-            }
-        });
-        scope.$watch('info', ()=> {
+        scope.WARNING_TEXT = 'This value is identified as potentially sensitive based on the name and so it ' +
+            'blurred here by default. However it is supplied in the blueprint as plaintext which is not secure. An ' +
+            'external provider should be used to store this value with a DSL expression supplied in the blueprint to ' +
+            'retrieve the value.';
+
+        scope.$watch('info', () => {
             if (angular.isArray(scope.info)) {
-                scope.info.reduce((global, item)=> {
-                    scope.mapInfo[item.name] = item;
+                scope.mapInfo = scope.info.reduce((pool, infoItem) => {
+                    pool[infoItem.name] = infoItem;
+                    return pool;
                 }, {});
             }
         });

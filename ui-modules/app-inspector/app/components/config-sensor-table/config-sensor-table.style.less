@@ -16,15 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-.copyable-value {
-  position: relative;
-  & > button {
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    display: none;
+.config-value {
+  > .content {
+    float: left;
+    width: 88%;
   }
-  &:hover > button {
-    display: inline-block;
+  > .extras {
+    float: right;
+    width: 12%;
+  }
+
+  .copy-btn {
+    visibility: hidden;
+  }
+
+  &:hover .copy-btn {
+    visibility: visible !important;
   }
 }
