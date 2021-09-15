@@ -44,7 +44,7 @@ export function configSensorTableDirective(brSnackbar) {
     function link(scope) {
         scope.items = [];
         scope.mapInfo = {};
-        scope.WARNING_TEXT = 'This value is identified as potentially sensitive based on the name and so it ' +
+        scope.WARNING_TEXT = 'This value is identified as potentially sensitive based on the name and so is ' +
             'blurred here by default. However it is supplied in the blueprint as plaintext which is not secure. An ' +
             'external provider should be used to store this value with a DSL expression supplied in the blueprint to ' +
             'retrieve the value.';
