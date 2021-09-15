@@ -150,8 +150,8 @@ export function quickLaunchDirective() {
 
         function deployApp() {
             $scope.deploying = true;
-
-            Promise.resolve(quickLaunch.buildYaml())
+            let useExtensions = $scope.app.plan.format.includes('camp') ? false : true;
+            Promise.resolve(quickLaunch.buildYaml(useExtensions))
                 .then(appYaml => {
                     quickLaunch.planSender(appYaml)
                         .then((response) => {
