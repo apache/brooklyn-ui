@@ -31,7 +31,6 @@
     "test": "karma start ./config/test/karma.config.js",
     "lint": "./node_modules/.bin/eslint app/**/*.js",
     "e2e": "protractor ./config/test/protractor.config.js",
-    "branding": "BROOKLYN_UI_BRAND_DIR=/Users/mykola/IdeaProjects/cloudpack-megan/package/branding npm run start"
   },
   "engines": {
     "node": ">=8.0.0",
