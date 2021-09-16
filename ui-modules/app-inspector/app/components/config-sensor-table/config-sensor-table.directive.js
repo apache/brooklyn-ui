@@ -37,7 +37,7 @@ export function configSensorTableDirective(brSnackbar) {
         scope: {
             data: '=',
             info: '=',
-            configItemsUnsafeMap: '=',
+            configitemsunsafemap: '=',
         },
         link,
     };
@@ -50,21 +50,15 @@ export function configSensorTableDirective(brSnackbar) {
             'external provider should be used to store this value with a DSL expression supplied in the blueprint to ' +
             'retrieve the value.';
 
-        scope.$watchGroup(['data','configItemsUnsafeMap'], (changes)=> {
+        scope.$watchGroup(['data','configitemsunsafemap'], (changes)=> {
             if (angular.isObject(scope.data)) {
-                console.log('scope',scope)
-                console.log('scope.configItemsUnsafeMap',scope.configItemsUnsafeMap)
                 scope.items = Object.entries(scope.data)
                     .map(([key, value]) => ({
                         key,
                         value,
-                        isUnsafe: (scope.configItemsUnsafeMap || {})[key],
+                        isUnsafe: (scope.configitemsunsafemap || {})[key],
                     }));
             }
-        });
-
-        scope.$watch('configItemsUnsafeMap', () => {
-            console.log('scope.configItemsUnsafeMap 222',scope.configItemsUnsafeMap)
         });
 
         scope.$watch('info', () => {

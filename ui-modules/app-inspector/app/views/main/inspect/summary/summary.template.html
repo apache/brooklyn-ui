@@ -187,10 +187,9 @@
 
         <div>
             <loading-state error="vm.error.configItems" ng-if="!vm.configItems"></loading-state>
-            configItemsUnsafeMap outer {{vm.configItemsUnsafeMap}}
             <config-sensor-table ng-if="vm.configItems"
                 data="vm.configItems" info="vm.configInfo"
-                configItemsUnsafeMap="vm.configItemsUnsafeMap"
+                configitemsunsafemap="vm.configItemsUnsafeMap"
             ></config-sensor-table>
         </div>
         <div class="table-option-footer">

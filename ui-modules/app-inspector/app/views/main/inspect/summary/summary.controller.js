@@ -105,16 +105,6 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
                 vm.configItemsUnsafeMap = mapValues(vm.configItems, (value, key) =>
                     SENSITIVE_FIELD_REGEX.test(key.trim()) && !vm.config[key].toString().startsWith('$brooklyn:')
                 );
-
-                // vm.configItems = Object.entries(vm.showResolvedConfig ? vm.configResolved : vm.config)
-                //     .map(([key, value]) => ({
-                //         key,
-                //         value,
-                //         // marking as unsafe if the field name looks sensitive
-                //         // and the unresolved value does *not* come from a secure external source
-                //         isUnsafe: SENSITIVE_FIELD_REGEX.test(key.trim()) &&
-                //             !vm.config[key].toString().startsWith('$brooklyn:'),
-                //     }));
             }
         }
 
@@ -139,8 +129,6 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
                     configInfoHandler(configInfoResult.value);
 
                     // making sure that changes are propagated to table.
-                    console.log('vm.configItems',vm.configItems)
-                    console.log('vm.configItemsUnsafeMap',vm.configItemsUnsafeMap)
                     $scope.$apply();
                 }
             });
