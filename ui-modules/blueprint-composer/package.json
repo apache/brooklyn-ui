@@ -30,7 +30,7 @@
     "start": "node ./config/server.js",
     "test": "karma start ./config/test/karma.config.js",
     "lint": "./node_modules/.bin/eslint app/**/*.js",
-    "e2e": "protractor ./config/test/protractor.config.js",
+    "e2e": "protractor ./config/test/protractor.config.js"
   },
   "engines": {
     "node": ">=8.0.0",
