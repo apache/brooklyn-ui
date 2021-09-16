@@ -126,6 +126,7 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
         $scope.type = responses[1];
         this.specItem = $scope.type.specList[0];
         $scope.typeFormat = this.specItem.format ? 'format=' + this.specItem.format + '&' : '';
+        $scope.type.plan.format = this.specItem.format;
         $scope.versions = responses[2].map(typeVersion => ({
             bundleSymbolicName: typeVersion.containingBundle.split(':')[0],
             bundleVersion: typeVersion.containingBundle.split(':')[1],

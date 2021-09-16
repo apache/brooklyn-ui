@@ -22,6 +22,7 @@ import {Issue, ISSUE_LEVEL} from '../util/model/issue.model';
 import {Dsl} from "../util/model/dsl.model";
 import jsYaml from "js-yaml";
 import typeNotFoundIcon from "../../img/icon-not-found.svg";
+import {isSensitiveFieldName, isSensitiveFieldPlaintextValueBlocked} from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
 
 const MODULE_NAME = 'brooklyn.composer.service.blueprint-service';
 const TAG = 'SERVICE :: BLUEPRINT :: ';
@@ -84,11 +85,12 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                         Object.keys(config)
                             .filter(objectKey => config[objectKey] instanceof Dsl)
                             .reduce((set, objectKey) => {
-                                config[key].relationships.forEach((entity)=> {
-                                    if (entity !== null) {
-                                        set.add({entity: entity, name: key});
-                                    }
-                                });
+                                    config[objectKey].relationships.forEach((entity) => {
+                                        if (entity !== null) {
+                                            // name is the name of a complex relationship, and it consists of a property name, not its members. That is why here, name is set to 'key' not 'objectKey'.
+                                            set.add({entity: entity, name: key});
+                                        }
+                                    });
                                 return set;
                             }, set);
                     }
@@ -426,6 +428,30 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
     }
 
     function refreshConfigConstraints(entity) {
+        function checkSensitiveFields(config) {
+            if (isSensitiveFieldPlaintextValueBlocked() && isSensitiveFieldName(config.name)) {
+                let v = entity.config.get(config.name);
+                if (!v) return;
+                let t = typeof v;
+                if (t === 'object') return;
+                let invalid = false;
+                if (t === 'string') {
+                    if (t.length) {
+                        if (t.startsWith("$brooklyn:")) {
+                            invalid = false;
+                        } else {
+                            invalid = true;
+                        }
+                    }
+                } else if (t === 'number') {
+                    invalid = true;
+                }
+                if (invalid) {
+                    let message = `Plaintext values are not permitted for <samp>${config.name}</samp>. <br/>Use DSL with externalized configuration.`;
+                    entity.addIssue(Issue.builder().group('config').ref(config.name).message($sce.trustAsHtml(message)).build());
+                }
+            }
+        }
         function checkConstraints(config) {
             for (let constraintO of config.constraints) {
                 let message = null;
@@ -504,6 +530,9 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
         }
         return $q((resolve) => {
             if (entity.miscData.has('config')) {
+                entity.miscData.get('config')
+                    .forEach(checkSensitiveFields);
+
                 entity.miscData.get('config')
                     .filter(config => config.constraints && config.constraints.length > 0)
                     .forEach(checkConstraints);
@@ -590,7 +619,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                     resolve(parsed);
                 }
             } catch (ex) {
-                $log.debug("Cannot detect whether this is a DSL expression; assuming not", ex);
+                $log.debug("Cannot detect whether this is a DSL expression; assuming not: " + input, ex);
                 reject(ex, input);
             }
         });

@@ -20,7 +20,7 @@ import angular from "angular";
 import { map, mapValues } from "lodash";
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./summary.template.html";
-import { SENSITIVE_FIELD_REGEX } from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
+import { isSensitiveFieldName } from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
 
 export const summaryState = {
     name: 'main.inspect.summary',
@@ -103,7 +103,7 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
             if (vm.config && vm.configResolved && vm.configInfo) {
                 vm.configItems = vm.showResolvedConfig ? vm.configResolved : vm.config;
                 vm.configItemsUnsafeMap = mapValues(vm.configItems, (value, key) =>
-                    SENSITIVE_FIELD_REGEX.test(key.trim()) && !vm.config[key].toString().startsWith('$brooklyn:')
+                    isSensitiveFieldName(key.trim()) && !vm.config[key].toString().startsWith('$brooklyn:')
                 );
             }
         }

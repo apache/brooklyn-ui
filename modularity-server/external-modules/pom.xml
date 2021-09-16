@@ -103,7 +103,7 @@
                     <instructions>
 
       <!-- exportScr and below from https://felix.apache.org/documentation/faqs/apache-felix-bundle-plugin-faq.html -->
-      <!-- Enable processing of OSGI DS component and metatype annotations - only needed for some type of tests it seems but no harm in having it --> 
+      <!-- Enable processing of OSGI DS component and metatype annotations - only needed for some type of tests it seems but no harm in having it -->
       <_dsannotations>*</_dsannotations>
       <_metatypeannotations>*</_metatypeannotations>
 
@@ -114,6 +114,7 @@
                         <Export-Package>
                             !*
                         </Export-Package>
+                        <Service-Component>*</Service-Component>  <!-- this prevents it from _adding_ the same entry on every non-clean run -->
                     </instructions>
                 </configuration>
             </plugin>

@@ -21,6 +21,7 @@ import './server-status.less';
 import angular from 'angular';
 import uibModal from 'angular-ui-bootstrap/src/modal/index-nocss';
 import modalTemplate from './server-status.template.html';
+import {setSensitiveFields} from "../sensitive-field/sensitive-field";
 
 const MODULE_NAME = 'br.utils.server-status';
 const COOKIE_KEY = "br-server-status";
@@ -94,6 +95,11 @@ export function BrServerStatusDirective() {
                     state = BrServerStatusModalController.STATES.NOT_HA_MASTER;
                 } else if (!stateData.healthy) {
                     state = BrServerStatusModalController.STATES.UNHEALTHY;
+                }
+
+                let sensitiveFields = stateData['brooklyn.security.sensitive.fields'];
+                if (sensitiveFields) {
+                    setSensitiveFields(sensitiveFields.tokens, sensitiveFields['plaintext.blocked']);
                 }
             }
             previousState = state;

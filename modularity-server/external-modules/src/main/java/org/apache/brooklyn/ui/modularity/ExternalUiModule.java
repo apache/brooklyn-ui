@@ -48,7 +48,7 @@ public class ExternalUiModule implements UiModule {
 
     static final String PID = "org.apache.brooklyn.ui.external.module";
 
-    private static final Logger LOG = LoggerFactory.getLogger(ExternalUiModule.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PID);
     private static final Dictionary<String, ?> EMPTY_DICTIONARY = new Hashtable<>();
 
     private final String MODULE_TYPE = "external-ui-module";
@@ -71,6 +71,7 @@ public class ExternalUiModule implements UiModule {
 
     @Activate
     public void activate(final Map<String, String> properties) {
+        LOG.debug("Activating module "+this+": "+properties);
         if (!properties.containsKey(KEY_URL) && properties.containsKey("component.id")) {
             // activation properties aren't usually for a module; do this check to suppress warning
             LOG.debug("Not setting module properties for activation properties "+properties);
@@ -81,6 +82,7 @@ public class ExternalUiModule implements UiModule {
 
     @Modified
     public void modified(final Map<String, String> properties) {
+        LOG.debug("Modified module "+this+": "+properties);
         this.setModuleProperties(properties);
     }
 
