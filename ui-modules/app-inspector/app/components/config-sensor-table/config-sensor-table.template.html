@@ -42,7 +42,7 @@
                     <span ng-if="item.value !== null" ng-bind-html="item.value | brLinky:mapInfo[item.key]"></span>
                 </span>
                 <span class="extras">
-                    <i class="fa fa-exclamation-triangle warning-icon" ng-class="{invisible: !item.isUnsafe}"
+                    <i class="fa fa-exclamation-triangle warning-icon" ng-class="{invisible: !item.isPlaintextSensitiveValue}"
                        uib-popover={{WARNING_TEXT}} popover-trigger="'mouseenter'" popover-animation="true"
                        popover-placement="left"
                     ></i>

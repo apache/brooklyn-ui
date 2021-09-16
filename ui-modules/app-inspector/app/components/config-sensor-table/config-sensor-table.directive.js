@@ -37,7 +37,7 @@ export function configSensorTableDirective(brSnackbar) {
         scope: {
             data: '=',
             info: '=',
-            configitemsunsafemap: '=',
+            checkPlaintextSensitiveKeyValue: '<',
         },
         link,
     };
@@ -50,13 +50,13 @@ export function configSensorTableDirective(brSnackbar) {
             'external provider should be used to store this value with a DSL expression supplied in the blueprint to ' +
             'retrieve the value.';
 
-        scope.$watchGroup(['data','configitemsunsafemap'], (changes)=> {
+        scope.$watchGroup(['data'], (changes)=> {
             if (angular.isObject(scope.data)) {
                 scope.items = Object.entries(scope.data)
                     .map(([key, value]) => ({
                         key,
                         value,
-                        isUnsafe: (scope.configitemsunsafemap || {})[key],
+                        isPlaintextSensitiveValue: scope.checkPlaintextSensitiveKeyValue && scope.checkPlaintextSensitiveKeyValue(key, value),
                     }));
             }
         });

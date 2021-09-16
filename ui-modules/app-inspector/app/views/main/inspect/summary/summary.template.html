@@ -189,7 +189,7 @@
             <loading-state error="vm.error.configItems" ng-if="!vm.configItems"></loading-state>
             <config-sensor-table ng-if="vm.configItems"
                 data="vm.configItems" info="vm.configInfo"
-                configitemsunsafemap="vm.configItemsUnsafeMap"
+                check-plaintext-sensitive-key-value="vm.checkPlaintextSensitiveKeyValue"
             ></config-sensor-table>
         </div>
         <div class="table-option-footer">

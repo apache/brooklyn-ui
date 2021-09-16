@@ -17,7 +17,7 @@
  * under the License.
  */
 import angular from "angular";
-import { map, mapValues } from "lodash";
+import map from "lodash";
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./summary.template.html";
 import { isSensitiveFieldName } from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
@@ -87,6 +87,9 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
         return entityApi.entityConfigInfo(applicationId, entityId);
     }
 
+    vm.checkPlaintextSensitiveKeyValue = (key,value) =>
+        key && vm.config && vm.config[key] && isSensitiveFieldName(key) && !vm.config[key].toString().startsWith('$brooklyn:');
+
     // no return
     vm.refreshConfig = () => {
         const handleError = (message) => {
@@ -102,9 +105,6 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
             // TODO: ideally move this to a $watch block
             if (vm.config && vm.configResolved && vm.configInfo) {
                 vm.configItems = vm.showResolvedConfig ? vm.configResolved : vm.config;
-                vm.configItemsUnsafeMap = mapValues(vm.configItems, (value, key) =>
-                    isSensitiveFieldName(key.trim()) && !vm.config[key].toString().startsWith('$brooklyn:')
-                );
             }
         }
 
