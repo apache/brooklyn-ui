@@ -30,7 +30,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="item in data | orderBy:'key':sortReverse | filter:filterValue as filterResult track by item.key">
+        <tr ng-repeat="item in items | orderBy:'key':sortReverse | filter:filterValue as filterResult track by item.key">
             <td>
                 <span>{{item.key}}</span>
                 <i ng-if="mapInfo[item.key].description" class="fa fa-info-circle pull-right" uib-popover="{{mapInfo[item.key].description}}" popover-trigger="'mouseenter'" popover-title="Description" popover-animation="true"></i>
