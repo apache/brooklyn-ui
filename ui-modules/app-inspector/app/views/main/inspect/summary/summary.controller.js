@@ -17,7 +17,7 @@
  * under the License.
  */
 import angular from "angular";
-import map from "lodash/map";
+import { map, mapValues } from "lodash";
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./summary.template.html";
 import { SENSITIVE_FIELD_REGEX } from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
@@ -50,6 +50,7 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
     };
     // the eventual entries to share with the sensor table component
     vm.configItems = null;
+    vm.configItemsUnsafeMap = null;
     vm.configItemsInfo = null;
 
     let observers = [];
@@ -100,15 +101,20 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
 
             // TODO: ideally move this to a $watch block
             if (vm.config && vm.configResolved && vm.configInfo) {
-                vm.configItems = Object.entries(vm.showResolvedConfig ? vm.configResolved : vm.config)
-                    .map(([key, value]) => ({
-                        key,
-                        value,
-                        // marking as unsafe if the field name looks sensitive
-                        // and the unresolved value does *not* come from a secure external source
-                        isUnsafe: SENSITIVE_FIELD_REGEX.test(key.trim()) &&
-                            !vm.config[key].toString().startsWith('$brooklyn:'),
-                    }));
+                vm.configItems = vm.showResolvedConfig ? vm.configResolved : vm.config;
+                vm.configItemsUnsafeMap = mapValues(vm.configItems, (value, key) =>
+                    SENSITIVE_FIELD_REGEX.test(key.trim()) && !vm.config[key].toString().startsWith('$brooklyn:')
+                );
+
+                // vm.configItems = Object.entries(vm.showResolvedConfig ? vm.configResolved : vm.config)
+                //     .map(([key, value]) => ({
+                //         key,
+                //         value,
+                //         // marking as unsafe if the field name looks sensitive
+                //         // and the unresolved value does *not* come from a secure external source
+                //         isUnsafe: SENSITIVE_FIELD_REGEX.test(key.trim()) &&
+                //             !vm.config[key].toString().startsWith('$brooklyn:'),
+                //     }));
             }
         }
 
@@ -133,6 +139,8 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
                     configInfoHandler(configInfoResult.value);
 
                     // making sure that changes are propagated to table.
+                    console.log('vm.configItems',vm.configItems)
+                    console.log('vm.configItemsUnsafeMap',vm.configItemsUnsafeMap)
                     $scope.$apply();
                 }
             });

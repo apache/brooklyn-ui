@@ -187,7 +187,11 @@
 
         <div>
             <loading-state error="vm.error.configItems" ng-if="!vm.configItems"></loading-state>
-            <config-sensor-table data="vm.configItems" info="vm.configInfo" ng-if="vm.configItems"></config-sensor-table>
+            configItemsUnsafeMap outer {{vm.configItemsUnsafeMap}}
+            <config-sensor-table ng-if="vm.configItems"
+                data="vm.configItems" info="vm.configInfo"
+                configItemsUnsafeMap="vm.configItemsUnsafeMap"
+            ></config-sensor-table>
         </div>
         <div class="table-option-footer">
             <button ng-click="vm.toggleConfigResolved()" ng-class="{ 'btn-outline': !vm.showResolvedConfig, 'btn-accent': vm.showResolvedConfig }">

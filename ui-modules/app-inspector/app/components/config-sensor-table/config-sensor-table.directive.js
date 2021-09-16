@@ -37,6 +37,7 @@ export function configSensorTableDirective(brSnackbar) {
         scope: {
             data: '=',
             info: '=',
+            configItemsUnsafeMap: '=',
         },
         link,
     };
@@ -49,6 +50,23 @@ export function configSensorTableDirective(brSnackbar) {
             'external provider should be used to store this value with a DSL expression supplied in the blueprint to ' +
             'retrieve the value.';
 
+        scope.$watchGroup(['data','configItemsUnsafeMap'], (changes)=> {
+            if (angular.isObject(scope.data)) {
+                console.log('scope',scope)
+                console.log('scope.configItemsUnsafeMap',scope.configItemsUnsafeMap)
+                scope.items = Object.entries(scope.data)
+                    .map(([key, value]) => ({
+                        key,
+                        value,
+                        isUnsafe: (scope.configItemsUnsafeMap || {})[key],
+                    }));
+            }
+        });
+
+        scope.$watch('configItemsUnsafeMap', () => {
+            console.log('scope.configItemsUnsafeMap 222',scope.configItemsUnsafeMap)
+        });
+
         scope.$watch('info', () => {
             if (angular.isArray(scope.info)) {
                 scope.mapInfo = scope.info.reduce((pool, infoItem) => {
@@ -57,6 +75,7 @@ export function configSensorTableDirective(brSnackbar) {
                 }, {});
             }
         });
+
         scope.onClipboardSuccess = (e)=> {
             angular.element(e.trigger).triggerHandler('copied');
             e.clearSelection();
