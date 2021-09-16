@@ -1332,7 +1332,6 @@ export function D3Blueprint(container, options) {
                     }
                 }
                 confirmationElement.remove();
-                confirmationElement = null;
             } else {
                 // NOOP. The user user clicks on the 'X' button or elsewhere on the canvas to close the menu.
             }
