@@ -31,6 +31,7 @@ import {graphicalState} from '../../views/main/graphical/graphical.state';
 import {isSensitiveFieldName} from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
 import {computeQuickFixesForIssue} from '../quick-fix/quick-fix';
 import scriptTagDecorator from 'brooklyn-ui-utils/script-tag-non-overwrite/script-tag-non-overwrite';
+import brooklynCatalogApi from 'brooklyn-ui-utils/providers/catalog-api.provider';
 
 const MODULE_NAME = 'brooklyn.components.spec-editor';
 const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
@@ -42,8 +43,8 @@ const SUBSECTION = {
 
 export const SUBSECTION_TEMPLATE_OTHERS_URL = 'blueprint-composer/component/spec-editor/section-others.html';
 
-angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer, scriptTagDecorator])
-    .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', '$compile', 'blueprintService', 'composerOverrides', 'mdHelper', specEditorDirective])
+angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer, scriptTagDecorator, brooklynCatalogApi])
+    .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', '$compile', 'blueprintService', 'composerOverrides', 'mdHelper', 'catalogApi', specEditorDirective])
     .filter('specEditorConfig', specEditorConfigFilter)
     .filter('specEditorType', specEditorTypeFilter)
     .run(['$templateCache', templateCache]);
@@ -97,7 +98,9 @@ export const PARAM_TYPES = [
     'string', 'boolean', 'integer', 'double', 'duration', ' port'
 ];
 
-export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, $state, $compile, blueprintService, composerOverrides, mdHelper) {
+export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, $state, $compile, blueprintService, composerOverrides, mdHelper, catalogApi) {
+    catalogApi.getTypeVersions('org.apache.brooklyn.entity.proxy.nginx.NginxController')
+        .then(res=>console.log('Editor got', res))
     return {
         restrict: 'E',
         scope: {
@@ -126,6 +129,12 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope.REPLACED_DSL_ENTITYSPEC = REPLACED_DSL_ENTITYSPEC;
         scope.parameters = [];
         scope.config = {};
+
+        catalogApi.getTypeVersions(scope.model.type)
+            .then((versions) => {
+                scope.availableVersions = (versions || []).map(({version}) => version );
+                console.log(`scope.availableVersions for "${scope.model.type}":`, scope.availableVersions)
+            })
 
         scope.sections = [
             'blueprint-composer/component/spec-editor/section-header.html',
@@ -1142,7 +1151,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     var i=2;
                     while (dups[paramRef.name+''+i]) i++;
                     // users won't see this message (unless they have the console open) so it might be surprising
-                    // but other behaviours (like the UI breaking) are worse, and not sure of a simple better way to handle 
+                    // but other behaviours (like the UI breaking) are worse, and not sure of a simple better way to handle
                     $log.warn("Duplicate parameter '"+paramRef.name+"' found; changing to '"+paramRef.name+''+i+"'");
                     paramRef.name = paramRef.name+''+i;
                 }
