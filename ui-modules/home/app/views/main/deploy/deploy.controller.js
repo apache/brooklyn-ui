@@ -53,7 +53,6 @@ export function deployStateController($scope, $state, $stateParams, $uibModal, b
         windowClass: 'quick-launch-modal',
         resolve: {
             entitySpec: ['catalogApi', (catalogApi) => {
-
                 return catalogApi.getBundleType($stateParams.bundleSymbolicName, $stateParams.bundleVersion, $stateParams.typeSymbolicName, $stateParams.typeVersion);
             }],
             locations: ['locationApi', locationApi => locationApi.getLocations()],
