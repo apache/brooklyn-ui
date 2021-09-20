@@ -125,19 +125,19 @@ spec-editor {
     .media {
         height: 60px;
         img {
-            max-width: 60px;
-            max-height: 60px;
+          max-width: 60px;
+          max-height: 60px;
         }
         .media-left {
-            padding-right: 9px;
-            padding-left: 3px;
+          padding-right: 9px;
+          padding-left: 3px;
         }
         .media-body {
-            vertical-align: middle;
-            border: 1px solid @gray-lighter;
-            padding-left: 12px;
-            border-radius: 4px;
-            height: 60px;
+          vertical-align: middle;
+          border: 1px solid @gray-lighter;
+          padding-left: 12px;
+          border-radius: 4px;
+          height: 60px;
         }
     }
     
@@ -213,6 +213,7 @@ spec-editor {
     .spec-title {
       margin-top: 0;
     }
+
   }
 
   .spec-type,
@@ -923,6 +924,27 @@ spec-editor {
       color: @gray;
     }
   }
+}
+
+.version-selection {
+  margin: 1em 0px;
+
+  .dropdown {
+    width: 100%;
+    position: absolute;
+
+    button.btn {
+      padding: 3px 6px;
+
+      &.fixed {
+        width: 50%;
+      }
+    }
+  }
+}
+
+.dropdown-menu .divider.no-margin {
+  margin: 0px;
 }
 
 .popover.spec-editor-popover {

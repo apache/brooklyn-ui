@@ -32,6 +32,7 @@ import {isSensitiveFieldName} from 'brooklyn-ui-utils/sensitive-field/sensitive-
 import {computeQuickFixesForIssue} from '../quick-fix/quick-fix';
 import scriptTagDecorator from 'brooklyn-ui-utils/script-tag-non-overwrite/script-tag-non-overwrite';
 import brooklynCatalogApi from 'brooklyn-ui-utils/providers/catalog-api.provider';
+import { get } from 'lodash';
 
 const MODULE_NAME = 'brooklyn.components.spec-editor';
 const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
@@ -99,8 +100,6 @@ export const PARAM_TYPES = [
 ];
 
 export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, $state, $compile, blueprintService, composerOverrides, mdHelper, catalogApi) {
-    catalogApi.getTypeVersions('org.apache.brooklyn.entity.proxy.nginx.NginxController')
-        .then(res=>console.log('Editor got', res))
     return {
         restrict: 'E',
         scope: {
@@ -129,12 +128,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope.REPLACED_DSL_ENTITYSPEC = REPLACED_DSL_ENTITYSPEC;
         scope.parameters = [];
         scope.config = {};
-
-        catalogApi.getTypeVersions(scope.model.type)
-            .then((versions) => {
-                scope.availableVersions = (versions || []).map(({version}) => version );
-                console.log(`scope.availableVersions for "${scope.model.type}":`, scope.availableVersions)
-            })
+        scope.LATEST_VERSION = 'Latest Version'
 
         scope.sections = [
             'blueprint-composer/component/spec-editor/section-header.html',
@@ -152,8 +146,11 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         specEditor.getParameter = getParameter;
         specEditor.addParameter = addParameter;
         specEditor.removeParameter = removeParameter;
+        specEditor.setEntityVersion = setEntityVersion;
 
-        let defaultState = {
+        const defaultState = {
+            availableVersions: [],
+            selectedVersion: scope.LATEST_VERSION,
             focus: {
                 subsection: SUBSECTION.CONFIG,
                 name: ''
@@ -226,6 +223,10 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             if (!scope.isFilterDisabled(filter)) scope.state.config.filter.values[filter.id] = !scope.state.config.filter.values[filter.id];
         };
 
+        catalogApi.getTypeVersions(scope.model.type)
+            .then((versions=[]) => {
+                scope.state.availableVersions = versions.map(({ version }) => version);
+            })
 
         scope.$watch('state', () => {
             if (sessionStorage) {
@@ -1269,6 +1270,10 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 specEditor.recordFocus(SUBSECTION.PARAMETERS, '');
             }
             blueprintService.refreshBlueprintMetadata(scope.model);
+        }
+
+        function setEntityVersion(version) {
+            scope.state.selectedVersion = version;
         }
     }
 }
