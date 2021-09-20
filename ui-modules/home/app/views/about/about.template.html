@@ -32,25 +32,27 @@
 
             <h2>Version Information</h2>
             <ul class="list-group">
-                <li class="list-group-item" ng-if="buildInfo.buildVersion">
+                <li class="list-group-item" ng-if="getBrandedText('product.name')!='Brooklyn'">
                     <span class="badge">
-                        {{buildInfo.buildVersion}}
+                        {{buildInfo.buildVersion || 'EXT'}}
                     </span>
                     <h4 class="list-group-item-heading">{{ getBrandedText('product.name') }}</h4>
                 </li>
                 <li class="list-group-item">
-                    <span class="badge">{{buildInfo.brooklynVersion}}</span>
-                    <h4 class="list-group-item-heading">Apache Brooklyn UI</h4>
-                    <small class="list-group-item-text" ng-if="buildInfo.buildBranch || buildInfo.buildCommitId">
-                        Built from
-                        <span ng-if="buildInfo.buildBranch">branch <strong>{{buildInfo.buildBranch}}</strong></span>
-                        <span ng-if="buildInfo.buildCommitId">commit <strong>{{buildInfo.buildCommitId}}</strong></span>
-                    </small>
-                </li>
-                <li class="list-group-item">
-                    <span class="badge" ng-attr-title="{{ serverVersion.buildSha1 && 'Commit ' + serverVersion.buildSha1 }}">
-                        {{serverVersion.version}}</span>
-                    <h4 class="list-group-item-heading">Brooklyn Server</h4>
+                    <span class="badge" ng-attr-title="{{ 
+                            'brooklyn-server' + 
+                            (brooklynServerVersion.buildBranch && brooklynServerVersion.buildBranch!=='UNKNOWN' 
+                              ? '\n  branch='+brooklynServerVersion.buildBranch : '') +
+                            (brooklynServerVersion.buildSha1 ? '\n  commit=' + (brooklynServerVersion.buildSha1 | limitTo: 8) : '') +
+                            (buildInfo.buildBranch && buildInfo.buildBranch !== brooklynServerVersion.buildBranch 
+                              ? '\nbrooklyn-ui' + 
+                                (buildInfo.buildBranch && buildInfo.buildBranch !== 'UNKNOWN'
+                                  ? '\n  branch='+buildInfo.buildBranch : '') +
+                                (buildInfo.buildSha1 ? '\n  commit='+(buildInfo.buildSha1 | limitTo: 8) : '')+'\n'
+                              : '') 
+                        }}">
+                        {{brooklynServerVersion.version}}</span>
+                    <h4 class="list-group-item-heading">Apache Brooklyn</h4>
                 </li>
             </ul>
 
@@ -135,8 +137,10 @@
             <h2>Feature Information</h2>
             <p>This distribution includes the following features:</p>
             <ul class="list-group">
-                <li ng-repeat="feature in serverVersion.features track by $index" class="list-group-item">
-                    <span class="badge" ng-attr-title="{{ feature.lastModified && (feature.lastModified | date: 'MMM dd, yyyy @ H:mm:ss.sss')}}">{{feature.version}}</span>
+                <li ng-repeat="feature in brooklynServerVersion.features track by $index" class="list-group-item">
+                    <span class="badge" ng-attr-title="{{ 
+                      (feature.lastModified ? (feature.lastModified | date: 'yyyy-MM-dd HH:mm')+'\n' : '') + 
+                      (feature.buildSha1 ? 'commit='+(feature.buildSha1 | limitTo: 8)+'\n' : '') }}">{{feature.version}}</span>
                     <h4 class="list-group-item-heading">{{feature.name}}</h4>
                     <small class="list-group-item-text">{{feature.symbolicName}}</small>
                 </li>

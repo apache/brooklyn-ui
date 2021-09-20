@@ -31,7 +31,7 @@ import nodeManagementTemplate from "./node-management/node-management.template.h
 const MODULE_NAME = 'states.about';
 const BROOKLYN_VERSION = __BROOKLYN_VERSION__;
 const BUILD_NAME = __BUILD_NAME__;   // if something embedding brooklyn
-const BUILD_VERSION = __BUILD_VERSION__;   // if something embedding brooklyn
+const BUILD_VERSION = __BUILD_VERSION__;   // if something embedding brooklyn 
 const BUILD_BRANCH = __BUILD_BRANCH__;
 const BUILD_COMMIT_ID = __BUILD_COMMIT_ID__;
 
@@ -64,14 +64,14 @@ export function aboutStateConfig($stateProvider) {
 export function aboutStateController($scope, $rootScope, $element, $q, $uibModal, brBrandInfo, version, states, serverApi) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
     $scope.getBrandedText = brBrandInfo.getBrandedText;
-    $scope.serverVersion = version.data;
+    $scope.brooklynServerVersion = version.data;
     $scope.states = states.data;
     $scope.buildInfo = {
         buildVersion: BUILD_VERSION,
         buildName: BUILD_NAME,
         buildBranch: BUILD_BRANCH,
         buildCommitId: BUILD_COMMIT_ID,
-        brooklynVersion: BROOKLYN_VERSION,
+        brooklynUiBuildVersion: BROOKLYN_VERSION,
     };
 
     $scope.container = $element[0];
