@@ -79,6 +79,7 @@ export function deployStateController($scope, $state, $stateParams, $uibModal, b
 
     function modalController($scope, $location, entitySpec, locations) {
         $scope.app = entitySpec;
+        $scope.app.plan.format = $scope.app.specList[0].format;
         $scope.locations = filterCatalogQuickLaunch(locations, (t) => {
                 $scope.usingLocationCatalogQuickLaunchTags = t.length > 0;
             });
