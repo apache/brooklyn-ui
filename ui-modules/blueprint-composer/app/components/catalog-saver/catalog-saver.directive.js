@@ -215,10 +215,14 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         };
         // tags can now be added to a blueprint created in the YAML Editor
         let tags = [];
-        if(blueprint.tags) {
-            tags = blueprint.tags;
+        if (blueprint.tags) {
+            tags = tags.concat(blueprint.tags);
             delete blueprint['tags'];
         }
+        if (blueprint['brooklyn.tags']) {
+            tags = [].concat(blueprint['brooklyn.tags']).concat(tags);
+        }
+        blueprint['brooklyn.tags'] = tags;
         let bomCatalogYaml = {
             bundle: `catalog-bom-${bundleBase}`,
             version: $scope.config.version,
