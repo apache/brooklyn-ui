@@ -33,6 +33,7 @@ import {computeQuickFixesForIssue} from '../quick-fix/quick-fix';
 import scriptTagDecorator from 'brooklyn-ui-utils/script-tag-non-overwrite/script-tag-non-overwrite';
 import brooklynCatalogApi from 'brooklyn-ui-utils/providers/catalog-api.provider';
 import { get } from 'lodash';
+import {graphicalEditEntityState} from "../../views/main/graphical/edit/entity/edit.entity.controller";
 
 const MODULE_NAME = 'brooklyn.components.spec-editor';
 const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
@@ -150,7 +151,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
 
         const defaultState = {
             availableVersions: [],
-            selectedVersion: scope.LATEST_VERSION,
+            selectedVersion: scope.model.version || scope.LATEST_VERSION,
             focus: {
                 subsection: SUBSECTION.CONFIG,
                 name: ''
@@ -1274,6 +1275,12 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
 
         function setEntityVersion(version) {
             scope.state.selectedVersion = version;
+
+            if (version !== scope.LATEST_VERSION) {
+                scope.model.version = version;
+            } else {
+                scope.model.version = undefined;
+            }
         }
     }
 }
