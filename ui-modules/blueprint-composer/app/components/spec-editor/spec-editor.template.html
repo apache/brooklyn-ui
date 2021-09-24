@@ -55,7 +55,6 @@
                    ng-click="specEditor.descriptionVisible = !specEditor.descriptionVisible">
                 </i>
                 <i class="fa fa-bookmark panel-header-icon"></i><samp class="entity-type-header">{{model.type}}</samp>
-<!--                <span class="label label-primary version">{{model | entityVersion}}</span>-->
                 <div class="version-selection">
                     <i class="fa fa-code-fork panel-header-icon"></i>
                     <div class="btn-group" uib-dropdown dropdown-append-to-body>
@@ -63,7 +62,7 @@
                         <button type="button" class="btn btn-primary" uib-dropdown-toggle>
                             <span class="caret"></span>
                         </button>
-                        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-body">
+                        <ul class="dropdown-menu versions" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-body">
                             <li role="menuitem">
                                 <a href="#" ng-click="$event.preventDefault();specEditor.setEntityVersion(LATEST_VERSION)">
                                     <strong>{{LATEST_VERSION}}</strong>
@@ -78,10 +77,11 @@
                         </ul>
                     </div>
                 </div>
+            </div>
             <div ng-if="['POLICY', 'ENRICHER'].indexOf(model.family.id) === -1" class="identifier">
                 <i class="fa fa-id-card-o panel-header-icon"></i>
                 <input class="form-control editable" ng-model="model.id" placeholder="{{ model._id }} (reference ID not set)" blur-on-enter />
-                </div>
+            </div>
             <md-if-oneline ng-show="specEditor.descriptionVisible && modelDescription.isNonMultiline" data="modelDescription"></md-if-oneline>
         </div>
     </div>

@@ -930,21 +930,29 @@ spec-editor {
   margin: 1em 0px;
 
   .dropdown {
-    width: 100%;
-    position: absolute;
+    // preventing LESS from incorrectly parsing the calc expression
+    // using 30px offset for the icon
+    width: ~"calc(100% - 30px)";
 
     button.btn {
       padding: 3px 6px;
 
       &.fixed {
-        width: 40%;
+        width: 70%;
       }
     }
   }
 }
 
-.dropdown-menu .divider.no-margin {
-  margin: 0px;
+.dropdown-menu  {
+  &.divider.no-margin {
+    margin: 0px;
+  }
+
+  &.versions {
+    width: auto; // because appended to body, avoid getting really wide
+    .divider { margin: 0px; }
+  }
 }
 
 .popover.spec-editor-popover {
