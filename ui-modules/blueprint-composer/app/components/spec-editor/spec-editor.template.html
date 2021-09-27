@@ -63,11 +63,6 @@
                             <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu versions" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-body">
-                            <li role="menuitem">
-                                <a href="#" ng-click="$event.preventDefault();specEditor.setEntityVersion(LATEST_VERSION)">
-                                    <strong>{{LATEST_VERSION}}</strong>
-                                </a>
-                            </li>
                             <li role="separator" class="divider no-margin"></li>
                             <li ng-repeat="version in state.availableVersions" role="menuitem">
                                 <a href="#" ng-click="$event.preventDefault();specEditor.setEntityVersion(version)">

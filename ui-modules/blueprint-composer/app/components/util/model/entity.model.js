@@ -618,6 +618,7 @@ Entity.prototype.getInitializersAsArray = getInitializersAsArray;
 
 Entity.prototype.getData = getData;
 Entity.prototype.addConfig = addConfig;
+Entity.prototype.clearConfig = clearConfig;
 Entity.prototype.addConfigKeyDefinition = addConfigKeyDefinition;
 Entity.prototype.addParameterDefinition = addParameterDefinition;
 Entity.prototype.addMetadata = addMetadata;
@@ -665,6 +666,11 @@ function addConfig(key, value) {
         this.touch();
         return this;
     }
+}
+
+function clearConfig() {
+    CONFIG.set(this, new Map());
+    this.touch();
 }
 
 function addConfigKeyDefinition(param, overwrite, skipUpdatesDuringBatch) {

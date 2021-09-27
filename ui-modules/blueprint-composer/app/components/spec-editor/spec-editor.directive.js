@@ -20,7 +20,7 @@ import angular from 'angular';
 import onEnter from 'brooklyn-ui-utils/on-enter/index';
 import autoGrow from 'brooklyn-ui-utils/autogrow/index';
 import blurOnEnter from 'brooklyn-ui-utils/blur-on-enter/index';
-import {EntityFamily, baseType} from '../util/model/entity.model';
+import {EntityFamily, baseType, Entity} from '../util/model/entity.model';
 import {Dsl} from '../util/model/dsl.model';
 import {Issue, ISSUE_LEVEL} from '../util/model/issue.model';
 import {RESERVED_KEYS, DSL_ENTITY_SPEC} from '../providers/blueprint-service.provider';
@@ -129,7 +129,6 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         scope.REPLACED_DSL_ENTITYSPEC = REPLACED_DSL_ENTITYSPEC;
         scope.parameters = [];
         scope.config = {};
-        scope.LATEST_VERSION = 'Latest Version'
 
         scope.sections = [
             'blueprint-composer/component/spec-editor/section-header.html',
@@ -151,7 +150,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
 
         const defaultState = {
             availableVersions: [],
-            selectedVersion: scope.model.version || scope.LATEST_VERSION,
+            selectedVersion: scope.model.version,
             focus: {
                 subsection: SUBSECTION.CONFIG,
                 name: ''
@@ -1274,13 +1273,19 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         }
 
         function setEntityVersion(version) {
-            scope.state.selectedVersion = version;
-
-            if (version !== scope.LATEST_VERSION) {
-                scope.model.version = version;
-            } else {
-                scope.model.version = undefined;
+            if (version === scope.model.version) {
+                return;
             }
+
+            scope.state.selectedVersion = version;
+            scope.model.version = version;
+
+            catalogApi.getType(scope.model.type, scope.model.version)
+                .then((catalogItem) => {
+                    scope.model.clearConfig();
+                    blueprintService.populateEntityFromApi(scope.model, catalogItem);
+                    $rootScope.$broadcast('d3.redraw');
+                });
         }
     }
 }
