@@ -31,7 +31,6 @@ import {graphicalState} from '../../views/main/graphical/graphical.state';
 import {isSensitiveFieldName} from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
 import {computeQuickFixesForIssue} from '../quick-fix/quick-fix';
 import scriptTagDecorator from 'brooklyn-ui-utils/script-tag-non-overwrite/script-tag-non-overwrite';
-import brooklynCatalogApi from 'brooklyn-ui-utils/providers/catalog-api.provider';
 import { get } from 'lodash';
 import {graphicalEditEntityState} from "../../views/main/graphical/edit/entity/edit.entity.controller";
 
@@ -45,7 +44,7 @@ const SUBSECTION = {
 
 export const SUBSECTION_TEMPLATE_OTHERS_URL = 'blueprint-composer/component/spec-editor/section-others.html';
 
-angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer, scriptTagDecorator, brooklynCatalogApi])
+angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer, scriptTagDecorator])
     .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', '$compile', 'blueprintService', 'composerOverrides', 'mdHelper', 'catalogApi', specEditorDirective])
     .filter('specEditorConfig', specEditorConfigFilter)
     .filter('specEditorType', specEditorTypeFilter)

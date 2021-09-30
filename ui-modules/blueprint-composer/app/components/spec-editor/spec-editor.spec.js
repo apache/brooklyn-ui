@@ -20,7 +20,6 @@
 import SpecEditor, {SUBSECTION_TEMPLATE_OTHERS_URL} from './spec-editor.directive';
 import {iconGeneratorProvider} from 'brooklyn-ui-utils/icon-generator/icon-generator';
 import {locationApiProvider} from 'brooklyn-ui-utils/providers/location-api.provider';
-import {catalogApiProvider} from 'brooklyn-ui-utils/providers/catalog-api.provider';
 import {mdHelperFactory} from 'brooklyn-ui-utils/md-helper';
 import {Entity} from '../util/model/entity.model';
 import {paletteApiProvider} from '../providers/palette-api.provider';
@@ -50,13 +49,19 @@ describe('Spec Editor', () => {
     /** The parameters supplied for secondary external configuration of designer directive. */
     let __scope, __element, __specEditor;
 
-
-
     // Prepare dependencies for the spec-editor.
     beforeEach(angular.mock.module(($provide) => {
 
         // Dependencies of the blueprint service.
-        $provide.provider('catalogApi', catalogApiProvider);
+        $provide.provider('catalogApi', {
+            $get: () => {
+                return {
+                    getTypeVersions: () => { // mock for getTypeVersions
+                        return Promise.resolve();
+                    }
+                }
+            }
+        });
         $provide.provider('locationApi', locationApiProvider);
         $provide.provider('paletteApi', paletteApiProvider);
         $provide.provider('iconGenerator', iconGeneratorProvider);
