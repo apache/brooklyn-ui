@@ -42,6 +42,7 @@ import brooklynCatalogSaver from './components/catalog-saver/catalog-saver.direc
 import paletteApiProvider from "./components/providers/palette-api.provider";
 import paletteServiceProvider from "./components/providers/palette-service.provider";
 import blueprintLoaderApiProvider from "./components/providers/blueprint-loader-api.provider";
+import {catalogApiProvider} from 'brooklyn-ui-utils/providers/catalog-api.provider';
 
 import brooklynApi from "brooklyn-ui-utils/brooklyn.api/brooklyn.api";
 import designer from './components/designer/designer.directive';
@@ -85,6 +86,7 @@ angular.module('brooklynBlueprintComposer', [ngAnimate, ngResource, ngCookies, n
     customActionDirective, customConfigSuggestionDropdown, paletteApiProvider, paletteServiceProvider, blueprintLoaderApiProvider,
     breadcrumbs, catalogSelector, designer, objectCache, entityFilters, locationFilter, actionService, tabService, composerOverrides, quickFix, blueprintService,
     dslService, paletteDragAndDropService, recentlyUsedService, scriptTagDecorator, brandAngularJs])
+    .provider('catalogApi', catalogApiProvider)
     .filter('dslParamLabel', ['$filter', dslParamLabelFilter])
     .config(['$urlRouterProvider', '$stateProvider', '$logProvider', '$compileProvider', applicationConfig])
     .config(['actionServiceProvider', actionConfig])

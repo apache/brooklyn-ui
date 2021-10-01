@@ -20,7 +20,7 @@ import angular from 'angular';
 import onEnter from 'brooklyn-ui-utils/on-enter/index';
 import autoGrow from 'brooklyn-ui-utils/autogrow/index';
 import blurOnEnter from 'brooklyn-ui-utils/blur-on-enter/index';
-import {EntityFamily, baseType} from '../util/model/entity.model';
+import {EntityFamily, baseType, Entity} from '../util/model/entity.model';
 import {Dsl} from '../util/model/dsl.model';
 import {Issue, ISSUE_LEVEL} from '../util/model/issue.model';
 import {RESERVED_KEYS, DSL_ENTITY_SPEC} from '../providers/blueprint-service.provider';
@@ -31,6 +31,8 @@ import {graphicalState} from '../../views/main/graphical/graphical.state';
 import {isSensitiveFieldName} from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
 import {computeQuickFixesForIssue} from '../quick-fix/quick-fix';
 import scriptTagDecorator from 'brooklyn-ui-utils/script-tag-non-overwrite/script-tag-non-overwrite';
+import { get } from 'lodash';
+import {graphicalEditEntityState} from "../../views/main/graphical/edit/entity/edit.entity.controller";
 
 const MODULE_NAME = 'brooklyn.components.spec-editor';
 const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
@@ -43,7 +45,7 @@ const SUBSECTION = {
 export const SUBSECTION_TEMPLATE_OTHERS_URL = 'blueprint-composer/component/spec-editor/section-others.html';
 
 angular.module(MODULE_NAME, [onEnter, autoGrow, blurOnEnter, brooklynDslEditor, brooklynDslViewer, scriptTagDecorator])
-    .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', '$compile', 'blueprintService', 'composerOverrides', 'mdHelper', specEditorDirective])
+    .directive('specEditor', ['$rootScope', '$templateCache', '$injector', '$sanitize', '$filter', '$log', '$sce', '$timeout', '$document', '$state', '$compile', 'blueprintService', 'composerOverrides', 'mdHelper', 'catalogApi', specEditorDirective])
     .filter('specEditorConfig', specEditorConfigFilter)
     .filter('specEditorType', specEditorTypeFilter)
     .run(['$templateCache', templateCache]);
@@ -97,7 +99,7 @@ export const PARAM_TYPES = [
     'string', 'boolean', 'integer', 'double', 'duration', ' port'
 ];
 
-export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, $state, $compile, blueprintService, composerOverrides, mdHelper) {
+export function specEditorDirective($rootScope, $templateCache, $injector, $sanitize, $filter, $log, $sce, $timeout, $document, $state, $compile, blueprintService, composerOverrides, mdHelper, catalogApi) {
     return {
         restrict: 'E',
         scope: {
@@ -143,8 +145,11 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         specEditor.getParameter = getParameter;
         specEditor.addParameter = addParameter;
         specEditor.removeParameter = removeParameter;
+        specEditor.setEntityVersion = setEntityVersion;
 
-        let defaultState = {
+        const defaultState = {
+            availableVersions: [],
+            selectedVersion: scope.model.version,
             focus: {
                 subsection: SUBSECTION.CONFIG,
                 name: ''
@@ -217,6 +222,10 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             if (!scope.isFilterDisabled(filter)) scope.state.config.filter.values[filter.id] = !scope.state.config.filter.values[filter.id];
         };
 
+        catalogApi.getTypeVersions(scope.model.type)
+            .then((versions=[]) => {
+                scope.state.availableVersions = versions.map(({ version }) => version);
+            })
 
         scope.$watch('state', () => {
             if (sessionStorage) {
@@ -1142,7 +1151,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     var i=2;
                     while (dups[paramRef.name+''+i]) i++;
                     // users won't see this message (unless they have the console open) so it might be surprising
-                    // but other behaviours (like the UI breaking) are worse, and not sure of a simple better way to handle 
+                    // but other behaviours (like the UI breaking) are worse, and not sure of a simple better way to handle
                     $log.warn("Duplicate parameter '"+paramRef.name+"' found; changing to '"+paramRef.name+''+i+"'");
                     paramRef.name = paramRef.name+''+i;
                 }
@@ -1260,6 +1269,22 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 specEditor.recordFocus(SUBSECTION.PARAMETERS, '');
             }
             blueprintService.refreshBlueprintMetadata(scope.model);
+        }
+
+        function setEntityVersion(version) {
+            if (version === scope.model.version) {
+                return;
+            }
+
+            scope.state.selectedVersion = version;
+            scope.model.version = version;
+
+            catalogApi.getType(scope.model.type, scope.model.version)
+                .then((catalogItem) => {
+                    scope.model.clearConfig();
+                    blueprintService.populateEntityFromApi(scope.model, catalogItem);
+                    $rootScope.$broadcast('d3.redraw');
+                });
         }
     }
 }

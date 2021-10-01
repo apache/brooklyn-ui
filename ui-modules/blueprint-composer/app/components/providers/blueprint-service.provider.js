@@ -748,6 +748,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
             return result;
         }
         entity.clearIssues({group: 'type'});
+        entity.version = data.version;
         entity.type = data.symbolicName;
         entity.icon = data.iconUrl || iconGenerator(data.symbolicName);
         entity.miscData.set('important', !!data.iconUrl);
