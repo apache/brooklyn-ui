@@ -54,8 +54,8 @@
             <div class="col-sm-9 col-xs-6">
                 <input ng-model="state.search.$" type="text" placeholder="Search for types" class="form-control" />
             </div>
-            <div class="col-sm-3 col-xs-6 text-right" ng-init="isDeleteOpened = false">
-                <button class="btn btn-danger" ng-disabled="state.deleting" uib-popover-template="'deletePopoverTemplate.html'" popover-placement="bottom-right" popover-trigger="'outsideClick'" popover-append-to-body="true">
+            <div class="col-sm-3 col-xs-6 text-right">
+                <button class="btn btn-danger" ng-disabled="state.deleting" uib-popover-template="'deletePopoverTemplate.html'" popover-class="catalog-delete-popover" popover-placement="bottom-right" popover-trigger="'outsideClick'" popover-append-to-body="true">
                     <i class="fa fa-fw fa-trash"></i> Delete bundle
                 </button>
             </div>
@@ -136,8 +136,8 @@
     </section>
 
     <script type="text/ng-template" id="deletePopoverTemplate.html">
-        <h4>Are you sure you wish to delete this bundle?</h4>
-        <p><small>All types contained within it <strong>will be deleted</strong></small></p>
-        <button class="btn btn-danger text-right" ng-click="deleteBundle()" ng-disabled="state.deleting">{{state.deleting ? 'Deleting...' : "Yes, I'm sure"}}</button>
+        <brooklyn-catalog-deleter symbolic-name="bundle.symbolicName" version="bundle.version" mode="bundle"
+                                  on-deleting="state.deleting = true" on-deleting-finished="state.deleting = false" on-deleted="onDeleted()" on-failed=""/>
     </script>
+
 </ui-view>

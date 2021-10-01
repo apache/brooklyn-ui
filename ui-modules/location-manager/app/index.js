@@ -30,6 +30,7 @@ import brooklynModuleLinks from 'brooklyn-ui-utils/module-links/module-links';
 import brSensitiveField from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
 import brooklynUserManagement from 'brooklyn-ui-utils/user-management/user-management';
 import brooklynApi from 'brooklyn-ui-utils/brooklyn.api/brooklyn.api';
+import brooklynCatalogDeleter from 'brooklyn-ui-utils/catalog-deleter/catalog-deleter';
 
 import locationsState from 'views/locations/locations.controller';
 import detailState from 'views/detail/detail.controller';
@@ -42,7 +43,7 @@ import brandAngularJs from 'brand-angular-js';
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
-angular.module('brooklynLocationManager', [ngAnimate, ngCookies, uiRouter, brCore, brServerStatus, brAutoFocus, brInterstitialSpinner, brooklynModuleLinks, brSensitiveField, brooklynUserManagement, brooklynApi, locationsState, detailState, wizardState, wizardAdvancedState, wizardByonState, wizardCloudState, brandAngularJs])
+angular.module('brooklynLocationManager', [ngAnimate, ngCookies, uiRouter, brCore, brServerStatus, brAutoFocus, brInterstitialSpinner, brooklynModuleLinks, brSensitiveField, brooklynUserManagement, brooklynApi, brooklynCatalogDeleter, locationsState, detailState, wizardState, wizardAdvancedState, wizardByonState, wizardCloudState, brandAngularJs])
     .config(['$urlRouterProvider', '$logProvider', '$compileProvider', applicationConfig])
     .run(['$rootScope', '$state', 'brSnackbar', errorHandler])
     .run(['$http', httpConfig]);

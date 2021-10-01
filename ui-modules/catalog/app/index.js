@@ -28,6 +28,7 @@ import brInterstitialSpinner from 'brooklyn-ui-utils/interstitial-spinner/inters
 import brooklynModuleLinks from 'brooklyn-ui-utils/module-links/module-links';
 import brooklynUserManagement from "brooklyn-ui-utils/user-management/user-management";
 import brooklynCatalogUpdater from 'brooklyn-ui-utils/catalog-uploader/catalog-uploader';
+import brooklynCatalogDeleter from 'brooklyn-ui-utils/catalog-deleter/catalog-deleter';
 import mdHelper from 'brooklyn-ui-utils/md-helper';
 
 import uiRouter from 'angular-ui-router';
@@ -43,7 +44,7 @@ import brandAngularJs from 'brand-angular-js';
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
 angular.module('brooklynCatalog', [ngAnimate, ngCookies, ngResource, brCore, brServerStatus, brInterstitialSpinner,
-    brooklynModuleLinks, brooklynUserManagement, brooklynCatalogUpdater, uiRouter, catalogState, catalogBundleState,
+    brooklynModuleLinks, brooklynUserManagement, brooklynCatalogUpdater, brooklynCatalogDeleter, uiRouter, catalogState, catalogBundleState,
     catalogBundleTypeState, quickLaunchOverrides, brandAngularJs, mdHelper])
     .config(['$logProvider', '$compileProvider', applicationConfig])
     .config(['$urlRouterProvider', routerConfig])

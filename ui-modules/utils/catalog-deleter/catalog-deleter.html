@@ -1,0 +1,157 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="brooklyn-catalog-deleter" xmlns="http://www.w3.org/1999/html">
+    <div ng-switch on="mode">
+
+        <div ng-switch-when="bundle">
+            <h4>Are you sure you wish to delete this bundle?</h4>
+
+            <div ng-switch on="!bundle && bundleLoading ? 'loading' : 'loaded-or-error'">
+                <div ng-switch-when="loading">
+                    <i class="fa fa-spin fa-spinner"></i>
+                    Loading context information for <code>{{id}}</code>. Please wait...
+                </div>
+
+                <div ng-switch-default>
+
+                    <div ng-switch on="bundle && bundle.deleteable">
+                        <p ng-switch-when="true">
+                            Bundle <code>{{id}}</code> will be permanently removed from the system.
+                        </p>
+                        <p ng-switch-default>
+                            Bundle <code>{{id}}</code>
+                            <span ng-switch on="deleteable===false">
+                                <span ng-switch-when="true">
+                                    is a system bundle so will
+                                </span>
+                                <span ng-switch-default>
+                                   appears to be a system bundle so may
+                                </span>
+                            </span>
+                            be automatically re-installed in the system after a restart or failover.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+            <p>All types contained within this bundle <strong>will be deleted</strong>.</p>
+            <p>Any currently active deployments that rely on this bundle or types it contain may become unstable.
+                If any such deployments are present, manual attention may be required to permit failover, hot-standby, and restart.</p>
+        </div>
+
+        <div ng-switch-when="type">
+            <!-- NOT USED AT PRESENT -->
+            <h4>Are you sure you wish to delete this type?</h4>
+
+            <p ng-switch on="bundle ? 'loaded' : bundleLoading ? 'loading' : bundleError ? 'error' : 'other'">
+                <span ng-switch-when="loaded">
+                    Type <code>{{id}}</code> is contained in bundle <code>{{bundle.symbolicName}}:{{bundle.version}}</code>.
+                    <span ng-switch on="vm.checkSingleBomBundle(bundle)">
+                        <span ng-switch-when="single-bom-match">
+                            This bundle is only for this type and so will also be deleted.
+
+                            <span ng-if="!bundle.deleteable">
+                                This bundle may be a system bundle and so may
+                                be automatically re-installed in the system after a restart or failover,
+                                reinstating this type.
+                            </span>
+                        </span>
+
+                        <span ng-switch-default>
+                            This bundle may contain other resources so will not be deleted,
+                            which means this type will be re-installed in the system after a restart or failover.
+                            You may want to <a href="/brooklyn-ui-catalog/#!/bundles/{{bundle.symbolicName}}/{{bundle.version}}">review the bundle</a> and delete it instead.
+                        </span>
+                    </span>
+                </span>
+
+                <span ng-switch-when="loading">
+                    <i class="fa fa-spin fa-spinner"></i>
+                    Loading context information for <code>{{id}}</code>. Please wait...
+                </span>
+                <span ng-switch-when="error">
+                    Context information for <code>{{id}}</code> is unavailable.
+                    This may have already been deleted or there may be access issues.
+                    Consult the log for more information.
+                </span>
+                <span ng-switch-default>
+                    Type <code>{{id}}</code> appears to have been installed programmatically or by the system, not using a bundle.
+                    Depending how the type was installed, it might be re-installed automatically by a deployment or on restart or failover.
+                </span>
+            </p>
+
+            <p>Any currently active deployments that rely on this type may become unstable.
+                If any such deployments are present, manual attention may be required to permit failover, hot-standby, and restart.</p>
+        </div>
+
+        <div ng-switch-when="location">
+            <h4>Are you sure you wish to delete this location?</h4>
+
+            <p ng-switch on="bundle ? 'loaded' : bundleLoading ? 'loading' : bundleError ? 'error' : 'other'">
+                <span ng-switch-when="loaded">
+                    Location <code>{{id}}</code> is contained in bundle <code>{{bundle.symbolicName}}:{{bundle.version}}</code>.
+                    <span ng-switch on="vm.checkSingleBomBundle(bundle)">
+                        <span ng-switch-when="single-bom-match">
+                            This bundle is only for this location and so will also be deleted.
+
+                            <span ng-if="!bundle.deleteable">
+                                This bundle may be a system bundle and so may
+                                be automatically re-installed in the system after a restart or failover,
+                                reinstating this location.
+                            </span>
+                        </span>
+
+                        <span ng-switch-default>
+                            This bundle may contain other resources so will not be deleted,
+                            which means this type will be re-installed in the system after a restart or failover.
+                            You may want to <a href="/brooklyn-ui-catalog/#!/bundles/{{bundle.symbolicName}}/{{bundle.version}}">review the bundle</a> and delete it instead.
+                        </span>
+                    </span>
+                </span>
+
+                <span ng-switch-when="loading">
+                    <i class="fa fa-spin fa-spinner"></i>
+                    Loading context information for <code>{{id}}</code>. Please wait...
+                </span>
+                <span ng-switch-when="error">
+                    Context information for <code>{{id}}</code> is unavailable.
+                    This may have already been deleted or there may be access issues.
+                    Consult the log for more information.
+                </span>
+                <span ng-switch-default>
+                    Location <code>{{id}}</code> appears to have been installed programmatically or by the system, not using a bundle.
+                    Depending how the location was installed, it might be re-installed automatically by a deployment or on restart or failover.
+                </span>
+            </p>
+
+            <p>Any currently active deployments that rely on this type may become unstable.
+                If any such deployments are present, manual attention may be required to permit failover, hot-standby, and restart.</p>
+        </div>
+
+        <div ng-switch-default>
+            <!-- shouldn't happen -->
+            <h4>Are you sure you wish to delete <code>{{id}}</code>?</h4>
+            <p>The category of this item is unknown, so be sure you understand the impact before proceeding.</p>
+        </div>
+
+    </div>
+
+    <button class="btn btn-danger text-right" ng-click="vm.delete()" ng-disabled="state.deleting">{{state.deleting ? 'Deleting...' : "Yes, I'm sure"}}</button>
+</div>

@@ -71,7 +71,10 @@
                     </div>
                 </br-card-content>
                 <br-card-actions>
-                    <br-button type="btn-danger" on-click="vm.deleteLocation()" ng-if="!vm.location.readOnly">Delete</br-button>
+                    <button class="btn btn-danger" ng-disabled="state.deleting" uib-popover-template="'deleteLocationPopoverTemplate.html'" popover-class="catalog-delete-popover" popover-placement="bottom-right" popover-trigger="'outsideClick'" popover-append-to-body="true">
+                        <i class="fa fa-fw fa-trash"></i> Delete
+                    </button>
+
                     <div class="message-read-only" ng-if="vm.location.readOnly">This location can not be edited or deleted.</div>
                 </br-card-actions>
             </br-card>
@@ -80,4 +83,10 @@
             </br-card>
         </div>
     </div>
+
+    <script type="text/ng-template" id="deleteLocationPopoverTemplate.html">
+        <brooklyn-catalog-deleter symbolic-name="vm.location.symbolicName" version="vm.location.version" mode="location"
+                                  on-deleting="state.deleting = true" on-deleting-finished="state.deleting = false" on-deleted="onDeleted()" on-failed=""/>
+    </script>
+
 </div>

@@ -76,17 +76,7 @@ export function bundleController($scope, $state, $stateParams, brSnackbar, brUti
         $scope.state.orderBy = orderBys[0];
     };
 
-    $scope.deleteBundle = () => {
-        $scope.state.deleting = true;
-        catalogApi.deleteBundle($scope.bundle.symbolicName, $scope.bundle.version).then(data => {
-            $state.go(catalogState);
-        }).catch(error => {
-            let errorMessage= ('undefined' === typeof error.message)? error.error.message: error.message;
-            brSnackbar.create('Could not delete this bundle: ' + errorMessage);
-        }).finally(() => {
-            $scope.state.deleting = false;
-        });
-    };
+    $scope.onDeleted = () => { $scope.state.deleting = false; $state.go(catalogState); }
 
     $scope.downloadBundleUrl = () => {
         return !$scope.bundle ? /* loading */ "" :
