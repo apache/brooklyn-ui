@@ -79,16 +79,14 @@ export function detailStateConfig($stateProvider) {
 export function detailController($scope, $filter, $state, $stateParams, brSnackbar, catalogApi, location) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
+    $scope.state = {};
+    $scope.onDeleted = () => {
+        $state.go('locations');
+        brSnackbar.create('Location "' + $filter('locationName')(vm.location) + '" deleted successfully');
+    };
+
     let vm = this;
     vm.location = angular.copy(location);
-    vm.deleteLocation = function () {
-        catalogApi.deleteLocation(vm.location.symbolicName, vm.location.version).then(data => {
-            $state.go('locations');
-            brSnackbar.create('Location "' + $filter('locationName')(vm.location) + '" deleted successfully');
-        }).catch(error => {
-            brSnackbar.create('Could not delete this location: ' + error.error.message);
-        });
-    };
     vm.editLocation = function () {
         if (vm.location['spec'].indexOf('byon') >= 0) {
             $state.go('wizard.byon', {symbolicName: $stateParams.symbolicName, version: $stateParams.version});
