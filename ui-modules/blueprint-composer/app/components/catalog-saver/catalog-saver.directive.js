@@ -42,6 +42,9 @@ const TYPES = [
     {id: 'entity', label: 'Entity'}
 ];
 
+// only alphanumerics and/or '.', '-', '_' characters
+const VALID_FIELD_PATTERN = /^[\w\.\-\_]+$/;
+
 angular.module(MODULE_NAME, [angularAnimate, uibModal, brUtils])
     .directive('catalogSaver', ['$rootScope', '$uibModal', '$injector', '$filter', 'composerOverrides', 'blueprintService', saveToCatalogModalDirective])
     .directive('catalogVersion', ['$parse', catalogVersionDirective])
@@ -112,6 +115,12 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $f
             // Override this callback to update configuration data elsewhere
             $scope.config = (composerOverrides.updateCatalogConfig || ((config, $element) => config))($scope.config, $element);
 
+            const { bundle, symbolicName } = ($scope.config || {});
+
+            $scope.initiallyShowAdvanced = (bundle && symbolicName)
+                ? !VALID_FIELD_PATTERN.test(bundle) || !VALID_FIELD_PATTERN.test(symbolicName)
+                : false;
+
             let modalInstance = $uibModal.open({
                 templateUrl: TEMPLATE_MODAL_URL,
                 size: 'save',
@@ -142,7 +151,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
     $scope.VIEWS = VIEWS;
     $scope.TYPES = TYPES;
     $scope.state = {
-        pattern: '[\\w\\.\\-\\_]+',
+        pattern: VALID_FIELD_PATTERN,
         view: VIEWS.form,
         saving: false,
         force: false
