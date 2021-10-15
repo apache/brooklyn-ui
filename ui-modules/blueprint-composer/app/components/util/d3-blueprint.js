@@ -807,6 +807,36 @@ export function D3Blueprint(container, options) {
 
         let relationArcs = _relationArcs.selectAll('.relation').data(arcsData, (d) => getPathId(d));
 
+        const getArcTransitionParameters = (d) => {
+            let targetNode = nodeForEntity(d.target);
+            let sourceNode = nodeForEntity(d.source);
+            let sourceY = sourceNode.y + (d.source.isMemberSpec() ? _configHolder.nodes.memberspec.circle.cy : 0);
+            let targetY = targetNode.y + (d.target.isMemberSpec() ? _configHolder.nodes.memberspec.circle.cy : 0);
+            let dx = targetNode.x - sourceNode.x;
+            let dy = targetY - sourceY;
+            let dr = Math.sqrt(dx * dx + dy * dy);
+            let sweep = dx * dy > 0 ? 0 : 1;
+            _mirror.attr('d', `M ${sourceNode.x},${sourceY} A ${dr},${dr} 0 0,${sweep} ${targetNode.x},${targetY}`);
+
+            let m = _mirror._groups[0][0].getPointAtLength(_mirror._groups[0][0].getTotalLength() - _configHolder.nodes.child.circle.r - 20);
+
+            dx = m.x - sourceNode.x;
+            dy = m.y - sourceY;
+            dr = Math.sqrt(dx * dx + dy * dy);
+
+            let isLeftToRight = dx > 0 || sourceNode.x === targetNode.x;
+
+            return [sourceNode.x, sourceY, dr, sweep, m.x, m.y, isLeftToRight];
+        }
+
+        const isLeftToRight = (d) => {
+            if (typeof d.isLeftToRight === 'boolean') {
+                return d.isLeftToRight;
+            }
+            const [x1,y1, dr, sweep, x2, y2, isLeftToRight] = getArcTransitionParameters(d);
+            return isLeftToRight;
+        }
+
         relationArcs.enter().insert('path')
             .attr('class', 'relation ' + _configHolder.nodes.relationship.pathClass)
             .attr('id', (d) => getPathId(d))
@@ -819,23 +849,11 @@ export function D3Blueprint(container, options) {
             .attr('opacity', 1)
             .attr('stroke', 'red')
             .attr('d', function(d) {
-                let targetNode = nodeForEntity(d.target);
-                let sourceNode = nodeForEntity(d.source);
-                let sourceY = sourceNode.y + (d.source.isMemberSpec() ? _configHolder.nodes.memberspec.circle.cy : 0);
-                let targetY = targetNode.y + (d.target.isMemberSpec() ? _configHolder.nodes.memberspec.circle.cy : 0);
-                let dx = targetNode.x - sourceNode.x;
-                let dy = targetY - sourceY;
-                let dr = Math.sqrt(dx * dx + dy * dy);
-                let sweep = dx * dy > 0 ? 0 : 1;
-                _mirror.attr('d', `M ${sourceNode.x},${sourceY} A ${dr},${dr} 0 0,${sweep} ${targetNode.x},${targetY}`);
+                const [x1,y1, dr, sweep, x2, y2, isLeftToRight] = getArcTransitionParameters(d);
 
-                let m = _mirror._groups[0][0].getPointAtLength(_mirror._groups[0][0].getTotalLength() - _configHolder.nodes.child.circle.r - 20);
+                d.isLeftToRight = isLeftToRight;
 
-                dx = m.x - sourceNode.x;
-                dy = m.y - sourceY;
-                dr = Math.sqrt(dx * dx + dy * dy);
-
-                return `M ${sourceNode.x},${sourceY} A ${dr},${dr} 0 0,${sweep} ${m.x},${m.y}`;
+                return `M ${x1},${y1} A ${dr},${dr} 0 0,${sweep} ${x2},${y2}`;
             });
 
         relationArcs.exit()
@@ -891,7 +909,7 @@ export function D3Blueprint(container, options) {
             } else if (d.labelIndex <= _configHolder.nodes.relationship.labelsToDisplay) {
                 labelText = d.label;
             }
-            return labelText;
+            return isLeftToRight(d) ? labelText : labelText.split("").reverse().join("");
         };
 
         relationLabelsEntered.insert('text') // Add text layer of '&#9608;'s to erase the area on the path for label text.
@@ -920,6 +938,7 @@ export function D3Blueprint(container, options) {
             .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
             .insert('tspan')
             .attr('dy', getLabelOffset)
+            .attr('rotate', (d) => isLeftToRight(d) ? '0' : '180') // rotate text if arc goes as right-to-left
             .style('z-index', 9)
             .on('mouseover', d => {
                 if (d.labels.length > _configHolder.nodes.relationship.labelsToDisplay) {
