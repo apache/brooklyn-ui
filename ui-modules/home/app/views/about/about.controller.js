@@ -19,6 +19,7 @@
 
 import angular from 'angular';
 import moment from "moment";
+import { get } from 'lodash';
 import uiRouter from 'angular-ui-router';
 import uibModal from 'angular-ui-bootstrap/src/modal/index-nocss';
 import serverApi from 'brooklyn-ui-utils/api/brooklyn/server.js';
@@ -65,6 +66,7 @@ export function aboutStateController($scope, $rootScope, $element, $q, $uibModal
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
     $scope.getBrandedText = brBrandInfo.getBrandedText;
     $scope.brooklynServerVersion = version.data;
+    $scope.haManageErrors = [];
     $scope.states = states.data;
     $scope.buildInfo = {
         buildVersion: BUILD_VERSION,
@@ -86,6 +88,8 @@ export function aboutStateController($scope, $rootScope, $element, $q, $uibModal
     let modalInstance = null;
 
     $scope.openDialog = function (states, container) {
+        $scope.haManageErrors = [];
+
         if (!modalInstance) {
             modalInstance = $uibModal.open({
                 template: nodeManagementTemplate,
@@ -100,20 +104,30 @@ export function aboutStateController($scope, $rootScope, $element, $q, $uibModal
                     }
                 }
             });
-            modalInstance.result.then(
-                (promiseList) => {
+            modalInstance.result
+                // dealing with the list of requested changes after the modal is closed
+                .then((changes) => {
                     $scope.template = 'spinnerTemplate';
-                    Promise.allSettled(promiseList).then((values) => {
+                    const promises = changes.map(({ operation }) => operation);
+
+                    Promise.allSettled(promises).then((results) => {
+                        results.forEach(({ status, reason }, index) => {
+                            if (status === 'rejected') {
+                                $scope.haManageErrors.push({
+                                    configName: changes[index].configName,
+                                    message: get(reason, 'data.message', 'Unknown error.'),
+                                });
+                            }
+                        })
                         container.dispatchEvent(new CustomEvent('update-states', {}));
                     });
                     modalInstance = null;
-                },
-                () => {
+                })
+                .catch(() => {
                     $scope.template = 'spinnerTemplate';
                     container.dispatchEvent(new CustomEvent('update-states', {}));
                     modalInstance = null;
-                }
-            );
+                });
         }
 
     };
@@ -131,17 +145,18 @@ export function aboutStateController($scope, $rootScope, $element, $q, $uibModal
         $scope.showEditOptions = false;
 
         $scope.applyChangesAndQuit = function () {
-            let promiseList = [];
+            const changes = [];
+
             if ($scope.node.priority !== vm.newPriority) {
-                let result = serverApi.setHaPriority(vm.newPriority);
-                promiseList.push(result);
+                const result = serverApi.setHaPriority(vm.newPriority);
+                changes.push({ configName: 'Priority', operation: result });
             }
             if ($scope.node.status !== vm.newStatus) {
-                let result = serverApi.setHaStatus(vm.newStatus);
-                promiseList.push(result);
+                const result = serverApi.setHaStatus(vm.newStatus);
+                changes.push({ configName: 'Status', operation: result });
             }
-            $uibModalInstance.close(promiseList);
 
+            $uibModalInstance.close(changes);
         }
 
         $scope.cancelAndQuit = function () {
@@ -153,8 +168,36 @@ export function aboutStateController($scope, $rootScope, $element, $q, $uibModal
         $scope.doShowEditOptions = function () {
             $scope.showEditOptions = true;
         }
-
     }
+
+    function NodeManagementErrorModalController($scope, $uibModalInstance, errors) {
+        $scope.errors = errors;
+
+        $scope.okClicked = function() {
+            $uibModalInstance.close();
+        }
+    }
+
+    $scope.$watchCollection('haManageErrors', (errors) => {
+        if (errors.length) {
+            const errorModal = $uibModal.open({
+                templateUrl: 'haManageErrorsModal.html',
+                controller: ['$scope', '$uibModalInstance', 'errors', NodeManagementErrorModalController],
+                backdrop: 'static',
+                size: 'md',
+                resolve: {
+                    errors: function () {
+                        return $scope.haManageErrors;
+                    },
+                },
+            });
+
+            errorModal.closed.then(() => {
+                console.log('closing, wipe errors')
+                $scope.errors = [];
+            })
+        }
+    });
 
     $scope.removeNode = function (nodeId) {
         $scope.template = 'spinnerTemplate';
