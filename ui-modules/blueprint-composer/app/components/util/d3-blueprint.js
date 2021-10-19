@@ -117,12 +117,19 @@ export function D3Blueprint(container, options) {
                 }
             },
             adjunct: {
-                rect: {
+                g: {
                     id: (d)=>(`entity-${d._id}`),
-                    class: 'node-adjunct adjunct entity',
-                    width: 20,
-                    height: 20,
-                    transform: 'scale(0)'
+                    class: 'node-adjunct adjunct entity'
+                },
+                rect: {
+                    width: 30,
+                    height: 30,
+                },
+                image: {
+                    width: 30,
+                    height: 30,
+                    opacity: (d)=>(d.icon ? 1 : 0),
+                    href: (d)=>(d.icon)
                 }
             },
             memberspec: {
@@ -194,7 +201,7 @@ export function D3Blueprint(container, options) {
         transition: 300,
         grid: {
             itemPerCol: 3,
-            gutter: 15
+            gutter: 5
         },
     };
     let _d3DataHolder = {
@@ -321,6 +328,7 @@ export function D3Blueprint(container, options) {
      * @param {object} node The node for the clicked entity
      */
     function onEntityClick(node) {
+        // console.log('[click]', node)
         if (d3.event.defaultPrevented) return;
         d3.event.stopPropagation();
         let event = new CustomEvent('click-entity', {
@@ -356,12 +364,12 @@ export function D3Blueprint(container, options) {
         d3.event.stopPropagation();
         if (d3.event.target.nodeName == 'BODY') {
             if (d3.event.key === "Delete" || d3.event.key === "Backspace") {
-                var selected = _svg.selectAll('.entity.selected');
-                var nItemsSelected = selected._groups[0].length;
+                let selected = _svg.selectAll('.entity.selected');
+                let nItemsSelected = selected._groups[0].length;
                 if (nItemsSelected > 0) {
                     let event = new CustomEvent("delete-entity", {
                           detail: {
-                              entity: selected.data()[0].data,
+                              entity: selected.data()[0].data || selected.data()[0],
                           }
                       });
                     container.dispatchEvent(event);
@@ -682,30 +690,46 @@ export function D3Blueprint(container, options) {
 
         // Draw important adjuncts (i.e policies/enrichers)
         // -----------------------------------------------------
+
+        const transitionAdjuncts = (selector) => {
+            let nodeAdjuncts = nodeData.select('g.node-adjuncts')
+                .selectAll(selector)
+                .data((d)=>(getImportantAdjuncts(d)), (d)=>(`adjunct-${d._id}`));
+            nodeAdjuncts.transition()
+                .duration(_configHolder.transition)
+                .attr('x', (d, i)=>(getGridX(d, i)))
+                .attr('y', (d, i)=>(getGridY(d, i)))
+                .attr('transform', 'scale(1)')
+                .attr('transform-origin', (d, i)=>(getGridItemCenter(d, i)));
+            nodeAdjuncts.exit()
+                .transition()
+                .duration(_configHolder.transition)
+                .attr('transform', 'scale(0)')
+                .remove();
+        };
+
         nodeGroup.append('g')
             .attr('class', 'node-adjuncts');
         let adjunctData = nodeData.select('g.node-adjuncts')
-            .selectAll('rect.adjunct')
+            .selectAll('g.adjunct')
             .data((d)=>(getImportantAdjuncts(d)), (d)=>(`adjunct-${d._id}`));
         adjunctData
             .classed('has-warnings', (d)=>(d.hasIssues() && d.issues.some(issue => issue.level === ISSUE_LEVEL.WARN)))
             .classed('has-errors', (d)=>(d.hasIssues() && d.issues.some(issue => issue.level === ISSUE_LEVEL.ERROR)))
             .classed('loading', (d)=>(d.miscData.get('loading')))
             .on('click', onEntityClick);
-        adjunctData.transition()
-            .duration(_configHolder.transition)
-            .attr('x', (d, i)=>(getGridX(d, i)))
-            .attr('y', (d, i)=>(getGridY(d, i)))
-            .attr('transform', 'scale(1)')
-            .attr('transform-origin', (d, i)=>(getGridItemCenter(d, i)));
-        adjunctData.exit()
-            .transition()
-            .duration(_configHolder.transition)
-            .attr('transform', 'scale(0)')
-            .remove();
-        appendElement(adjunctData.enter(), 'rect', _configHolder.nodes.adjunct.rect);
 
-        let annotationElement = nodeGroup.append('g')
+        transitionAdjuncts('g.adjunct');
+        transitionAdjuncts('rect');
+        transitionAdjuncts('image');
+
+        let adjunctElement = appendElement(adjunctData.enter(), 'g', _configHolder.nodes.adjunct.g);
+        appendElement(adjunctElement, 'rect', _configHolder.nodes.adjunct.rect);
+        appendElement(adjunctElement, 'image', _configHolder.nodes.adjunct.image);
+
+        // Draw annotations
+        // -----------------------------------------------------
+        nodeGroup.append('g')
             .attr('class', 'node-annotation');
         let annotationData = nodeData.select('g.node-annotation')
             .selectAll('foreignObject.node-annotation')
