@@ -127,7 +127,6 @@ const QUICK_FIX_PROPOSERS = {
             if (!proposals.explicit_config) {
                 let entityToReference = (entity || issue.entity).parent;
                 let scopeRootOrComponent =  blueprintService.get() === entityToReference ? 'scopeRoot()' : `component("${entityToReference.id}")`;
-                console.log('scopeRootOrComponent', scopeRootOrComponent)
                 proposals.explicit_config = {
                     text: 'Set explicit config from parent',
                     tooltip: `This will set the config "${issue.ref}" to its parent value, explicitly`,
