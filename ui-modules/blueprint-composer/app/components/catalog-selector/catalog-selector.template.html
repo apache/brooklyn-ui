@@ -74,9 +74,9 @@
                     <i class="fa fa-sort"></i></div>
                 </a>
                 <ul class="dropdown-menu right-align-icon" role="menu" uib-dropdown-menu aria-labelledby="palette-sort">
-                        <li role="menuitem" ng-repeat="order in state.currentOrderValues track by $index" class="layer">
-                            <a ng-click="sortBy(order)"><i class="fa fa-fw fa-circle"></i> {{ order.label }}</a>
-                        </li>
+                    <li role="menuitem" ng-repeat="order in state.currentOrderValues track by $index" class="layer">
+                        <a ng-click="sortBy(order)"><i class="fa fa-fw fa-circle"></i> {{ order.label }}</a>
+                    </li>
                 </ul>
               </span>
               
@@ -86,9 +86,9 @@
                     <i class="fa fa-th"></i></div>
                 </a>
                 <ul class="dropdown-menu right-align-icon" role="menu" uib-dropdown-menu aria-labelledby="palette-view-mode">
-                        <li role="menuitem" ng-repeat="view in viewModes track by $index" ng-class="{'active': state.viewMode === view}" class="layer">
-                            <a ng-click="state.viewMode = view"><i class="fa fa-fw fa-circle"></i> {{view.name}}</a>
-                        </li>
+                    <li role="menuitem" ng-repeat="view in viewModes track by $index" ng-class="{'active': state.viewMode === view}" class="layer">
+                        <a ng-click="viewModeChange(view)"><i class="fa fa-fw fa-circle"></i> {{view.name}}</a>
+                    </li>
                 </ul>
               </span>
             </div>

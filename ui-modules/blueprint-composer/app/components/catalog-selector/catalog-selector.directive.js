@@ -21,6 +21,7 @@ import {EntityFamily} from '../util/model/entity.model';
 import template from './catalog-selector.template.html';
 import footerTemplate from './catalog-selector-palette-footer.html';
 import { distanceInWordsToNow } from 'date-fns';
+import { session as sessionStore } from 'brooklyn-ui-utils/browserStorage';
 
 const MODULE_NAME = 'brooklyn.composer.component.catalog-selector';
 const TEMPLATE_URL = 'blueprint-composer/component/catalog-selector/index.html';
@@ -90,6 +91,11 @@ export function catalogSelectorDirective() {
             subhead: TEMPLATE_SUBHEAD_URL,
             footer: TEMPLATE_FOOTER_URL
         }
+
+        $scope.viewModeChange = function(viewMode) {
+            $scope.state.viewMode = viewMode;
+            sessionStore.setComposerViewMode(viewMode, true);
+        };
     }
 
     function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCache, paletteApi, paletteDragAndDropService, iconGenerator, composerOverrides, recentlyUsedService) {
@@ -98,7 +104,17 @@ export function catalogSelectorDirective() {
         $scope.viewModes = PALETTE_VIEW_MODES;
         $scope.viewOrders = PALETTE_VIEW_ORDERS;
         if (!$scope.state) $scope.state = {};
-        if (!$scope.state.viewMode) $scope.state.viewMode = PALETTE_VIEW_MODES.normal;
+        if (!$scope.state.viewMode) {
+            const savedViewMode = sessionStore.getComposerViewMode(true);
+            $scope.state.viewMode = ((typeof savedViewMode === 'object') && (savedViewMode !== null))
+                ? savedViewMode
+                : PALETTE_VIEW_MODES.normal
+        };
+
+        if(!$scope.search) {
+            const savedSearch = sessionStore.getComposerSearch();
+            if (typeof savedSearch === 'string' && savedSearch.length) $scope.search = savedSearch;
+        }
 
         $scope.pagination = {
             page: 1,
@@ -118,13 +134,14 @@ export function catalogSelectorDirective() {
 
         $scope.isLoading = true;
 
-        $scope.$watch('search', () => {
+        $scope.$watch('search', (newValue) => {
             $scope.freeFormTile = {
                 symbolicName: $scope.search,
                 name: $scope.search,
                 displayName: $scope.search,
                 supertypes: ($scope.family ? [ $scope.family.superType ] : []),
             };
+            sessionStore.setComposerSearch(newValue);
         });
 
         $scope.getItems = function (search) {
