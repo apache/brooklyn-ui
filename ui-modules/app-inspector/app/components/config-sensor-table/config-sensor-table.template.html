@@ -16,45 +16,49 @@
   specific language governing permissions and limitations
   under the License.
 -->
+
 <div class="form-group">
     <input type="text" class="form-control" placeholder="Filter by name or value" ng-model="filterValue">
 </div>
-<div class="table-responsive">
-    <table class="table table-bordered">
-        <thead>
-        <tr>
-            <th ng-click="sortReverse = !sortReverse">
-                Name <span class="fa" ng-class="{'fa-caret-down': sortReverse, 'fa-caret-up': !sortReverse}"></span>
-            </th>
-            <th>Value</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr ng-repeat="item in items | orderBy:'key':sortReverse | filter:filterValue as filterResult track by item.key">
-            <td>
-                <span>{{item.key}}</span>
-                <i ng-if="mapInfo[item.key].description" class="fa fa-info-circle pull-right" uib-popover="{{mapInfo[item.key].description}}" popover-trigger="'mouseenter'" popover-title="Description" popover-animation="true"></i>
 
-            </td>
-            <td sensitive-field field-name="{{item.key}}" class="config-value">
+<div class="config-sensor-grid grid-bordered">
+
+    <div class="grid-header" ng-click="sortReverse = !sortReverse">
+                Name <span class="fa" ng-class="{'fa-caret-down': sortReverse, 'fa-caret-up': !sortReverse}"></span>
+    </div>
+    <div class="grid-header">Value</div>
+
+    <div ng-repeat-start="item in items | orderBy:'key':sortReverse | filter:filterValue as filterResult track by item.key" class="col1" ng-class="{ 'grid-even': $index%2 }">
+                <span>{{item.key}}</span>
+                <i ng-if="mapInfo[item.key].description" class="fa fa-info-circle pull-right" 
+                       uib-popover="{{mapInfo[item.key].description}}" popover-trigger="'mouseenter'" popover-title="Description" popover-animation="true"></i>
+    </div>
+    <div class="col2 config-value" ng-class="{ 'grid-even': $index%2 }" ng-repeat-end>
+              <div class="content-row">
                 <span class="content">
                     <span ng-if="item.value === null"><i>value not set</i></span>
-                    <span ng-if="item.value !== null" ng-bind-html="item.value | brLinky:mapInfo[item.key]"></span>
+                    <span ng-if="item.value !== null" ng-bind-html="item.value | brLinky:mapInfo[item.key]" class="literal-lines"></span>
                 </span>
                 <span class="extras">
                     <i class="fa fa-exclamation-triangle warning-icon" ng-class="{invisible: !item.isPlaintextSensitiveValue}"
                        uib-popover={{WARNING_TEXT}} popover-trigger="'mouseenter'" popover-animation="true"
                        popover-placement="left"
                     ></i>
-                    <button ng-if="item.value !== null" class="btn copy-btn btn-default btn-sm" ngclipboard ngclipboard-success="onClipboardSuccess(e)" ngclipboard-error="onClipboardError(e)" data-clipboard-text="{{item.value}}" uib-tooltip="Copied!" tooltip-trigger="{'copied': 'mouseleave'}" tooltip-placement="left">
+                    <button ng-if="item.value !== null" class="btn copy-btn btn-default btn-sm" 
+                            ngclipboard ngclipboard-success="onClipboardSuccess(e)" ngclipboard-error="onClipboardError(e)" 
+                            data-clipboard-text="{{item.value}}" uib-tooltip="Copied!" tooltip-trigger="{'copied': 'mouseleave'}" tooltip-placement="left">
                         <i class="fa fa-clipboard"></i>
                     </button>
                 </span>
-            </td>
-        </tr>
-        <tr ng-if="filterResult === null">
-            <td colspan="2" class="text-center"><h4>No config found matching <code>{{filterValue}}</code></h4></td>
-        </tr>
-        </tbody>
-    </table>
+              </div>
+    </div>
+
+    <div ng-if="!filterResult || !filterResult.length" class="grid-row no-content">
+      <div>
+        <span ng-if="filterValue">No matches for <code>{{filterValue}}</code></span>
+        <span ng-if="!filterValue">No entries</span>
+      </div>
+    </div>
+
 </div>
+

@@ -20,6 +20,7 @@ import angular from "angular";
 import ngSanitize from "angular-sanitize";
 import ngClipboard from "ngclipboard";
 import template from "./config-sensor-table.template.html";
+import jsyaml from 'js-yaml';
 import { isSensitiveFieldName } from "brooklyn-ui-utils/sensitive-field/sensitive-field";
 
 const MODULE_NAME = 'inspector.config-sensor.table';
@@ -91,14 +92,28 @@ export function configSensorTableDirective(brSnackbar) {
     }
 }
 
+function asJsonIfJson(input, knownJson, $sanitize) {
+    if (!knownJson) {
+        if (!input) return null;
+        let inputTrimmed = input.trim();
+        if ((inputTrimmed.startsWith("{") && inputTrimmed.endsWith("}")) || (inputTrimmed.startsWith("[") && inputTrimmed.endsWith("]"))) {
+            // looks like json 
+            try { input = JSON.parse(inputTrimmed); } catch (okayIfNotJson) { return null; }
+        } else {
+            return null;
+        }
+    }
+    return $sanitize('<div class="multiline-code">' + _.escape(jsyaml.dump(input)) + '</div>');
+}
+
 export function brLinkyFilter($filter, $state, $sanitize) {
+    // render links as html, and everything else as not html.
     return function(input, key, target, attributes) {
         if (input == null) {
             return '';
         } else if (!angular.isString(input)) {
-            return angular.toJson(input);
-        } else if (angular.isObject(key) && angular.isString(key.name)
-            && (key.name.indexOf('ssh') > -1 || isSensitiveFieldName(key.name))) {
+            return asJsonIfJson(input, true, $sanitize) || $filter('linky')(angular.toJson(input), target, attributes);
+        } else if (angular.isObject(key) && angular.isString(key.name) && (key.name.indexOf('ssh') > -1 || isSensitiveFieldName(key.name))) {
             return input;
         } else if (angular.isObject(key) && key.links && key.links.hasOwnProperty('action:open')) {
             let matches = key.links['action:open'].match(/\#\/v1\/applications\/([^\/]+)\/entities\/([^\/]+)/i);
@@ -106,7 +121,8 @@ export function brLinkyFilter($filter, $state, $sanitize) {
                 $sanitize('<a href="' + $state.href('main.inspect.summary', {applicationId: matches[1], entityId: matches[2]}) + '">' + input + '</a>') :
                 $filter('linky')(input, target, attributes);
         } else {
-            return $filter('linky')(input, target, attributes);
+            return asJsonIfJson(input, false, $sanitize) || $filter('linky')(input, target, attributes);
         }
     }
 }
+
