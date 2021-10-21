@@ -69,6 +69,9 @@ export function taskListDirective() {
             }
             return (task.endTimeUtc === null ? new Date().getTime() : task.endTimeUtc) - task.startTimeUtc;
         }
+        $scope.isScheduled = function(task) {
+            return task && task.currentStatus && task.currentStatus.startsWith("Schedule");
+        }
     }
 
     function tagReducer(result, tag) {
