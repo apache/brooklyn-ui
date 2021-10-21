@@ -141,7 +141,7 @@ export function catalogSelectorDirective() {
                 displayName: $scope.search,
                 supertypes: ($scope.family ? [ $scope.family.superType ] : []),
             };
-            sessionStore.setComposerSearch(newValue);
+            if (typeof newValue === 'string') sessionStore.setComposerSearch(newValue);
         });
 
         $scope.getItems = function (search) {
