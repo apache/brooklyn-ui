@@ -26,7 +26,7 @@ const FIRST_MEMBERSPEC_REGEX = /^(\w+\.)*first[mM]ember[sS]pec$/;
 const ANY_MEMBERSPEC_REGEX = /^(\w+\.)*(\w*)[mM]ember[sS]pec$/;
 const RESERVED_KEY_REGEX = /(^children$|^services$|^locations?$|^brooklyn\.config$|^brooklyn\.parameters$|^brooklyn\.enrichers$|^brooklyn\.policies$)/;
 export const FIELD = {
-    SERVICES: 'services', CHILDREN: 'brooklyn.children', CONFIG: 'brooklyn.config', PARAMETERS: 'brooklyn.parameters', LOCATION: 'location',
+    SERVICES: 'services', CHILDREN: 'brooklyn.children', CONFIG: 'brooklyn.config', PARAMETERS: 'brooklyn.parameters', LOCATION: 'location', LOCATIONS: 'locations',
     POLICIES: 'brooklyn.policies', ENRICHERS: 'brooklyn.enrichers', INITIALIZERS: 'brooklyn.initializers', TYPE: 'type', NAME: 'name', ID: 'id',
     TAGS: 'brooklyn.tags',
     // This field is not part of the Brooklyn blueprint spec but used to store information about the composer, e.g. X,Y coordinates, virtual items, etc
@@ -34,7 +34,7 @@ export const FIELD = {
 };
 const UNSUPPORTED_CATALOG_FIELDS = ['brooklyn.catalog', 'items', 'item'];
 const UNSUPPORTED_FIELDS = {
-    locations: 'Multi-locations is not supported in the blueprint composer. Please use [location] instead'
+    // There is no unsupported fields at the moment.
 };
 export const EntityFamily = {
     ENTITY: {id: 'ENTITY', displayName: 'Entity', superType: 'org.apache.brooklyn.api.entity.Entity'},
@@ -55,6 +55,7 @@ const CONFIG = new WeakMap();
 const PARAMETERS = new WeakMap();
 const INITIALIZERS = new WeakMap();
 const CHILDREN = new WeakMap();
+const LOCATION = new WeakMap();
 const LOCATIONS = new WeakMap();
 const POLICIES = new WeakMap();
 const ENRICHERS = new WeakMap();
@@ -75,6 +76,7 @@ export class Entity {
         CONFIG.set(this, new Map());
         PARAMETERS.set(this, []);
         INITIALIZERS.set(this, []);
+        LOCATIONS.set(this, []);
         METADATA.set(this, new Map());
         ENRICHERS.set(this, new Map());
         POLICIES.set(this, new Map());
@@ -267,7 +269,7 @@ export class Entity {
      * @returns {string}
      */
     get location() {
-        return LOCATIONS.get(this);
+        return LOCATION.get(this);
     }
 
     /**
@@ -275,7 +277,7 @@ export class Entity {
      * @param {string} location
      */
     set location(location) {
-        LOCATIONS.set(this, location);
+        LOCATION.set(this, location);
         this.miscData.delete('locationRemoved');
         this.touch();
     }
@@ -285,7 +287,7 @@ export class Entity {
      * @returns {string}
      */
     removeLocation() {
-        LOCATIONS.delete(this);
+        LOCATION.delete(this);
         this.miscData.delete('locationName');
         this.miscData.delete('locationIcon');
 
@@ -516,7 +518,15 @@ export class Entity {
      * @returns {boolean}
      */
     hasLocation() {
-        return LOCATIONS.has(this);
+        return LOCATION.has(this);
+    }
+
+    /**
+     * Has {Entity} got a collection of locations
+     * @returns {boolean}
+     */
+    hasLocations() {
+        return LOCATIONS.get(this).length > 0;
     }
 
     /**
@@ -616,6 +626,8 @@ Entity.prototype.setPoliciesFromJson = setPoliciesFromJson;
 Entity.prototype.setInitializersFromJson = setInitializersFromJson;
 Entity.prototype.getInitializersAsArray = getInitializersAsArray;
 
+Entity.prototype.setLocationsFromJson = setLocationsFromJson;
+
 Entity.prototype.getData = getData;
 Entity.prototype.addConfig = addConfig;
 Entity.prototype.clearConfig = clearConfig;
@@ -654,7 +666,7 @@ function addConfig(key, value) {
             value[DSL.ENTITY_SPEC].parent = this;
             CONFIG.get(this).set(key, value);
         } else {
-            var entity = new Entity().setEntityFromJson(value[DSL.ENTITY_SPEC]);
+            let entity = new Entity().setEntityFromJson(value[DSL.ENTITY_SPEC]);
             entity.family = EntityFamily.SPEC.id;
             entity.parent = this;
             CONFIG.get(this).set(key, {'$brooklyn:entitySpec': entity});
@@ -911,7 +923,7 @@ function getData(includeChildren = true) {
         return {};
     }
 
-    var result = this.getMetadataAsJson();
+    let result = this.getMetadataAsJson();
     if (this.hasConfig()) {
         result[FIELD.CONFIG] = this.getConfigAsJson();
     }
@@ -922,10 +934,13 @@ function getData(includeChildren = true) {
         result[FIELD.INITIALIZERS] = this.getInitializersAsArray();
     }
     if (this.hasLocation()) {
-        result.location = LOCATIONS.get(this);
+        result[FIELD.LOCATION] = LOCATION.get(this);
+    }
+    if (this.hasLocations()) {
+        result[FIELD.LOCATIONS] = LOCATIONS.get(this);
     }
     if (this.hasChildren() && includeChildren) {
-        var children = [];
+        let children = [];
         for (let child of CHILDREN.get(this).values()) {
             children.push(child.getData());
         }
@@ -936,14 +951,14 @@ function getData(includeChildren = true) {
         }
     }
     if (this.hasPolicies()) {
-        var policies = [];
+        let policies = [];
         for (let policy of POLICIES.get(this).values()) {
             policies.push(policy.getData());
         }
         result[FIELD.POLICIES] = policies;
     }
     if (this.hasEnrichers()) {
-        var enrichers = [];
+        let enrichers = [];
         for (let enricher of ENRICHERS.get(this).values()) {
             enrichers.push(enricher.getData());
         }
@@ -1107,6 +1122,9 @@ function setEntityFromJson(incomingModel, setChildren = true) {
             case FIELD.LOCATION:
                 this.location = incomingModel[key];
                 break;
+            case FIELD.LOCATIONS:
+                self.setLocationsFromJson(incomingModel[key]);
+                break;
             case FIELD.INITIALIZERS:
                 self.setInitializersFromJson(incomingModel[key]);
                 break;
@@ -1192,7 +1210,6 @@ function setParametersFromJson(incomingModel) {
 /**
  * Set initializers from JSON.
  *
- * @param {Object} model
  * @param {Array} initializers
  */
 function setInitializersFromJson(initializers) {
@@ -1200,6 +1217,19 @@ function setInitializersFromJson(initializers) {
         throw new Error('Model parse error ... cannot add initializers as it must be an array')
     }
     INITIALIZERS.set(this, initializers);
+    this.touch();
+}
+
+/**
+ * Set locations from JSON.
+ *
+ * @param {Array} locations
+ */
+function setLocationsFromJson(locations) {
+    if (!Array.isArray(locations)) {
+        throw new Error('Model parse error ... cannot add locations as it must be an array')
+    }
+    LOCATIONS.set(this, locations);
     this.touch();
 }
 
@@ -1286,10 +1316,10 @@ function cleanForJson(item, depth) {
         return item.toString();
     }
     if (item instanceof Map) {
-        var result = {};
-        for (var [key, value] of item) {
+        let result = {};
+        for (let [key, value] of item) {
             if (ANY_MEMBERSPEC_REGEX.test(key) && value.hasOwnProperty(DSL.ENTITY_SPEC)) {
-                var _jsonVal = {};
+                let _jsonVal = {};
                 _jsonVal[DSL.ENTITY_SPEC] = value[DSL.ENTITY_SPEC].getData();
                 result[key] = _jsonVal;
             } else {
