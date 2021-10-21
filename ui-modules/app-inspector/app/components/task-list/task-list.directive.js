@@ -50,17 +50,25 @@ export function taskListDirective() {
         
         if (activityTagFilter()($scope.tasks, $scope.model.filterByTag).length == 0) {
             // show all if there are no sub-tasks
-            $scope.model.filterByTag = 'ALL';
+            $scope.model.filterByTag = $scope.taskType === 'activityChildren' ? 'ALL' : 'TOP-LEVEL';
         }
+        $scope.isScheduled = isScheduled;
 
         $scope.$watch('tasks', function () {
-            let defaultTags = {'ALL': $scope.tasks.length};
+            let defaultTags = {};
+
             if ($scope.taskType === 'activityChildren') {
                 defaultTags['SUB-TASK'] = 0;
+            } else {
+                defaultTags['TOP-LEVEL'] = topLevelTasks($scope.tasks).length;
             }
+
+            defaultTags['ALL'] = $scope.tasks.length;
+
             let tags = $scope.tasks.reduce((result, subTask)=> {
                 return subTask.tags.reduce(tagReducer, result);
             }, defaultTags);
+
             $scope.filters = angular.extend(tags, $scope.filters);
         });
         $scope.getTaskDuration = function(task) {
@@ -68,9 +76,6 @@ export function taskListDirective() {
                 return null;
             }
             return (task.endTimeUtc === null ? new Date().getTime() : task.endTimeUtc) - task.startTimeUtc;
-        }
-        $scope.isScheduled = function(task) {
-            return task && task.currentStatus && task.currentStatus.startsWith("Schedule");
         }
     }
 
@@ -85,6 +90,24 @@ export function taskListDirective() {
         return result;
     }
 }
+
+
+function isScheduled(task) {
+  return task && task.currentStatus && task.currentStatus.startsWith("Schedule");
+}
+
+function topLevelTasks(tasks) {
+    if (!tasks) return tasks;
+    let tasksById = tasks.reduce( (result,t) => { result[t.id] = t; return result; }, {} );
+    return tasks.filter(t => {
+      if (!t.submittedByTask) return true;
+      let submitter = tasksById[t.submittedByTask.metadata.id];
+      if (!submitter) return true;
+      if (isScheduled(submitter) && (!t.endTimeUtc || t.endTimeUtc<=0)) return true;
+      return false;
+    });
+}
+
 
 export function timeAgoFilter() {
     function timeAgo(input) {
@@ -110,7 +133,10 @@ export function durationFilter() {
 
 export function activityTagFilter() {
     return function (inputs, tag) {
-        if (inputs && tag && tag !== 'ALL') {
+        if (inputs && tag) {
+            if (tag === 'ALL') return inputs;
+            if (tag === 'TOP-LEVEL') return topLevelTasks(inputs);
+
             return inputs.reduce((result, task)=> {
                 if (task.tags.indexOf(tag) != -1) {
                     result.push(task);
