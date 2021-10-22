@@ -21,7 +21,6 @@ import {EntityFamily} from '../util/model/entity.model';
 import template from './catalog-selector.template.html';
 import footerTemplate from './catalog-selector-palette-footer.html';
 import { distanceInWordsToNow } from 'date-fns';
-import { session as sessionStore } from 'brooklyn-ui-utils/browserStorage';
 
 const MODULE_NAME = 'brooklyn.composer.component.catalog-selector';
 const TEMPLATE_URL = 'blueprint-composer/component/catalog-selector/index.html';
@@ -48,6 +47,11 @@ const PALETTE_VIEW_MODES = {
 
 // fields in either bundle or type record:
 const FIELDS_TO_SEARCH = ['displayName', 'name', 'symbolicName', 'type', 'version', 'containingBundle', 'description', 'displayTags', 'tags', 'supertypes'];
+
+const SESSION_KEYS = {
+    QUERY: 'composerSearch',
+    VIEW_MODE: 'composerViewMode',
+}
 
 angular.module(MODULE_NAME, [])
     .directive('catalogSelector', catalogSelectorDirective)
@@ -94,7 +98,7 @@ export function catalogSelectorDirective() {
 
         $scope.viewModeChange = function(viewMode) {
             $scope.state.viewMode = viewMode;
-            sessionStore.setComposerViewMode(viewMode, true);
+            sessionStorage.setItem(SESSION_KEYS.VIEW_MODE, JSON.stringify(viewMode));
         };
     }
 
@@ -105,14 +109,19 @@ export function catalogSelectorDirective() {
         $scope.viewOrders = PALETTE_VIEW_ORDERS;
         if (!$scope.state) $scope.state = {};
         if (!$scope.state.viewMode) {
-            const savedViewMode = sessionStore.getComposerViewMode(true);
+            let savedViewMode;
+            try {
+                savedViewMode = JSON.parse(sessionStorage.getItem(SESSION_KEYS.VIEW_MODE));
+            } catch(err) {
+                savedViewMode = null;
+            }
             $scope.state.viewMode = ((typeof savedViewMode === 'object') && (savedViewMode !== null))
                 ? savedViewMode
                 : PALETTE_VIEW_MODES.normal
         };
 
         if(!$scope.search) {
-            const savedSearch = sessionStore.getComposerSearch();
+            const savedSearch = sessionStorage.getItem(SESSION_KEYS.QUERY);
             if (typeof savedSearch === 'string' && savedSearch.length) $scope.search = savedSearch;
         }
 
@@ -141,7 +150,7 @@ export function catalogSelectorDirective() {
                 displayName: $scope.search,
                 supertypes: ($scope.family ? [ $scope.family.superType ] : []),
             };
-            if (typeof newValue === 'string') sessionStore.setComposerSearch(newValue);
+            if (typeof newValue === 'string') sessionStorage.setItem(SESSION_KEYS.QUERY, newValue);
         });
 
         $scope.getItems = function (search) {

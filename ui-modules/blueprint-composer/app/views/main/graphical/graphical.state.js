@@ -21,8 +21,11 @@ import {graphicalEditPolicyState} from './edit/policy/edit.policy.controller';
 import {graphicalEditEnricherState} from './edit/enricher/edit.enricher.controller';
 import {computeQuickFixes} from '../../../components/quick-fix/quick-fix';
 import {Entity, EntityFamily} from '../../../components/util/model/entity.model';
-import { session as sessionStore } from 'brooklyn-ui-utils/browserStorage';
 import template from './graphical.state.html';
+
+const SESSION_KEYS = {
+    SECTION: 'composerSection',
+}
 
 export const graphicalState = {
     name: 'main.graphical',
@@ -42,9 +45,9 @@ function graphicalController($scope, $state, $filter, blueprintService, paletteS
     this.EntityFamily = EntityFamily;
 
     this.sections = paletteService.getSections();
-    const savedSection = sessionStore.getComposerSection();
+    const savedSectionId = sessionStorage.getItem(SESSION_KEYS.SECTION);
     this.selectedSection = Object.values(this.sections)
-        .find(section => section.type.id === (savedSection || EntityFamily.ENTITY.id));
+        .find(section => section.type.id === (savedSectionId || EntityFamily.ENTITY.id));
     $scope.paletteState = {};  // share state among all sections
     $scope.errorsPane = { level: null };
 
@@ -56,7 +59,7 @@ function graphicalController($scope, $state, $filter, blueprintService, paletteS
     }
     this.onSectionSelection = (section) => {
         vm.selectedSection = section;
-        sessionStore.setComposerSection(section.type.id);
+        sessionStorage.setItem(SESSION_KEYS.SECTION, section.type.id);
     }
     this.onCanvasSelection = (item) => {
         $scope.canvasSelectedItem = item;
