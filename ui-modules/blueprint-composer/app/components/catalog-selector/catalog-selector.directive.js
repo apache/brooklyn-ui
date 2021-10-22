@@ -48,6 +48,11 @@ const PALETTE_VIEW_MODES = {
 // fields in either bundle or type record:
 const FIELDS_TO_SEARCH = ['displayName', 'name', 'symbolicName', 'type', 'version', 'containingBundle', 'description', 'displayTags', 'tags', 'supertypes'];
 
+const SESSION_KEYS = {
+    QUERY: 'composerSearch',
+    VIEW_MODE: 'composerViewMode',
+}
+
 angular.module(MODULE_NAME, [])
     .directive('catalogSelector', catalogSelectorDirective)
     .filter('catalogSelectorSearch', catalogSelectorSearchFilter)
@@ -90,6 +95,11 @@ export function catalogSelectorDirective() {
             subhead: TEMPLATE_SUBHEAD_URL,
             footer: TEMPLATE_FOOTER_URL
         }
+
+        $scope.viewModeChange = function(viewMode) {
+            $scope.state.viewMode = viewMode;
+            sessionStorage.setItem(SESSION_KEYS.VIEW_MODE, JSON.stringify(viewMode));
+        };
     }
 
     function controller($scope, $element, $timeout, $q, $uibModal, $log, $templateCache, paletteApi, paletteDragAndDropService, iconGenerator, composerOverrides, recentlyUsedService) {
@@ -98,7 +108,22 @@ export function catalogSelectorDirective() {
         $scope.viewModes = PALETTE_VIEW_MODES;
         $scope.viewOrders = PALETTE_VIEW_ORDERS;
         if (!$scope.state) $scope.state = {};
-        if (!$scope.state.viewMode) $scope.state.viewMode = PALETTE_VIEW_MODES.normal;
+        if (!$scope.state.viewMode) {
+            let savedViewMode;
+            try {
+                savedViewMode = JSON.parse(sessionStorage.getItem(SESSION_KEYS.VIEW_MODE));
+            } catch(err) {
+                savedViewMode = null;
+            }
+            $scope.state.viewMode = ((typeof savedViewMode === 'object') && (savedViewMode !== null))
+                ? savedViewMode
+                : PALETTE_VIEW_MODES.normal
+        };
+
+        if(!$scope.search) {
+            const savedSearch = sessionStorage.getItem(SESSION_KEYS.QUERY);
+            if (typeof savedSearch === 'string' && savedSearch.length) $scope.search = savedSearch;
+        }
 
         $scope.pagination = {
             page: 1,
@@ -118,13 +143,14 @@ export function catalogSelectorDirective() {
 
         $scope.isLoading = true;
 
-        $scope.$watch('search', () => {
+        $scope.$watch('search', (newValue) => {
             $scope.freeFormTile = {
                 symbolicName: $scope.search,
                 name: $scope.search,
                 displayName: $scope.search,
                 supertypes: ($scope.family ? [ $scope.family.superType ] : []),
             };
+            if (typeof newValue === 'string') sessionStorage.setItem(SESSION_KEYS.QUERY, newValue);
         });
 
         $scope.getItems = function (search) {

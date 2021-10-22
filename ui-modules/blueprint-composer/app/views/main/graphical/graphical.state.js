@@ -23,6 +23,10 @@ import {computeQuickFixes} from '../../../components/quick-fix/quick-fix';
 import {Entity, EntityFamily} from '../../../components/util/model/entity.model';
 import template from './graphical.state.html';
 
+const SESSION_KEYS = {
+    SECTION: 'composerSection',
+}
+
 export const graphicalState = {
     name: 'main.graphical',
     url: '/graphical',
@@ -41,7 +45,9 @@ function graphicalController($scope, $state, $filter, blueprintService, paletteS
     this.EntityFamily = EntityFamily;
 
     this.sections = paletteService.getSections();
-    this.selectedSection = Object.values(this.sections).find(section => section.type === EntityFamily.ENTITY);
+    const savedSectionId = sessionStorage.getItem(SESSION_KEYS.SECTION);
+    this.selectedSection = Object.values(this.sections)
+        .find(section => section.type.id === (savedSectionId || EntityFamily.ENTITY.id));
     $scope.paletteState = {};  // share state among all sections
     $scope.errorsPane = { level: null };
 
@@ -50,6 +56,10 @@ function graphicalController($scope, $state, $filter, blueprintService, paletteS
 
     this.computeIssues = () => {
         $scope.allIssues = computeQuickFixes(blueprintService);
+    }
+    this.onSectionSelection = (section) => {
+        vm.selectedSection = section;
+        sessionStorage.setItem(SESSION_KEYS.SECTION, section.type.id);
     }
     this.onCanvasSelection = (item) => {
         $scope.canvasSelectedItem = item;

@@ -25,7 +25,7 @@
                 <a class="hand list-group-item"
                    ng-repeat="section in vm.sections track by $index"
                    ng-class="{'active': vm.selectedSection === section}"
-                   ng-click="vm.selectedSection = section">
+                   ng-click="vm.onSectionSelection(section)">
                     <i class="fa fa-fw" ng-class="section.icon"></i>
                 </a>
 
