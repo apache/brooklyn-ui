@@ -37,7 +37,8 @@ export function taskListDirective() {
         restrict: 'E',
         scope: {
             tasks: '=',
-            taskType: '@'
+            taskType: '@',
+            filteredCallback: '&?',
         },
         controller: ['$scope', '$element', controller]
     };
@@ -45,6 +46,7 @@ export function taskListDirective() {
     function controller($scope, $element) {
         $scope.model = {
             appendTo: $element,
+            filterResult: null,
             filterByTag: $scope.taskType === 'activityChildren' ? 'SUB-TASK' : 'EFFECTOR'
         };
         
@@ -77,6 +79,10 @@ export function taskListDirective() {
             }
             return (task.endTimeUtc === null ? new Date().getTime() : task.endTimeUtc) - task.startTimeUtc;
         }
+
+        $scope.$watch('model.filterResult', function () {
+            if ($scope.filteredCallback && $scope.model.filterResult) $scope.filteredCallback()( $scope.model.filterResult );
+        });
     }
 
     function tagReducer(result, tag) {

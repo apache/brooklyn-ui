@@ -92,4 +92,8 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
         });
       }
     }
+
+    vm.onFilteredActivitiesChange = function (newActivities) {
+        vm.focusedActivities = newActivities;
+    }
 }

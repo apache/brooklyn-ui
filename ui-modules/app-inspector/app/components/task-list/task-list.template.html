@@ -75,6 +75,7 @@
                     </a>
                 </td>
             </tr>
+            {{ model.filterResult = filterResult; "comment: update those interested in the result of the filter"; "" }}
             <tr ng-if="filterResult.length == 0 ">
                 <td colspan="4" class="text-center"><h4>
                     No tasks found matching
