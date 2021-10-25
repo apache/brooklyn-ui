@@ -18,7 +18,7 @@
  */
 const request = require('request');
 
-const APP_NAME = 'App inspector';
+const APP_NAME = 'App Inspector';
 
 describe('App Shell', ()=> {
     browser.get('./');

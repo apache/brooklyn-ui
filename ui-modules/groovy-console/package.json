@@ -37,7 +37,7 @@
     "npm": ">=5.0.0"
   },
   "brooklyn": {
-    "appname": "Groovy console"
+    "appname": "Debug Console"
   },
   "dependencies": {
     "brooklyn-ui-utils": "file:../utils",

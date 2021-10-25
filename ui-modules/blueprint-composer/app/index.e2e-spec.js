@@ -18,7 +18,7 @@
  */
 const request = require('request');
 
-const APP_NAME = 'Blueprint composer';
+const APP_NAME = 'Blueprint Composer';
 
 describe('App Shell', ()=> {
     browser.get('./');
