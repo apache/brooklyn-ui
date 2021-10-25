@@ -18,7 +18,7 @@
  */
 const request = require('request');
 
-const APP_NAME = 'Blueprint importer';
+const APP_NAME = 'Blueprint Importer';
 
 describe('App Shell', ()=> {
     browser.get('./');

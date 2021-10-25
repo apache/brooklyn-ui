@@ -18,7 +18,7 @@
  */
 const request = require('request');
 
-const APP_NAME = 'REST API Docs';
+const APP_NAME = 'REST API';
 
 describe('App Shell', ()=> {
     browser.get('./');

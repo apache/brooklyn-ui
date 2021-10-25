@@ -37,7 +37,7 @@
     "npm": ">=5.0.0"
   },
   "brooklyn": {
-    "appname": "Blueprint importer"
+    "appname": "Blueprint Importer"
   },
   "dependencies": {
     "brooklyn-ui-utils": "file:../utils",

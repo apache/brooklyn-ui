@@ -37,7 +37,7 @@
     "npm": ">=5.0.0"
   },
   "brooklyn": {
-    "appname": "REST API Docs"
+    "appname": "REST API"
   },
   "dependencies": {
     "brooklyn-ui-utils": "file:../utils",

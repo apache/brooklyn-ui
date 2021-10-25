@@ -18,7 +18,7 @@
  */
 const request = require('request');
 
-const APP_NAME = 'Groovy console';
+const APP_NAME = 'Debug Console';
 
 describe('App Shell', ()=> {
     browser.get('./');

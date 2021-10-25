@@ -18,7 +18,7 @@
  */
 const request = require('request');
 
-const APP_NAME = 'Location manager';
+const APP_NAME = 'Location Manager';
 
 describe('App Shell', ()=> {
     browser.get('./');
