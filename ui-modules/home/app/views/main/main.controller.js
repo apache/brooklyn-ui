@@ -75,7 +75,9 @@ export function mainStateConfig($stateProvider) {
 export function mainStateController($scope, $state, uiModules, catalogApps) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
-    this.uiModules = uiModules.filter( (uiModule) => uiModule.types.includes('home-ui-module') );
+    this.uiModules = uiModules.filter(({ types, slug }) =>
+        types.includes('home-ui-module') && (slug !== 'brooklyn-ui-blueprint-importer')
+    );
     this.catalogApps = catalogApps;
 
     this.pagination = {
