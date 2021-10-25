@@ -35,12 +35,13 @@ export function taskSunburstDirective() {
         restrict: 'E',
         scope: {
             tasks: '=',
-            taskType: '@'
+            taskType: '@',
+            filteredTo: '=?', // optionally restrict tasks to a subset (and descendants); for use with tag and name filters
         },
-        controller: ['$scope', '$element', '$state', '$window', controller]
+        controller: ['$scope', '$element', '$state', '$window', '$timeout', controller]
     };
 
-    function controller($scope, $element, $state, $window) {
+    function controller($scope, $element, $state, $window, $timeout) {
         var viz = initVisualization($scope, $element, $state);
 
         angular.element($window).on('resize', viz.resize);
@@ -50,11 +51,16 @@ export function taskSunburstDirective() {
             angular.element($window).off('resize', viz.resize);
         });
 
-        $scope.$watch('tasks', function () {
+        function onUpdate() {
             viz.prepData();
             viz.redraw();
-        });
-        
+        }
+
+        $scope.$watch('tasks', onUpdate);
+        $scope.$watch('filteredTo', onUpdate);
+
+        // seems to help with the window being ready, otherwise kilt expects to be too wide
+        $timeout(onUpdate, 0);
     }
 }
 
@@ -67,16 +73,26 @@ function initVisualization($scope, $element, $state) {
         
     result.prepData = function() { 
         tasksData = {name: "root", task: null, children: []};
-        
+       
         tasksById = {};
         // accept array or map where values are the array
         // built a map with keys as the id, values a map wrapping the original task in key "task"
         // alongside keys name, parentId, children
         (Array.isArray($scope.tasks) ? $scope.tasks : Object.values($scope.tasks)).forEach(t => {
-            if (t.tags.indexOf("SUB-TASK")>=0 || t.tags.indexOf("EFFECTOR")>=0) {
+            //if (t.tags.indexOf("SUB-TASK")>=0 || t.tags.indexOf("EFFECTOR")>=0) {
               tasksById[t.id] = { task: t, name: t.displayName };
-            }
+            //}
         });
+
+        let filteredTo = $scope.filteredTo && $scope.filteredTo.reduce( (result,v)=>{result[v.id]=v; return result;}, {} );
+        function filteredToAccepts(v) {
+          if (!filteredTo) return true;
+          if (!v || !v.task) return false;
+          if (filteredTo[v.task.id]) return true;
+          if (!v.parentId) return false;
+          return filteredToAccepts(tasksById[v.parentId]);
+        }
+
         Object.values(tasksById).forEach((v,i) => {
           v.sequenceId = i;
           if (v.task.children) {
@@ -93,10 +109,12 @@ function initVisualization($scope, $element, $state) {
             v.parentId = v.task.submittedByTask.metadata.id;
           }
         });
+
         Object.values(tasksById).forEach(v => {
+          if (!filteredToAccepts(v)) return;
           if (v.parentId) {
             var parentTask = tasksById[v.parentId];
-            if (parentTask) {
+            if (parentTask && filteredToAccepts(parentTask)) {
               // we know the parent, put this as a child of it
               if (!parentTask.children) parentTask.children = [];
               parentTask.children.push(v);

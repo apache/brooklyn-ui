@@ -143,14 +143,18 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
 
     entityApi.entitySpecList(applicationId, entityId).then((response)=> {
         vm.specList = response.data;
-        vm.specItem = vm.specList[0];
-        vm.error.specList = undefined;
-        observers.push(response.subscribe((response)=> {
+        if (!vm.specList || !vm.specList.length) {
+          vm.error.specList = 'No blueprint spec available';
+        } else {
+          vm.specItem = vm.specList[0];
+          vm.error.specList = undefined;
+          observers.push(response.subscribe((response)=> {
             vm.specList = response.data;
             vm.error.specList = undefined;
-        }));
+          }));
+        }
     }).catch((error)=> {
-        vm.error.specList = 'Cannot load spec map for entity with ID: ' + entityId;
+        vm.error.specList = 'Cannot load specs for entity with ID: ' + entityId;
     });
 
     entityApi.entityActivities(applicationId, entityId).then((response)=> {
@@ -161,7 +165,7 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
             vm.error.activities = undefined;
         }));
     }).catch((error)=> {
-        vm.error.spec = 'Cannot load spec for entity with ID: ' + entityId;
+        vm.error.activities = 'Cannot load activities for entity with ID: ' + entityId;
     });
 
     entityApi.entitySensorsState(applicationId, entityId).then((response)=> {
@@ -172,7 +176,7 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
             vm.error.sensors = undefined;
         }));
     }).catch((error)=> {
-        vm.error.sensors = 'Cannot sensors for entity with ID: ' + entityId;
+        vm.error.sensors = 'Cannot load sensors for entity with ID: ' + entityId;
     });
 
     entityApi.entitySensorsInfo(applicationId, entityId).then((response)=> {
@@ -183,7 +187,7 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
             vm.error.sensors = undefined;
         }));
     }).catch((error)=> {
-        vm.error.sensors = 'Cannot sensors information for entity with ID: ' + entityId;
+        vm.error.sensors = 'Cannot load sensors information for entity with ID: ' + entityId;
     });
 
     entityApi.entityPolicies(applicationId, entityId).then((response)=> {

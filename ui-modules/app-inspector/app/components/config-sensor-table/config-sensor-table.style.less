@@ -16,14 +16,57 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+.config-sensor-grid {
+  display: grid;
+  grid-template-columns: minmax(max-content,35%) minmax(50%,100%);
+  max-width: 100%;
+  .grid-row.no-content {
+    grid-column-end: span 2;
+  }
+}
+
+
+.grid-bordered {
+  grid-gap: 1px;
+  > * {
+    box-shadow: 0 0 0 1px @card-border-color;
+    padding: 6px 8px;
+  }
+  > .grid-header {
+    box-shadow: 0 0 0 1px darken(@card-border-color, 10%);
+    background: @primary-10;
+    vertical-align: bottom;
+    font-weight: bold;
+    padding: 8px 8px;
+  }
+  .grid-even {
+    background: @primary-5;
+  }
+}
+
+
+
+.config-sensor-table {
+  table {
+//    table-layout: fixed;
+  }
+}
 .config-value {
+ > .content-row {
+  display: flex;
   > .content {
-    float: left;
-    width: 88%;
+    flex: 1 1 auto;
+    max-height: 120pt;
+    overflow: auto;
   }
   > .extras {
-    float: right;
-    width: 12%;
+    flex: 0 0 auto;
+    button {
+      // don't make a huge button, it just makes the table less expressive
+      margin-bottom: -3px;
+      margin-top: -3px;
+      padding: 3px 6px;
+    }
   }
 
   .copy-btn {
@@ -33,4 +76,12 @@
   &:hover .copy-btn {
     visibility: visible !important;
   }
+  .literal-lines, .multiline-code {
+    white-space: pre;
+  }
+  .multiline-code {
+    .monospace();
+  }
+ }
 }
+

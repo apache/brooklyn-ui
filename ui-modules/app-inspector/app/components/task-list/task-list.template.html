@@ -55,7 +55,8 @@
             <tr ng-repeat="task in tasks | activityTagFilter : model.filterByTag | activityFilter:filterValue as filterResult track by task.id">
                 <td class="status">
                     <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id})">
-                    <brooklyn-status-icon value="{{task.currentStatus}}"></brooklyn-status-icon>
+                    <brooklyn-status-icon value="{{task.currentStatus}}" ng-if="!isScheduled(task)"></brooklyn-status-icon>
+                    <span ng-if="isScheduled(task)" class="custom-status-task-icon"><i class="fa fa-clock-o" style="font-size: 250%;"></i></span>
                     </a>
                 </td>
                 <td class="name">
@@ -74,6 +75,7 @@
                     </a>
                 </td>
             </tr>
+            {{ model.filterResult = filterResult; "comment: update those interested in the result of the filter"; "" }}
             <tr ng-if="filterResult.length == 0 ">
                 <td colspan="4" class="text-center"><h4>
                     No tasks found matching
