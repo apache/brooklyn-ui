@@ -58,17 +58,18 @@ export function mainStateController($scope, scriptApi) {
 
     function loadExample() {
         $scope.codeToRun =
-            'import static org.apache.brooklyn.core.entity.Entities.*\n' +
-            '\n' +
-            'println "Last result: "+last\n' +
-            'data.exampleRunCount = (data.exampleRunCount ?: 0) + 1\n' +
-            'println "Example run count: ${data.exampleRunCount}"\n' +
-            '\n' +
-            'println "Application count: ${mgmt.applications.size()}\\n"\n' +
-            '\n' +
-            'mgmt.applications.each { dumpInfo(it) }\n' +
-            '\n' +
-            'return mgmt.applications\n';
+`import static org.apache.brooklyn.core.entity.Entities.*
+
+println "Last result: "+last
+data.exampleRunCount = (data.exampleRunCount ?: 0) + 1
+println "Example run count: \${data.exampleRunCount}"
+
+println "Application count: \${mgmt.applications.size()}\\n"
+
+mgmt.applications.each { dumpInfo(it) }
+
+return mgmt.applications
+`
         $scope.hideResults = true;
         $scope.disableSubmit = false;
     }
@@ -76,17 +77,20 @@ export function mainStateController($scope, scriptApi) {
     function submitCode() {
         $scope.hideResults = true;
         $scope.disableSubmit = true;
-        scriptApi.runGroovyScript($scope.codeToRun).then(function (success) {
+        scriptApi.runGroovyScript($scope.codeToRun)
+        .then((success) => {
             $scope.resultText = success.result || "";
             $scope.problemText = success.problem || "";
             $scope.stdout = success.stdout || "";
             $scope.stderr = success.stderr || "";
-        }, function (error) {
-            $scope.resultText = error.status || "no status";
-            $scope.problemText = error.error || "no error message";
+        })
+        .catch(({ status, error }) => {
+            $scope.resultText = status || "no status";
+            $scope.problemText = error || "no error message";
             $scope.stdout = "";
             $scope.stderr = "";
-        }).finally(() => {
+        })
+        .finally(() => {
             $scope.hideResults = false;
             $scope.disableSubmit = false;
         });
