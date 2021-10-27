@@ -18,5 +18,3 @@
 name: Blueprint Importer
 slug: ${project.artifactId}
 icon: fa-upload
-types:
-- home-ui-module
