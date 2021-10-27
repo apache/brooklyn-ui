@@ -90,6 +90,15 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
     vm.checkPlaintextSensitiveKeyValue = (key,value) =>
         key && vm.config && vm.config[key] && isSensitiveFieldName(key) && !vm.config[key].toString().startsWith('$brooklyn:');
 
+    vm.reconfigureCallback = (key,newValue) => {
+        entityApi.updateEntityConfig(applicationId,entityId,key,newValue).then((response)=> {
+            brSnackbar.create('Configuration updated successfully');
+        }).catch((error)=> {
+            brSnackbar.create(response.data.message);
+        });
+    }
+
+
     // no return
     vm.refreshConfig = () => {
         const handleError = (message) => {

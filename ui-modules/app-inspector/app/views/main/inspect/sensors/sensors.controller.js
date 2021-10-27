@@ -40,6 +40,11 @@ function sensorsController($scope, $stateParams, entityApi) {
 
     let observers = [];
 
+    vm.reconfigureCallback = () => {
+        // TODO - do we want to support reconfiguration in sensors?
+        // Currently out of scope
+    }
+
     entityApi.entitySensorsState(applicationId, entityId).then((response)=> {
         vm.sensors = response.data;
         vm.error.sensors = undefined;

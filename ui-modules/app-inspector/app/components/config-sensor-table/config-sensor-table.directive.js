@@ -39,6 +39,7 @@ export function configSensorTableDirective(brSnackbar) {
             data: '=',
             info: '=',
             checkPlaintextSensitiveKeyValue: '<',
+            reconfigureCallback: '<',
         },
         link,
     };
