@@ -133,6 +133,11 @@
           "description": "Mark the parameter as pinned (always displayed) for the UI. The default is true",
           "type": "boolean"
         },
+        "reconfigurable": {
+          "title": "Parameter is reconfigurable?",
+          "description": "Determines whether the parameter can be reconfigured. The default is false",
+          "type": "boolean"
+        },
         "constraints": {
           "title": "Parameter constraints",
           "description": "A list of constraints the parameter should meet",
