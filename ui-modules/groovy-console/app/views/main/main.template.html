@@ -16,28 +16,41 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<div class="groovy-card">
-    <p class="groovy-title">Instructions</p>
-    <p class="groovy-description">Enter Groovy/Java code to run on the server.</p>
-    <ul>
+<div class="container">
+    <div class="groovy-card">
+        <p class="groovy-title">Instructions</p>
+        <p class="groovy-description">Enter Groovy/Java code to run on the server.</p>
+        <ul>
             <li><code>mgmt</code> is the management context</li>
             <li><code>last</code> is the result of your last successful script</li>
             <li><code>data</code> is user-session map for storing your data</li>
-    </ul>
-            <a class="groovy-link" ng-click="loadExample()">Click to load an example.</a>
-    <div class="groovy-text"><groovy-editor value="codeToRun" ng-click="hideResults = true;"></groovy-editor></div>
-    <br-button class="btn-primary groovy-button" on-click="submitCode()" ng-disabled="disableSubmit">Submit</br-button>
-</div>
-<div class="groovy-card" ng-hide="hideResults">
-    <p class="groovy-description">Error:</p>
-    <textarea class="groovy-text" readonly="readonly" placeholder="no details available">{{problemText}}</textarea>
+        </ul>
+        <button class="btn btn-primary" ng-click="loadExample()">Load an example.</button>
+        <div class="groovy-text"><groovy-editor value="codeToRun" ng-click="hideResults = true;"></groovy-editor></div>
+        <br-button class="groovy-button" on-click="submitCode()" ng-disabled="disableSubmit">Submit</br-button>
+    </div>
+    <div class="groovy-card" ng-hide="hideResults">
+        <section class="groovy-output">
+            <header>Error:</header>
+            <textarea class="groovy-text" readonly="readonly" placeholder="no details available">{{problemText}}</textarea>
+        </section>
 
-    <p class="groovy-description">Result:</p>
-    <textarea class="groovy-text" readonly="readonly" placeholder="no details available">{{resultText}}</textarea>
+        <section class="groovy-output">
+            <header>Result:</header>
+            <textarea class="groovy-text" readonly="readonly" placeholder="no details available">{{resultText}}</textarea>
+        </section>
 
-    <p class="groovy-description">Output (stdout):</p>
-    <textarea class="groovy-text" readonly="readonly" placeholder="no output available">{{stdout}}</textarea>
+        <section class="groovy-output">
+            <header>Output (stdout):</header>
+            <textarea class="groovy-text" readonly="readonly" placeholder="no output available">{{stdout}}</textarea>
+        </section>
 
-    <p class="groovy-description">Output (stderr):</p>
-    <textarea class="groovy-text" readonly="readonly" placeholder="no output available">{{stderr}}</textarea>
+        <section class="groovy-output">
+            <header>Output (stderr):</header>
+            <textarea class="groovy-text" readonly="readonly" placeholder="no output available">{{stderr}}</textarea>
+        </section>
+    </div>
+    <hr>
+    <h2>Logbook</h2>
+    <br-logbook></br-logbook>
 </div>
