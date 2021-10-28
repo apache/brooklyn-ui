@@ -90,6 +90,9 @@ export function designerDirective($log, $state, $q, $rootScope, iconGenerator, c
 
             switch (entity.family) {
                 case EntityFamily.ENTITY:
+                    if (entity.hasParent()) {
+                        $state.go(graphicalEditEntityState, { entityId: entity.parent._id })
+                    }
                     entity.delete();
                     break;
                 case EntityFamily.POLICY:
@@ -164,7 +167,6 @@ export function designerDirective($log, $state, $q, $rootScope, iconGenerator, c
                             blueprintGraph.hideShadow();
                             blueprintGraph.dropShadow(clickedEntity._id);
                         } else {
-                            console.log('Entity parent', clickedEntity.hasParent(), clickedEntity.parent);
                             $state.go(graphicalEditEntityState, {entityId: clickedEntity._id});
                         }
                         break;
@@ -217,13 +219,7 @@ export function designerDirective($log, $state, $q, $rootScope, iconGenerator, c
 
         $element.bind('delete-entity', function (event) {
             $log.debug('delete-entity');
-            const entityToDelete = event.detail.entity;
-
-            if (entityToDelete.hasParent()) {
-                $state.go(graphicalEditEntityState, { entityId: entityToDelete.parent._id });
-            }
-
-            $scope.$broadcast('d3.remove', entityToDelete);
+            $scope.$broadcast('d3.remove', event.detail.entity);
         });
 
         $element.bind('graph-redrawn', () => $scope.$root.$broadcast('layers.filter'));
