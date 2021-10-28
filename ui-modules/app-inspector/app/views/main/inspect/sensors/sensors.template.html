@@ -18,4 +18,4 @@
 -->
 <loading-state error="vm.error.sensors" ng-if="!vm.sensors || !vm.sensorsInfo"></loading-state>
 
-<config-sensor-table data="vm.sensors" info="vm.sensorsInfo" ng-if="vm.sensors && vm.sensorsInfo"></config-sensor-table>
+<config-sensor-table data="vm.sensors" info="vm.sensorsInfo" reconfigureCallback="vm.reconfigureCallback" ng-if="vm.sensors && vm.sensorsInfo"></config-sensor-table>

@@ -57,6 +57,7 @@ function EntityApi($http, $q) {
         entityLocations: getEntityLocations,
         
         updateEntityName: updateEntityName,
+        updateEntityConfig: updateEntityConfig,
         resetEntityProblems: resetEntityProblems,
         expungeEntity: expungeEntity,
         
@@ -146,6 +147,10 @@ function EntityApi($http, $q) {
                 name: entityName
             }
         });
+    }
+    function updateEntityConfig(applicationId, entityId, config, value) {
+        return $http.post('/v1/applications/' + applicationId + '/entities/' + entityId + '/config/' + config,
+            JSON.stringify(value) , {headers: {'Content-Type': 'application/json'}});
     }
     function resetEntityProblems(applicationId, entityId) {
         return $q.all([

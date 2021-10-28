@@ -42,6 +42,29 @@
   .grid-even {
     background: @primary-5;
   }
+
+  .grid-editable:not(.edit-disabled):after {
+    font-family: "myriad-pro-1", Helvetica, Arial, sans-serif, FontAwesome;
+    content: '\f040 Edit';
+    opacity: 0.2;
+    color: @primary-50;
+  }
+
+  .grid-editable {
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 8px;
+
+    &:hover {
+      background: fade(@primary-50, 10%);
+
+      &:after {
+        opacity: 1.0;
+      }
+    }
+  }
 }
 
 
