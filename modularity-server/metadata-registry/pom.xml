@@ -113,6 +113,7 @@
                 <configuration>
                     <exportScr>true</exportScr>
                     <supportedProjectTypes>
+                        <supportedProjectType>bundle</supportedProjectType>
                         <supportedProjectType>jar</supportedProjectType>
                     </supportedProjectTypes>
                     <instructions>
