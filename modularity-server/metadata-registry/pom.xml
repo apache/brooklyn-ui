@@ -112,6 +112,9 @@
                 </executions>
                 <configuration>
                     <exportScr>true</exportScr>
+                    <supportedProjectTypes>
+                        <supportedProjectType>jar</supportedProjectType>
+                    </supportedProjectTypes>
                     <instructions>
 
       <!-- exportScr above and below from https://felix.apache.org/documentation/faqs/apache-felix-bundle-plugin-faq.html -->
