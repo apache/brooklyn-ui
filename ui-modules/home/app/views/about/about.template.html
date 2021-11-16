@@ -74,6 +74,32 @@
                         style="float: right;">Remove terminated nodes</button>
             </h2>
 
+            <script type="text/ng-template" id="haManageErrorsModal.html">
+                <div class="modal-header">
+                    <h3 class="node-management-title">Node Management Error</h3>
+                </div>
+                <div class="modal-body">
+                    The following errors occurred while attempting to edit the node's properties:
+                    <table class="table table-responsive table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">Property name</th>
+                                <th scope="col">Error message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="error in errors track by error.configName">
+                                <td><code>{{error.configName}}</code></td>
+                                <td><em>{{error.message}}</em></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-lg btn-success" type="button" ng-click="okClicked()">OK</button>
+                </div>
+            </script>
+
             <ng-include src="template"></ng-include>
 
             <script type="text/ng-template" id="haStatusTemplate">

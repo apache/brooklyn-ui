@@ -503,7 +503,6 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     $rootScope.$broadcast('d3.remove', scope.model);
                     break;
             }
-            $state.go(graphicalState.name);
         };
 
         /**

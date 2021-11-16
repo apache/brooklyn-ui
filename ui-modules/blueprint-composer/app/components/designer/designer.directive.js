@@ -90,6 +90,9 @@ export function designerDirective($log, $state, $q, $rootScope, iconGenerator, c
 
             switch (entity.family) {
                 case EntityFamily.ENTITY:
+                    if (entity.hasParent()) {
+                        $state.go(graphicalEditEntityState, { entityId: entity.parent._id })
+                    }
                     entity.delete();
                     break;
                 case EntityFamily.POLICY:
@@ -154,26 +157,27 @@ export function designerDirective($log, $state, $q, $rootScope, iconGenerator, c
 
         $element.bind('click-entity', (event) => {
             $scope.$apply(() => {
-                $log.debug(TAG + 'edit node ' + event.detail.entity._id, event.detail.entity);
-                switch (event.detail.entity.family) {
+                const clickedEntity = event.detail.entity;
+                $log.debug(TAG + 'edit node ' + clickedEntity._id, clickedEntity);
+                switch (clickedEntity.family) {
                     case EntityFamily.ENTITY:
                         const blueprint = blueprintService.get();
                         if (blueprint.isInDslEdit) {
-                            $rootScope.$broadcast('d3.entity-selected', event.detail.entity);
+                            $rootScope.$broadcast('d3.entity-selected', clickedEntity);
                             blueprintGraph.hideShadow();
-                            blueprintGraph.dropShadow(event.detail.entity._id);
+                            blueprintGraph.dropShadow(clickedEntity._id);
                         } else {
-                            $state.go(graphicalEditEntityState, {entityId: event.detail.entity._id});
+                            $state.go(graphicalEditEntityState, {entityId: clickedEntity._id});
                         }
                         break;
                     case EntityFamily.SPEC:
-                        $state.go(graphicalEditSpecState, {entityId: event.detail.entity.parent._id, specId: event.detail.entity._id});
+                        $state.go(graphicalEditSpecState, {entityId: clickedEntity.parent._id, specId: clickedEntity._id});
                         break;
                     case EntityFamily.POLICY:
-                        $state.go(graphicalEditPolicyState, {entityId: event.detail.entity.parent._id, policyId: event.detail.entity._id});
+                        $state.go(graphicalEditPolicyState, {entityId: clickedEntity.parent._id, policyId: clickedEntity._id});
                         break;
                     case EntityFamily.ENRICHER:
-                        $state.go(graphicalEditEnricherState, {entityId: event.detail.entity.parent._id, enricherId: event.detail.entity._id});
+                        $state.go(graphicalEditEnricherState, {entityId: clickedEntity.parent._id, enricherId: clickedEntity._id});
                         break;
                 }
             });
