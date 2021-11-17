@@ -44,8 +44,8 @@
             <version>${commons-lang3.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
             <version>${javax.ws.rs-api.version}</version>
         </dependency>
         <dependency>
