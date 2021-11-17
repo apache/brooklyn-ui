@@ -88,7 +88,6 @@
 
         <!-- versions from brooklyn server which have a different var name here -->
         <osgi.core.version>${org.osgi.core.version}</osgi.core.version>
-        <javax.ws.rs-api.version>${jax-rs-api.version}</javax.ws.rs-api.version>
         <servlet-api.version>${javax-servlet.version}</servlet-api.version>
 
         <!-- build tools, versions not declared in brooklyn-server but they are here -->
