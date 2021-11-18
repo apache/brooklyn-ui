@@ -71,7 +71,7 @@
                 HA status
                 <button ng-if="states.nodes[states.ownId].status === 'MASTER'"
                         ng-click="removeAllTerminatedNodes()" class="btn btn-sm btn-default"
-                        style="float: right;">Remove terminated nodes</button>
+                        style="float: right;">{{operations.REMOVE_ALL_TERMINATED_NODES}}</button>
             </h2>
 
             <script type="text/ng-template" id="haManageErrorsModal.html">
@@ -80,7 +80,7 @@
                 </div>
                 <div class="modal-body">
                     The following errors occurred while attempting to edit the node's properties:
-                    <table class="table table-responsive table-bordered table-hover">
+                    <table ng-if="(errors | filter: {configName:'!!'}).length > 0" class="table table-responsive table-bordered table-hover">
                         <thead>
                             <tr>
                                 <th scope="col">Property name</th>
@@ -88,10 +88,24 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="error in errors track by error.configName">
+                            <tr ng-repeat="error in errors | filter: {configName: '!!'} track by error.configName">
                                 <td><code>{{error.configName}}</code></td>
                                 <td><em>{{error.message}}</em></td>
                             </tr>
+                        </tbody>
+                    </table>
+                    <table ng-if="(errors | filter: {operationName:'!!'}).length > 0" class="table table-responsive table-bordered table-hover">
+                        <thead>
+                        <tr>
+                            <th scope="col">Operation name</th>
+                            <th scope="col">Error message</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="error in errors | filter: {operationName: '!!'} track by error.operationName">
+                            <td><code>{{error.operationName}}</code></td>
+                            <td><em>{{error.message}}</em></td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -123,7 +137,7 @@
                                     ng-show="row == $index">Manage</button>
                             <button class="btn btn-sm btn-default" style="float: right;"
                                     ng-if="(node.status === 'TERMINATED') && (states.nodes[states.ownId].status === 'MASTER')"
-                                    ng-click="removeNode(node.nodeId)" ng-show="row == $index">Remove</button>
+                                    ng-click="removeNode(node.nodeId)" ng-show="row == $index">{{operations.REMOVE_TERMINATED_NODE}}</button>
                             <span ng-if="node.nodeId === states.ownId" class="label label-info">current</span>
                             <span ng-if="node.status === 'MASTER'" class="label label-success">master</span><br>
                         </td>

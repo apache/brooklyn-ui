@@ -81,6 +81,11 @@ export function aboutStateController($scope, $rootScope, $element, $q, $uibModal
     $scope.expectedNodeCounter = Object.keys($scope.states.nodes).length;
     $scope.template = 'haStatusTemplate';
 
+    $scope.operations = {
+        REMOVE_TERMINATED_NODE: 'Remove',
+        REMOVE_ALL_TERMINATED_NODES: 'Remove terminated nodes'
+    };
+
     $scope.importPersistence = function () {
         $rootScope.$broadcast('open-persistence-importer');
     }
@@ -193,8 +198,8 @@ export function aboutStateController($scope, $rootScope, $element, $q, $uibModal
             });
 
             errorModal.closed.then(() => {
-                console.log('closing, wipe errors')
                 $scope.errors = [];
+                $scope.haManageErrors = [];
             })
         }
     });
@@ -202,24 +207,34 @@ export function aboutStateController($scope, $rootScope, $element, $q, $uibModal
     $scope.removeNode = function (nodeId) {
         $scope.template = 'spinnerTemplate';
         let removeNode = serverApi.removeHaTerminatedNode(nodeId);
-        removeNode.then(data => {
+        removeNode.then(() => {
             $scope.expectedNodeCounter--;
-            $scope.container.dispatchEvent(new CustomEvent('update-states', {}));
+        }).catch(error => {
+            $scope.haManageErrors.push({
+                operationName: $scope.operations.REMOVE_TERMINATED_NODE,
+                message: get(error, 'data.message', 'Unknown error.'),
+            });
         });
+        $scope.container.dispatchEvent(new CustomEvent('update-states', {}));
     }
 
     $scope.removeAllTerminatedNodes = function () {
         $scope.template = 'spinnerTemplate';
         let removeNodes = serverApi.removeHaTerminatedNodes();
-        removeNodes.then(data => {
+        removeNodes.then(() => {
             Object.values($scope.states.nodes).forEach( ({ status }) => {
                 if (status === "TERMINATED" || status === "FAILED") $scope.expectedNodeCounter--;
             });
-            $scope.container.dispatchEvent(new CustomEvent('update-states', {}));
+        }).catch(error => {
+            $scope.haManageErrors.push({
+                operationName: $scope.operations.REMOVE_ALL_TERMINATED_NODES,
+                message: get(error, 'data.message', 'Unknown error.'),
+            });
         });
-    }
+        $scope.container.dispatchEvent(new CustomEvent('update-states', {}));
+    };
 
-    $element.bind('update-states', (event) => {
+    $element.bind('update-states', () => {
         let updateStates = serverApi.getHaStates();
         updateStates.then(({ data }) => {
             if (Object.keys(data.nodes).length === $scope.expectedNodeCounter) {
