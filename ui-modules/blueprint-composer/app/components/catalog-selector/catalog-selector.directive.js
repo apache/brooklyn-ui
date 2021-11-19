@@ -71,7 +71,7 @@ export function catalogSelectorDirective() {
             family: '<',
             onSelect: '&', // action to do when item is selected
             onSelectText: "&?", // function returning text to show in the "on select" button for an item
-            iconSelects: '<?',  // boolean whether clicking the icon triggers selection directly or shows popup (false, default)
+            iconSelects: '<?',  // boolean whether clicking the icon triggers selection directly or shows popup (false by default)
             rowsPerPage: '<?',  // optionally show fixed number of rows; unset (default and normal) computes based on available height
             reservedKeys: '<?',
             state: '<?', // for shared state usage
@@ -120,7 +120,7 @@ export function catalogSelectorDirective() {
                 : PALETTE_VIEW_MODES.normal
         };
 
-        if(!$scope.search) {
+        if(!$scope.search && !$scope.iconSelects) { // Do not restore search when the icon triggers selection directly or shows popup - `iconSelects == true`.
             const savedSearch = sessionStorage.getItem(SESSION_KEYS.QUERY);
             if (typeof savedSearch === 'string' && savedSearch.length) $scope.search = savedSearch;
         }
