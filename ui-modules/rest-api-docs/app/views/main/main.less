@@ -19,13 +19,23 @@
 .md-headline {
   color: @brand-primary;
 }
-
+.md-subhead {
+  color: inherit !important;
+}
 .swagger-section {
   margin-top: 5rem;
 
   .container {
     width: inherit;
     padding: 0;
+  }
+
+  > .info {
+    display: none; // hide the info section, it doesn't add much; but if we do show it give it some styling
+    .info_title {
+      font-size: 125%;
+      color: @brand-primary;
+    }
   }
 
   ul {
