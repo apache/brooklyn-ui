@@ -75,7 +75,7 @@ class PaletteApiProvider extends PaletteApi {
             let supertypes = ['org.apache.brooklyn.api.location'];
             return locations.map(location => {
                 if (location.catalog) {
-                    location.catalog.displayName = location.config.displayName;
+                    location.catalog.displayName = location.config ? location.config.displayName : location.name;
                     location.catalog.supertypes = supertypes;
                     return location.catalog;
                 }
