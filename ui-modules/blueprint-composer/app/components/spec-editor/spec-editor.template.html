@@ -55,7 +55,7 @@
                    ng-click="specEditor.descriptionVisible = !specEditor.descriptionVisible">
                 </i>
                 <i class="fa fa-bookmark panel-header-icon"></i><samp class="entity-type-header">{{model.type}}</samp>
-                <div class="version-selection">
+                <div ng-if="state.availableVersions.length > 0" class="version-selection">
                     <i class="fa fa-code-fork panel-header-icon"></i>
                     <div class="btn-group" uib-dropdown dropdown-append-to-body>
                         <button type="button" class="btn btn-primary fixed">{{state.selectedVersion}}</button>
