@@ -133,6 +133,7 @@ export function D3Blueprint(container, options) {
                 }
             },
             memberspec: {
+                rotationAngle: -45, // Rotate if parent has children
                 circle: {
                     r: 35,
                     cx: 0,
@@ -831,26 +832,45 @@ export function D3Blueprint(container, options) {
 
         let relationArcs = _relationArcs.selectAll('.relation').data(arcsData, (d) => getPathId(d));
 
+        // Returns node coordinates with adjustment for member spec rotation if present.
+        const getNodeCoordinates = (entity) => {
+            let _node = nodeForEntity(entity);
+            let _x = _node.x;
+            let _y = _node.y;
+
+            if (entity.isMemberSpec()) {
+                _y += _configHolder.nodes.memberspec.circle.cy;
+                if (entity.parent.hasChildren()) {
+                    // follow the rotation as for 'specNodeData'
+                    let _radius = _configHolder.nodes.memberspec.circle.cy;
+                    let _theta = Math.PI * 2 * _configHolder.nodes.memberspec.rotationAngle / 360;
+                    _x += _radius * Math.cos(_theta);
+                    _y -= _radius - Math.abs(_radius * Math.sin(_theta));
+                }
+            }
+
+            return [_x, _y];
+        };
+
         const getArcTransitionParameters = (d) => {
-            let targetNode = nodeForEntity(d.target);
-            let sourceNode = nodeForEntity(d.source);
-            let sourceY = sourceNode.y + (d.source.isMemberSpec() ? _configHolder.nodes.memberspec.circle.cy : 0);
-            let targetY = targetNode.y + (d.target.isMemberSpec() ? _configHolder.nodes.memberspec.circle.cy : 0);
-            let dx = targetNode.x - sourceNode.x;
+            let [targetX, targetY] = getNodeCoordinates(d.target);
+            let [sourceX, sourceY] = getNodeCoordinates(d.source);
+            let dx = targetX - sourceX;
             let dy = targetY - sourceY;
             let dr = Math.sqrt(dx * dx + dy * dy);
             let sweep = dx * dy > 0 ? 0 : 1;
-            _mirror.attr('d', `M ${sourceNode.x},${sourceY} A ${dr},${dr} 0 0,${sweep} ${targetNode.x},${targetY}`);
+            _mirror.attr('d', `M ${sourceX},${sourceY} A ${dr},${dr} 0 0,${sweep} ${targetX},${targetY}`);
 
             let m = _mirror._groups[0][0].getPointAtLength(_mirror._groups[0][0].getTotalLength() - _configHolder.nodes.child.circle.r - 20);
 
-            dx = m.x - sourceNode.x;
+            dx = m.x - sourceX;
             dy = m.y - sourceY;
+
             dr = Math.sqrt(dx * dx + dy * dy);
 
-            let isLeftToRight = dx > 0 || sourceNode.x === targetNode.x;
+            let isLeftToRight = dx > 0 || sourceX === targetX;
 
-            return [sourceNode.x, sourceY, dr, sweep, m.x, m.y, isLeftToRight];
+            return [sourceX, sourceY, dr, sweep, m.x, m.y, isLeftToRight];
         }
 
         const isLeftToRight = (d) => {
@@ -1102,7 +1122,7 @@ export function D3Blueprint(container, options) {
             .attr('transform', (d)=>(`translate(${d.x}, ${d.y})`));
         specNodeData.transition()
             .duration(_configHolder.transition)
-            .attr('transform', (d)=>(`translate(${d.x}, ${d.y}) rotate(${d.data.hasChildren() ? -45 : 0})`));
+            .attr('transform', (d)=>(`translate(${d.x}, ${d.y}) rotate(${d.data.hasChildren() ? _configHolder.nodes.memberspec.rotationAngle : 0})`));
         specNodeData.exit()
             .transition()
             .duration(_configHolder.transition)
