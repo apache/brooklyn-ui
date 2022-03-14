@@ -91,7 +91,10 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $f
         }
         $scope.isNewFromTemplate = () => ($scope.config.itemType !== 'template' && $scope.config.original.itemType === 'template');
         $scope.isUpdate = () => !$scope.isNewFromTemplate() && Object.keys($scope.config.original).length>0;
-        $scope.buttonTextFn = () => $scope.config.label || ($scope.isUpdate() && ($scope.config.name || $scope.config.original.name || $scope.config.symbolicName || $scope.config.original.symbolicName)) || 'Add to catalog';
+        $scope.buttonTextFn = () => {
+            const name = $scope.config.label || ($scope.isUpdate() && ($scope.config.name || $scope.config.original.name || $scope.config.symbolicName || $scope.config.original.symbolicName));
+            return !!name ? 'Update ' + name : 'Add to catalog';
+        }
         $scope.buttonText = $scope.buttonTextFn();
 
         $scope.activateModal = () => {
