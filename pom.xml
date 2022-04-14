@@ -101,8 +101,8 @@
         <pax-web-extender-whiteboard.version>${pax-web.version}</pax-web-extender-whiteboard.version>
 
         <!-- new deps not used in brooklyn-server -->
-        <node.version>v13.2.0</node.version>
-        <npm.version>6.13.1</npm.version>
+        <node.version>v16.14.2</node.version>
+        <npm.version>8.5.0</npm.version>
 
     </properties>
 
