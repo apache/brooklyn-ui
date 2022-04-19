@@ -109,6 +109,15 @@ or the `jpeg` compilation failing (note this one can be a non-fatal error at the
 
 Consult the list above of dependencies to install, and make sure you wipe the `node_modules` dirs.
 
+If libpng still seems to be missing and you are using an M1 Mac then the following lines may help.
+
+```bash
+arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+arch -x86_64 /usr/local/bin/brew install libpng
+```
+
+This installs th x86 version of brew and uses that to install the x86 version of the libpng library.  This won't affect your arm64 brew or anything installed using it.
+
 If it still fails, try installing `nvm` (curl-to-bash) then `nvm ls-remote` and `nvm install v12.9.0` (or other latest).
 Then retry the `mvn` build; even though `mvn` uses a different version of `node` and `npm`, simply installing the latest
 node version sometimes sorts out errors.
