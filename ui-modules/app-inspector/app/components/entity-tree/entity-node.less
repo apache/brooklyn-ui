@@ -46,7 +46,10 @@
     border: 1px solid @well-border;
     border-radius: @border-radius-base;
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    transition: all .2s ease-in-out;
+    // transition: all .2s ease-in-out;
+    // transition disabled because on chrome colours are not restored afterwards
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=265303
+    transition: none;
     &.highlight {
       animation: fadeOut 1s;
       -webkit-animation: fadeOut 1s;
