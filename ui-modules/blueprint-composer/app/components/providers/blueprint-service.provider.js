@@ -750,7 +750,9 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
         entity.clearIssues({group: 'type'});
         entity.version = data.version;
         entity.type = data.symbolicName;
-        entity.icon = data.iconUrl || iconGenerator(data.symbolicName);
+        entity.icon = entity.metadata.get('iconUrl')
+            ? (data.iconUrl || '/v1/catalog/types/'+entity.type+'/'+(entity.version || 'latest')+'/icon')+'?iconUrl='+entity.metadata.get('iconUrl')
+            : data.iconUrl || iconGenerator(data.symbolicName);
         entity.miscData.set('important', !!data.iconUrl);
         entity.miscData.set('bundle', {
             symbolicName: data.containingBundle.split(':')[0],
