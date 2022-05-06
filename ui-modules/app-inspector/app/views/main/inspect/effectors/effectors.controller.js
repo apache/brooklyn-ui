@@ -19,7 +19,7 @@
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./effectors.template.html";
 
-function EffectorsController($scope, $stateParams, entityApi) {
+function EffectorsController($scope, $stateParams, $location, entityApi) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
     const {
@@ -31,6 +31,7 @@ function EffectorsController($scope, $stateParams, entityApi) {
     vm.error = {};
     vm.applicationId = applicationId;
     vm.entityId = entityId;
+    vm.effectorToOpen = $location.search().effector;
 
     entityApi.entityEffectors(applicationId, entityId).then((response)=> {
         vm.effectors = response.data.map(function (effector) {
@@ -50,6 +51,6 @@ export const effectorsState = {
     name: 'main.inspect.effectors',
     url: '/effectors',
     template: template,
-    controller: ['$scope', '$stateParams', 'entityApi', EffectorsController],
+    controller: ['$scope', '$stateParams', '$location', 'entityApi', EffectorsController],
     controllerAs: 'vm'
 };
