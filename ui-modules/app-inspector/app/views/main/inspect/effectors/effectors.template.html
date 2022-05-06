@@ -18,5 +18,5 @@
 -->
 <loading-state error="vm.error.effectors" ng-if="!vm.effectors"></loading-state>
 <div class="effectors-table" ng-if="vm.effectors">
-    <entity-effector ng-repeat="effector in vm.effectors" effector="effector" application-id="{{vm.applicationId}}" entity-id="{{vm.entityId}}"></entity-effector>
+    <entity-effector ng-repeat="effector in vm.effectors" effector="effector" application-id="{{vm.applicationId}}" entity-id="{{vm.entityId}}" open="vm.effectorToOpen==effector.name"></entity-effector>
 </div>

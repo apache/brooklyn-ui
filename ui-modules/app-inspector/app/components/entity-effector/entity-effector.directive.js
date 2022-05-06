@@ -36,7 +36,8 @@ export function entityEffectorDirective($state) {
         scope: {
             effector: '<',
             applicationId : '@',
-            entityId : '@'
+            entityId : '@',
+            open : '<',
         },
         controller: ['$scope','$state','$http','$uibModal', controller]
     };
@@ -58,5 +59,6 @@ export function entityEffectorDirective($state) {
                 }
             });
         }
+        if ($scope.open) $scope.openModal();
     }
 }
