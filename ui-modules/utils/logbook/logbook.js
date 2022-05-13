@@ -82,6 +82,7 @@ export function logbook() {
                 {name: 'Debug', value: 'DEBUG', selected: true},
             ],
             latest: true,
+            recursive: false,
             dateTimeFrom: null,
             dateTimeTo: null,
             numberOfItems: 1000,
@@ -234,6 +235,7 @@ export function logbook() {
             const params = {
                 levels: levels,
                 tail: $scope.search.latest,
+                recursive: $scope.search.recursive,
                 searchPhrase: $scope.search.phrase,
                 taskId: $scope.taskId,
                 entityId: $scope.entityId,
