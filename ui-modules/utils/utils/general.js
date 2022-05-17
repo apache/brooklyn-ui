@@ -54,10 +54,23 @@ export function isNonEmpty(object) {
     return true; 
 }
 
+export function uiModuleComparator(moduleA, moduleB) {
+    if(moduleA.order && moduleB.order){
+        if (moduleA.order > moduleB.order) {
+            return 1;
+        }
+        if(moduleA.order < moduleB.order) {
+            return -1;
+        }
+    }
+    // If no order implemented or is the same, order by name
+    return moduleA.name > moduleB.name ? 1: -1;
+}
 export function brUtilsGeneralProvider() {
     return { 
         isNonEmpty, 
-        capitalize 
+        capitalize,
+        uiModuleComparator
     };
 }
 

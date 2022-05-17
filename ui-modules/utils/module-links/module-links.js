@@ -36,7 +36,7 @@ export function moduleLinksMenuDirective($compile) {
         terminal: true,
         priority: 1000,
         link: link,
-        controller: ['brBrandInfo', 'brooklynUiModulesApi', controller],
+        controller: ['brBrandInfo', 'brooklynUiModulesApi', 'brUtilsGeneral', controller],
         controllerAs: 'ctrl'
     };
 
@@ -50,7 +50,7 @@ export function moduleLinksMenuDirective($compile) {
         $compile(element)(scope);
     }
 
-    function controller(brBrandInfo, brooklynUiModulesApi) {
+    function controller(brBrandInfo, brooklynUiModulesApi, brUtilsGeneral) {
         this.modules = null;
         this.isModuleActive = (path) => {
             if (path === '/' || path === '') {
@@ -62,7 +62,7 @@ export function moduleLinksMenuDirective($compile) {
 
         //Load Modules
         brooklynUiModulesApi.getUiModules().then(response => {
-            this.modules = response
+            this.modules = response.sort(brUtilsGeneral.uiModuleComparator)
         });
 
         this.productName = brBrandInfo.getBrandedText('product.name');

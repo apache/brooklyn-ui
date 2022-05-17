@@ -34,7 +34,7 @@ export const mainState = {
     name: 'main',
     url: '/',
     template: template,
-    controller: ['$scope', '$state', 'uiModules', 'catalogApps', mainStateController],
+    controller: ['$scope', '$state', 'uiModules', 'catalogApps', 'brUtilsGeneral', mainStateController],
     controllerAs: 'vm',
     resolve: {
         uiModules: ['brooklynUiModulesApi', (brooklynUiModulesApi) => {
@@ -72,10 +72,12 @@ export function mainStateConfig($stateProvider) {
     $stateProvider.state(mainState);
 }
 
-export function mainStateController($scope, $state, uiModules, catalogApps) {
+export function mainStateController($scope, $state, uiModules, catalogApps, brUtilsGeneral) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
-    this.uiModules = uiModules.filter(({ types }) => types.includes('home-ui-module'));
+    this.uiModules = uiModules
+        .filter(({ types }) => types.includes('home-ui-module'))
+        .sort(brUtilsGeneral.uiModuleComparator);
     this.catalogApps = catalogApps;
 
     this.pagination = {

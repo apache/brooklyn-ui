@@ -40,11 +40,12 @@ public class UiModuleImpl implements UiModule {
     private boolean stopExisting = true;
     private String path;
     private List<UiModuleAction> actions = new ArrayList<>();
-
+    private int order;
     public static UiModuleImpl copyOf(UiModule src) {
         final UiModuleImpl result = new UiModuleImpl();
         result.setId(src.getId());
         result.setName(src.getName());
+        result.setOrder(src.getOrder());
         result.setSlug(src.getSlug());
         result.setIcon(src.getIcon());
         if (src.getTypes()!=null) result.types.addAll(src.getTypes());
@@ -59,6 +60,7 @@ public class UiModuleImpl implements UiModule {
         final UiModuleImpl result = new UiModuleImpl();
         result.setId(Optional.fromNullable((String) incomingMap.get("id")).or(UUID.randomUUID().toString()));
         result.setName(Optional.fromNullable((String) incomingMap.get("name")).or(result.getId()));
+        result.setOrder(Optional.fromNullable((Integer) incomingMap.get("order")).or(UiModule.DEFAULT_ORDER));
         result.setSlug((String) incomingMap.get("slug"));
         result.setIcon(Optional.fromNullable((String) incomingMap.get("icon")).or(DEFAULT_ICON));
         final Object types = incomingMap.get("types");
@@ -132,6 +134,10 @@ public class UiModuleImpl implements UiModule {
         return actions;
     }
 
+    @Override
+    public int getOrder() {
+        return order;
+    }
     public void setId(final String id) {
         this.id = id;
     }
@@ -144,6 +150,9 @@ public class UiModuleImpl implements UiModule {
         this.name = name;
     }
 
+    public void setOrder(final int order){
+        this.order = order;
+    }
     public void setSlug(final String slug) {
         this.slug = slug;
     }
@@ -200,6 +209,11 @@ public class UiModuleImpl implements UiModule {
 
     public UiModuleImpl action(final UiModuleAction action) {
         actions.add(action);
+        return this;
+    }
+
+    public UiModuleImpl order(final int order) {
+        this.order=order;
         return this;
     }
 }
