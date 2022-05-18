@@ -25,6 +25,7 @@ import org.apache.brooklyn.ui.modularity.module.api.internal.UiModuleImpl;
 
 public interface UiModule {
     String DEFAULT_ICON = "fa-cogs";
+    int DEFAULT_ORDER = 10_000;
 
     /**
      * @return The unique ID of the module
@@ -71,7 +72,10 @@ public interface UiModule {
      * @return Registered module actions
      */
     List<UiModuleAction> getActions();
-    
+
+    default int getOrder(){
+        return DEFAULT_ORDER;
+    }
     public class Utils {
         public static UiModule copyUiModule(UiModule src) {
             return UiModuleImpl.copyOf(src);
