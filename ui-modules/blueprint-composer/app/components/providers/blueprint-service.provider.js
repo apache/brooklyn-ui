@@ -565,7 +565,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                                     }
                                     break;
                                 case 'length':
-                                    if (!isSet() || isSet() && val().length === constrVals[0]) {
+                                    if (!isSet() || isSet() && val().length !== constrVals[0]) {
                                         message = `<samp>${config.name}</samp> must be of length (${constrVals[0]})`;
                                     }
                                     break;
@@ -576,7 +576,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                                     break;
                                 case 'max_length':
                                     if (!isSet() || isSet() && val().length > constrVals[0]) {
-                                        message = `length of <samp>${config.name}</samp> must be at max (${constrVals[0]})`;
+                                        message = `length of <samp>${config.name}</samp> must be at most (${constrVals[0]})`;
                                     }
                                     break;
                                 case 'pattern':
