@@ -43,6 +43,9 @@ export const COMMON_HINTS = {
     }]
 };
 
+// needed to support error messages for extra constraints
+export const EXTRA_CONSTRAINTS = ['equal', 'greater_than', 'greater_or_equal', 'less_than ', 'less_or_equal ', 'in_range ', 'valid_values', 'length ', 'min_length ', 'max_length ', 'pattern'];
+
 export function blueprintServiceProvider() {
     return {
         $get: ['$log', '$q', '$sce', 'paletteApi', 'iconGenerator', 'dslService', 'brBrandInfo',
@@ -481,12 +484,12 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                         }
                         break;
                     case 'required':
-                        if (!isSet() && !hasDefault && val()!='') {
+                        if (!isSet() && !hasDefault && val()!=='') {
                             message = `<samp>${config.name}</samp> is required`;
                         }
                         break;
                     case 'regex':
-                        if (isSet() && !(new RegExp(args).test(val))) {
+                        if (isSet() && !(new RegExp(args).test(val()))) {
                             message = `<samp>${config.name}</samp> does not match the required format: <samp>${args}</samp>`;
                         }
                         break;
@@ -520,6 +523,70 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                             message = `<samp>${config.name}</samp> cannot be set if any of <samp>${args}</samp> are set`;
                         }
                         break;
+                    // needed to support error messages for extra constraints, optimisation: maybe add the constraint types to Brooklyn catalog.
+                    case '$brooklyn:object':
+                        if(args["type"] != null && EXTRA_CONSTRAINTS.includes(args["factoryMethod.name"])) {
+                            let fct = args["factoryMethod.name"];
+                            let constrVals = args["factoryMethod.args"];
+                            switch (fct) {
+                                case 'equal':
+                                    if (!isSet() || isSet() && val() !== constrVals[0]) {
+                                        message = `<samp>${config.name}</samp> must be equal to ${constrVals[0]}`;
+                                    }
+                                    break;
+                                case 'greater_than':
+                                    if (!isSet() || isSet() && val() <= constrVals[0]) {
+                                        message = `<samp>${config.name}</samp> must be greater than ${constrVals[0]}`;
+                                    }
+                                    break;
+                                case 'greater_than_or_equal':
+                                    if (!isSet() || isSet() && val() < constrVals[0]) {
+                                        message = `<samp>${config.name}</samp> must be greater than or equal to ${constrVals[0]}`;
+                                    }
+                                    break;
+                                case 'less_than':
+                                    if (!isSet() || isSet() && val() >= constrVals[0]) {
+                                        message = `<samp>${config.name}</samp> must be less than ${constrVals[0]}`;
+                                    }
+                                    break;
+                                case 'less_than_or_equal':
+                                    if (!isSet() || isSet() && val() > constrVals[0]) {
+                                        message = `<samp>${config.name}</samp> must be less than or equal to ${constrVals[0]}`;
+                                    }
+                                    break;
+                                case 'in_range':
+                                    if (!isSet() || isSet() && val() >= constrVals[0] && val() <= constrVals[1]) {
+                                        message = `<samp>${config.name}</samp> must be in range of (inclusive) [${constrVals[0]} , ${constrVals[1]}]`;
+                                    }
+                                    break;
+                                case 'valid_values':
+                                    if (!isSet() || isSet() && constrVals[0].includes(val())) {
+                                        message = `<samp>${config.name}</samp> must be one of (${constrVals.toString()})`;
+                                    }
+                                    break;
+                                case 'length':
+                                    if (!isSet() || isSet() && val().length === constrVals[0]) {
+                                        message = `<samp>${config.name}</samp> must be of length (${constrVals[0]})`;
+                                    }
+                                    break;
+                                case 'min_length':
+                                    if (!isSet() || isSet() && val().length < constrVals[0]) {
+                                        message = `length of <samp>${config.name}</samp> must be at least (${constrVals[0]})`;
+                                    }
+                                    break;
+                                case 'max_length':
+                                    if (!isSet() || isSet() && val().length > constrVals[0]) {
+                                        message = `length of <samp>${config.name}</samp> must be at max (${constrVals[0]})`;
+                                    }
+                                    break;
+                                case 'pattern':
+                                    if (!isSet() ||  isSet() && !(new RegExp(constrVals[0]).test(val()))) {
+                                        message = `<samp>${config.name}</samp> must match (${constrVals[0]})`;
+                                    }
+                                    break;
+                            }
+                        }
+                        break;
                     default:
                         $log.warn("Unknown constraint predicate", constraintO, config);
                 }
@@ -532,7 +599,6 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
             if (entity.miscData.has('config')) {
                 entity.miscData.get('config')
                     .forEach(checkSensitiveFields);
-
                 entity.miscData.get('config')
                     .filter(config => config.constraints && config.constraints.length > 0)
                     .forEach(checkConstraints);
