@@ -60,7 +60,7 @@
                 <label class="control-label">Bundle ID</label>
                 <div class="input-group">
                     <span class="input-group-addon">catalog-bom-</span>
-                    <input ng-model="config.bundle" ng-disabled="state.saving" class="form-control" name="bundle" ng-pattern="state.pattern" autofocus placeholder="{{ defaultBundle || 'E.g. my-bundle-id' }}"/>
+                    <input ng-model="config.bundle" ng-disabled="isUpdate() || state.saving" class="form-control" name="bundle" ng-pattern="state.pattern" autofocus placeholder="{{ defaultBundle || 'E.g. my-bundle-id' }}"/>
                 </div>
                 <p class="help-block" ng-show="form.bundle.$invalid">
                     <span ng-if="form.bundle.$error.pattern">The bundle ID can contain only letters, numbers as well as the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
