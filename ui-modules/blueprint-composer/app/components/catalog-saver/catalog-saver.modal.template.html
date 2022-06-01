@@ -50,7 +50,7 @@
             </div>
             <p class="help-block">
                 <span ng-if="form.version.$error.required">You must specify a version</span>
-                <span ng-if="form.version.$error.pattern">The version can contains only letters, numbers as well a the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
+                <span ng-if="form.version.$error.pattern">The version can contain only letters, numbers as well as the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
                 <span ng-if="form.version.$error.exist">This version has already been used</span>
             </p>
         </div>
@@ -63,7 +63,7 @@
                     <input ng-model="config.bundle" ng-disabled="state.saving" class="form-control" name="bundle" ng-pattern="state.pattern" autofocus placeholder="{{ defaultBundle || 'E.g. my-bundle-id' }}"/>
                 </div>
                 <p class="help-block" ng-show="form.bundle.$invalid">
-                    <span ng-if="form.bundle.$error.pattern">The bundle ID can contains only letters, numbers as well a the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
+                    <span ng-if="form.bundle.$error.pattern">The bundle ID can contain only letters, numbers as well as the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
                 </p>
             </div>
 
@@ -71,7 +71,7 @@
                 <label class="control-label">Blueprint symbolic name</label>
                 <input ng-model="config.symbolicName" ng-disabled="state.saving" class="form-control" name="symbolicName" ng-pattern="state.pattern" autofocus placeholder="{{ defaultSymbolicName || 'E.g. my-catalog-id' }}"/>
                 <p class="help-block" ng-show="form.symbolicName.$invalid">
-                    <span ng-if="form.symbolicName.$error.pattern">The blueprint symbolic name can contains only letters, numbers as well a the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
+                    <span ng-if="form.symbolicName.$error.pattern">The blueprint symbolic name can contain only letters, numbers as well as the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
                 </p>
             </div>
 
