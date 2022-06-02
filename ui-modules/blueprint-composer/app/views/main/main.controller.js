@@ -148,10 +148,9 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
 
     $scope.$on('layers.filter', () => applyFilters());
 
-    vm.parseError = false;
-    $scope.$on('yaml.lint', (event, error)=>{
+    $scope.$on('yaml.lint', (event, hasErrors)=>{
         $scope.$applyAsync(()=> {
-            vm.parseError = error;
+            vm.saveToCatalogConfig.hasErrors = hasErrors
         });
     });
 
