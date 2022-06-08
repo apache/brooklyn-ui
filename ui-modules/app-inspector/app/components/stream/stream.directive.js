@@ -36,10 +36,10 @@ export function streamDirective() {
             activityId: '@',
             streamType: '@',
         },
-        controller: ['$scope', '$interval', '$element', 'activityApi', controller]
+        controller: ['$scope', '$interval', '$element', 'activityApi', 'brSnackbar', controller]
     };
 
-    function controller($scope, $interval, $element, activityApi) {
+    function controller($scope, $interval, $element, activityApi, brSnackbar) {
         $scope.autoUpdate = $scope.autoUpdate !== false;
         $scope.tail = $scope.tail !== false;
 
@@ -123,7 +123,13 @@ export function streamDirective() {
                 // 2. Update the stream data holder in this directive.
                 $scope.stream = response.data;
 
-                // 3. Filter the content where relevant and display it.
+                // Check if raw CLI XML content should be displayed first, because of `ng-repeat` performance limits.
+                if (!$scope.cliXml && !$scope.filteredStream.length && $scope.stream.length > 99999) {
+                    $scope.cliXml = true;
+                    brSnackbar.create('CLI XML content is too big, showing raw output first.');
+                }
+
+                // 3. Filter the content where relevant.
                 updateFilteredContent();
 
             }).catch((error)=> {
