@@ -73,7 +73,8 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
 
     $scope.composerUrl = brBrandInfo.blueprintComposerBaseUrl;
 
-    $scope.hasEntry = (list, v) => list.find((entry) => entry.toUpperCase() == v.toUpperCase());
+    // needed to avoid bug cause by object-based constraints
+    $scope.hasEntry = (list, v) => list.find((entry) => (typeof entry === 'string') &&  entry.toUpperCase() === v.toUpperCase());
 
     $scope.deploy = (event) => {
         const instance = $uibModal.open({
