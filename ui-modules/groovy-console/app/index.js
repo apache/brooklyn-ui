@@ -21,6 +21,7 @@ import ngAnimate from 'angular-animate';
 import ngCookies from 'angular-cookies';
 import uiRouter from 'angular-ui-router';
 
+import brUtilsGeneral from "brooklyn-ui-utils/utils/general";
 import brLogbook from 'brooklyn-ui-utils/logbook/logbook';
 import brCore from 'brooklyn-ui-utils/br-core/br-core';
 import brServerStatus from 'brooklyn-ui-utils/server-status/server-status';
@@ -35,8 +36,8 @@ import brandAngularJs from 'brand-angular-js';
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
 angular.module('brooklynGroovyConsole', [ngAnimate, ngCookies, uiRouter, brCore, brServerStatus,
-        brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, brLogbook, mainState, brandAngularJs
-    ])
+        brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, brLogbook, mainState, brUtilsGeneral,
+        brandAngularJs])
     .config(['$logProvider', '$compileProvider', appConfig])
     .config(['$urlRouterProvider', '$stateProvider', routerConfig])
     .run(['$rootScope', '$state', 'brSnackbar', errorHandler])
