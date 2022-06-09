@@ -59,6 +59,11 @@
                             <i class="fa fa-share" ng-class="{'fa-rotate-90': search.latest, 'fa-rotate-270': !search.latest}"></i>
                         </button>
                     </div>
+                    <div class="btn-group">
+                        <button id="logbook-recursive" type="button" ng-click="search.recursive = !search.recursive" class="btn btn-default btn-accent" uib-dropdown-toggle uib-tooltip="Recursive selection of task children">
+                            <i class="fa fa-share" ng-class="{'fa-rotate-90': search.latest, 'fa-rotate-270': !search.recursive}"></i>
+                        </button>
+                    </div>
                     <div class="btn-group" uib-dropdown auto-close="outsideClick">
                         <button id="logbook-filters" type="button" class="btn btn-default btn-accent" uib-dropdown-toggle uib-tooltip="Toggle log filters">
                             <i class="fa fa-filter"></i>
