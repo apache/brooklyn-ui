@@ -548,7 +548,11 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
         Object.values(entity.getClusterMemberspecEntities()).forEach((memberSpec)=> {
             // memberSpec can be `undefined` if the member spec is not a `$brooklyn:entitySpec`, e.g. it is `$brooklyn:config("spec")`.
             // there may be a better way but this seems to handle it.
-            if (memberSpec) promiseArray.push(refreshBlueprintMetadata(memberSpec, 'SPEC'));
+            if (memberSpec instanceof Entity) {
+                // TODO: 'refreshBlueprintMetadata' expects fields of class Entity.
+                // TODO: Does this route ever happen for 'memberSpec'?
+                promiseArray.push(refreshBlueprintMetadata(memberSpec, 'SPEC'));
+            }
         });
         return $q.all(promiseArray);
     }
