@@ -44,7 +44,7 @@ export function entityEffectorDirective($state) {
 
     function controller ($scope, $state, $http, $uibModal){
         $scope.openModal =  function() {
-            var instance = $uibModal.open({
+            let instance = $uibModal.open({
                 animation: true,
                 template: modalTemplate,
                 controller: ['$scope', '$state', 'entityApi', 'locationApi', 'effector', 'applicationId', 'entityId', modalController],

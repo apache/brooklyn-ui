@@ -21,6 +21,8 @@ import template from "./effectors.template.html";
 
 function EffectorsController($scope, $stateParams, $location, entityApi) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
+    $scope.filterResult = [];
+    $scope.filterValue = '';
 
     const {
         applicationId,
@@ -44,6 +46,12 @@ function EffectorsController($scope, $stateParams, $location, entityApi) {
         vm.error = {};
     }).catch((error)=> {
         vm.error.effectors =  'Cannot load effector for entity with ID: ' + entityId;
+    });
+
+    $scope.$watch('filterValue', () => {
+        if (vm.effectors) {
+            $scope.filterResult = vm.effectors.filter(effector => effector.name.includes($scope.filterValue)).map(effector => effector.name)
+        }
     });
 }
 

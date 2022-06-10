@@ -17,6 +17,13 @@
   under the License.
 -->
 <loading-state error="vm.error.effectors" ng-if="!vm.effectors"></loading-state>
+<div class="form-group">
+    <input type="text" class="form-control" placeholder="Filter by name or value" ng-model="filterValue">
+    <br>
+</div>
 <div class="effectors-table" ng-if="vm.effectors">
-    <entity-effector ng-repeat="effector in vm.effectors" effector="effector" application-id="{{vm.applicationId}}" entity-id="{{vm.entityId}}" open="vm.effectorToOpen==effector.name"></entity-effector>
+    <entity-effector ng-repeat="effector in vm.effectors" effector="effector" ng-show="!filterValue || filterResult.indexOf(effector.name) >= 0" application-id="{{vm.applicationId}}" entity-id="{{vm.entityId}}" open="vm.effectorToOpen==effector.name"></entity-effector>
+</div>
+<div ng-if="vm.effectors && vm.effectors.length && filterValue && !filterResult.length" class="grid-row no-content">
+    <span>No matches for <code>{{filterValue}}</code></span>
 </div>
