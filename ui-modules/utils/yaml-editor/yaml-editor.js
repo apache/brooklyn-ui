@@ -63,11 +63,12 @@ export function yamlEditorDirective($rootScope, brSnackbar) {
             let promises = cm.getHelpers(CodeMirror.Pos(0, 0), 'lint').reduce((issues, helper) => issues.concat(helper(text, options, cm)), []);
 
             Promise.all(promises).then(issues => {
-                $rootScope.$broadcast('yaml.lint', issues.some(issue => !issue.severity || issue.severity === 'error'), cm.getValue());
-                cb(cm, issues.reduce((acc, arr) => {
+                let issuesReduced = issues.reduce((acc, arr) => {
                     acc.push(...arr);
                     return acc;
-                }, []));
+                }, []);
+                $rootScope.$broadcast('yaml.lint', issuesReduced.some(issue => !issue.severity || issue.severity === 'error'), cm.getValue());
+                cb(cm, issuesReduced);
             });
         }
         let hint = (cm, callback, options) => {
