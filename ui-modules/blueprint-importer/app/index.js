@@ -23,6 +23,7 @@ import ngResource from 'angular-resource';
 
 import brCore from 'brooklyn-ui-utils/br-core/br-core';
 
+import brUtilsGeneral from "brooklyn-ui-utils/utils/general";
 import brServerStatus from 'brooklyn-ui-utils/server-status/server-status';
 import brInterstitialSpinner from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import brooklynModuleLinks from 'brooklyn-ui-utils/module-links/module-links';
@@ -36,7 +37,9 @@ import brandAngularJs from 'brand-angular-js';
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
-angular.module('brooklynBlueprintImporter', [ngAnimate, ngCookies, ngResource, brCore, brServerStatus, brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, uiRouter, mainState, brandAngularJs])
+angular.module('brooklynBlueprintImporter', [ngAnimate, ngCookies, ngResource, brCore, brServerStatus,
+    brInterstitialSpinner, brooklynModuleLinks, brooklynUserManagement, uiRouter, mainState, brUtilsGeneral,
+    brandAngularJs])
     .config(['$logProvider', '$compileProvider', appConfig])
     .config(['$urlRouterProvider', routerConfig])
     .run(['$rootScope', '$state', 'brSnackbar', errorHandler])

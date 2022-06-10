@@ -21,7 +21,7 @@ import angular from 'angular';
 const MODULE_NAME = 'br.utils.general';
 
 angular.module(MODULE_NAME, [])
-    .factory("brUtilsGeneral", brUtilsGeneralProvider)
+    .factory("brUtilsGeneral", brUtilsGeneralFactory)
     .filter('capitalize', capitalizeFilter);
 
 export default MODULE_NAME;
@@ -63,7 +63,7 @@ export function uiModuleComparator(moduleA, moduleB) {
     // If no order implemented or is the same, order by name
     return moduleA.name.localeCompare(moduleB.name);
 }
-export function brUtilsGeneralProvider() {
+export function brUtilsGeneralFactory() {
     return {
         isNonEmpty,
         capitalize,
