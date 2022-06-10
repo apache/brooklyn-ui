@@ -16,20 +16,23 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<div class="entity-effector">
-    <div class="row">
-        <div class="col-md-12">
-            <span class="effector-name">
-                {{effector.name}}
-            </span>
-            <span class="effector-description">{{effector.description}}</span>
+<div class="modal-header">
+    <br-svg type="close" class="pull-right" ng-click="$dismiss('Close modal')"></br-svg>
+    <h3 class="modal-title">Invoke effector via CLI</h3>
+</div>
+<div class="modal-body">
+    <section>
+        <span class="effector-name">{{effector.name}}</span>
+        <span class="effector-description">{{effector.description}}</span>
+    </section>
+    <section>
+        <div ng-if="effector.parameters.length">
+            <h5>Parameters</h5>
+            <pre>{{cliParams()}}</pre>
         </div>
-    </div>
-    <div class="row">
-        <br>
-        <div class="col-md-4">
-            <button class="btn btn-primary" ng-click="openModal()">Invoke</button>
-            <button class="btn btn-accent" ng-click="openCliModal()">CLI</button>
-        </div>
-    </div>
+        <h5>CLI</h5>
+        <pre>{{brCmd()}}</pre>
+        <h5>REST</h5>
+        <pre>{{curlCmd()}}</pre>
+    </section>
 </div>
