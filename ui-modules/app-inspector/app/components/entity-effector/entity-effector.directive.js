@@ -60,5 +60,19 @@ export function entityEffectorDirective($state) {
             });
         }
         if ($scope.open) $scope.openModal();
+
+        $scope.cli = false;
+
+        $scope.curlCmd = () => {
+            let parameters = $scope.effector.parameters.reduce((ret, parameter, index) => ret + (index ? ', "' : '"') + parameter.name + '": "' + parameter.type.replace('java.lang.', '').toUpperCase() + '"', '');
+            return 'curl -u username:password -X POST -H \'Accept: application/json\' -H \'Content-Type: application/json\' '
+                + window.location.protocol + '//' + window.location.host + $scope.effector.links.self
+                + (parameters ? ' -d \'{' + parameters + '}\'' : '');
+        }
+
+        $scope.brCmd = () => {
+            let parameters = $scope.effector.parameters.reduce((ret, parameter) => ret + ' ' + parameter.name + '=' + parameter.type.replace('java.lang.', '').toUpperCase(), '');
+            return `br app ${$scope.applicationId} ent ${$scope.entityId} effector ${$scope.effector.name} invoke` + (parameters ? ' -param' + parameters : '');
+        }
     }
 }

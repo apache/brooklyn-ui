@@ -18,14 +18,25 @@
 -->
 <div class="entity-effector">
     <div class="row">
-        <div class="col-md-10">
+        <div class="col-md-12">
             <span class="effector-name">
                 {{effector.name}}
             </span>
             <span class="effector-description">{{effector.description}}</span>
         </div>
-         <div class="col-md-2">
-            <br-button type="btn-primary pull-right" on-click="openModal()">Invoke</br-button>
+    </div>
+    <div class="row">
+        <br>
+        <div class="col-md-4">
+            <button class="btn btn-primary" ng-click="openModal()">Invoke</button>
+            <button class="btn btn-accent" ng-click="cli = !cli">CLI</button>
+        </div>
+    </div>
+    <div ng-if="cli" class="row">
+        <br>
+        <div class="col-md-12">
+            <pre>{{curlCmd()}}</pre>
+            <pre>{{brCmd()}}</pre>
         </div>
     </div>
 </div>
