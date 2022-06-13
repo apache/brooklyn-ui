@@ -20,7 +20,6 @@ import angular from "angular";
 import angularElastic from "angular-elastic";
 import directiveTemplate from "./entity-effector.html";
 import modalTemplate from "./modal/modal.template.html";
-import cliModalTemplate from "./modal/cli-modal.template.html";
 import {modalController} from "./modal/modal.controller";
 
 const MODULE_NAME = 'inspector.entity.effector';
@@ -43,57 +42,28 @@ export function entityEffectorDirective($state) {
         controller: ['$scope','$state','$http','$uibModal', controller]
     };
 
-    function controller ($scope, $state, $http, $uibModal){
-        $scope.openModal =  function() {
+    function controller ($scope, $state, $http, $uibModal) {
+        $scope.openModal = function (isCliMode = false) {
             let instance = $uibModal.open({
                 animation: true,
                 template: modalTemplate,
-                controller: ['$scope', '$state', 'entityApi', 'locationApi', 'effector', 'applicationId', 'entityId', modalController],
+                controller: ['$scope', '$state', 'entityApi', 'locationApi', 'effector', 'applicationId', 'entityId', 'cli', modalController],
                 controllerAs: 'vm',
                 size: '',
                 resolve: {
-                    effector: ()=> {
+                    effector: () => {
                         return $scope.effector
                     },
                     applicationId: () => $scope.applicationId,
-                    entityId: () => $scope.entityId
+                    entityId: () => $scope.entityId,
+                    cli: () => isCliMode
                 }
             });
         }
         if ($scope.open) $scope.openModal();
 
         $scope.openCliModal =  function() {
-            let instance = $uibModal.open({
-                animation: true,
-                template: cliModalTemplate,
-                controller: ['$scope', 'effector', 'applicationId', 'entityId', ($scope, effector, applicationId, entityId) => {
-                    $scope.effector = effector;
-
-                    $scope.cliParams = () => {
-                        return $scope.effector.parameters.reduce((ret, parameter, index) => ret + (index ? '\n' : '')
-                            + parameter.name + '=' + parameter.type.replace('java.lang.', '').toUpperCase()
-                            + (parameter.description ? ' # ' +  parameter.description : ''), '');
-                    }
-
-                    $scope.curlCmd = () => {
-                        let parameters = $scope.effector.parameters.reduce((ret, parameter, index) => ret + (index ? ', "' : '"') + parameter.name + '": "$' + parameter.name + '"', '');
-                        return 'curl -u username:password -X POST -H \'Accept: application/json\' -H \'Content-Type: application/json\' '
-                            + window.location.protocol + '//' + window.location.host + $scope.effector.links.self
-                            + (parameters ? ' -d \'{' + parameters + '}\'' : '');
-                    }
-
-                    $scope.brCmd = () => {
-                        let parameters = $scope.effector.parameters.reduce((ret, parameter) => ret + ' ' + parameter.name + '=$' + parameter.name, '');
-                        return `br app ${applicationId} ent ${entityId} effector ${$scope.effector.name} invoke` + (parameters ? ' -param' + parameters : '');
-                    }
-                }],
-                size: '',
-                resolve: {
-                    effector: () => $scope.effector,
-                    applicationId: () => $scope.applicationId,
-                    entityId: () => $scope.entityId
-                }
-            });
+            $scope.openModal(true);
         }
     }
 }

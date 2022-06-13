@@ -59,8 +59,17 @@
             </div>
         </div>
     </section>
+    <br ng-if="vm.cli"/>
+    <section ng-if="vm.cli">
+        <h3>CLI</h3>
+        <pre>{{brCmd()}}</pre>
+    </section>
+    <section ng-if="vm.cli">
+        <h3>REST</h3>
+        <pre>{{curlCmd()}}</pre>
+    </section>
 </div>
-<div class="modal-footer">
+<div class="modal-footer" ng-if="!vm.cli">
     <div class="alert alert-danger text-left" ng-if="error">{{vm.error}}</div>
     <br-button on-click="vm.confirmInvoke()" type="btn-success">Confirm</br-button>
 </div>
