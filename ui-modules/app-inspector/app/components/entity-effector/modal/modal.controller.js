@@ -16,6 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import angular from "angular";
+
 export function modalController($scope, $state, entityApi, locationApi, effector, applicationId, entityId, cli) {
     let vm = this;
     vm.error = '';
@@ -33,6 +35,11 @@ export function modalController($scope, $state, entityApi, locationApi, effector
         let parameters = vm.effector.parameters.reduce((ret, parameter) => !parameter.value ? ret : ret + ' ' + parameter.name + '="' + parameter.value + '"', '');
         return `br app ${applicationId} ent ${entityId} effector ${vm.effector.name} invoke` + (parameters ? ' -param' + parameters : '');
     }
+
+    $scope.onClipboardSuccess = (e)=> {
+        angular.element(e.trigger).triggerHandler('copied');
+        e.clearSelection();
+    };
 
     let observers = [];
 

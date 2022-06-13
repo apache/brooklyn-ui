@@ -110,4 +110,25 @@
       }
     }
   }
+
+  .cli-content {
+    position: relative;
+
+    .extras {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      button {
+        padding: 3px 6px;
+      }
+    }
+
+    .copy-btn {
+      visibility: hidden;
+    }
+
+    &:hover .copy-btn {
+      visibility: visible !important;
+    }
+  }
 }

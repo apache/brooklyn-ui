@@ -62,11 +62,31 @@
     <br ng-if="vm.cli"/>
     <section ng-if="vm.cli">
         <h3>CLI</h3>
-        <pre>{{brCmd()}}</pre>
+        <div class="cli-content">
+            <span class="extras">
+                <button class="btn copy-btn btn-default btn-sm" ngclipboard ngclipboard-success="onClipboardSuccess(e)"
+                        data-clipboard-text="{{brCmd()}}" uib-tooltip="Copied!"
+                        tooltip-trigger="{'copied': 'mouseleave'}" tooltip-placement="left"
+                        tooltip-append-to-body="true">
+                    <i class="fa fa-clipboard"></i>
+                </button>
+            </span>
+            <pre>{{brCmd()}}</pre>
+        </div>
     </section>
     <section ng-if="vm.cli">
         <h3>REST</h3>
-        <pre>{{curlCmd()}}</pre>
+        <div class="cli-content">
+            <span class="extras">
+                <button class="btn copy-btn btn-default btn-sm" ngclipboard ngclipboard-success="onClipboardSuccess(e)"
+                        data-clipboard-text="{{curlCmd()}}" uib-tooltip="Copied!"
+                        tooltip-trigger="{'copied': 'mouseleave'}" tooltip-placement="left"
+                        tooltip-append-to-body="true">
+                    <i class="fa fa-clipboard"></i>
+                </button>
+            </span>
+            <pre>{{curlCmd()}}</pre>
+        </div>
     </section>
 </div>
 <div class="modal-footer" ng-if="!vm.cli">
