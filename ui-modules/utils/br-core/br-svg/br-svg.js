@@ -18,6 +18,7 @@
  */
 import angular from 'angular';
 import closeTemplate from './br-svg-close.html';
+import cliTemplate from './br-svg-cli.html';
 
 const MODULE_NAME = 'core.svg';
 
@@ -60,11 +61,12 @@ export function brSvg() {
     return {
         restrict: 'EA',
         template: function(tElement, tAttrs) {
-            var svgs = {
-                close: closeTemplate
+            let svgTemplates = {
+                close: closeTemplate,
+                cli: cliTemplate
             };
 
-            return tAttrs.type && svgs.hasOwnProperty(tAttrs.type) ? svgs[tAttrs.type] : undefined;
+            return tAttrs.type && svgTemplates.hasOwnProperty(tAttrs.type) ? svgTemplates[tAttrs.type] : undefined;
         }
     };
 }
