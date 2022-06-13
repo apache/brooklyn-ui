@@ -42,23 +42,28 @@ export function entityEffectorDirective($state) {
         controller: ['$scope','$state','$http','$uibModal', controller]
     };
 
-    function controller ($scope, $state, $http, $uibModal){
-        $scope.openModal =  function() {
-            var instance = $uibModal.open({
+    function controller ($scope, $state, $http, $uibModal) {
+        $scope.openModal = function (isCliMode = false) {
+            let instance = $uibModal.open({
                 animation: true,
                 template: modalTemplate,
-                controller: ['$scope', '$state', 'entityApi', 'locationApi', 'effector', 'applicationId', 'entityId', modalController],
+                controller: ['$scope', '$state', 'entityApi', 'locationApi', 'effector', 'applicationId', 'entityId', 'cli', modalController],
                 controllerAs: 'vm',
                 size: '',
                 resolve: {
-                    effector: ()=> {
+                    effector: () => {
                         return $scope.effector
                     },
                     applicationId: () => $scope.applicationId,
-                    entityId: () => $scope.entityId
+                    entityId: () => $scope.entityId,
+                    cli: () => isCliMode
                 }
             });
         }
         if ($scope.open) $scope.openModal();
+
+        $scope.openCliModal =  function() {
+            $scope.openModal(true);
+        }
     }
 }

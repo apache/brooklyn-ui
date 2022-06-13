@@ -16,10 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-export function modalController($scope, $state, entityApi, locationApi, effector, applicationId, entityId) {
+import angular from "angular";
+
+export function modalController($scope, $state, entityApi, locationApi, effector, applicationId, entityId, cli) {
     let vm = this;
     vm.error = '';
     vm.effector = effector;
+    vm.cli = cli;
+
+    $scope.curlCmd = () => {
+        let parameters = vm.effector.parameters.reduce((ret, parameter, index) =>  !parameter.value ? ret : ret + (index ? ', "' : '"') + parameter.name + '": "' + parameter.value + '"', '');
+        return 'curl -u username:password -X POST -H \'Accept: application/json\' -H \'Content-Type: application/json\' '
+            + window.location.protocol + '//' + window.location.host + vm.effector.links.self
+            + (parameters ? ' -d \'{' + parameters + '}\'' : '');
+    }
+
+    $scope.brCmd = () => {
+        let parameters = vm.effector.parameters.reduce((ret, parameter) => !parameter.value ? ret : ret + ' ' + parameter.name + '="' + parameter.value + '"', '');
+        return `br app ${applicationId} ent ${entityId} effector ${vm.effector.name} invoke` + (parameters ? ' -param' + parameters : '');
+    }
+
+    $scope.onClipboardSuccess = (e)=> {
+        angular.element(e.trigger).triggerHandler('copied');
+        e.clearSelection();
+    };
 
     let observers = [];
 
@@ -32,8 +52,8 @@ export function modalController($scope, $state, entityApi, locationApi, effector
 
     vm.confirmInvoke = function () {
         vm.error = '';
-        var parameters = {};
-        for (var i = 0; i < vm.effector.parameters.length; i++) {
+        let parameters = {};
+        for (let i = 0; i < vm.effector.parameters.length; i++) {
             parameters[vm.effector.parameters[i].name] = vm.effector.parameters[i].value;
         }
 
