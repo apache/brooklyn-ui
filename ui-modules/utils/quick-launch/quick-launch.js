@@ -122,7 +122,7 @@ export function quickLaunchDirective() {
             if ($scope.app.config) {
                 $scope.configMap = $scope.app.config.reduce((result, config) => {
                     result[config.name] = config;
-                    const configValue = parseConfigValue(get(parsedPlan, `services[0][${BROOKLYN_CONFIG}][${config.name}]`));
+                    const configValue = parsedPlan[BROOKLYN_CONFIG] && parseConfigValue(parsedPlan[BROOKLYN_CONFIG][config.name]);
 
                     if (typeof configValue !== 'undefined') {
                         $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = configValue;
