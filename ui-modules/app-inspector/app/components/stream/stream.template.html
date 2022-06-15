@@ -19,9 +19,10 @@
 <loading-state error="error" ng-if="stream === undefined"></loading-state>
 
 <div ng-show="stream.length >= 0">
-  <pre ng-show="stream.length > 0 && !isFilterContent()" class="auto-scrollable">{{stream}}</pre>
-  <pre ng-show="stream.length > 0 && isFilterContent()" class="auto-scrollable"><pre ng-repeat="item in filteredStream track by item.id" ng-show="isDisplayFormattedItem(item)" class="log-section" ng-class="getFormattedItemLogLevel(item)">{{item.text}}</pre><p ng-show="!isDisplayTrace && !isDisplayDebug && !isDisplayWarning && !isDisplayError && !isDisplayOther" class="text-center"><i>(select filter)</i></p></pre>
-  <pre ng-show="stream.length == 0" class="text-center"><i>(no content)</i></pre>
+  <pre ng-if="stream.length > 0 && !isFormatContent()" class="auto-scrollable">{{stream}}</pre>
+  <pre ng-if="stream.length > 0 && isFormatContent() && isFilterContent()" class="auto-scrollable"><pre ng-repeat="item in filteredStream track by item.id" ng-show="isDisplayFormattedItem(item)" class="log-section" ng-class="getFormattedItemLogLevel(item)">{{item.text}}</pre><p ng-show="!isDisplayTrace && !isDisplayDebug && !isDisplayWarning && !isDisplayError && !isDisplayOther" class="text-center"><i>(select filter)</i></p></pre>
+  <pre ng-if="stream.length > 0 && isFormatContent() && !isFilterContent()" class="auto-scrollable">{{formattedStream}}</pre>
+  <pre ng-if="stream.length == 0" class="text-center"><i>(no content)</i></pre>
   <div class="log-actions">
 
     <!-- Content filtering -->
