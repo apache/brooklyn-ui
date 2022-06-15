@@ -26,7 +26,8 @@
 <section class="spec-type container-fluid panel-group">
   <div class="panel">
     <div class="spec-type-header">
-        <h2 class="spec-title"><input class="form-control editable" ng-model="model.name" placeholder="{{model.miscData.get('typeName') || 'Unnamed ' + (!model.hasParent() ? 'application' : model.family.displayName)}}" blur-on-enter /></h2>
+        <h2 class="spec-title"><input class="form-control editable" ng-model="model.name" blur-on-enter
+            placeholder="{{model.id ? model.id :(model.miscData.get('typeName') || 'Unnamed ' + (!model.hasParent() ? 'application' : model.family.displayName))}}"/></h2>
 
         <div class="btn-group pull-right spec-actions" ng-if="model.hasType()" uib-dropdown>
             <button id="spec-actions" type="button" class="btn btn-link" uib-dropdown-toggle>
