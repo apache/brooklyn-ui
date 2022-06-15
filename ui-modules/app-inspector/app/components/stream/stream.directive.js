@@ -45,6 +45,7 @@ export function streamDirective() {
 
         // Content filtering features
         $scope.filteredStream = [];
+        $scope.formattedStream = '';
         $scope.streamProcessedUpTo = 0;
         $scope.otherLogLines = 0;
         $scope.errorLogLines = 0;
@@ -57,6 +58,7 @@ export function streamDirective() {
         $scope.isDisplayTrace = $scope.isDisplayTrace !== false;
         $scope.isDisplayWarning = $scope.isDisplayWarning !== false;
         $scope.isFilterContent = isFilterContent;
+        $scope.isFormatContent = isFormatContent;
         $scope.isDisplayFormattedItem = isDisplayFormattedItem;
         $scope.getFormattedItemLogLevel = getFormattedItemLogLevel;
 
@@ -123,14 +125,14 @@ export function streamDirective() {
                 // 2. Update the stream data holder in this directive.
                 $scope.stream = response.data;
 
-                // Check if raw CLI XML content should be displayed first, because of `ng-repeat` performance limits.
+                // Check if to drop filters, because of `ng-repeat` performance limits.
                 if (!$scope.cliXml && !$scope.filteredStream.length && $scope.stream.length > 99999) {
-                    $scope.cliXml = true;
-                    brSnackbar.create('CLI XML content is too big, showing raw output first.');
+                    $scope.noFilters = true;
+                    brSnackbar.create('Stream content is too big, showing output without filters.');
                 }
 
-                // 3. Filter the content where relevant.
-                updateFilteredContent();
+                // 3. Format the content where relevant.
+                updateFormattedContent();
 
             }).catch((error)=> {
                 if (error.data) {
@@ -173,14 +175,21 @@ export function streamDirective() {
          */
         function toggleCliXml() {
             $scope.cliXml = !$scope.cliXml;
-            updateFilteredContent();
+            updateFormattedContent();
+        }
+
+        /**
+         * @returns {boolean} True if stream formatting should be performed, and false otherwise.
+         */
+        function isFormatContent() {
+            return isCliXmlSupported() && $scope.cliXml !== true;
         }
 
         /**
          * @returns {boolean} True if logging filter should be displayed, and false otherwise.
          */
         function isFilterContent() {
-            return isCliXmlSupported() && $scope.cliXml !== true;
+            return isFormatContent() && !$scope.noFilters;
         }
 
         /**
@@ -262,14 +271,18 @@ export function streamDirective() {
                 // Push update item and let ng-repeat update the content
                 $scope.filteredStream.push(formattedItem);
             });
+
+            if ($scope.noFilters) {
+                $scope.formattedStream = $scope.filteredStream.map((i) => i.text).join('\n')
+            }
         }
 
         /**
          * Filters stream content as per selected filters if filtering is enabled, e.g. display/hide warnings or errors.
          */
-        function updateFilteredContent() {
+        function updateFormattedContent() {
 
-            if (!isFilterContent()) {
+            if (!isFormatContent()) {
                 return;
             }
 
