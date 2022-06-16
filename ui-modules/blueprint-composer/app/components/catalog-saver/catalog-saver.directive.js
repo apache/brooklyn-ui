@@ -180,6 +180,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
 
     $scope.title = $scope.getTitle();
     $scope.catalogURL = $scope.getCatalogURL();
+    $scope.catalogBomPrefix = 'catalog-bom-';
 
     $scope.$watch('state.view', (newValue, oldValue) => {
         if (newValue !== oldValue) {
@@ -194,27 +195,51 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         $scope.state.error = undefined;
 
         let bom = createBom();
-        paletteApi.create(bom, { forceUpdate: $scope.state.force })
-            .then((savedItem) => {
-                if (!angular.isArray($scope.config.versions)) {
-                    $scope.config.versions = [];
-                }
-                $scope.config.versions.push($scope.config.version);
-                $scope.state.view = VIEWS.saved;
-            })
-            .catch(error => {
-                $scope.state.error = error.error.message;
-            })
-            .finally(() => {
-                $scope.state.saving = false;
-            });
+
+        paletteApi.getTypes({params: {supertype: $scope.config.name, versions: 'all'}}).then(data => {
+            const bundles = data.map(item => item.containingBundle.split(':')[0]) || [];
+            const thisBundle = getBundle();
+
+            if (bundles.length > 0 && !bundles.includes(thisBundle)) {
+                $scope.state.error = `This type cannot be saved in bundle "${thisBundle}" from the composer because ` +
+                    `it would conflict with a type with the same ID "${$scope.config.name}" in ${bundles.map(item => `"${item}"`).join(', ')}.`;
+                return;
+            }
+
+            paletteApi.create(bom, {forceUpdate: $scope.state.force})
+                .then((savedItem) => {
+                    if (!angular.isArray($scope.config.versions)) {
+                        $scope.config.versions = [];
+                    }
+                    $scope.config.versions.push($scope.config.version);
+                    $scope.state.view = VIEWS.saved;
+                })
+                .catch(error => {
+                    $scope.state.error = error.error.message;
+                })
+                .finally(() => {
+                    $scope.state.saving = false;
+                });
+
+        }).catch(error => {
+            $scope.state.error = error;
+        }).finally(() => {
+            $scope.state.saving = false;
+        });
     };
 
+    function getBundleBase() {
+        return $scope.config.bundle || $scope.defaultBundle;
+    }
+
+    function getBundle() {
+        return $scope.catalogBomPrefix + getBundleBase();
+    }
 
     function createBom() {
         let blueprint = blueprintService.getAsJson();
 
-        let bundleBase = $scope.config.bundle || $scope.defaultBundle;
+        let bundleBase = getBundleBase();
         let bundleId = $scope.config.symbolicName || $scope.defaultSymbolicName;
         if (!bundleBase || !bundleId) {
             throw "Either the display name must be set, or the bundle and symbolic name must be explicitly set";
@@ -236,7 +261,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         }
         blueprint['brooklyn.tags'] = tags;
         let bomCatalogYaml = {
-            bundle: `catalog-bom-${bundleBase}`,
+            bundle: getBundle(),
             version: $scope.config.version,
             items: [ bomItem ]
         };
