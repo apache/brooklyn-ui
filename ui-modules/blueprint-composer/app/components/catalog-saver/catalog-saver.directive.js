@@ -190,60 +190,64 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
     });
     /* END Derived properties */
 
-    $scope.save = async () => {
+    // Get all types and bundles for analysis.
+    const allTypes = [];
+    const allBundles = [];
+
+    const promiseTypes = paletteApi.getTypes({params: {versions: 'all'}}).then(data => {
+        allTypes.push(...data);
+    }).catch(error => {
+        $scope.state.error = error;
+    });
+
+    const promiseBundles = paletteApi.getBundles({params: {versions: 'all', detail: true}}).then(data => {
+        allBundles.push(...data);
+    }).catch(error => {
+        $scope.state.error = error;
+    });
+
+    Promise.all([promiseTypes, promiseBundles]).then(() => {
+        console.info(`Loaded ${allBundles.length} bundles and ${allTypes.length} types for analysis.`)
+    });
+
+    $scope.save = () => {
         $scope.state.saving = true;
         $scope.state.error = undefined;
 
-        const thisBundle = getBundle();
+        const thisBundle = getBundleId();
         const bundles = [];
         const uniqueBundlesIds = new Set();
 
         // Check if type exists in other bundles.
-        await Promise.resolve(paletteApi.getTypes({
-            params: {
-                supertype: $scope.config.name,
-                versions: 'all'
-            }
-        }).then(data => {
-            data.forEach(item => bundles.push(item.containingBundle));
-            bundles.forEach(item => uniqueBundlesIds.add(item.split(':')[0]));
-            if (uniqueBundlesIds.size > 0 && !uniqueBundlesIds.has(thisBundle)) {
-                $scope.state.error = `This type cannot be saved in bundle "${thisBundle}" from the composer because ` +
-                    `it would conflict with a type with the same ID "${$scope.config.name}" in ${bundles.map(item => `"${item}"`).join(', ')}.`;
-            }
-        }).catch(error => {
-            $scope.state.error = error;
-        }));
+        bundles.push(...allTypes.filter(item => item.symbolicName === $scope.config.name).map(item => item.containingBundle));
+        bundles.forEach(item => uniqueBundlesIds.add(item.split(':')[0]));
+
+        if (uniqueBundlesIds.size > 0 && !uniqueBundlesIds.has(thisBundle)) {
+            $scope.state.error = `This type cannot be saved in bundle "${thisBundle}" from the composer because ` +
+                `it would conflict with a type with the same ID "${$scope.config.name}" in ${bundles.map(item => `"${item}"`).join(', ')}.`;
+            $scope.state.saving = false;
+            return; // DO NOT SAVE!
+        }
 
         // Check if any of existing bundles include other types.
         if (uniqueBundlesIds.size) {
-            const bundlesWithMultipleTypes = [];
-            for (const bundle of bundles.filter(item => item.split(':')[0] === thisBundle)) {
-                const [bundleName, bundleId] = bundle.split(':');
-                await Promise.resolve(paletteApi.getBundle(bundleName, bundleId).then(data => {
-                    const otherTypes = data.types.filter(item => item.symbolicName !== $scope.config.name)
-                    if (otherTypes.length > 0) {
-                        bundlesWithMultipleTypes.push(bundle);
-                    }
-                }).catch(error => {
-                    $scope.state.error = error;
-                }));
 
-                if ($scope.state.error) break;
-            }
+            const bundlesWithMultipleTypes = bundles.filter(bundle => {
+                const [bundleName, bundleVersion] = bundle.split(':');
+                const existingBundle = allBundles.find(item => item.symbolicName === bundleName && item.version === bundleVersion);
+                const otherTypes = existingBundle.types.filter(item => item.symbolicName !== $scope.config.name)
+                return otherTypes.length > 0;
+            });
 
             if (!$scope.state.error && bundlesWithMultipleTypes.length) {
                 $scope.state.error = `This type cannot be saved in bundle "${thisBundle}" from the composer because ` +
                     `${bundlesWithMultipleTypes.map(item => `"${item}"`).join(', ')} include${bundlesWithMultipleTypes.length > 1 ? '' : 's'} other types.`;
+                $scope.state.saving = false;
+                return; // DO NOT SAVE!
             }
         }
 
-        if ($scope.state.error) {
-            $scope.state.saving = false;
-            return;
-        }
-
-        // Try to save.
+        // Now, try to save.
         let bom = createBom();
         paletteApi.create(bom, {forceUpdate: $scope.state.force})
             .then((savedItem) => {
@@ -265,7 +269,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         return $scope.config.bundle || $scope.defaultBundle;
     }
 
-    function getBundle() {
+    function getBundleId() {
         return $scope.catalogBomPrefix + getBundleBase();
     }
 
@@ -294,7 +298,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         }
         blueprint['brooklyn.tags'] = tags;
         let bomCatalogYaml = {
-            bundle: getBundle(),
+            bundle: getBundleId(),
             version: $scope.config.version,
             items: [ bomItem ]
         };

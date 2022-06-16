@@ -38,6 +38,11 @@ export class PaletteApi {
         return Promise.resolve();
     }
 
+    getBundles(params) {
+        // no-op
+        return Promise.resolve();
+    }
+
     getBundle(bundleSymbolicName, bundleVersion) {
         // no-op
         return Promise.resolve();
