@@ -122,13 +122,17 @@ export function quickLaunchDirective() {
             if ($scope.app.config) {
                 $scope.configMap = $scope.app.config.reduce((result, config) => {
                     result[config.name] = config;
-                    const configValue = parseConfigValue(get(parsedPlan, `services[0][${BROOKLYN_CONFIG}][${config.name}]`));
+
+                    const planConfigValue = parseConfigValue((parsedPlan[BROOKLYN_CONFIG] || {})[config.name]);
+                    const catalogItemConfigValue = parseConfigValue((parsedPlan.services[0] && parsedPlan.services[0][BROOKLYN_CONFIG] || {})[config.name]);
+                    const configValue = planConfigValue || catalogItemConfigValue;
 
                     if (typeof configValue !== 'undefined') {
                         $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = configValue;
                     } else if (config.pinned || (isRequired(config) && (typeof config.defaultValue !== 'undefined'))) {
                         $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = parseConfigValue(get(config, 'defaultValue', null));
                     }
+
                     return result;
                 }, {});
             } else {
