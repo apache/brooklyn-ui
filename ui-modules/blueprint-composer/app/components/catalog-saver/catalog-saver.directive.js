@@ -190,60 +190,68 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
     });
     /* END Derived properties */
 
-    // Get all types and bundles for analysis.
     const allTypes = [];
     const allBundles = [];
 
-    const promiseTypes = paletteApi.getTypes({params: {versions: 'all'}}).then(data => {
-        allTypes.push(...data);
-    }).catch(error => {
-        $scope.state.error = error;
-    });
+    // Prepare resources for analysis if this is not an Update request.
+    if (!$scope.isUpdate()) {
 
-    const promiseBundles = paletteApi.getBundles({params: {versions: 'all', detail: true}}).then(data => {
-        allBundles.push(...data);
-    }).catch(error => {
-        $scope.state.error = error;
-    });
+        // Get all types and bundles for analysis.
+        const promiseTypes = paletteApi.getTypes({params: {versions: 'all'}}).then(data => {
+            allTypes.push(...data);
+        }).catch(error => {
+            $scope.state.error = error;
+        });
 
-    Promise.all([promiseTypes, promiseBundles]).then(() => {
-        console.info(`Loaded ${allBundles.length} bundles and ${allTypes.length} types for analysis.`)
-    });
+        const promiseBundles = paletteApi.getBundles({params: {versions: 'all', detail: true}}).then(data => {
+            allBundles.push(...data);
+        }).catch(error => {
+            $scope.state.error = error;
+        });
+
+        Promise.all([promiseTypes, promiseBundles]).then(() => {
+            console.info(`Loaded ${allBundles.length} bundles and ${allTypes.length} types for analysis.`)
+        });
+    }
 
     $scope.save = () => {
         $scope.state.saving = true;
         $scope.state.error = undefined;
 
-        const thisBundle = getBundleId();
-        const bundles = [];
-        const uniqueBundlesIds = new Set();
+        // Analyse existing catalog bundles if this is not an Update request.
+        if (!$scope.isUpdate()) {
 
-        // Check if type exists in other bundles.
-        bundles.push(...allTypes.filter(item => item.symbolicName === $scope.config.name).map(item => item.containingBundle));
-        bundles.forEach(item => uniqueBundlesIds.add(item.split(':')[0]));
+            const thisBundle = getBundleName();
+            const bundles = [];
+            const uniqueBundlesIds = new Set();
 
-        if (uniqueBundlesIds.size > 0 && !uniqueBundlesIds.has(thisBundle)) {
-            $scope.state.error = `This type cannot be saved in bundle "${thisBundle}" from the composer because ` +
-                `it would conflict with a type with the same ID "${$scope.config.name}" in ${bundles.map(item => `"${item}"`).join(', ')}.`;
-            $scope.state.saving = false;
-            return; // DO NOT SAVE!
-        }
+            // Check if type exists in other bundles.
+            bundles.push(...allTypes.filter(item => item.symbolicName === $scope.config.name).map(item => item.containingBundle));
+            bundles.forEach(item => uniqueBundlesIds.add(item.split(':')[0]));
 
-        // Check if any of existing bundles include other types.
-        if (uniqueBundlesIds.size) {
-
-            const bundlesWithMultipleTypes = bundles.filter(bundle => {
-                const [bundleName, bundleVersion] = bundle.split(':');
-                const existingBundle = allBundles.find(item => item.symbolicName === bundleName && item.version === bundleVersion);
-                const otherTypes = existingBundle.types.filter(item => item.symbolicName !== $scope.config.name)
-                return otherTypes.length > 0;
-            });
-
-            if (!$scope.state.error && bundlesWithMultipleTypes.length) {
+            if (uniqueBundlesIds.size > 0 && !uniqueBundlesIds.has(thisBundle)) {
                 $scope.state.error = `This type cannot be saved in bundle "${thisBundle}" from the composer because ` +
-                    `${bundlesWithMultipleTypes.map(item => `"${item}"`).join(', ')} include${bundlesWithMultipleTypes.length > 1 ? '' : 's'} other types.`;
+                    `it would conflict with a type with the same ID "${$scope.config.name}" in ${bundles.map(item => `"${item}"`).join(', ')}.`;
                 $scope.state.saving = false;
                 return; // DO NOT SAVE!
+            }
+
+            // Check if any of existing bundles include other types.
+            if (uniqueBundlesIds.size) {
+
+                const bundlesWithMultipleTypes = bundles.filter(bundle => {
+                    const [bundleName, bundleVersion] = bundle.split(':');
+                    const existingBundle = allBundles.find(item => item.symbolicName === bundleName && item.version === bundleVersion);
+                    const otherTypes = existingBundle.types.filter(item => item.symbolicName !== $scope.config.name)
+                    return otherTypes.length > 0;
+                });
+
+                if (!$scope.state.error && bundlesWithMultipleTypes.length) {
+                    $scope.state.error = `This type cannot be saved in bundle "${thisBundle}" from the composer because ` +
+                        `${bundlesWithMultipleTypes.map(item => `"${item}"`).join(', ')} include${bundlesWithMultipleTypes.length > 1 ? '' : 's'} other types.`;
+                    $scope.state.saving = false;
+                    return; // DO NOT SAVE!
+                }
             }
         }
 
@@ -269,8 +277,8 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         return $scope.config.bundle || $scope.defaultBundle;
     }
 
-    function getBundleId() {
-        return $scope.catalogBomPrefix + getBundleBase();
+    function getBundleName() {
+        return getBundleBase() && $scope.catalogBomPrefix + getBundleBase();
     }
 
     function createBom() {
@@ -298,7 +306,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         }
         blueprint['brooklyn.tags'] = tags;
         let bomCatalogYaml = {
-            bundle: getBundleId(),
+            bundle: getBundleName(),
             version: $scope.config.version,
             items: [ bomItem ]
         };
