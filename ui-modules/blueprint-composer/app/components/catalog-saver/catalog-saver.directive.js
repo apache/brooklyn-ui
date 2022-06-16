@@ -212,6 +212,16 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         Promise.all([promiseTypes, promiseBundles]).then(() => {
             console.info(`Loaded ${allBundles.length} bundles and ${allTypes.length} types for analysis.`)
         });
+
+        // Watch for bundle name and display warning if bundle exists already.
+        $scope.$watch('[config.bundle, defaultBundle]', (newValues) => {
+            const bundleName = getBundleName();
+            if (allBundles.find(item => item.symbolicName === bundleName)) {
+                $scope.state.warning = `Bundle with name "${bundleName}" exists already.`;
+            } else {
+                $scope.state.warning = undefined;
+            }
+        });
     }
 
     $scope.save = () => {

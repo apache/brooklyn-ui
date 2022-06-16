@@ -127,6 +127,10 @@
         </div>
     </div>
 
+    <div uib-alert class="alert-warning" ng-if="state.warning" close="state.warning = undefined">
+        <h4>Warning</h4>
+        <p class="error-scroll">{{state.warning}}</p>
+    </div>
     <div uib-alert class="alert-danger" ng-if="state.error" close="state.error = undefined">
         <h4>Failed to save</h4>
         <p class="error-scroll">{{state.error}}</p>
