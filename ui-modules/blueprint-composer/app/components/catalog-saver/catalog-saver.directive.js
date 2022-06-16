@@ -120,7 +120,8 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $f
 
             const { bundle, symbolicName } = ($scope.config || {});
 
-            $scope.initiallyShowAdvanced = (bundle && symbolicName)
+            // Show advanced tab initially if bundle or symbolic name does not match the naming pattern.
+            $scope.showAdvanced = (bundle && symbolicName)
                 ? !VALID_FIELD_PATTERN.test(bundle) || !VALID_FIELD_PATTERN.test(symbolicName)
                 : false;
 
@@ -209,18 +210,26 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
             $scope.state.error = error;
         });
 
-        Promise.all([promiseTypes, promiseBundles]).then(() => {
-            console.info(`Loaded ${allBundles.length} bundles and ${allTypes.length} types for analysis.`)
-        });
-
-        // Watch for bundle name and display warning if bundle exists already.
-        $scope.$watch('[config.bundle, defaultBundle]', (newValues) => {
+        function checkIfBundleExists() {
             const bundleName = getBundleName();
             if (allBundles.find(item => item.symbolicName === bundleName)) {
+                $scope.showAdvanced = true;
                 $scope.state.warning = `Bundle with name "${bundleName}" exists already.`;
             } else {
                 $scope.state.warning = undefined;
             }
+        }
+
+        Promise.all([promiseTypes, promiseBundles]).then(() => {
+            console.info(`Loaded ${allBundles.length} bundles and ${allTypes.length} types for analysis.`)
+
+            // Trigger an initial bundle name check.
+            checkIfBundleExists();
+        });
+
+        // Watch for bundle name and display warning if bundle exists already.
+        $scope.$watchGroup(['config.bundle', 'defaultBundle'], () => {
+            checkIfBundleExists();
         });
     }
 
@@ -236,12 +245,13 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
             const uniqueBundlesIds = new Set();
 
             // Check if type exists in other bundles.
-            bundles.push(...allTypes.filter(item => item.symbolicName === $scope.config.name).map(item => item.containingBundle));
+            bundles.push(...allTypes.filter(item => item.symbolicName === getSymbolicName()).map(item => item.containingBundle));
             bundles.forEach(item => uniqueBundlesIds.add(item.split(':')[0]));
 
             if (uniqueBundlesIds.size > 0 && !uniqueBundlesIds.has(thisBundle)) {
                 $scope.state.error = `This type cannot be saved in bundle "${thisBundle}" from the composer because ` +
-                    `it would conflict with a type with the same ID "${$scope.config.name}" in ${bundles.map(item => `"${item}"`).join(', ')}.`;
+                    `it would conflict with a type with the same ID "${getSymbolicName()}" in ${bundles.map(item => `"${item}"`).join(', ')}.`;
+                $scope.showAdvanced = true;
                 $scope.state.saving = false;
                 return; // DO NOT SAVE!
             }
@@ -252,13 +262,14 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
                 const bundlesWithMultipleTypes = bundles.filter(bundle => {
                     const [bundleName, bundleVersion] = bundle.split(':');
                     const existingBundle = allBundles.find(item => item.symbolicName === bundleName && item.version === bundleVersion);
-                    const otherTypes = existingBundle.types.filter(item => item.symbolicName !== $scope.config.name)
+                    const otherTypes = existingBundle.types.filter(item => item.symbolicName !== getSymbolicName())
                     return otherTypes.length > 0;
                 });
 
                 if (!$scope.state.error && bundlesWithMultipleTypes.length) {
                     $scope.state.error = `This type cannot be saved in bundle "${thisBundle}" from the composer because ` +
                         `${bundlesWithMultipleTypes.map(item => `"${item}"`).join(', ')} include${bundlesWithMultipleTypes.length > 1 ? '' : 's'} other types.`;
+                    $scope.showAdvanced = true;
                     $scope.state.saving = false;
                     return; // DO NOT SAVE!
                 }
@@ -291,11 +302,15 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         return getBundleBase() && $scope.catalogBomPrefix + getBundleBase();
     }
 
+    function getSymbolicName() {
+        return $scope.config.symbolicName || $scope.defaultSymbolicName;
+    }
+
     function createBom() {
         let blueprint = blueprintService.getAsJson();
 
         let bundleBase = getBundleBase();
-        let bundleId = $scope.config.symbolicName || $scope.defaultSymbolicName;
+        let bundleId = getSymbolicName();
         if (!bundleBase || !bundleId) {
             throw "Either the display name must be set, or the bundle and symbolic name must be explicitly set";
         }
