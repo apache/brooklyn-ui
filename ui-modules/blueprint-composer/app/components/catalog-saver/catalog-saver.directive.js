@@ -190,42 +190,75 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
     });
     /* END Derived properties */
 
-    $scope.save = () => {
+    $scope.save = async () => {
         $scope.state.saving = true;
         $scope.state.error = undefined;
 
-        let bom = createBom();
+        const thisBundle = getBundle();
+        const bundles = [];
+        const uniqueBundlesIds = new Set();
 
-        paletteApi.getTypes({params: {supertype: $scope.config.name, versions: 'all'}}).then(data => {
-            const bundles = data.map(item => item.containingBundle.split(':')[0]) || [];
-            const thisBundle = getBundle();
-
-            if (bundles.length > 0 && !bundles.includes(thisBundle)) {
+        // Check if type exists in other bundles.
+        await Promise.resolve(paletteApi.getTypes({
+            params: {
+                supertype: $scope.config.name,
+                versions: 'all'
+            }
+        }).then(data => {
+            data.forEach(item => bundles.push(item.containingBundle));
+            bundles.forEach(item => uniqueBundlesIds.add(item.split(':')[0]));
+            if (uniqueBundlesIds.size > 0 && !uniqueBundlesIds.has(thisBundle)) {
                 $scope.state.error = `This type cannot be saved in bundle "${thisBundle}" from the composer because ` +
                     `it would conflict with a type with the same ID "${$scope.config.name}" in ${bundles.map(item => `"${item}"`).join(', ')}.`;
-                return;
             }
-
-            paletteApi.create(bom, {forceUpdate: $scope.state.force})
-                .then((savedItem) => {
-                    if (!angular.isArray($scope.config.versions)) {
-                        $scope.config.versions = [];
-                    }
-                    $scope.config.versions.push($scope.config.version);
-                    $scope.state.view = VIEWS.saved;
-                })
-                .catch(error => {
-                    $scope.state.error = error.error.message;
-                })
-                .finally(() => {
-                    $scope.state.saving = false;
-                });
-
         }).catch(error => {
             $scope.state.error = error;
-        }).finally(() => {
+        }));
+
+        // Check if any of existing bundles include other types.
+        if (uniqueBundlesIds.size) {
+            const bundlesWithMultipleTypes = [];
+            for (const bundle of bundles.filter(item => item.split(':')[0] === thisBundle)) {
+                const [bundleName, bundleId] = bundle.split(':');
+                await Promise.resolve(paletteApi.getBundle(bundleName, bundleId).then(data => {
+                    const otherTypes = data.types.filter(item => item.symbolicName !== $scope.config.name)
+                    if (otherTypes.length > 0) {
+                        bundlesWithMultipleTypes.push(bundle);
+                    }
+                }).catch(error => {
+                    $scope.state.error = error;
+                }));
+
+                if ($scope.state.error) break;
+            }
+
+            if (!$scope.state.error && bundlesWithMultipleTypes.length) {
+                $scope.state.error = `This type cannot be saved in bundle "${thisBundle}" from the composer because ` +
+                    `${bundlesWithMultipleTypes.map(item => `"${item}"`).join(', ')} include${bundlesWithMultipleTypes.length > 1 ? '' : 's'} other types.`;
+            }
+        }
+
+        if ($scope.state.error) {
             $scope.state.saving = false;
-        });
+            return;
+        }
+
+        // Try to save.
+        let bom = createBom();
+        paletteApi.create(bom, {forceUpdate: $scope.state.force})
+            .then((savedItem) => {
+                if (!angular.isArray($scope.config.versions)) {
+                    $scope.config.versions = [];
+                }
+                $scope.config.versions.push($scope.config.version);
+                $scope.state.view = VIEWS.saved;
+            })
+            .catch(error => {
+                $scope.state.error = error.error.message;
+            })
+            .finally(() => {
+                $scope.state.saving = false;
+            });
     };
 
     function getBundleBase() {
