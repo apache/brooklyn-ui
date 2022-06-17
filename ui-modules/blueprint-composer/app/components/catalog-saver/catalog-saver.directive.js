@@ -175,7 +175,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
             case VIEWS.form:
                 return '';
             case VIEWS.saved:
-                return `/brooklyn-ui-catalog/#!/bundles/catalog-bom-${$scope.config.catalogBundleId}/${$scope.config.version}/types/${$scope.config.catalogBundleBase}/${$scope.config.version}`;
+                return `/brooklyn-ui-catalog/#!/bundles/${$scope.config.catalogBundleId}/${$scope.config.version}/types/${$scope.config.catalogBundleSymbolicName}/${$scope.config.version}`;
         }
     };
 
@@ -211,7 +211,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         });
 
         function checkIfBundleExists() {
-            const bundleName = getBundleName();
+            const bundleName = getBundleId();
             if (allBundles.find(item => item.symbolicName === bundleName)) {
                 $scope.showAdvanced = true;
                 $scope.state.warning = `Bundle with name "${bundleName}" exists already.`;
@@ -240,7 +240,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         // Analyse existing catalog bundles if this is not an Update request.
         if (!$scope.isUpdate()) {
 
-            const thisBundle = getBundleName();
+            const thisBundle = getBundleId();
             const bundles = [];
             const uniqueBundlesIds = new Set();
 
@@ -301,7 +301,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         return $scope.config.bundle || $scope.defaultBundle;
     }
 
-    function getBundleName() {
+    function getBundleId() {
         return getBundleBase() && $scope.catalogBomPrefix + getBundleBase();
     }
 
@@ -312,14 +312,14 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
     function createBom() {
         let blueprint = blueprintService.getAsJson();
 
-        let bundleBase = getBundleBase();
-        let bundleId = getSymbolicName();
-        if (!bundleBase || !bundleId) {
+        const bundleBase = getBundleBase();
+        const bundleSymbolicName = getSymbolicName();
+        if (!bundleBase || !bundleSymbolicName) {
             throw "Either the display name must be set, or the bundle and symbolic name must be explicitly set";
         }
 
         let bomItem = {
-            id: bundleId,
+            id: bundleSymbolicName,
             itemType: $scope.config.itemType,
             item: blueprint
         };
@@ -333,8 +333,9 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
             tags = [].concat(blueprint['brooklyn.tags']).concat(tags);
         }
         blueprint['brooklyn.tags'] = tags;
+        const bundleId = getBundleId();
         let bomCatalogYaml = {
-            bundle: getBundleName(),
+            bundle: bundleId,
             version: $scope.config.version,
             items: [ bomItem ]
         };
@@ -353,7 +354,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
             bomItem.iconUrl = $scope.config.iconUrl;
         }
         $scope.config.catalogBundleId = bundleId;
-        $scope.config.catalogBundleBase = bundleBase;
+        $scope.config.catalogBundleSymbolicName = bundleSymbolicName;
         return jsYaml.dump({ 'brooklyn.catalog': bomCatalogYaml });
     }
 
