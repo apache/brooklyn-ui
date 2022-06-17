@@ -55,11 +55,11 @@
             </p>
         </div>
 
-        <br-collapsible heading="Advanced" state="initiallyShowAdvanced">
+        <br-collapsible heading="Advanced" state="showAdvanced">
             <div class="form-group" ng-class="{'has-error': form.bundle.$invalid}">
                 <label class="control-label">Bundle ID</label>
                 <div class="input-group">
-                    <span class="input-group-addon">catalog-bom-</span>
+                    <span class="input-group-addon">{{catalogBomPrefix}}</span>
                     <input ng-model="config.bundle" ng-disabled="isUpdate() || state.saving" class="form-control" name="bundle" ng-pattern="state.pattern" autofocus placeholder="{{ defaultBundle || 'E.g. my-bundle-id' }}"/>
                 </div>
                 <p class="help-block" ng-show="form.bundle.$invalid">
@@ -127,6 +127,10 @@
         </div>
     </div>
 
+    <div uib-alert class="alert-warning" ng-if="state.warning" close="state.warning = undefined">
+        <h4>Warning</h4>
+        <p class="error-scroll">{{state.warning}}</p>
+    </div>
     <div uib-alert class="alert-danger" ng-if="state.error" close="state.error = undefined">
         <h4>Failed to save</h4>
         <p class="error-scroll">{{state.error}}</p>

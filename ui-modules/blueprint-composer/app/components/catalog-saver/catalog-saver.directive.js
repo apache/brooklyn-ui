@@ -120,7 +120,8 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $f
 
             const { bundle, symbolicName } = ($scope.config || {});
 
-            $scope.initiallyShowAdvanced = (bundle && symbolicName)
+            // Show advanced tab initially if bundle or symbolic name does not match the naming pattern.
+            $scope.showAdvanced = (bundle && symbolicName)
                 ? !VALID_FIELD_PATTERN.test(bundle) || !VALID_FIELD_PATTERN.test(symbolicName)
                 : false;
 
@@ -174,12 +175,13 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
             case VIEWS.form:
                 return '';
             case VIEWS.saved:
-                return `/brooklyn-ui-catalog/#!/bundles/catalog-bom-${$scope.config.catalogBundleId}/${$scope.config.version}/types/${$scope.config.catalogBundleBase}/${$scope.config.version}`;
+                return `/brooklyn-ui-catalog/#!/bundles/${$scope.config.catalogBundleId}/${$scope.config.version}/types/${$scope.config.catalogBundleSymbolicName}/${$scope.config.version}`;
         }
     };
 
     $scope.title = $scope.getTitle();
     $scope.catalogURL = $scope.getCatalogURL();
+    $scope.catalogBomPrefix = 'catalog-bom-';
 
     $scope.$watch('state.view', (newValue, oldValue) => {
         if (newValue !== oldValue) {
@@ -189,12 +191,97 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
     });
     /* END Derived properties */
 
+    const allTypes = [];
+    const allBundles = [];
+
+    // Prepare resources for analysis if this is not an Update request.
+    if (!$scope.isUpdate()) {
+
+        // Get all types and bundles for analysis.
+        const promiseTypes = paletteApi.getTypes({params: {versions: 'all'}}).then(data => {
+            allTypes.push(...data);
+        }).catch(error => {
+            $scope.state.error = error;
+        });
+
+        const promiseBundles = paletteApi.getBundles({params: {versions: 'all', detail: true}}).then(data => {
+            allBundles.push(...data);
+        }).catch(error => {
+            $scope.state.error = error;
+        });
+
+        function checkIfBundleExists() {
+            const bundleName = getBundleId();
+            if (allBundles.find(item => item.symbolicName === bundleName)) {
+                $scope.showAdvanced = true;
+                $scope.state.warning = `Bundle with name "${bundleName}" exists already.`;
+            } else {
+                $scope.state.warning = undefined;
+            }
+        }
+
+        Promise.all([promiseTypes, promiseBundles]).then(() => {
+            console.info(`Loaded ${allBundles.length} bundles and ${allTypes.length} types for analysis.`)
+
+            // Trigger an initial bundle name check.
+            checkIfBundleExists();
+        });
+
+        // Watch for bundle name and display warning if bundle exists already.
+        $scope.$watchGroup(['config.bundle', 'defaultBundle'], () => {
+            checkIfBundleExists();
+        });
+    }
+
     $scope.save = () => {
         $scope.state.saving = true;
         $scope.state.error = undefined;
 
+        // Analyse existing catalog bundles if this is not an Update request.
+        if (!$scope.isUpdate()) {
+
+            const thisBundle = getBundleId();
+            const bundles = [];
+            const uniqueBundlesIds = new Set();
+
+            // Check if type exists in other bundles.
+            bundles.push(...allTypes.filter(item => item.symbolicName === getSymbolicName()).map(item => item.containingBundle));
+            bundles.forEach(item => uniqueBundlesIds.add(item.split(':')[0]));
+
+            if (uniqueBundlesIds.size > 0 && !uniqueBundlesIds.has(thisBundle)) {
+                $scope.state.error = `This type cannot be saved in bundle "${thisBundle}" from the composer because ` +
+                    `it would conflict with a type with the same ID "${getSymbolicName()}" in ${bundles.map(item => `"${item}"`).join(', ')}.`;
+                $scope.showAdvanced = true;
+                $scope.state.saving = false;
+                return; // DO NOT SAVE!
+            }
+
+            // Check if any of existing bundles include other types.
+            if (uniqueBundlesIds.size) {
+
+                const bundlesWithMultipleTypes = bundles.filter(bundle => {
+                    const [bundleName, bundleVersion] = bundle.split(':');
+                    if (bundleName !== thisBundle) {
+                        return false;
+                    }
+                    const existingBundle = allBundles.find(item => item.symbolicName === bundleName && item.version === bundleVersion);
+                    const otherTypes = existingBundle.types.filter(item => item.symbolicName !== getSymbolicName())
+                    return otherTypes.length > 0;
+                });
+
+                if (!$scope.state.error && bundlesWithMultipleTypes.length) {
+                    $scope.state.error = `This type cannot be saved in bundle "${thisBundle}" from the composer because ` +
+                        `${bundlesWithMultipleTypes.map(item => `"${item}"`).join(', ')} include${bundlesWithMultipleTypes.length > 1 ? '' : 's'} other types.`;
+                    $scope.showAdvanced = true;
+                    $scope.state.saving = false;
+                    return; // DO NOT SAVE!
+                }
+            }
+        }
+
+        // Now, try to save.
         let bom = createBom();
-        paletteApi.create(bom, { forceUpdate: $scope.state.force })
+        paletteApi.create(bom, {forceUpdate: $scope.state.force})
             .then((savedItem) => {
                 if (!angular.isArray($scope.config.versions)) {
                     $scope.config.versions = [];
@@ -210,18 +297,29 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
             });
     };
 
+    function getBundleBase() {
+        return $scope.config.bundle || $scope.defaultBundle;
+    }
+
+    function getBundleId() {
+        return getBundleBase() && $scope.catalogBomPrefix + getBundleBase();
+    }
+
+    function getSymbolicName() {
+        return $scope.config.symbolicName || $scope.defaultSymbolicName;
+    }
 
     function createBom() {
         let blueprint = blueprintService.getAsJson();
 
-        let bundleBase = $scope.config.bundle || $scope.defaultBundle;
-        let bundleId = $scope.config.symbolicName || $scope.defaultSymbolicName;
-        if (!bundleBase || !bundleId) {
+        const bundleBase = getBundleBase();
+        const bundleSymbolicName = getSymbolicName();
+        if (!bundleBase || !bundleSymbolicName) {
             throw "Either the display name must be set, or the bundle and symbolic name must be explicitly set";
         }
 
         let bomItem = {
-            id: bundleId,
+            id: bundleSymbolicName,
             itemType: $scope.config.itemType,
             item: blueprint
         };
@@ -235,8 +333,9 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
             tags = [].concat(blueprint['brooklyn.tags']).concat(tags);
         }
         blueprint['brooklyn.tags'] = tags;
+        const bundleId = getBundleId();
         let bomCatalogYaml = {
-            bundle: `catalog-bom-${bundleBase}`,
+            bundle: bundleId,
             version: $scope.config.version,
             items: [ bomItem ]
         };
@@ -255,7 +354,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
             bomItem.iconUrl = $scope.config.iconUrl;
         }
         $scope.config.catalogBundleId = bundleId;
-        $scope.config.catalogBundleBase = bundleBase;
+        $scope.config.catalogBundleSymbolicName = bundleSymbolicName;
         return jsYaml.dump({ 'brooklyn.catalog': bomCatalogYaml });
     }
 
