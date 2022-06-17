@@ -261,6 +261,9 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
 
                 const bundlesWithMultipleTypes = bundles.filter(bundle => {
                     const [bundleName, bundleVersion] = bundle.split(':');
+                    if (bundleName !== thisBundle) {
+                        return false;
+                    }
                     const existingBundle = allBundles.find(item => item.symbolicName === bundleName && item.version === bundleVersion);
                     const otherTypes = existingBundle.types.filter(item => item.symbolicName !== getSymbolicName())
                     return otherTypes.length > 0;
