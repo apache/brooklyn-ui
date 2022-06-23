@@ -550,7 +550,7 @@
                         </div>
 
                         <div ng-switch-when="org.apache.brooklyn.api.entity.EntitySpec" ng-init="adjunct = config[item.name][REPLACED_DSL_ENTITYSPEC]">
-                            <div class="spec-adjunct" ng-if="config[item.name][REPLACED_DSL_ENTITYSPEC]">
+                            <div class="config-entity-spec spec-adjunct" ng-if="config[item.name][REPLACED_DSL_ENTITYSPEC]">
                                 <a ui-sref="main.graphical.edit.spec({entityId: model._id, specId: adjunct._id})"
                                             class="open-entity-spec"
                                             title="Open in spec editor"

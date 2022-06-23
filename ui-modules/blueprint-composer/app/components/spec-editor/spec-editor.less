@@ -22,6 +22,10 @@
 @hide-info-button-when-not-hovered: false;
 @hide-unset-undefault-values: true;
 
+@gray-lightish: mix(@gray-light, @gray-lighter, 50%);
+@brand-primary-darkish: mix(@brand-primary, @gray, 50%);
+@brand-primary-lightish: mix(@brand-primary, @gray-lighter, 50%);
+
 spec-editor {
   display: block;
   margin-top: 15px;
@@ -164,11 +168,18 @@ spec-editor {
       }
     }
     
-    &:hover .media-body {
+    &:hover {
+      .media-body {
         background-color: @gray-lighter;
+
         .remove-spec-adjunct, .update-spec-adjunct {
-            display: block;  // make visible on hover
+          display: block; // make visible on hover
         }
+      }
+      &.config-entity-spec .media-body {
+        // gray looks bad in the config editor
+        background-color: @brand-primary-lightish;
+      }
     }
   }
 
@@ -307,7 +318,7 @@ spec-editor {
             i {
                 // style changes below subtle but does a bit to make it look less clickable
                 border: 1px solid @gray;
-                color: @gray-light;
+                color: mix(@gray-light, @gray-lighter, 30%);
             }
         }
     }
@@ -330,7 +341,7 @@ spec-editor {
         margin-right: 1ex;
         text-align: center;
         .fa-info-circle {
-          color: mix(@gray-light, @gray-lighter, 50%);
+          color: @gray-lightish;
           transition: color 0.3s ease;
           &:hover {
             color: @brand-primary;
@@ -589,7 +600,7 @@ spec-editor {
             height: auto;
             margin-top: 2px;
             margin-bottom: 2px;
-            color: mix(@brand-primary, @gray);
+            color: @brand-primary-darkish;
           }
           select {
             padding-bottom: 1px;
@@ -603,7 +614,7 @@ spec-editor {
     }
     
     .no-spec {  // spec needs to be selected
-      border: 3px dashed @gray-lighter;
+      border: 3px dashed @gray-lightish;
       padding: 3px;
       display: block;
       color: @gray;
@@ -611,7 +622,7 @@ spec-editor {
       font-style: italic;
       transition: background-color 0.1s ease;
       &:hover {
-        background-color: @gray-lighter;
+        background-color: @brand-primary-lightish;
       }
     }
 

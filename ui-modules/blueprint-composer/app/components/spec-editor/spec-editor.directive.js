@@ -20,19 +20,16 @@ import angular from 'angular';
 import onEnter from 'brooklyn-ui-utils/on-enter/index';
 import autoGrow from 'brooklyn-ui-utils/autogrow/index';
 import blurOnEnter from 'brooklyn-ui-utils/blur-on-enter/index';
-import {EntityFamily, baseType} from '../util/model/entity.model';
+import {Entity, EntityFamily, baseType} from '../util/model/entity.model';
 import {Dsl} from '../util/model/dsl.model';
 import {Issue, ISSUE_LEVEL} from '../util/model/issue.model';
 import {RESERVED_KEYS, DSL_ENTITY_SPEC} from '../providers/blueprint-service.provider';
 import brooklynDslEditor from '../dsl-editor/dsl-editor';
 import brooklynDslViewer from '../dsl-viewer/dsl-viewer';
 import template from './spec-editor.template.html';
-import {graphicalState} from '../../views/main/graphical/graphical.state';
 import {isSensitiveFieldName} from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
 import {computeQuickFixesForIssue} from '../quick-fix/quick-fix';
 import scriptTagDecorator from 'brooklyn-ui-utils/script-tag-non-overwrite/script-tag-non-overwrite';
-import { get } from 'lodash';
-import {graphicalEditEntityState} from "../../views/main/graphical/edit/entity/edit.entity.controller";
 
 const MODULE_NAME = 'brooklyn.components.spec-editor';
 const REPLACED_DSL_ENTITYSPEC = '___brooklyn:entitySpec';
@@ -567,11 +564,22 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             // we could render e.g. w map editor as a convenience;
             // but for now the logic is only based on the declared type
 
-            if (type === 'java.lang.Boolean') type = 'boolean';
+            if (type === 'java.lang.String') type = 'string';
+            else if (type === 'java.lang.Boolean') type = 'boolean';
             else if (type === 'java.util.Map') type = 'map';
             else if (type === 'java.util.Set' || type === 'java.util.List' || type === 'java.util.Collection') type = 'array';
+            else if (type === 'java.lang.Object') type = 'object';
 
             if (specEditor.defined(val)) {
+                if (type === 'object') {
+                    // object for anonymous keys; if contains an entity spec, use that editor.
+                    // otherwise try as map (but if val is not object will revert in next block to map-manual, meaning string editor)
+                    if (val.hasOwnProperty(REPLACED_DSL_ENTITYSPEC)) {
+                        type = 'org.apache.brooklyn.api.entity.EntitySpec';
+                    } else {
+                        type = 'map';
+                    }
+                }
                 // override to use string editor if the editor doesn't support the value
                 // (probably this is an error, though type-coercion might make it not so)
                 if (type === 'boolean') {
@@ -647,6 +655,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 }
             }
             if (val instanceof Dsl) return false;
+            if (val.hasOwnProperty(REPLACED_DSL_ENTITYSPEC)) return false;
+            // any other object or array allows code mode
             if (val instanceof Array || val instanceof Object) return true;
             // other primitive
             return false;

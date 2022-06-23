@@ -18,7 +18,6 @@
  */
 import {Issue} from './issue.model';
 import {Dsl, DslParser} from './dsl.model';
-import {blueprintServiceProvider} from "../../providers/blueprint-service.provider";
 
 // this is now only used as a fallback when type info is not available
 const ANY_MEMBERSPEC_REGEX = /^(\w+\.)*(\w*)[mM]ember[sS]pec$/;
@@ -43,7 +42,8 @@ export const EntityFamily = {
     SPEC: {id: 'SPEC', displayName: 'Spec', superType: 'org.apache.brooklyn.api.entity.EntitySpec'}
 };
 
-const DSL = {ENTITY_SPEC: '$brooklyn:entitySpec'};
+export const DSL = {ENTITY_SPEC: '$brooklyn:entitySpec'};
+
 const ID = new WeakMap();
 const PARENT = new WeakMap();
 const METADATA = new WeakMap();
@@ -649,9 +649,6 @@ Entity.prototype.resetIssues = resetIssues;
 Entity.prototype.delete = deleteEntity;
 Entity.prototype.reset = resetEntity;
 
-// TODO why don't we see right spec editor widget for values set on anonymous config
-// TODO how does it fare with maps that don't have the DSL?
-// TODO how does it fare with unset keys of type (seems okay)
 // TODO remove the DSL errors on object?
 
 function isTypeForSpec(typeName) {
@@ -724,18 +721,22 @@ function clearConfig() {
     this.touch();
 }
 
-function addConfigKeyDefinition(param, overwrite, skipUpdatesDuringBatch) {
+function addConfigKeyDefinition(param, overwrite, skipUpdatesDuringBatch, value) {
     let allConfig = this.miscDataOrDefault('configMap', {});
     if (param) {
         if (typeof param === 'string') {
+            let type = "java.lang.String";
+            if (typeof value === 'object') {
+                type = "java.lang.Object";
+            }
             param = {
-                "name": param,
-                "label": param,
-                "description": "",
-                "priority": 1,
-                "pinned": true,
-                "type": "java.lang.String",
-                "constraints": [],
+                name: param,
+                label: param,
+                description: "",
+                priority: 1,
+                pinned: true,
+                type,
+                constraints: [],
             };
             overwrite = false;
         }
@@ -901,10 +902,11 @@ function getClusterMemberspecEntities() {
         return {};
     }
     return MISC_DATA.get(this).get('config')
-        .filter((config)=>(baseType(config.type) === EntityFamily.SPEC.superType))
+        .filter((config)=>{const t = baseType(config.type); return t === EntityFamily.SPEC.superType || t === 'java.lang.Object';})
         .reduce((acc, config)=> {
             if (CONFIG.get(this).has(config.name)) {
-                acc[config.name] = CONFIG.get(this).get(config.name)[DSL.ENTITY_SPEC];
+                const val = CONFIG.get(this).get(config.name)[DSL.ENTITY_SPEC];
+                if (val) acc[config.name] = val;
             }
             return acc;
         }, {});
