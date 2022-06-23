@@ -42,18 +42,29 @@ function EffectorsController($scope, $stateParams, $location, entityApi) {
         }
     }
 
-    entityApi.entityEffectors(applicationId, entityId).then((response)=> {
-        vm.effectors = response.data.map(function (effector) {
-            effector.parameters.map(function (parameter) {
-                parameter.value = parameter.defaultValue;
-                return parameter;
+    entityApi.entityTags(applicationId, entityId).then((responseE)=> {
+        const entityTags = responseE.data;
+        entityApi.entityEffectors(applicationId, entityId).then((response) => {
+            // filter based on ui-effector-hints single-key tag, then filter response, excluding if exclude-regex matches and include-regex does not
+            const effectorHint = (entityTags || []).map(t => t['ui-effector-hints']).find(t => t);
+            vm.effectors = response.data.map(function (effector) {
+                effector.parameters.map(function (parameter) {
+                    parameter.value = parameter.defaultValue;
+                    return parameter;
+                });
+                return effector;
+            }).filter(effector=> {
+                if (!effectorHint) return true;
+                if (effectorHint['exclude-regex'] && new RegExp(effectorHint['exclude-regex']).test(effector.name) &&
+                    (!effectorHint['include-regex'] || !(new RegExp(effectorHint['include-regex']).test(effector.name)))) return false;
+                return true;
             });
-            return effector;
+            vm.error = {};
+            updateFilters();
         });
-        vm.error = {};
-        updateFilters();
-    }).catch((error)=> {
-        vm.error.effectors =  'Cannot load effector for entity with ID: ' + entityId;
+    }).catch((error) => {
+        vm.error.effectors = 'Cannot load effectors for entity with ID: ' + entityId;
+        console.warn(vm.error.effectors, error);
     });
     entityApi.entityActivities(applicationId, entityId).then((response) => {
         const newTasks = {};
