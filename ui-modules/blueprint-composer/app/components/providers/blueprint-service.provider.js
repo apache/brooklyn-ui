@@ -547,7 +547,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
         let promiseArray = [];
         Object.values(entity.getClusterMemberspecEntities()).forEach((memberSpec)=> {
             // memberSpec can be `undefined` if the member spec is not a `$brooklyn:entitySpec`, e.g. it is `$brooklyn:config("spec")`;
-            // only process for the former type
+            // only accept for the former, where refresh will have replaced it with an Entity object
             if (memberSpec instanceof Entity) {
                 promiseArray.push(refreshBlueprintMetadata(memberSpec, 'SPEC'));
             }

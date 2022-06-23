@@ -364,7 +364,9 @@ export function D3Blueprint(container, options) {
     function onKeyUp() {
         d3.event.stopPropagation();
         if (d3.event.target.nodeName == 'BODY') {
-            if (d3.event.key === "Delete" || d3.event.key === "Backspace") {
+            // Do not handle "Backspace" key event here as it clashes with editing actions in the spec editor.
+            // Handle "Delete" key event only.
+            if (d3.event.key === "Delete") {
                 let selected = _svg.selectAll('.entity.selected');
                 let nItemsSelected = selected._groups[0].length;
                 if (nItemsSelected > 0) {
