@@ -693,7 +693,7 @@ export class DslParser {
         if (typeof this.s === 'boolean') {
             return new Dsl(KIND.OTHER, this.s)
         }
-        // TODO support JSON objects (for YAML syntax)
+        // TODO support JSON objects (when YAML syntax supplied, eg object or entitySpec)
         throw new DslError("Unable to parse: " + typeof this.s);
     }
 

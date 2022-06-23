@@ -48,7 +48,7 @@ export function autoGrowDirective() {
         }
         let update = () => {
             const text = ctrl.$modelValue || '';
-            element[0].rows = Math.min(1 + (text.match(/\n/g) || []).length, maxRows);
+            element[0].rows = Math.min(1 + (text.toString().match(/\n/g) || []).length, maxRows);
             setClass(element, 'auto-grow-single-row', element[0].rows == 1);
             setClass(element, 'auto-grow-multi-row', element[0].rows > 1);
         };

@@ -20,7 +20,7 @@ import angular from 'angular';
 import onEnter from 'brooklyn-ui-utils/on-enter/index';
 import autoGrow from 'brooklyn-ui-utils/autogrow/index';
 import blurOnEnter from 'brooklyn-ui-utils/blur-on-enter/index';
-import {EntityFamily, baseType, Entity} from '../util/model/entity.model';
+import {EntityFamily, baseType} from '../util/model/entity.model';
 import {Dsl} from '../util/model/dsl.model';
 import {Issue, ISSUE_LEVEL} from '../util/model/issue.model';
 import {RESERVED_KEYS, DSL_ENTITY_SPEC} from '../providers/blueprint-service.provider';
@@ -35,7 +35,6 @@ import { get } from 'lodash';
 import {graphicalEditEntityState} from "../../views/main/graphical/edit/entity/edit.entity.controller";
 
 const MODULE_NAME = 'brooklyn.components.spec-editor';
-const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
 const REPLACED_DSL_ENTITYSPEC = '___brooklyn:entitySpec';
 const SUBSECTION = {
     CONFIG: 'config',
@@ -515,7 +514,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             return scope.model.issues
                 .filter((issue) => (issue.group === groupName))
                 .concat(Object.values(scope.model.getClusterMemberspecEntities())
-                    .filter((spec) => (spec && spec.hasIssues()))
+                    .filter((spec) => (spec && spec.hasIssues && spec.hasIssues()))
                     .reduce((acc, spec) => (acc.concat(spec.issues)), []));
         }
 
@@ -934,7 +933,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 return value;
             }
 
-            if (ANY_MEMBERSPEC_REGEX.test(key) && value.hasOwnProperty(DSL_ENTITY_SPEC)) {
+            if (value.hasOwnProperty(DSL_ENTITY_SPEC)) {
                 let wrapper = {};
                 wrapper[REPLACED_DSL_ENTITYSPEC] = value[DSL_ENTITY_SPEC];
                 return wrapper;
@@ -1055,7 +1054,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 if (angular.isUndefined(localConfig[keyRef]) || localConfig[keyRef] === null || localConfig[keyRef].length < 1) {
                     continue;
                 }
-                if (ANY_MEMBERSPEC_REGEX.test(keyRef) && localConfig[keyRef].hasOwnProperty(REPLACED_DSL_ENTITYSPEC)) {
+                if (localConfig[keyRef].hasOwnProperty(REPLACED_DSL_ENTITYSPEC)) {
                     result[keyRef] = {};
                     result[keyRef][DSL_ENTITY_SPEC] = localConfig[keyRef][REPLACED_DSL_ENTITYSPEC];
                     continue;
