@@ -22,7 +22,7 @@ import modalTemplate from './kilt.modal.template.html';
 
 export const activitiesState = {
     name: 'main.inspect.activities',
-    url: '/activities',
+    url: '/activities?search&filter',
     template: template,
     controller: ['$scope', '$state', '$stateParams', '$log', '$timeout', 'entityApi', 'brUtilsGeneral', ActivitiesController],
     controllerAs: 'vm'
@@ -35,6 +35,8 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
         applicationId,
         entityId
     } = $stateParams;
+    $scope.search = $stateParams.search;
+    $scope.filter = $stateParams.filter;
 
     let vm = this;
 

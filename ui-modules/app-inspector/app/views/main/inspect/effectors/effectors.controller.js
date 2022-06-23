@@ -22,7 +22,7 @@ import template from "./effectors.template.html";
 function EffectorsController($scope, $stateParams, $location, entityApi) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
     $scope.filterResult = [];
-    $scope.filterValue = '';
+    $scope.filterValue = $stateParams.search || '';
 
     const {
         applicationId,
@@ -36,6 +36,12 @@ function EffectorsController($scope, $stateParams, $location, entityApi) {
     vm.effectorToOpen = $location.search().effector;
     vm.effectorTasks = {};
 
+    function updateFilters() {
+        if (vm.effectors) {
+            $scope.filterResult = vm.effectors.filter(effector => effector.name.includes($scope.filterValue)).map(effector => effector.name)
+        }
+    }
+
     entityApi.entityEffectors(applicationId, entityId).then((response)=> {
         vm.effectors = response.data.map(function (effector) {
             effector.parameters.map(function (parameter) {
@@ -45,6 +51,7 @@ function EffectorsController($scope, $stateParams, $location, entityApi) {
             return effector;
         });
         vm.error = {};
+        updateFilters();
     }).catch((error)=> {
         vm.error.effectors =  'Cannot load effector for entity with ID: ' + entityId;
     });
@@ -66,15 +73,13 @@ function EffectorsController($scope, $stateParams, $location, entityApi) {
     });
 
     $scope.$watch('filterValue', () => {
-        if (vm.effectors) {
-            $scope.filterResult = vm.effectors.filter(effector => effector.name.includes($scope.filterValue)).map(effector => effector.name)
-        }
+        updateFilters();
     });
 }
 
 export const effectorsState = {
     name: 'main.inspect.effectors',
-    url: '/effectors',
+    url: '/effectors?search',
     template: template,
     controller: ['$scope', '$stateParams', '$location', 'entityApi', EffectorsController],
     controllerAs: 'vm'

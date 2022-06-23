@@ -39,18 +39,21 @@ export function taskListDirective() {
             tasks: '=',
             taskType: '@',
             filteredCallback: '&?',
+            search: '<',
         },
         controller: ['$scope', '$element', controller]
     };
 
     function controller($scope, $element) {
+        console.log("task list, type ", $scope.taskType);
         $scope.model = {
             appendTo: $element,
             filterResult: null,
-            filterByTag: $scope.taskType === 'activityChildren' ? 'SUB-TASK' : 'EFFECTOR'
+            filterByTag: $scope.taskType === 'activityChildren' ? 'SUB-TASK' : $scope.taskType === 'activity' ? 'EFFECTOR' : ($scope.taskType || 'EFFECTOR'),
         };
-        
-        if (activityTagFilter()($scope.tasks, $scope.model.filterByTag).length == 0) {
+
+        $scope.filterValue = $scope.search;
+        if ((!$scope.taskType || $scope.taskType.startsWith('activity')) && activityTagFilter()($scope.tasks, $scope.model.filterByTag).length == 0) {
             // show all if there are no sub-tasks
             $scope.model.filterByTag = $scope.taskType === 'activityChildren' ? 'ALL' : 'TOP-LEVEL';
         }
