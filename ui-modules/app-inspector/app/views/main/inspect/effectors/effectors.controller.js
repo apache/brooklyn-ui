@@ -34,6 +34,7 @@ function EffectorsController($scope, $stateParams, $location, entityApi) {
     vm.applicationId = applicationId;
     vm.entityId = entityId;
     vm.effectorToOpen = $location.search().effector;
+    vm.effectorTasks = {};
 
     entityApi.entityEffectors(applicationId, entityId).then((response)=> {
         vm.effectors = response.data.map(function (effector) {
@@ -46,6 +47,22 @@ function EffectorsController($scope, $stateParams, $location, entityApi) {
         vm.error = {};
     }).catch((error)=> {
         vm.error.effectors =  'Cannot load effector for entity with ID: ' + entityId;
+    });
+    entityApi.entityActivities(applicationId, entityId).then((response) => {
+        const newTasks = {};
+        response.data.forEach(task => {
+            if ((task.tags || []).find(t => t == "EFFECTOR")) {
+                const name = (task.tags.find(t => t && t.effectorName) || {}).effectorName;
+                if (name) {
+                    const counts = newTasks[name] = newTasks[name] || { active: 0, failed: 0, cancelled: 0, succeeded: 0 };
+                    if (!task.endTimeUtc) counts.active++;
+                    else if (task.isCancelled) counts.cancelled++;
+                    else if (task.isError) counts.failed++;
+                    else counts.succeeded++;
+                }
+            }
+        });
+        vm.effectorTasks = newTasks;
     });
 
     $scope.$watch('filterValue', () => {

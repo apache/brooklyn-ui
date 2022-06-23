@@ -37,6 +37,7 @@ export function entityEffectorDirective($state) {
             effector: '<',
             applicationId : '@',
             entityId : '@',
+            activities : '<',
             open : '<',
         },
         controller: ['$scope','$state','$http','$uibModal', controller]
@@ -64,6 +65,19 @@ export function entityEffectorDirective($state) {
 
         $scope.openCliModal =  function() {
             $scope.openModal(true);
+        }
+
+        $scope.activitiesSummary = () => {
+            let activitiesSummaryList = [];
+            if ($scope.activities) {
+                if ($scope.activities.active) activitiesSummaryList.push($scope.activities.active + " active");
+                if ($scope.activities.cancelled) activitiesSummaryList.push($scope.activities.cancelled + " cancelled");
+                if ($scope.activities.failed) activitiesSummaryList.push($scope.activities.failed + " failed");
+                if ($scope.activities.succeeded) activitiesSummaryList.push($scope.activities.succeeded + " succeeded");
+            }
+            let activitiesSummary = activitiesSummaryList.join(", ");
+            if (activitiesSummary) activitiesSummary = "Recent invocations: " + $scope.activitiesSummary;
+            return activitiesSummary;
         }
     }
 }
