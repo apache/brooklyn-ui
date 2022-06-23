@@ -18,7 +18,8 @@
 -->
 <div class="modal-header">
     <br-svg type="close" class="pull-right" ng-click="$dismiss('Close modal')"></br-svg>
-    <h3 class="modal-title">Invoke effector</h3>
+    <h3 class="modal-title" ng-unless="vm.cli">Invoke effector</h3>
+    <h3 class="modal-title" ng-if="vm.cli">CLI usage info</h3>
 </div>
 <div class="modal-body">
     <section>

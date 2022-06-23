@@ -19,6 +19,7 @@
 import angular from 'angular';
 import closeTemplate from './br-svg-close.html';
 import cliTemplate from './br-svg-cli.html';
+import playTemplate from './br-svg-play.html';
 
 const MODULE_NAME = 'core.svg';
 
@@ -63,7 +64,8 @@ export function brSvg() {
         template: function(tElement, tAttrs) {
             let svgTemplates = {
                 close: closeTemplate,
-                cli: cliTemplate
+                cli: cliTemplate,
+                play: playTemplate,
             };
 
             return tAttrs.type && svgTemplates.hasOwnProperty(tAttrs.type) ? svgTemplates[tAttrs.type] : undefined;
