@@ -50,8 +50,9 @@ export const KIND = {
     ENTITY  : {family: FAMILY.REFERENCE, name: 'entity object'},
     STRING  : {family: FAMILY.CONSTANT,  name: 'constant string'},
     NUMBER  : {family: FAMILY.CONSTANT,  name: 'constant number'},
-    OTHER   : {family: FAMILY.CONSTANT,  name: 'constant other'},
+    BOOLEAN : {family: FAMILY.CONSTANT,  name: 'constant boolean'},
     PORT    : {family: FAMILY.CONSTANT,  name: 'constant port'},
+    OTHER_CONST : {family: FAMILY.CONSTANT,  name: 'constant other'},
 };
 
 const ID = new WeakMap();
@@ -685,16 +686,15 @@ export class DslParser {
         if (this.s instanceof String || typeof this.s === 'string') {
             return this.parseString(this.s.toString().trim(), entity, entityResolverOrRoot);
         }
-        // NUMBER and OTHER kinds are in the CONSTANT family which means they aren't DSL expressions
-        // (API here could be improved!)
+        // NUMBER, BOOLEAN, OTHER_CONST kinds are in the CONSTANT family which means they aren't DSL expressions
         if (typeof this.s === 'number') {
             return new Dsl(KIND.NUMBER, this.s)
         }
         if (typeof this.s === 'boolean') {
-            return new Dsl(KIND.OTHER, this.s)
+            return new Dsl(KIND.BOOLEAN, this.s)
         }
-        // TODO support JSON objects (when YAML syntax supplied, eg object or entitySpec)
-        throw new DslError("Unable to parse: " + typeof this.s);
+        // TODO we could look at objects, nulls, etc, but right now we only parse DSL as string
+        return new Dsl(KIND.OTHER_CONST, this.s)
     }
 
     /**

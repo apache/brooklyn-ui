@@ -649,8 +649,6 @@ Entity.prototype.resetIssues = resetIssues;
 Entity.prototype.delete = deleteEntity;
 Entity.prototype.reset = resetEntity;
 
-// TODO remove the DSL errors on object?
-
 function isTypeForSpec(typeName) {
     return typeName && typeName.startsWith && typeName.startsWith("org.apache.brooklyn.api.entity.EntitySpec")
 }
