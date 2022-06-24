@@ -1060,6 +1060,7 @@ function resetEntity() {
     CONFIG.set(this, new Map());
     PARAMETERS.set(this, []);
     METADATA.set(this, new Map());
+    INITIALIZERS.set(this, new Map());
     ENRICHERS.set(this, new Map());
     POLICIES.set(this, new Map());
     CHILDREN.set(this, []);
