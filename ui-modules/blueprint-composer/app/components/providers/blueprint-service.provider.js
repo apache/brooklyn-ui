@@ -748,7 +748,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
             return result;
         }
         entity.clearIssues({group: 'type'});
-        entity.version = data.version;
+
         entity.type = data.symbolicName;
         entity.icon = entity.metadata.get('iconUrl')
             ? (data.iconUrl || '/v1/catalog/types/'+entity.type+'/'+(entity.version || 'latest')+'/icon')+'?iconUrl='+entity.metadata.get('iconUrl')
@@ -771,6 +771,8 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
         entity.miscData.set('sensors', data.sensors || []);
         entity.miscData.set('traits', data.supertypes || []);
         entity.miscData.set('tags', data.tags || []);
+        entity.miscData.set('loadedVersion', data.version);
+
         data.tags.forEach( (t) => {
             mergeAppendingLists(COMMON_HINTS, t['ui-composer-hints']);
         });
