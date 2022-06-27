@@ -16,8 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import {Entity, EntityFamily, PREDICATE_MEMBERSPEC, PREDICATE_FIRST_MEMBERSPEC} from "./entity.model";
+import {Entity, EntityFamily, PREDICATE_MEMBERSPEC} from "./entity.model";
 import {Issue} from './issue.model';
+
+const FIRST_MEMBERSPEC_REGEX = /^(\w+\.)*first[mM]ember[sS]pec$/;
+export const PREDICATE_FIRST_MEMBERSPEC = (config, entity)=>(config.name.match(FIRST_MEMBERSPEC_REGEX));
+
 
 describe('Brooklyn Model', ()=> {
 

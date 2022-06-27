@@ -17,7 +17,7 @@
  * under the License.
  */
 import angular from 'angular';
-import {Entity, EntityFamily} from "../util/model/entity.model";
+import {Entity, EntityFamily, DSL} from "../util/model/entity.model";
 import {Issue, ISSUE_LEVEL} from '../util/model/issue.model';
 import {Dsl} from "../util/model/dsl.model";
 import jsYaml from "js-yaml";
@@ -33,7 +33,7 @@ angular.module(MODULE_NAME, [])
 export default MODULE_NAME;
 
 export const RESERVED_KEYS = ['name', 'location', 'locations', 'type', 'services', 'brooklyn.config', 'brooklyn.children', 'brooklyn.enrichers', 'brooklyn.policies'];
-export const DSL_ENTITY_SPEC = '$brooklyn:entitySpec';
+export const DSL_ENTITY_SPEC = DSL.ENTITY_SPEC;
 
 export const COMMON_HINTS = {
     'config-quick-fixes': [{
@@ -546,9 +546,11 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
     function refreshConfigMemberspecsMetadata(entity) {
         let promiseArray = [];
         Object.values(entity.getClusterMemberspecEntities()).forEach((memberSpec)=> {
-            // memberSpec can be `undefined` if the member spec is not a `$brooklyn:entitySpec`, e.g. it is `$brooklyn:config("spec")`.
-            // there may be a better way but this seems to handle it.
-            if (memberSpec) promiseArray.push(refreshBlueprintMetadata(memberSpec, 'SPEC'));
+            // memberSpec can be `undefined` if the member spec is not a `$brooklyn:entitySpec`, e.g. it is `$brooklyn:config("spec")`;
+            // only accept for the former, where refresh will have replaced it with an Entity object
+            if (memberSpec instanceof Entity) {
+                promiseArray.push(refreshBlueprintMetadata(memberSpec, 'SPEC'));
+            }
         });
         return $q.all(promiseArray);
     }
@@ -619,7 +621,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                     resolve(parsed);
                 }
             } catch (ex) {
-                $log.debug("Cannot detect whether this is a DSL expression; assuming not: " + input, ex);
+                $log.debug("Cannot detect whether this is a DSL expression; assuming not", input, ex);
                 reject(ex, input);
             }
         });
@@ -721,7 +723,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
         // copy config key definitions set on this entity into the miscData aggregated view
         let allConfig = entity.miscDataOrDefault('configMap', {});
         entity.config.forEach((value, key) => {
-            entity.addConfigKeyDefinition(key, false, true);
+            entity.addConfigKeyDefinition(key, false, true, value);
         });
         entity.addConfigKeyDefinition(null, false, false);
     }

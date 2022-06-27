@@ -18,12 +18,10 @@
  */
 import {Issue} from './issue.model';
 import {Dsl, DslParser} from './dsl.model';
-import {blueprintServiceProvider} from "../../providers/blueprint-service.provider";
 
-const MEMBERSPEC_REGEX = /^(\w+\.)*[mM]ember[sS]pec$/;
-const FIRST_MEMBERSPEC_REGEX = /^(\w+\.)*first[mM]ember[sS]pec$/;
-// TODO ideally we'd just look at type EntitySpec, not key name, but for now look at keyname, anything ending memberSpec
+// this is now only used as a fallback when type info is not available
 const ANY_MEMBERSPEC_REGEX = /^(\w+\.)*(\w*)[mM]ember[sS]pec$/;
+
 const RESERVED_KEY_REGEX = /(^children$|^services$|^locations?$|^brooklyn\.config$|^brooklyn\.parameters$|^brooklyn\.enrichers$|^brooklyn\.policies$)/;
 export const FIELD = {
     SERVICES: 'services', CHILDREN: 'brooklyn.children', CONFIG: 'brooklyn.config', PARAMETERS: 'brooklyn.parameters', LOCATION: 'location', LOCATIONS: 'locations',
@@ -44,10 +42,8 @@ export const EntityFamily = {
     SPEC: {id: 'SPEC', displayName: 'Spec', superType: 'org.apache.brooklyn.api.entity.EntitySpec'}
 };
 
-export const PREDICATE_MEMBERSPEC = (config, entity)=>(config.name.match(MEMBERSPEC_REGEX));
-export const PREDICATE_FIRST_MEMBERSPEC = (config, entity)=>(config.name.match(FIRST_MEMBERSPEC_REGEX));
+export const DSL = {ENTITY_SPEC: '$brooklyn:entitySpec'};
 
-const DSL = {ENTITY_SPEC: '$brooklyn:entitySpec'};
 const ID = new WeakMap();
 const PARENT = new WeakMap();
 const METADATA = new WeakMap();
@@ -653,6 +649,24 @@ Entity.prototype.resetIssues = resetIssues;
 Entity.prototype.delete = deleteEntity;
 Entity.prototype.reset = resetEntity;
 
+function isTypeForSpec(typeName) {
+    return typeName && typeName.startsWith && typeName.startsWith("org.apache.brooklyn.api.entity.EntitySpec")
+}
+
+function isConfigForSpec(entity, key) {
+    const configs = entity && entity.miscData && entity.miscData.get("configMap");
+    const match = configs && configs[key];
+    if (match && isTypeForSpec(match.type)) return true;
+    // config definition data might not yet be loaded, so allow fallback
+    // (logic is forgiving if it is already set using DSL; some non-DSL usages in pasted blueprints might not get picked up, however)
+    if (ANY_MEMBERSPEC_REGEX.test(key)) return true;
+    return false;
+}
+
+export const PREDICATE_MEMBERSPEC = (config, entity)=> {
+    return isTypeForSpec(config.type) || isConfigForSpec(entity, config.name);
+}
+
 /**
  * Add an entry to brooklyn.config
  * @param {string} key
@@ -660,24 +674,44 @@ Entity.prototype.reset = resetEntity;
  * @returns {Entity}
  */
 function addConfig(key, value) {
-    if (ANY_MEMBERSPEC_REGEX.test(key) && value.hasOwnProperty(DSL.ENTITY_SPEC)) {
-        if (value[DSL.ENTITY_SPEC] instanceof Entity) {
-            value[DSL.ENTITY_SPEC].family = EntityFamily.SPEC.id;
-            value[DSL.ENTITY_SPEC].parent = this;
-            CONFIG.get(this).set(key, value);
-        } else {
-            let entity = new Entity().setEntityFromJson(value[DSL.ENTITY_SPEC]);
-            entity.family = EntityFamily.SPEC.id;
-            entity.parent = this;
-            CONFIG.get(this).set(key, {'$brooklyn:entitySpec': entity});
+    try {
+        if (value.hasOwnProperty(DSL.ENTITY_SPEC)) {
+            if (value[DSL.ENTITY_SPEC] instanceof Entity) {
+                value[DSL.ENTITY_SPEC].family = EntityFamily.SPEC.id;
+                value[DSL.ENTITY_SPEC].parent = this;
+                CONFIG.get(this).set(key, value);
+            } else {
+                let entity = new Entity().setEntityFromJson(value[DSL.ENTITY_SPEC]);
+                entity.family = EntityFamily.SPEC.id;
+                entity.parent = this;
+                CONFIG.get(this).set(key, {'$brooklyn:entitySpec': entity});
+            }
+            this.touch();
+            return this;
+
+        } else if (isConfigForSpec(this, key)) {
+            let entity = null;
+            if (value instanceof Entity) {
+                entity = value;
+            } else if (value['type']) {
+                entity = new Entity().setEntityFromJson(value);
+            }
+            if (entity) {
+                entity.family = EntityFamily.SPEC.id;
+                entity.parent = this;
+
+                CONFIG.get(this).set(key, {'$brooklyn:entitySpec': entity});
+                this.touch();
+                return this;
+            }
         }
-        this.touch();
-        return this;
-    } else {
-        CONFIG.get(this).set(key, value);
-        this.touch();
-        return this;
+    } catch (e) {
+        console.debug("Data in key "+key+" is not a recognised entity spec; not treating as entity spec", e);
     }
+
+    CONFIG.get(this).set(key, value);
+    this.touch();
+    return this;
 }
 
 function clearConfig() {
@@ -685,18 +719,22 @@ function clearConfig() {
     this.touch();
 }
 
-function addConfigKeyDefinition(param, overwrite, skipUpdatesDuringBatch) {
+function addConfigKeyDefinition(param, overwrite, skipUpdatesDuringBatch, value) {
     let allConfig = this.miscDataOrDefault('configMap', {});
     if (param) {
         if (typeof param === 'string') {
+            let type = "java.lang.String";
+            if (typeof value === 'object') {
+                type = "java.lang.Object";
+            }
             param = {
-                "name": param,
-                "label": param,
-                "description": "",
-                "priority": 1,
-                "pinned": true,
-                "type": "java.lang.String",
-                "constraints": [],
+                name: param,
+                label: param,
+                description: "",
+                priority: 1,
+                pinned: true,
+                type,
+                constraints: [],
             };
             overwrite = false;
         }
@@ -862,10 +900,11 @@ function getClusterMemberspecEntities() {
         return {};
     }
     return MISC_DATA.get(this).get('config')
-        .filter((config)=>(baseType(config.type) === EntityFamily.SPEC.superType))
+        .filter((config)=>{const t = baseType(config.type); return t === EntityFamily.SPEC.superType || t === 'java.lang.Object';})
         .reduce((acc, config)=> {
             if (CONFIG.get(this).has(config.name)) {
-                acc[config.name] = CONFIG.get(this).get(config.name)[DSL.ENTITY_SPEC];
+                const val = CONFIG.get(this).get(config.name)[DSL.ENTITY_SPEC];
+                if (val) acc[config.name] = val;
             }
             return acc;
         }, {});
@@ -1319,7 +1358,7 @@ function cleanForJson(item, depth) {
     if (item instanceof Map) {
         let result = {};
         for (let [key, value] of item) {
-            if (ANY_MEMBERSPEC_REGEX.test(key) && value.hasOwnProperty(DSL.ENTITY_SPEC)) {
+            if (value.hasOwnProperty(DSL.ENTITY_SPEC) && value[DSL.ENTITY_SPEC] instanceof Entity) {
                 let _jsonVal = {};
                 _jsonVal[DSL.ENTITY_SPEC] = value[DSL.ENTITY_SPEC].getData();
                 result[key] = _jsonVal;

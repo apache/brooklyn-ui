@@ -27,7 +27,6 @@ import {graphicalEditEnricherState} from '../../views/main/graphical/edit/enrich
 
 const MODULE_NAME = 'brooklyn.components.designer';
 const TEMPLATE_URL = 'blueprint-composer/component/designer/index.html';
-const ANY_MEMBERSPEC_REGEX = /(^.*[m,M]ember[s,S]pec$)/;
 const TAG = 'DIRECTIVE :: DESIGNER :: ';
 
 angular.module(MODULE_NAME, [])
