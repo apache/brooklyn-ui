@@ -21,7 +21,7 @@
   <div class="row">
     <div ng-class="{ 'col-md-12': true, 'col-lg-8': !vm.wideKilt && vm.isNonEmpty(vm.activitiesDeep), 'col-lg-12': vm.wideKilt || !vm.isNonEmpty(vm.activitiesDeep)}">
         <loading-state error="vm.error" ng-if="!vm.activities"></loading-state>
-        <task-list task-type="activity" tasks="vm.activities" filtered-callback="vm.onFilteredActivitiesChange" ng-if="vm.activities"></task-list>
+        <task-list task-type="{{filter || 'activity'}}" search="search" tasks="vm.activities" filtered-callback="vm.onFilteredActivitiesChange" ng-if="vm.activities"></task-list>
     </div>
 
     <div ng-class="{ 'col-md-12': true, 'col-lg-4': !vm.wideKilt, 'col-lg-12': vm.wideKilt }" ng-if="vm.isNonEmpty(vm.activitiesDeep)">
@@ -33,7 +33,7 @@
                     <i class="fa" ng-class="{ 'fa-indent': vm.wideKilt, 'fa-outdent': !vm.wideKilt }"></i></button>
             </extra-buttons>
             <h4 class="text-center" ng-if="!vm.isNonEmpty(vm.activitiesDeep)">No tasks</h4>
-            <task-sunburst task-type="activity" tasks="vm.activitiesDeep" filtered-to="vm.focusedActivities" ng-if="vm.isNonEmpty(vm.activitiesDeep)"></task-sunburst>
+            <task-sunburst task-type="activity" tasks="vm.activitiesDeep" filtered-to="vm.focusedActivities" ng-if="vm.isNonEmpty(vm.activitiesDeep)" exclude-transient="globalFilters && globalFilters.transient && !globalFilters.transient.include"></task-sunburst>
         </expandable-panel>
     </div>
     

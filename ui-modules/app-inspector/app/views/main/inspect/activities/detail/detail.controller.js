@@ -54,6 +54,19 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
         
         activityApi.activity(activityId).then((response)=> {
             vm.model.activity = response.data;
+
+            vm.actions = {};
+            if ((vm.model.activity.tags || []).find(t => t=="EFFECTOR")) {
+                const effectorName = (vm.model.activity.tags.find(t => t.effectorName) || {}).effectorName;
+                const effectorParams = (vm.model.activity.tags.find(t => t.effectorParams) || {}).effectorParams;
+                if (effectorName) {
+                    vm.actions.effector = {effectorName};
+                    if (effectorParams) {
+                        vm.actions.invokeAgain = {effectorName, effectorParams, doAction: () => vm.invokeEffector(effectorName, effectorParams) };
+                    }
+                }
+            }
+
             vm.error = undefined;
             observers.push(response.subscribe((response)=> {
                 vm.model.activity = response.data;
@@ -83,7 +96,7 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
             }
         });
         
-        activityApi.activityDescendants(activityId, 8).then((response)=> {
+        activityApi.activityDescendants(activityId, 8, true).then((response)=> {
             vm.model.activitiesDeep = response.data;
             vm.error = undefined;
             // TODO would be nice to subscribe more often, e.g. every second
@@ -135,7 +148,20 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
         // either this or a $scope.$watch with very low interval
         $timeout(function() { $scope.$broadcast('resize') }, 100);
     };
-    
+
+    vm.stringifyActivity = () => JSON.stringify(vm.model.activity, null, 2);
+
+    vm.invokeEffector = (effectorName, effectorParams) => {
+        entityApi.invokeEntityEffector(applicationId, entityId, effectorName, effectorParams).then((response) => {
+            $scope.$dismiss('Effector sent!');
+            $state.go('main.inspect.activities.detail', {
+                applicationId: applicationId,
+                entityId: entityId,
+                activityId: response.data.id
+            });
+        });
+    }
+
     $scope.$on('$destroy', ()=> {
         observers.forEach((observer)=> {
             observer.unsubscribe();
@@ -150,4 +176,10 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
             return child;
         });
     }
+
+    vm.onFilteredActivitiesChange = function (newActivities, globalFilters) {
+        // this uses activity descendants api method which only uses TaskChildren,
+        // so transient tasks etc less relevant
+    }
+
 }

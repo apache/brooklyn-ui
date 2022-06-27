@@ -22,8 +22,12 @@
 </div>
 <loading-state error="vm.error.effectors" ng-if="!vm.effectors"></loading-state>
 <div class="effectors-table" ng-if="vm.effectors">
-    <entity-effector ng-repeat="effector in vm.effectors" effector="effector" ng-show="!filterValue || filterResult.indexOf(effector.name) >= 0" application-id="{{vm.applicationId}}" entity-id="{{vm.entityId}}" open="vm.effectorToOpen==effector.name"></entity-effector>
+    <entity-effector ng-repeat="effector in vm.effectors" activities="vm.effectorTasks[effector.name]" effector="effector" ng-show="!filterValue || filterResult.indexOf(effector.name) >= 0" application-id="{{vm.applicationId}}" entity-id="{{vm.entityId}}" open="vm.effectorToOpen==effector.name"></entity-effector>
 </div>
 <div ng-if="vm.effectors && vm.effectors.length && filterValue && !filterResult.length" class="grid-row no-content">
     <span>No matches for <code>{{filterValue}}</code></span>
+</div>
+
+<div ng-if="!vm.effectors || !vm.effectors.length">
+    <span>No effectors available on this entity</span>
 </div>

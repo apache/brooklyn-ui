@@ -37,6 +37,7 @@ export function taskSunburstDirective() {
             tasks: '=',
             taskType: '@',
             filteredTo: '=?', // optionally restrict tasks to a subset (and descendants); for use with tag and name filters
+            excludeTransient: '=?', // optionally descendants not to include transients
         },
         controller: ['$scope', '$element', '$state', '$window', '$timeout', controller]
     };
@@ -58,6 +59,7 @@ export function taskSunburstDirective() {
 
         $scope.$watch('tasks', onUpdate);
         $scope.$watch('filteredTo', onUpdate);
+        $scope.$watch('excludeTransient', onUpdate);
 
         // seems to help with the window being ready, otherwise kilt expects to be too wide
         $timeout(onUpdate, 0);
@@ -73,15 +75,17 @@ function initVisualization($scope, $element, $state) {
         
     result.prepData = function() { 
         tasksData = {name: "root", task: null, children: []};
-       
+
+        const tasks = Array.isArray($scope.tasks) ? $scope.tasks : Object.values($scope.tasks);
         tasksById = {};
         // accept array or map where values are the array
         // built a map with keys as the id, values a map wrapping the original task in key "task"
         // alongside keys name, parentId, children
-        (Array.isArray($scope.tasks) ? $scope.tasks : Object.values($scope.tasks)).forEach(t => {
-            //if (t.tags.indexOf("SUB-TASK")>=0 || t.tags.indexOf("EFFECTOR")>=0) {
-              tasksById[t.id] = { task: t, name: t.displayName };
-            //}
+        tasks.forEach(t => {
+            if ($scope.excludeTransient && t.tags && t.tags.findIndex(tag => tag=='TRANSIENT')>=0) {
+                return
+            }
+            tasksById[t.id] = { task: t, name: t.displayName };
         });
 
         let filteredTo = $scope.filteredTo && $scope.filteredTo.reduce( (result,v)=>{result[v.id]=v; return result;}, {} );

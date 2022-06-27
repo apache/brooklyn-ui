@@ -17,21 +17,44 @@
   under the License.
 -->
 <div class="entity-effector">
-    <div class="row">
-        <div class="col-md-12">
+    <div class="effector-row">
+        <div class="row-buttons">
+            <br-button type="btn-sm btn-primary btn-effector" on-click="openModal()" title="Open Invoke Dialog">
+                <!--Invoke-->
+                <br-svg type="play"></br-svg>
+            </br-button>
+            <br-button type="btn-sm btn-accent btn-effector" on-click="openCliModal()" title="Show CLI Usage">
+                <br-svg type="cli"></br-svg>
+            </br-button>
+        </div>
+        <div class="row-contents">
+            <a ui-sref="main.inspect.activities({applicationId: applicationId, entityId: entityId, filter: 'EFFECTOR', search: effector.name})"
+                    ng-if="activities && activitiesSummary()" title="{{activitiesSummary}}"><span class="pull-right effector-pills">
+                <div class="effector-pill effector-active" ng-if="activities.active">
+                    <i class="fa fa-play-circle"></i>
+<!--                    <i class="fa fa-dot-circle-o"></i></div>-->
+                    {{activities.active}}
+                </div>
+                <div class="effector-pill effector-cancelled" ng-if="activities.cancelled">
+<!--                    <i class="fa fa-pause-circle"></i></div>-->
+<!--                    <i class="fa fa-exclamation-circle"></i></div>-->
+<!--                    <i class="fa fa-minus-circle"></i></div>-->
+                    <i class="fa fa-stop-circle"></i>
+                    {{activities.cancelled}}
+                </div>
+                <div class="effector-pill effector-failed" ng-if="activities.failed">
+                    <i class="fa fa-times-circle"></i>
+                    {{activities.failed}}
+                </div>
+                <div class="effector-pill effector-succeeded" ng-if="activities.succeeded">
+                    <i class="fa fa-check-circle"></i>
+                    {{activities.succeeded}}
+                </div>
+            </span></a>
             <span class="effector-name">
                 {{effector.name}}
             </span>
             <span class="effector-description">{{effector.description}}</span>
-        </div>
-    </div>
-    <div class="row">
-        <br>
-        <div class="col-md-4">
-            <br-button type="btn-primary pull-left btn-effector" on-click="openModal()">Invoke</br-button>
-            <br-button type="btn-accent pull-left btn-effector" on-click="openCliModal()">
-                <br-svg type="cli"></br-svg>
-            </br-button>
         </div>
     </div>
 </div>

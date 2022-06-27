@@ -21,11 +21,14 @@
     <div class="form-group search-bar-with-controls">
         <div class="btn-group activity-tag-filter" uib-dropdown keyboard-nav="true" dropdown-append-to="model.appendTo">
             <button id="single-button" type="button" class="btn btn-default" uib-dropdown-toggle>
-                Displaying <kbd>{{model.filterByTag | lowercase}}</kbd> <span class="caret"></span>
+                Displaying <kbd>{{model.filterByTag.display}}</kbd> <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
-                <li role="menuitem" class="activity-tag-filter-tag" ng-repeat="(tag,value) in filters track by tag" ng-model="model.filterByTag" uib-btn-radio="tag">
-                    {{tag | lowercase}}</span> <span class="badge">{{value}}</span>
+                <li role="menuitem" class="activity-tag-filter-tag" ng-repeat="(tag,value) in filters track by tag" ng-model="model.filterByTag" uib-btn-radio="value">
+                    <span>{{value.display}}</span> <span class="badge">{{value.count}}</span>
+                </li>
+                <li role="menuitem" class="activity-tag-filter-action" ng-if="globalFilters.transient" ng-click="globalFilters.transient.action()">
+                    <i><span>{{globalFilters.transient.display}}</span></i>
                 </li>
             </ul>
         </div>
@@ -52,7 +55,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="task in tasks | activityTagFilter : model.filterByTag | activityFilter:filterValue as filterResult track by task.id">
+            <tr ng-repeat="task in tasks | activityTagFilter : [model.filterByTag, globalFilters] | activityFilter:filterValue as filterResult track by task.id">
                 <td class="status">
                     <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id})">
                     <brooklyn-status-icon value="{{task.currentStatus}}" ng-if="!isScheduled(task)"></brooklyn-status-icon>
@@ -79,8 +82,8 @@
             <tr ng-if="filterResult.length == 0 ">
                 <td colspan="4" class="text-center"><h4>
                     No tasks found matching
-                    <span ng-if="filterValue">current filter <code>{{filterValue}}</code> and</span>
-                    type <code>{{model.filterByTag | lowercase}}</code>
+                    <span ng-if="filterValue">current search <code>{{filterValue}}</code> and</span>
+                    filter <code>{{model.filterByTag.display}}</code>
                 </h4></td>
             </tr>
             </tbody>

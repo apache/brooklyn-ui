@@ -39,39 +39,41 @@ export function taskListDirective() {
             tasks: '=',
             taskType: '@',
             filteredCallback: '&?',
+            search: '<',
         },
         controller: ['$scope', '$element', controller]
     };
 
     function controller($scope, $element) {
+        const isActivityChildren = $scope.taskType === 'activityChildren';
+
+        $scope.globalFilters = {
+            // transient set when those tags seen
+        };
+
+        setFiltersForTasks($scope, isActivityChildren);
+        $scope.filterValue = $scope.search;
+
         $scope.model = {
             appendTo: $element,
             filterResult: null,
-            filterByTag: $scope.taskType === 'activityChildren' ? 'SUB-TASK' : 'EFFECTOR'
+            filterByTag: isActivityChildren ? $scope.filters['_top']
+                : $scope.taskType === 'activity' ? $scope.filters['_effectorsTop']
+                : $scope.filters[$scope.taskType || '_effectorsTop'],
         };
-        
-        if (activityTagFilter()($scope.tasks, $scope.model.filterByTag).length == 0) {
-            // show all if there are no sub-tasks
-            $scope.model.filterByTag = $scope.taskType === 'activityChildren' ? 'ALL' : 'TOP-LEVEL';
+
+        const activityTagFilterApplication = () => activityTagFilter()($scope.tasks, [$scope.model.filterByTag, $scope.globalFilters]);
+        if ((!$scope.taskType || $scope.taskType.startsWith('activity')) && (!$scope.model.filterByTag || activityTagFilterApplication().length==0 )) {
+            // show all if default view is empty, unless explicit tag was requested
+            $scope.model.filterByTag = $scope.filters['_top'];
+            if (!$scope.model.filterByTag || activityTagFilterApplication().length == 0 ) {
+                $scope.model.filterByTag = $scope.filters['_recursive'] || $scope.model.filterByTag;
+            }
         }
         $scope.isScheduled = isScheduled;
 
-        $scope.$watch('tasks', function () {
-            let defaultTags = {};
-
-            if ($scope.taskType === 'activityChildren') {
-                defaultTags['SUB-TASK'] = 0;
-            } else {
-                defaultTags['TOP-LEVEL'] = topLevelTasks($scope.tasks).length;
-            }
-
-            defaultTags['ALL'] = $scope.tasks.length;
-
-            let tags = $scope.tasks.reduce((result, subTask)=> {
-                return subTask.tags.reduce(tagReducer, result);
-            }, defaultTags);
-
-            $scope.filters = angular.extend(tags, $scope.filters);
+        $scope.$watch('tasks', ()=>{
+            setFiltersForTasks($scope, isActivityChildren);
         });
         $scope.getTaskDuration = function(task) {
             if (!task.startTimeUtc) {
@@ -81,18 +83,90 @@ export function taskListDirective() {
         }
 
         $scope.$watch('model.filterResult', function () {
-            if ($scope.filteredCallback && $scope.model.filterResult) $scope.filteredCallback()( $scope.model.filterResult );
+            if ($scope.filteredCallback && $scope.model.filterResult) $scope.filteredCallback()( $scope.model.filterResult, $scope.globalFilters );
         });
     }
 
     function tagReducer(result, tag) {
         if (typeof tag === 'string') {
             if (result.hasOwnProperty(tag)) {
-                result[tag]++;
+                result[tag].count ++;
             } else {
-                result[tag] = 1;
+                result[tag] = {
+                    display: 'Tag: '+tag.toLowerCase(),
+                    tag,
+                    count: 1,
+                }
             }
         }
+        return result;
+    }
+
+    function setFiltersForTasks(scope, isActivityChildren) {
+        const tasksAll = scope.tasks || [];
+        const globalFilters = scope.globalFilters;
+
+        // include a toggle for transient tasks
+        if (!globalFilters.transient) {
+            const numTransient = tasksWithTag(tasksAll, 'TRANSIENT').length;
+            if (numTransient>0 && numTransient<tasksAll.length) {
+                // only default to filtering transient if some but not all are transient
+                globalFilters.transient = {
+                    include: true,
+                    action: ()=>{
+                        globalFilters.transient.include = !globalFilters.transient.include;
+                        globalFilters.transient.display = (globalFilters.transient.include ? 'Hide' : 'Show') + ' transient tasks';
+                        setFiltersForTasks(scope, isActivityChildren);
+                    },
+                };
+                globalFilters.transient.action();
+            }
+        }
+
+        const tasks = tasksAfterGlobalFilters(tasksAll, globalFilters);
+        const tops = topLevelTasks(tasks);
+
+        let defaultTags = {};
+        defaultTags['_top'] = {
+            display: 'All top-level tasks',
+            filter: topLevelTasks,
+            count: tops.length,
+        }
+        if (tasks.length > tops.length) {
+            defaultTags['_recursive'] = {
+                display: 'All tasks (recursive)',
+                filter: input => input,
+                count: tasks.length,
+            }
+        }
+        defaultTags['_effectorsTop'] = {
+            display: 'Effectors (top-level)',
+            filter: tt => tasksWithTag(topLevelTasks(tt), 'EFFECTOR'),
+            count: tasksWithTag(tops, 'EFFECTOR').length,
+        }
+        defaultTags['EFFECTOR'] = {
+            display: 'Effectors (recursive)',
+            tag: 'EFFECTOR',
+            count: 0,
+        }
+        if (isActivityChildren) {
+            defaultTags['_top'].display = 'Direct sub-tasks';
+            if (defaultTags['_recursive']) defaultTags['_recursive'].display = 'All sub-tasks (recursive)';
+        }
+
+        const result = tasks.reduce((result, subTask)=> {
+            return subTask.tags.reduce(tagReducer, result);
+        }, defaultTags);
+
+        // could suppress if no effectors
+        // if (!result['_effectorsTop'].count) {
+        //     delete result['_effectorsTop'];
+        //     if (!result['EFFECTOR'].count) {
+        //         delete result['EFFECTOR'];
+        //     }
+        // }
+
+        scope.filters = result; //previously we extended, but now allow to clear
         return result;
     }
 }
@@ -102,16 +176,18 @@ function isScheduled(task) {
   return task && task.currentStatus && task.currentStatus.startsWith("Schedule");
 }
 
+function isTopLevelTask(t, tasksById) {
+    if (!t.submittedByTask) return true;
+    let submitter = tasksById[t.submittedByTask.metadata.id];
+    if (!submitter) return true;
+    if (isScheduled(submitter) && (!t.endTimeUtc || t.endTimeUtc<=0)) return true;
+    return false;
+}
+
 function topLevelTasks(tasks) {
     if (!tasks) return tasks;
     let tasksById = tasks.reduce( (result,t) => { result[t.id] = t; return result; }, {} );
-    return tasks.filter(t => {
-      if (!t.submittedByTask) return true;
-      let submitter = tasksById[t.submittedByTask.metadata.id];
-      if (!submitter) return true;
-      if (isScheduled(submitter) && (!t.endTimeUtc || t.endTimeUtc<=0)) return true;
-      return false;
-    });
+    return tasks.filter(t => isTopLevelTask(t, tasksById));
 }
 
 
@@ -137,19 +213,36 @@ export function durationFilter() {
     }
 }
 
-export function activityTagFilter() {
-    return function (inputs, tag) {
-        if (inputs && tag) {
-            if (tag === 'ALL') return inputs;
-            if (tag === 'TOP-LEVEL') return topLevelTasks(inputs);
+function isTaskWithTag(task, tag) {
+    return task.tags.indexOf(tag)>=0;
+}
 
-            return inputs.reduce((result, task)=> {
-                if (task.tags.indexOf(tag) != -1) {
-                    result.push(task);
-                }
-                return result;
-            }, []);
+function tasksWithTag(tasks, tag) {
+    return tasks.filter(t => isTaskWithTag(t, tag));
+}
+
+function tasksAfterGlobalFilters(inputs, globalFilters) {
+    if (inputs) {
+        if (globalFilters && globalFilters.transient && !globalFilters.transient.include) {
+            inputs = inputs.filter(t => !isTaskWithTag(t, 'TRANSIENT'));
+        }
+    }
+    return inputs;
+}
+
+export function activityTagFilter() {
+    return function (inputs, args) {
+        const [tagF, globalFilters] = args;
+        inputs = tasksAfterGlobalFilters(inputs, globalFilters);
+        if (inputs && tagF) {
+            const filter = tagF.filter || (tagF.tag ? inp => tasksWithTag(inp, tagF.tag) : null);
+            if (!filter) {
+                console.warn("Incomplete activities tag filter", tagF);
+                return inputs;
+            }
+            return filter(inputs);
         } else {
+            if (inputs) console.warn("Unknown activities tag filter", tagF);
             return inputs;
         }
     }

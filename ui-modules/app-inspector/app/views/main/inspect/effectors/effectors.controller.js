@@ -22,7 +22,7 @@ import template from "./effectors.template.html";
 function EffectorsController($scope, $stateParams, $location, entityApi) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
     $scope.filterResult = [];
-    $scope.filterValue = '';
+    $scope.filterValue = $stateParams.search || '';
 
     const {
         applicationId,
@@ -34,30 +34,63 @@ function EffectorsController($scope, $stateParams, $location, entityApi) {
     vm.applicationId = applicationId;
     vm.entityId = entityId;
     vm.effectorToOpen = $location.search().effector;
+    vm.effectorTasks = {};
 
-    entityApi.entityEffectors(applicationId, entityId).then((response)=> {
-        vm.effectors = response.data.map(function (effector) {
-            effector.parameters.map(function (parameter) {
-                parameter.value = parameter.defaultValue;
-                return parameter;
-            });
-            return effector;
-        });
-        vm.error = {};
-    }).catch((error)=> {
-        vm.error.effectors =  'Cannot load effector for entity with ID: ' + entityId;
-    });
-
-    $scope.$watch('filterValue', () => {
+    function updateFilters() {
         if (vm.effectors) {
             $scope.filterResult = vm.effectors.filter(effector => effector.name.includes($scope.filterValue)).map(effector => effector.name)
         }
+    }
+
+    entityApi.entityTags(applicationId, entityId).then((responseE)=> {
+        const entityTags = responseE.data;
+        entityApi.entityEffectors(applicationId, entityId).then((response) => {
+            // filter based on ui-effector-hints single-key tag, then filter response, excluding if exclude-regex matches and include-regex does not
+            const effectorHint = (entityTags || []).map(t => t['ui-effector-hints']).find(t => t);
+            vm.effectors = response.data.map(function (effector) {
+                effector.parameters.map(function (parameter) {
+                    parameter.value = parameter.defaultValue;
+                    return parameter;
+                });
+                return effector;
+            }).filter(effector=> {
+                if (!effectorHint) return true;
+                if (effectorHint['exclude-regex'] && new RegExp(effectorHint['exclude-regex']).test(effector.name) &&
+                    (!effectorHint['include-regex'] || !(new RegExp(effectorHint['include-regex']).test(effector.name)))) return false;
+                return true;
+            });
+            vm.error = {};
+            updateFilters();
+        });
+    }).catch((error) => {
+        vm.error.effectors = 'Cannot load effectors for entity with ID: ' + entityId;
+        console.warn(vm.error.effectors, error);
+    });
+    entityApi.entityActivities(applicationId, entityId).then((response) => {
+        const newTasks = {};
+        response.data.forEach(task => {
+            if ((task.tags || []).find(t => t == "EFFECTOR")) {
+                const name = (task.tags.find(t => t && t.effectorName) || {}).effectorName;
+                if (name) {
+                    const counts = newTasks[name] = newTasks[name] || { active: 0, failed: 0, cancelled: 0, succeeded: 0 };
+                    if (!task.endTimeUtc) counts.active++;
+                    else if (task.isCancelled) counts.cancelled++;
+                    else if (task.isError) counts.failed++;
+                    else counts.succeeded++;
+                }
+            }
+        });
+        vm.effectorTasks = newTasks;
+    });
+
+    $scope.$watch('filterValue', () => {
+        updateFilters();
     });
 }
 
 export const effectorsState = {
     name: 'main.inspect.effectors',
-    url: '/effectors',
+    url: '/effectors?search',
     template: template,
     controller: ['$scope', '$stateParams', '$location', 'entityApi', EffectorsController],
     controllerAs: 'vm'
