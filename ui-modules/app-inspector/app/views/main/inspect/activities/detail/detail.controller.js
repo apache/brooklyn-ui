@@ -96,7 +96,7 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
             }
         });
         
-        activityApi.activityDescendants(activityId, 8).then((response)=> {
+        activityApi.activityDescendants(activityId, 8, true).then((response)=> {
             vm.model.activitiesDeep = response.data;
             vm.error = undefined;
             // TODO would be nice to subscribe more often, e.g. every second
@@ -176,4 +176,10 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
             return child;
         });
     }
+
+    vm.onFilteredActivitiesChange = function (newActivities, globalFilters) {
+        // this uses activity descendants api method which only uses TaskChildren,
+        // so transient tasks etc less relevant
+    }
+
 }

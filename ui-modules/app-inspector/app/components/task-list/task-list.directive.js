@@ -47,8 +47,11 @@ export function taskListDirective() {
     function controller($scope, $element) {
         const isActivityChildren = $scope.taskType === 'activityChildren';
 
-        const tags = setFiltersForTasks($scope.tasks || [], isActivityChildren);
-        $scope.filters = tags;
+        $scope.globalFilters = {
+            // transient set when those tags seen
+        };
+
+        setFiltersForTasks($scope, isActivityChildren);
         $scope.filterValue = $scope.search;
 
         $scope.model = {
@@ -59,18 +62,18 @@ export function taskListDirective() {
                 : $scope.filters[$scope.taskType || '_effectorsTop'],
         };
 
-        if ((!$scope.taskType || $scope.taskType.startsWith('activity')) && (!$scope.model.filterByTag || activityTagFilter()($scope.tasks, $scope.model.filterByTag).length == 0)) {
+        const activityTagFilterApplication = () => activityTagFilter()($scope.tasks, [$scope.model.filterByTag, $scope.globalFilters]);
+        if ((!$scope.taskType || $scope.taskType.startsWith('activity')) && (!$scope.model.filterByTag || activityTagFilterApplication().length==0 )) {
             // show all if default view is empty, unless explicit tag was requested
             $scope.model.filterByTag = $scope.filters['_top'];
-            if (!$scope.model.filterByTag || activityTagFilter()($scope.tasks, $scope.model.filterByTag).length == 0) {
+            if (!$scope.model.filterByTag || activityTagFilterApplication().length == 0 ) {
                 $scope.model.filterByTag = $scope.filters['_recursive'] || $scope.model.filterByTag;
             }
         }
         $scope.isScheduled = isScheduled;
 
         $scope.$watch('tasks', ()=>{
-            const tags = setFiltersForTasks($scope.tasks, isActivityChildren);
-            $scope.filters = tags; //previously we extended, but now allow to clear
+            setFiltersForTasks($scope, isActivityChildren);
         });
         $scope.getTaskDuration = function(task) {
             if (!task.startTimeUtc) {
@@ -80,7 +83,7 @@ export function taskListDirective() {
         }
 
         $scope.$watch('model.filterResult', function () {
-            if ($scope.filteredCallback && $scope.model.filterResult) $scope.filteredCallback()( $scope.model.filterResult );
+            if ($scope.filteredCallback && $scope.model.filterResult) $scope.filteredCallback()( $scope.model.filterResult, $scope.globalFilters );
         });
     }
 
@@ -99,10 +102,31 @@ export function taskListDirective() {
         return result;
     }
 
-    function setFiltersForTasks(tasks, isActivityChildren) {
-        let defaultTags = {};
+    function setFiltersForTasks(scope, isActivityChildren) {
+        const tasksAll = scope.tasks || [];
+        const globalFilters = scope.globalFilters;
+
+        // include a toggle for transient tasks
+        if (!globalFilters.transient) {
+            const numTransient = tasksWithTag(tasksAll, 'TRANSIENT').length;
+            if (numTransient>0 && numTransient<tasksAll.length) {
+                // only default to filtering transient if some but not all are transient
+                globalFilters.transient = {
+                    include: true,
+                    action: ()=>{
+                        globalFilters.transient.include = !globalFilters.transient.include;
+                        globalFilters.transient.display = (globalFilters.transient.include ? 'Hide' : 'Show') + ' transient tasks';
+                        setFiltersForTasks(scope, isActivityChildren);
+                    },
+                };
+                globalFilters.transient.action();
+            }
+        }
+
+        const tasks = tasksAfterGlobalFilters(tasksAll, globalFilters);
         const tops = topLevelTasks(tasks);
 
+        let defaultTags = {};
         defaultTags['_top'] = {
             display: 'All top-level tasks',
             filter: topLevelTasks,
@@ -142,6 +166,7 @@ export function taskListDirective() {
         //     }
         // }
 
+        scope.filters = result; //previously we extended, but now allow to clear
         return result;
     }
 }
@@ -196,8 +221,19 @@ function tasksWithTag(tasks, tag) {
     return tasks.filter(t => isTaskWithTag(t, tag));
 }
 
+function tasksAfterGlobalFilters(inputs, globalFilters) {
+    if (inputs) {
+        if (globalFilters && globalFilters.transient && !globalFilters.transient.include) {
+            inputs = inputs.filter(t => !isTaskWithTag(t, 'TRANSIENT'));
+        }
+    }
+    return inputs;
+}
+
 export function activityTagFilter() {
-    return function (inputs, tagF) {
+    return function (inputs, args) {
+        const [tagF, globalFilters] = args;
+        inputs = tasksAfterGlobalFilters(inputs, globalFilters);
         if (inputs && tagF) {
             const filter = tagF.filter || (tagF.tag ? inp => tasksWithTag(inp, tagF.tag) : null);
             if (!filter) {

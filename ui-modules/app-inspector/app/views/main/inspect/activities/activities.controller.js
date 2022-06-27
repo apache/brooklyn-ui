@@ -95,7 +95,8 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
       }
     }
 
-    vm.onFilteredActivitiesChange = function (newActivities) {
+    vm.onFilteredActivitiesChange = function (newActivities, globalFilters) {
         vm.focusedActivities = newActivities;
+        $scope.globalFilters = globalFilters;
     }
 }

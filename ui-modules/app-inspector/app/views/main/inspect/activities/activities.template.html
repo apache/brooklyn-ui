@@ -33,7 +33,7 @@
                     <i class="fa" ng-class="{ 'fa-indent': vm.wideKilt, 'fa-outdent': !vm.wideKilt }"></i></button>
             </extra-buttons>
             <h4 class="text-center" ng-if="!vm.isNonEmpty(vm.activitiesDeep)">No tasks</h4>
-            <task-sunburst task-type="activity" tasks="vm.activitiesDeep" filtered-to="vm.focusedActivities" ng-if="vm.isNonEmpty(vm.activitiesDeep)"></task-sunburst>
+            <task-sunburst task-type="activity" tasks="vm.activitiesDeep" filtered-to="vm.focusedActivities" ng-if="vm.isNonEmpty(vm.activitiesDeep)" exclude-transient="globalFilters && globalFilters.transient && !globalFilters.transient.include"></task-sunburst>
         </expandable-panel>
     </div>
     
