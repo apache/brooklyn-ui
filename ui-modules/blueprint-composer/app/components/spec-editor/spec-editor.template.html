@@ -59,12 +59,17 @@
                 <div ng-if="state.availableVersions.length > 0" class="version-selection">
                     <i class="fa fa-code-fork panel-header-icon"></i>
                     <div class="btn-group" uib-dropdown dropdown-append-to-body>
-                        <button type="button" class="btn btn-primary fixed">{{state.selectedVersion}}</button>
+                        <button type="button" class="btn btn-primary fixed">{{state.selectedVersion || '('+specEditor.loadedVersion()+')'}}</button>
                         <button type="button" class="btn btn-primary" uib-dropdown-toggle>
                             <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu versions" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-body">
                             <li role="separator" class="divider no-margin"></li>
+                            <li role="menuitem">
+                                <a href="#" ng-click="$event.preventDefault();specEditor.setEntityVersion(null)">
+                                    Use default version
+                                </a>
+                            </li>
                             <li ng-repeat="version in state.availableVersions" role="menuitem">
                                 <a href="#" ng-click="$event.preventDefault();specEditor.setEntityVersion(version)">
                                     {{version}}

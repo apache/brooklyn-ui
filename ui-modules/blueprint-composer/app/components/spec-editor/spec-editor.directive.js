@@ -142,6 +142,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
         specEditor.addParameter = addParameter;
         specEditor.removeParameter = removeParameter;
         specEditor.setEntityVersion = setEntityVersion;
+        specEditor.loadedVersion = () => scope.model.miscData.get('loadedVersion') || 'unknown';
 
         const defaultState = {
             availableVersions: [],

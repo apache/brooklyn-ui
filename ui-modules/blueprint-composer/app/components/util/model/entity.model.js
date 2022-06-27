@@ -176,7 +176,7 @@ export class Entity {
      * @returns {boolean}
      */
     hasVersion() {
-        return MISC_DATA.get(this).has('version');
+        return MISC_DATA.get(this).has('version') && MISC_DATA.get(this).get('version');
     }
 
     /**
