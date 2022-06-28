@@ -1358,7 +1358,7 @@ function cleanForJson(item, depth) {
     if (item instanceof Map) {
         let result = {};
         for (let [key, value] of item) {
-            if (value.hasOwnProperty(DSL.ENTITY_SPEC) && value[DSL.ENTITY_SPEC] instanceof Entity) {
+            if (value && value.hasOwnProperty(DSL.ENTITY_SPEC) && value[DSL.ENTITY_SPEC] instanceof Entity) {
                 let _jsonVal = {};
                 _jsonVal[DSL.ENTITY_SPEC] = value[DSL.ENTITY_SPEC].getData();
                 result[key] = _jsonVal;

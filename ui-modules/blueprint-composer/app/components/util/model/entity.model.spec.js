@@ -16,8 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import {Entity, EntityFamily, PREDICATE_MEMBERSPEC} from "./entity.model";
+import {Entity, EntityFamily} from "./entity.model";
 import {Issue} from './issue.model';
+
+const DOT_MEMBERSPEC_REGEX = /^(\w+\.)*member[sS]pec$/;
+export const PREDICATE_DOT_MEMBERSPEC = (config, entity)=>(config.name.match(DOT_MEMBERSPEC_REGEX));
 
 const FIRST_MEMBERSPEC_REGEX = /^(\w+\.)*first[mM]ember[sS]pec$/;
 export const PREDICATE_FIRST_MEMBERSPEC = (config, entity)=>(config.name.match(FIRST_MEMBERSPEC_REGEX));
@@ -152,15 +155,17 @@ describe('Brooklyn Model', ()=> {
             expect(memberSpecs.length).toBe(2);
             expect(memberSpecs[0].family).toBe(EntityFamily.SPEC);
             expect(memberSpecs[1].family).toBe(EntityFamily.SPEC);
-            expect(entity.children[1].getClusterMemberspecEntity((config, entity)=>(entity._id === memberSpecs[0]._id))).toBe(memberSpecs[0]);
-            expect(entity.children[1].getClusterMemberspecEntity((config, entity)=>(entity._id === memberSpecs[1]._id))).toBe(memberSpecs[1]);
-            expect(entity.children[1].getClusterMemberspecEntity(PREDICATE_MEMBERSPEC)).toBe(memberSpecs[0]);
-            expect(entity.children[1].getClusterMemberspecEntity(PREDICATE_FIRST_MEMBERSPEC)).toBe(memberSpecs[1]);
             let configKeys = Object.keys(entity.children[1].getClusterMemberspecEntities());
             expect(configKeys).toBeDefined();
             expect(configKeys.length).toBe(2);
-            expect(configKeys[0]).toBe('cluster.memberspec');
-            expect(configKeys[1]).toBe('cluster.firstMemberspec');
+            const msi = configKeys.findIndex(ck => ck=='cluster.memberspec');
+            const fmsi = configKeys.findIndex(ck => ck=='cluster.firstMemberspec');
+            expect(msi).not.toBe(-1);
+            expect(fmsi).not.toBe(-1);
+            expect(entity.children[1].getClusterMemberspecEntity((config, entity)=>(entity._id === memberSpecs[0]._id))).toBe(memberSpecs[0]);
+            expect(entity.children[1].getClusterMemberspecEntity((config, entity)=>(entity._id === memberSpecs[1]._id))).toBe(memberSpecs[1]);
+            expect(entity.children[1].getClusterMemberspecEntity(PREDICATE_DOT_MEMBERSPEC)).toBe(memberSpecs[msi]);
+            expect(entity.children[1].getClusterMemberspecEntity(PREDICATE_FIRST_MEMBERSPEC)).toBe(memberSpecs[fmsi]);
         });
 
         // Location
