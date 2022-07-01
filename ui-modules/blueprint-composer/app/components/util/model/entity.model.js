@@ -1053,7 +1053,7 @@ function hasIssues() {
     return this.issues.length > 0;
 }
 
-function clearIssues(predicate) {
+function clearIssues(predicate, recursive) {
     if (this.hasIssues()) {
         if (predicate && predicate instanceof Object) {
             MISC_DATA.get(this).set('issues', this.issues.filter(issue => {
@@ -1069,6 +1069,9 @@ function clearIssues(predicate) {
             this.resetIssues();
         }
         this.touch();
+    }
+    if (recursive) {
+        this.children.forEach(child => child.clearIssues(predicate, recursive));
     }
     return this;
 }
