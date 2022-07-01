@@ -22,8 +22,7 @@ import brAutofocus from '../autofocus/autofocus';
 import brYamlEditor from '../yaml-editor/yaml-editor';
 import template from './quick-launch.html';
 import { get, isEmpty } from 'lodash';
-// stringifyUrl unavailable, possible webpack issue
-import { stringify } from 'query-string';
+import { stringify as stringifyForQuery } from 'query-string';
 
 const MODULE_NAME = 'brooklyn.components.quick-launch';
 
@@ -44,15 +43,14 @@ export function quickLaunchDirective() {
             args: '=?', // default behaviour of code is: { noEditButton: false, noComposerButton: false, noCreateLocationLink: false, location: null }
             callback: '=?',
         },
-        controller: ['$scope', '$http', '$location', 'brSnackbar', 'brBrandInfo' , 'quickLaunchOverrides', controller]
+        controller: ['$scope', '$http', '$location', 'brSnackbar', 'brBrandInfo' , 'quickLaunchOverrides', controller],
+        controllerAs: 'vm',
     };
 
     function controller($scope, $http, $location, brSnackbar, brBrandInfo, quickLaunchOverrides) {
 
         let quickLaunch = this;
-        // each function added here will be chained (in order) to process the output of the YAML
-        // generator in buildYaml() (ie output:= array[2](array[1](array[0]({ ... getAppPlan() ... })))
-        quickLaunch.yamlPostProcessors = [];
+
         quickLaunch.buildNewApp = () => ({
             name: $scope.model.name || $scope.app.displayName,
             location: $scope.model.location || '<REPLACE>',
@@ -60,11 +58,28 @@ export function quickLaunchDirective() {
                 angular.copy($scope.entityToDeploy)
             ],
         });
-        quickLaunch.buildYaml = buildYaml;
-        quickLaunch.planSender = (appYaml) => $http.post('/v1/applications', appYaml);
-        quickLaunch.buildComposerYaml = buildComposerYaml;
-        quickLaunch.getGraphicalComposerQuery = getGraphicalComposerQuery;
-        quickLaunch.getYamlComposerQuery = getYamlComposerQuery;
+        quickLaunch.getOriginalPlanFormat = getOriginalPlanFormat;
+        quickLaunch.planSender =
+            (plan) => {
+                if (!plan.format) {
+                    return $http.post('/v1/applications', plan.yaml);
+                } else {
+                    const formData = new FormData();
+                    formData.append('plan', plan.yaml);
+                    formData.append('format', plan.format);
+                    return $http.post('/v1/applications', formData, {
+                        headers: {'Content-Type': 'multipart/form-data'}
+                    });
+                }
+            };
+
+        quickLaunch.convertPlanToPreferredFormat = convertPlanToPreferredFormat;
+        quickLaunch.getComposerHref = getComposerHref;
+        quickLaunch.getPlanObject = getPlanObject;
+        quickLaunch.getCampPlanObjectFromForm = getCampPlanObjectFromForm;
+        quickLaunch.getComposerExpandedYaml = getComposerExpandedYaml;
+        quickLaunch.isComposerOpenExpandPossible = isComposerOpenExpandPossible;
+
         quickLaunch.checkForLocationTags = checkForLocationTags;
         quickLaunch.loadLocation = () => {
             const { args, model, locations=[] } = $scope;
@@ -75,8 +90,6 @@ export function quickLaunchDirective() {
             }
         };
 
-
-        $scope.simpleComposerOnly = false;
         $scope.formEnabled = true;
         $scope.editorEnabled = !$scope.args.noEditButton;
         $scope.forceFormOnly = false;
@@ -104,6 +117,7 @@ export function quickLaunchDirective() {
             quickLaunch.loadLocation($scope);
             $scope.clearError();
             $scope.editorYaml = $scope.app.plan.data;
+            $scope.editorFormat = quickLaunch.getOriginalPlanFormat();
 
             let parsedPlan = null;
             try {
@@ -155,9 +169,10 @@ export function quickLaunchDirective() {
 
         function deployApp() {
             $scope.deploying = true;
-            Promise.resolve(quickLaunch.buildYaml($scope.app.plan.format.includes('camp') ? false : true))
-                .then(appYaml => {
-                    quickLaunch.planSender(appYaml)
+            Promise.resolve(quickLaunch.getPlanObject({}))
+                .then(quickLaunch.convertPlanToPreferredFormat)
+                .then(plan => {
+                    quickLaunch.planSender(plan)
                         .then((response) => {
                             if ($scope.callback) {
                                 $scope.callback.apply({}, [{state: 'SUCCESS', data: response.data}]);
@@ -226,10 +241,15 @@ export function quickLaunchDirective() {
             $scope.model.newConfigFormOpen = false;
         }
 
-        function buildYaml(extensions=true) {
-            // converting JSON to YAML text and then passing through postprocessors, if any
-            return [yaml.safeDump, ...(extensions ? quickLaunch.yamlPostProcessors : [])]
-                .reduce((prev, cur) => Promise.resolve(prev).then(cur), quickLaunch.buildNewApp());
+        function isComposerOpenExpandPossible() {
+            try {
+                getComposerExpandedYaml(true);
+                return true;
+            } catch (error) {
+                //ignore
+                // console.log("cannot open composer expanded", error);
+            }
+            return false;
         }
 
         function getComposerExpandedYaml(validate) {
@@ -308,16 +328,12 @@ export function quickLaunchDirective() {
             return tryMergeByConcatenate;
         }
 
-        function buildComposerYaml(expanded, validate=true) {
-            return expanded
-                ? getComposerExpandedYaml(validate)
-                : quickLaunch.buildYaml();
-        }
-
         function showEditor() {
-            Promise.resolve(quickLaunch.buildYaml())
+            Promise.resolve(quickLaunch.getPlanObject({}))
+                .then(quickLaunch.convertPlanToPreferredFormat)
                 .then(appPlan => {
-                    $scope.editorYaml = appPlan;
+                    $scope.editorYaml = appPlan.yaml;
+                    $scope.editorFormat = appPlan.format || quickLaunch.getOriginalPlanFormat;
                     $scope.yamlViewDisplayed = true;
                     $scope.$apply(); // making sure that $scope is updated from async context
                 })
@@ -336,37 +352,66 @@ export function quickLaunchDirective() {
               console.warn("Composer unavailable in this build");
               return;
             }
-            Promise.resolve(quickLaunch.getGraphicalComposerQuery({ expanded }))
-                .then(query => {
-                    window.location.href = `${brBrandInfo.blueprintComposerBaseUrl}#!/graphical?${stringify(query)}`;
+            Promise.resolve(quickLaunch.getComposerHref({ expanded, validateYaml: true }))
+                .then(href => {
+                    window.location.href = href;
                 })
                 .catch((error) => {
                     console.warn("Opening composer in YAML text editor mode because we cannot generate a model for this configuration:", error);
-                    Promise.resolve(quickLaunch.getYamlComposerQuery({ expanded, validate: false, yamlPrefix:
+                    Promise.resolve(quickLaunch.getComposerHref({
+                            expanded, yamlEditor: true, validateYaml: false,
+                            yamlPrefix:
                             "# This plan may have items which require attention so is being opened in YAML text editor mode.\n"+
                             "# The YAML was autogenerated by merging the plan with any values provided in UI, but issues were\n"+
                             "# detected that mean it might not be correct. Please check the blueprint below carefully.\n"+
                             "\n" }))
                         .then(query => {
-                            window.location.href = `${brBrandInfo.blueprintComposerBaseUrl}#!/yaml?${stringify(query)}`;
+                            window.location.href = href;
                         })
                 })
         }
 
-        function getGraphicalComposerQuery({ expanded, validate=true }) {
-            return Promise.resolve(quickLaunch.buildComposerYaml(expanded, validate))
-                .then(yaml => ({
-                    format: $scope.app.plan.format,
-                    yaml,
-                }));
+        function getPlanObject({expanded, validateYaml=true}) {
+            if ($scope.yamlViewDisplayed) {
+                return {format: $scope.editorFormat, yaml: angular.copy($scope.editorYaml)};
+
+            } else {
+                return quickLaunch.getCampPlanObjectFromForm({expanded, validateYaml});
+            }
         }
 
-        function getYamlComposerQuery({ expanded, validate=true, yamlPrefix='' }) {
-            return Promise.resolve(quickLaunch.buildComposerYaml(expanded, validate))
-                .then(yaml => ({
-                    format: $scope.app.plan.format,
-                    yaml: yamlPrefix + yaml,
-                }));
+        function getCampPlanObjectFromForm({expanded, validateYaml=true}) {
+                return {
+                    format: 'brooklyn-camp',
+                    yaml: expanded
+                        ? quickLaunch.getComposerExpandedYaml(validateYaml)
+                        : yaml.safeDump(quickLaunch.buildNewApp()),
+            }
+        }
+
+        function getComposerHref({expanded, validateYaml, yamlPrefix, yamlEditor }) {
+            let result = `${brBrandInfo.blueprintComposerBaseUrl}#!/`;
+            let plan = quickLaunch.getPlanObject({expanded, validateYaml});
+
+            if ($scope.yamlViewDisplayed) {
+                return result + 'yaml?'+stringifyForQuery(plan);
+            }
+
+            if (yamlPrefix) plan.yaml = yamlPrefix + plan.yaml;
+
+            if (yamlEditor) {
+                plan = quickLaunch.convertPlanToPreferredFormat(plan);
+                return result + 'yaml?'+stringifyForQuery(plan);
+            }
+
+            return result + 'graphical?'+stringifyForQuery(plan);
+        }
+
+        function convertPlanToPreferredFormat(plan) { return plan; }
+
+        function getOriginalPlanFormat(scope) {
+            scope = scope || $scope;
+            return scope && scope.app && scope.app.plan && scope.app.plan.format;
         }
     }
 
