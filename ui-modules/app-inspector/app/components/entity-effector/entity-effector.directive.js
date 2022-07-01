@@ -76,7 +76,7 @@ export function entityEffectorDirective($state) {
                 if ($scope.activities.succeeded) activitiesSummaryList.push($scope.activities.succeeded + " succeeded");
             }
             let activitiesSummary = activitiesSummaryList.join(", ");
-            if (activitiesSummary) activitiesSummary = "Recent invocations: " + $scope.activitiesSummary;
+            if (activitiesSummary) activitiesSummary = "Recent invocations: " + activitiesSummary;
             return activitiesSummary;
         }
     }

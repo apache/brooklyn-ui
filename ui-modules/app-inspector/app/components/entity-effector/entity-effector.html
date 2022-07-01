@@ -29,7 +29,7 @@
         </div>
         <div class="row-contents">
             <a ui-sref="main.inspect.activities({applicationId: applicationId, entityId: entityId, filter: 'EFFECTOR', search: effector.name})"
-                    ng-if="activities && activitiesSummary()" title="{{activitiesSummary}}"><span class="pull-right effector-pills">
+                    ng-if="activities && activitiesSummary()" title="{{activitiesSummary()}}"><span class="pull-right effector-pills">
                 <div class="effector-pill effector-active" ng-if="activities.active">
                     <i class="fa fa-play-circle"></i>
 <!--                    <i class="fa fa-dot-circle-o"></i></div>-->
