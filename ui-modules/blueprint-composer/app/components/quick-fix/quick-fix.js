@@ -45,7 +45,6 @@ export function computeQuickFixes(blueprintService, allIssues) {
                     quickFixes: {},
                 };
             }
-
             let issueO = {
                 issue,
                 //quickFixes: {},
@@ -70,7 +69,6 @@ export function computeQuickFixes(blueprintService, allIssues) {
                     quickFixes: {},
                 };
             }
-
             let issueO = {
                 issue,
                 //quickFixes: {},
@@ -124,13 +122,35 @@ const QUICK_FIX_PROPOSERS = {
                 proposals = {};
             }
 
+            // refer directly to the ancestor, and refer to it as scope root (if root) or using id
+            // no option to refer to parent because that gets weird if things are rearranged
+            // (application root is usually not rearranged)
             if (!proposals.explicit_config) {
-                let entityToReference = (entity || issue.entity).parent;
-                let scopeRootOrComponent =  blueprintService.get() === entityToReference ? 'scopeRoot()' : `component("${entityToReference.id}")`;
+                let parent = (entity || issue.entity).parent;
+                let entityToReference = parent;
+                while (entityToReference && !entityToReference.config.has(issue.ref)) {
+                    entityToReference = entityToReference.parent;
+                }
+                if (!entityToReference) entityToReference = parent;
+                const isParent = entityToReference === parent;
+                const isScopeRoot = blueprintService.get() === entityToReference;
+                const referrent = isParent ? 'parent' : isScopeRoot ? 'root' : 'ancestor';
+
                 proposals.explicit_config = {
-                    text: 'Set explicit config from parent',
-                    tooltip: `This will set the config "${issue.ref}" to its parent value, explicitly`,
-                    apply: (issue, entity) => (entity || issue.entity).addConfig(issue.ref, `$brooklyn:${scopeRootOrComponent}.config("${issue.ref}")`),
+                    text: 'Set explicit config from '+referrent,
+                    tooltip: `This will set the config "${issue.ref}" to refer explicitly to the value set at the `+referrent,
+                    apply: (issue, entity) => {
+                        let scopeRootOrComponent;
+                        if (isScopeRoot) scopeRootOrComponent = 'scopeRoot()';
+                        else {
+                            if (!entityToReference.id) {
+                                // we could try to make a good uid from the name or type, but for now just make random to ensure it isn't null
+                                entityToReference.id = entityToReference._id;
+                            }
+                            scopeRootOrComponent = `component("${entityToReference.id}")`;
+                        }
+                        (entity || issue.entity).addConfig(issue.ref, `$brooklyn:${scopeRootOrComponent}.config("${issue.ref}")`);
+                    },
                     issues: []
                 };
             }
