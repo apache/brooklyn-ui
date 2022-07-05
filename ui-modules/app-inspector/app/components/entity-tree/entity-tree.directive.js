@@ -201,16 +201,21 @@ export function entityTreeDirective() {
                         // Get relationship roles for an entity.
                         const {parentRole, childRole} = getRelationshipRoles(relationships, entity.id, OTHER_PARENT, OTHER_CHILD);
 
-                        if (parentRole && childRole) {
-                            // Find new position where entity is an 'OTHER_CHILD' already, but to become 'OTHER_PARENT' as well.
-                            let newParentPosition = findEntityInOtherNodes(entities, entity.id);
+                        if (childRole) {
 
-                            // Move 'OTHER_CHILD' entities added in Phase 1 to a new parent.
-                            if (entity.otherNodes && newParentPosition) {
-                                entity.otherNodes.forEach(entityToMove => {
-                                    moveEntityToParent(entityToMove, newParentPosition, entities, view, false);
-                                });
+                            if (parentRole) {
+                                // Find new position where entity is an 'OTHER_CHILD' already, but to become 'OTHER_PARENT' as well.
+                                let newParentPosition = findEntityInOtherNodes(entities, entity.id);
+
+                                // Move 'OTHER_CHILD' entities added in Phase 1 to a new parent.
+                                if (entity.otherNodes && newParentPosition) {
+                                    entity.otherNodes.forEach(entityToMove => {
+                                        moveEntityToParent(entityToMove, newParentPosition, entities, view, false);
+                                    });
+                                }
                             }
+
+                            adjustVisibilityOfMovedEntity(entity, view);
                         }
                     });
                 });
@@ -277,7 +282,14 @@ export function entityTreeDirective() {
                 entityCopy.viewModes = null;
                 displayEntityInView(entityCopy, viewMode);
 
-                // 4. Add copy under otherNodes.
+                // 4. Mark original entity as been "moved" in this view.
+                if (!entity.movedInView) {
+                    entity.movedInView = new Set([viewMode]);
+                } else {
+                    entity.movedInView.add(viewMode);
+                }
+
+                // 5. Add copy under otherNodes.
                 if (!parent.otherNodes) {
                     parent.otherNodes = [entityCopy];
                 } else {
@@ -356,6 +368,20 @@ export function entityTreeDirective() {
                     entity.viewModes = new Set([viewMode]);
                 } else {
                     entity.viewModes.add(viewMode);
+                }
+            }
+
+            /**
+             * Hides entity if marked as moved in a particular view, and displays it otherwise.
+             *
+             * @param {Object} entity The entity to adjust visibility for.
+             * @param {string} viewMode The view mode to check visibility of a moved entity
+             */
+            function adjustVisibilityOfMovedEntity(entity, viewMode) {
+                if (entity.movedInView && entity.movedInView.has(viewMode)) {
+                    hideEntityInView(entity, viewMode);
+                } else {
+                    displayEntityInView(entity, viewMode);
                 }
             }
 
