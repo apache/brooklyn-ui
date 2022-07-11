@@ -126,7 +126,7 @@ export function streamDirective() {
                 $scope.stream = response.data;
 
                 // Check if to drop filters, because of `ng-repeat` performance limits.
-                if (!$scope.cliXml && !$scope.filteredStream.length && $scope.stream.length > 99999) {
+                if ($scope.cliXmlIdentified && !$scope.cliXml && !$scope.filteredStream.length && $scope.stream.length > 99999) {
                     $scope.noFilters = true;
                     brSnackbar.create('Stream content is too big, showing output without filters.');
                 }
