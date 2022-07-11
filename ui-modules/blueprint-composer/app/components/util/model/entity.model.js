@@ -628,6 +628,7 @@ Entity.prototype.getData = getData;
 Entity.prototype.addConfig = addConfig;
 Entity.prototype.clearConfig = clearConfig;
 Entity.prototype.addConfigKeyDefinition = addConfigKeyDefinition;
+Entity.prototype.removeConfigKeyDefinition = removeConfigKeyDefinition;
 Entity.prototype.addParameterDefinition = addParameterDefinition;
 Entity.prototype.addMetadata = addMetadata;
 Entity.prototype.removeConfig = removeConfig;
@@ -721,6 +722,7 @@ function clearConfig() {
 
 function addConfigKeyDefinition(param, overwrite, skipUpdatesDuringBatch, value) {
     let allConfig = this.miscDataOrDefault('configMap', {});
+
     if (param) {
         if (typeof param === 'string') {
             let type = "java.lang.String";
@@ -762,6 +764,14 @@ function addConfigKeyDefinition(param, overwrite, skipUpdatesDuringBatch, value)
     return this;
 }
 
+function removeConfigKeyDefinition(name) {
+    if (typeof name === 'string') {
+        let allConfig = this.miscDataOrDefault('configMap', {});
+        delete allConfig[name]
+    }
+    this.touch();
+}
+
 function addParameterDefinition(param, overwrite, skipUpdatesDuringBatch) {
     let allParams = this.miscDataOrDefault('parametersMap', {});
     if (param) {
@@ -776,6 +786,12 @@ function addParameterDefinition(param, overwrite, skipUpdatesDuringBatch) {
         }
 
         param = allParams[key] = Object.assign(allParams[key] || {}, param, overwrite ? null : allParams[key]);
+
+        // Handle parameter name change.
+        if (param.oldName) {
+            this.removeConfigKeyDefinition(param.oldName);
+            delete param['oldName']
+        }
 
         this.updateParameter(key, param, true);
     }

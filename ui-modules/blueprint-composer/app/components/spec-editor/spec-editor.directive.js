@@ -1212,6 +1212,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                         if (blueprintService.isReservedKey(scope.state.parameters.edit.newName)) {
                             scope.state.parameters.edit.errors.push({ message: "Illegal key name" });
                         } else if (checkNameChange(item.name, scope.state.parameters.edit.newName)) {
+                            item.oldName = item.name; // Parameter name change.
                             item.name = scope.state.parameters.edit.newName;
                         }
                     } else {
