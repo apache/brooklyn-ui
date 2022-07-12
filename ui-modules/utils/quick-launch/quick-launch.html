@@ -50,7 +50,7 @@
             <div class="quick-launch-section-content">
                 <div class="form-group" ng-class="{'has-error': deploy.location.$invalid && deploy.location.$touched}">
                     <input class="form-control" type="text" ng-model="model.location" ng-disabled="deploying" name="location" placeholder="Select a location where to deploy this application" autocomplete="off"
-                           uib-typeahead="location.name for location in locations | filter:$viewValue"
+                           uib-typeahead="location.id for location in locations | filter:$viewValue"
                            typeahead-popup-template-url="DropdownTemplate.html"
                            typeahead-template-url="LocationTemplate.html" typeahead-min-length="0"
                            required />
