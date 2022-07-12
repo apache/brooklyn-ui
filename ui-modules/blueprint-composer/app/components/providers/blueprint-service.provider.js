@@ -346,6 +346,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
             entity.miscData.set('loading', false);
             return refreshRelationships(entity);
         }).then(() => {
+            entity.clearIssues({group: 'config'});
             return $q.all([
                 refreshConfigConstraints(entity),
                 refreshConfigMemberspecsMetadata(entity),
@@ -603,7 +604,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                             .group('config')
                             .ref(definition.name)
                             .level(ISSUE_LEVEL.WARN)
-                            .message(`Implicitly defined from one of its ancestor`)
+                            .message(`Implicitly defined (inherited from an ancestor)`)
                             .build());
                     }
                 });
@@ -813,7 +814,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
 
     function populateLocationFromApiCommon(entity, data) {
         entity.clearIssues({group: 'location'});
-        entity.location = data.yamlHere || data.symbolicName;
+        entity.location = data.yamlHere || data.id;
 
         let name = data.name || data.displayName;
         if (!name && data.yamlHere) {
