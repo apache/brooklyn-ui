@@ -814,7 +814,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
 
     function populateLocationFromApiCommon(entity, data) {
         entity.clearIssues({group: 'location'});
-        entity.location = data.yamlHere || data.symbolicName;
+        entity.location = data.yamlHere || data.id;
 
         let name = data.name || data.displayName;
         if (!name && data.yamlHere) {
