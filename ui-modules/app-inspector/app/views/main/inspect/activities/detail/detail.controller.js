@@ -24,10 +24,10 @@ export const detailState = {
     name: 'main.inspect.activities.detail',
     url: '/:activityId',
     template: template,
-    controller: ['$scope', '$state', '$stateParams', '$log', '$uibModal', '$timeout', 'activityApi', 'brUtilsGeneral', DetailController],
+    controller: ['$scope', '$state', '$stateParams', '$log', '$uibModal', '$timeout', '$sanitize', '$sce', 'activityApi', 'brUtilsGeneral', DetailController],
     controllerAs: 'vm'
 }
-function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeout, activityApi, Utils) {
+function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeout, $sanitize, $sce, activityApi, Utils) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
     const {
@@ -77,7 +77,8 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
             $log.warn('Error loading activity for '+activityId, error);
             // prefer this simpler error message over the specific ones below
             vm.errorBasic = true;
-            vm.error = 'Cannot load activity with ID: ' + activityId;
+            vm.error = $sce.trustAsHtml('Cannot load activity with ID: <b>' + _.escape(activityId+' <i>x</i>') + '</b> <br/><br/>' +
+                'Task may have completed and been cleared from memory. Details may be available in logs.');
         });
 
         activityApi.activityChildren(activityId).then((response)=> {

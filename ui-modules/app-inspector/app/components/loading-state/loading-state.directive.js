@@ -29,8 +29,11 @@ export function loadingStateDirective() {
     return {
         restrict: 'EA',
         scope: {
-            error: '='
+            error: '=',
+            trustError: '=?',
         },
-        template: '<div class="alert alert-danger" ng-if="error">{{error}}</div><span ng-if="!error"><i class="fa fa-spin fa-circle-o-notch"></i> Loading</span>'
+        template: '<div class="alert alert-danger" ng-if="error && trustError" ng-bind-html="error"></div>'+
+            '<div class="alert alert-danger" ng-if="error && !trustError">{{ error }}</div>'+
+            '<span ng-if="!error"><i class="fa fa-spin fa-circle-o-notch"></i> Loading</span>',
     };
 }
