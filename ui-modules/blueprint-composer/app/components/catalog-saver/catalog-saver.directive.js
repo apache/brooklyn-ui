@@ -90,7 +90,7 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $f
             $scope.config.original = {}
         }
         $scope.isNewFromTemplate = () => ($scope.config.itemType !== 'template' && $scope.config.original.itemType === 'template');
-        $scope.isUpdate = () => !$scope.isNewFromTemplate() && Object.keys($scope.config.original).length>0;
+        $scope.isUpdate = () => !$scope.isNewFromTemplate() && Object.keys($scope.config.original).length>0 && $scope.config.bundle === $scope.config.original.bundle;
         $scope.buttonTextFn = () => {
             const name = $scope.config.label || ($scope.isUpdate() && ($scope.config.name || $scope.config.original.name || $scope.config.symbolicName || $scope.config.original.symbolicName));
             return !!name ? 'Update ' + name : 'Add to catalog';
@@ -417,16 +417,6 @@ export function catalogVersionDirective($parse) {
                 ctrl.$validate();
             }
         });
-        scope.$watch(attr.catalogVersionForce, value => {
-            if (force !== value) {
-                force = value;
-                ctrl.$validate();
-            }
-        });
-
-        ctrl.$validators.exist = (modelValue, viewValue) => {
-            return !angular.isDefined(matches) || ctrl.$isEmpty(viewValue) || viewValue.endsWith('SNAPSHOT') || force === true || matches.indexOf(viewValue) === -1;
-        };
     }
 }
 
