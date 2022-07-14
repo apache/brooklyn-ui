@@ -77,8 +77,8 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
             $log.warn('Error loading activity for '+activityId, error);
             // prefer this simpler error message over the specific ones below
             vm.errorBasic = true;
-            vm.error = $sce.trustAsHtml('Cannot load activity with ID: <b>' + _.escape(activityId+' <i>x</i>') + '</b> <br/><br/>' +
-                'Task may have completed and been cleared from memory. Details may be available in logs.');
+            vm.error = $sce.trustAsHtml('Cannot load activity with ID: <b>' + _.escape(activityId) + '</b> <br/><br/>' +
+                'Task may have completed and been cleared from memory, or may not have been run. Details may be available in logs.');
         });
 
         activityApi.activityChildren(activityId).then((response)=> {
