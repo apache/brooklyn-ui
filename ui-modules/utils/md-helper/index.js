@@ -35,9 +35,9 @@ export function mdFieldDirective() {
     return {
         restrict: 'E',
         scope: {
-            data: '<',
-            rawData: '<',
-            rawItem: '<',
+            data: '=?',
+            rawData: '=?',
+            rawItem: '=?',
         },
         controller: ['$scope', populateData],
         template: `
@@ -54,9 +54,9 @@ export function mdFirstLineDirective() {
     return {
         restrict: 'E',
         scope: {
-            data: '<',
-            rawData: '<',
-            rawItem: '<',
+            data: '=?',
+            rawData: '=?',
+            rawItem: '=?',
         },
         controller: ['$scope', populateData],
         template: `
@@ -70,9 +70,9 @@ export function mdIfOnelineDirective() {
     return {
         restrict: 'E',
         scope: {
-            data: '<',
-            rawData: '<',
-            rawItem: '<',
+            data: '=?',
+            rawData: '=?',
+            rawItem: '=?',
         },
         controller: ['$scope', populateData],
         template: `
@@ -89,9 +89,9 @@ export function mdIfMultilineDirective() {
     return {
         restrict: 'E',
         scope: {
-            data: '<',
-            rawData: '<',
-            rawItem: '<',
+            data: '=?',
+            rawData: '=?',
+            rawItem: '=?',
         },
         controller: ['$scope', populateData],
         // for multiline, collapse margin from children eg an <h1> first element, inserting then removing a 24px margin
@@ -114,7 +114,10 @@ function populateData($scope) {
         if (!$scope.rawData && $scope.rawItem) {
             $scope.rawData = $scope.rawItem.description;
         }
-        $scope.data = analyze($scope.rawData, nameFieldValues($scope.rawItem));
+        const updateData = () => $scope.data = analyze($scope.rawData, nameFieldValues($scope.rawItem));
+        $scope.$watch('rawData', updateData);
+        $scope.$watch('rawItem', updateData);
+        updateData();
     }
 }
 

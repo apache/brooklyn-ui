@@ -185,7 +185,7 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
         field: 'description',
         width: 150,
         colspan: 6,
-        template: '<div class="mozilla-td-scroll-fix"><md-field raw-data="::item[column.field]"></md-field></div>',
+        template: '<div class="mozilla-td-scroll-fix"><md-field raw-data="item[column.field]"></md-field></div>',
         tdClass: 'column-for-description',
     });
 
