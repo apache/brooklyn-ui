@@ -487,7 +487,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                         }
                         break;
                     case 'regex':
-                        if (isSet() && !(new RegExp(args).test(val()))) {
+                        if (isSet() && !(new RegExp(args).test(val))) {
                             message = `<samp>${config.name}</samp> does not match the required format: <samp>${args}</samp>`;
                         }
                         break;
