@@ -123,7 +123,7 @@ export function streamDirective() {
                 }
 
                 // 2. Update the stream data holder in this directive.
-                $scope.stream = response.data;
+                $scope.stream = typeof response.data === 'object' ? JSON.stringify(response.data, null, 2) : response.data;
 
                 // Check if to drop filters, because of `ng-repeat` performance limits.
                 if ($scope.cliXmlIdentified && !$scope.cliXml && !$scope.filteredStream.length && $scope.stream.length > 99999) {
