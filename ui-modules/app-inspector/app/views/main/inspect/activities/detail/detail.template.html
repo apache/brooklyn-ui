@@ -125,7 +125,7 @@
                     </div>
 
                     <div class="activity-actions" ng-if="vm.actions">
-                        <br-button ng-if="vm.actions.invokeAgain" on-click="vm.actions.doAction()">Execute again</br-button>
+                        <br-button ng-if="vm.actions.invokeAgain" on-click="vm.actions.invokeAgain.doAction()">Execute again</br-button>
                         <br-button ng-if="vm.actions.effector" ui-sref="main.inspect.effectors({search: vm.actions.effector.effectorName})">Open effector tab</br-button>
                     </div>
 

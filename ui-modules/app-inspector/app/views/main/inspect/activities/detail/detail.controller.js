@@ -24,10 +24,10 @@ export const detailState = {
     name: 'main.inspect.activities.detail',
     url: '/:activityId',
     template: template,
-    controller: ['$scope', '$state', '$stateParams', '$log', '$uibModal', '$timeout', '$sanitize', '$sce', 'activityApi', 'brUtilsGeneral', DetailController],
+    controller: ['$scope', '$state', '$stateParams', '$log', '$uibModal', '$timeout', '$sanitize', '$sce', 'activityApi', 'entityApi', 'brUtilsGeneral', DetailController],
     controllerAs: 'vm'
 }
-function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeout, $sanitize, $sce, activityApi, Utils) {
+function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeout, $sanitize, $sce, activityApi, entityApi, Utils) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
     const {
@@ -154,7 +154,6 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
 
     vm.invokeEffector = (effectorName, effectorParams) => {
         entityApi.invokeEntityEffector(applicationId, entityId, effectorName, effectorParams).then((response) => {
-            $scope.$dismiss('Effector sent!');
             $state.go('main.inspect.activities.detail', {
                 applicationId: applicationId,
                 entityId: entityId,
