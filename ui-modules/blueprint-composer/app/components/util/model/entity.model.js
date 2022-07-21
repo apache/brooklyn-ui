@@ -907,6 +907,14 @@ export function baseType(s) {
     return s;
 }
 
+function isDefinitelyEntitySpec(basetype) {
+    return basetype === EntityFamily.SPEC.superType;
+}
+
+function isPossiblyEntitySpec(basetype) {
+    return isDefinitelyEntitySpec(basetype) || basetype === 'java.lang.Object';
+}
+
 /**
  * Returns a map of <configkey> => Entity of all spec {Entity} defined in the configuration
  * @returns {*}
@@ -916,7 +924,7 @@ function getClusterMemberspecEntities() {
         return {};
     }
     return MISC_DATA.get(this).get('config')
-        .filter((config)=>{const t = baseType(config.type); return t === EntityFamily.SPEC.superType || t === 'java.lang.Object';})
+        .filter((config)=>isPossiblyEntitySpec(baseType(config.type)))
         .reduce((acc, config)=> {
             if (CONFIG.get(this).has(config.name)) {
                 const val = CONFIG.get(this).get(config.name)[DSL.ENTITY_SPEC];
@@ -938,7 +946,7 @@ function getClusterMemberspecEntity(predicate = ()=>(true)) {
     }
 
     return MISC_DATA.get(this).get('config')
-        .filter((config)=>(baseType(config.type) === EntityFamily.SPEC.superType))
+        .filter((config)=>isPossiblyEntitySpec(baseType(config.type)))
         .reduce((acc, config)=> {
             if (CONFIG.get(this).has(config.name)) {
                 let entityV = CONFIG.get(this).get(config.name)[DSL.ENTITY_SPEC];

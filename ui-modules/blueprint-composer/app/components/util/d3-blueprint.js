@@ -803,13 +803,14 @@ export function D3Blueprint(container, options) {
      */
     function nodeForEntity(entity) {
         let node = _d3DataHolder.nodes.find(d => {
-            let predicate = d.data._id === entity._id;
-            if (!!d.data.getClusterMemberspecEntity(PREDICATE_MEMBERSPEC)) {
-                predicate |= d.data.getClusterMemberspecEntity(PREDICATE_MEMBERSPEC)._id === entity._id;
+            if (d.data._id === entity._id) return true;
+            for (let child of Object.values(d.data.getClusterMemberspecEntities() || {})) {
+                if (child._id === entity._id) return true;
             }
-            return predicate;
+            return false;
         });
         if (!node) {
+            console.log("Cannot find", entity._id, _d3DataHolder.nodes.map(n => n.data._id));
             throw new Error('Node for Entity ' + entity._id + ' not found');
         }
         return node;
@@ -894,13 +895,13 @@ export function D3Blueprint(container, options) {
             .duration(_configHolder.transition)
             .attr('opacity', 1)
             .attr('stroke', 'red')
-            .attr('d', function(d) {
+            .attr('d', d => safe(() => {
                 const [x1,y1, dr, sweep, x2, y2, isLeftToRight] = getArcTransitionParameters(d);
 
                 d.isLeftToRight = isLeftToRight;
 
                 return `M ${x1},${y1} A ${dr},${dr} 0 0,${sweep} ${x2},${y2}`;
-            });
+            }, ()=>'', d));
 
         relationArcs.exit()
             .transition()
@@ -969,7 +970,7 @@ export function D3Blueprint(container, options) {
             .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
             .insert('tspan')
             .attr('dy', getLabelOffset)
-            .html((d) => ('&#9608;'.repeat(getLabelText(d).length + 2))); // +2 spaces for padding
+            .html((d) => safe( () => ('&#9608;'.repeat(getLabelText(d).length + 2)), () => '', d)) // +2 spaces for padding
 
         relationLabelsEntered.insert('text') // Add label text on top of '&#9608;'s which is on top of the path.
             .attr('class', _configHolder.nodes.relationship.labelClass)
@@ -984,7 +985,7 @@ export function D3Blueprint(container, options) {
             .attr('startOffset', '59%') // 59% roughly reflects `middle of the arch` minus `node radius`.
             .insert('tspan')
             .attr('dy', getLabelOffset)
-            .attr('rotate', (d) => isLeftToRight(d) ? '0' : '180') // rotate text if arc goes as right-to-left
+            .attr('rotate', (d) => safe(()=>isLeftToRight(d) ? '0' : '180', () => '0', d)) // rotate text if arc goes as right-to-left
             .style('z-index', 9)
             .on('mouseover', d => {
                 if (d.labels.length > _configHolder.nodes.relationship.labelsToDisplay) {
@@ -999,7 +1000,16 @@ export function D3Blueprint(container, options) {
             .on('mouseout', () => {
                 _canvasTooltip.style('visibility', 'hidden');
             })
-            .html(getLabelText);
+            .html(d => safe(()=>getLabelText(d), ()=>'?', d));
+    }
+
+    function safe(main, recovery, context) {
+        try {
+            return main();
+        } catch (e) {
+            console.log("Error drawing", context || "", e);
+            return recovery();
+        }
     }
 
     function drawGhostNode() {
