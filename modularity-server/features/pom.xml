@@ -188,6 +188,7 @@
                         <artifactId>karaf-maven-plugin</artifactId>
                         <versionRange>[4.2.1,)</versionRange>
                         <goals>
+                          <goal>verify</goal>
                           <goal>features-generate-descriptor</goal>
                         </goals>
                       </pluginExecutionFilter>
