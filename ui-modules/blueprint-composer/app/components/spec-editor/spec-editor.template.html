@@ -272,6 +272,19 @@
                                     </textarea>
                                 </span>
                             </div>
+                            <div class="param-field"> <span class="param-field-label">Pinned
+                                <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
+                                   uib-popover="Optional flag that this parameter should be pinned as a suggested parameter in the UI"
+                                   x-popover-class="spec-editor-popover"
+                                   popover-placement="top-left" popover-append-to-body="true"></i>
+                              </span>
+                              <span class="param-field-value">
+                                <input type="checkbox" ng-model="filteredParams[$index].pinned" class="form-control rounded-edge" id="pinned-{{item.name}}"
+                                          ng-focus="specEditor.recordParameterFocus(item)"
+                                          on-enter="specEditor.advanceOutToFormGroupInPanel">
+                                </input>
+                              </span>
+                            </div>
                             <div class="param-field"> <span class="param-field-label">Constraints
                                     <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
                                            uib-popover="Constraints such as &quot;required&quot; or &quot;forbiddenUnless(otherKey)&quot;, expressed as a JSON list (wrapped in square brackets and double quotes)"

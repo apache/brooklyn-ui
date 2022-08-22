@@ -55,9 +55,9 @@ export const CONFIG_FILTERS = [
         id: 'suggested',
         label: 'Suggested',
         icon: 'plus-circle',
-        hoverText: 'Show config keys that marked as pinned or priority',
+        hoverText: 'Show config keys that are marked as pinned or priority',
         filter: (item)=> {
-            return item.pinned && item.priority > -1;
+            return item.pinned && (!item.priority || item.priority > -1);
         }
     },
     {
