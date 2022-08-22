@@ -51,11 +51,22 @@ export function quickLaunchDirective() {
 
         let quickLaunch = this;
 
+        function removeNullConfig(obj) {
+            if (obj && obj[BROOKLYN_CONFIG]) {
+                for (const key in obj[BROOKLYN_CONFIG]) {
+                    const val = obj[BROOKLYN_CONFIG][key];
+                    if (val==null || typeof val === 'undefined') {
+                        delete obj[BROOKLYN_CONFIG][key];
+                    }
+                }
+            }
+            return obj;
+        }
         quickLaunch.buildNewApp = () => ({
             name: $scope.model.name || $scope.app.displayName,
             location: $scope.model.location || '<REPLACE>',
             services: [
-                angular.copy($scope.entityToDeploy)
+                removeNullConfig(angular.copy($scope.entityToDeploy))
             ],
         });
         quickLaunch.getOriginalPlanFormat = getOriginalPlanFormat;
