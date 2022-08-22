@@ -30,6 +30,7 @@ import template from './spec-editor.template.html';
 import {isSensitiveFieldName} from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
 import {computeQuickFixesForIssue} from '../quick-fix/quick-fix';
 import scriptTagDecorator from 'brooklyn-ui-utils/script-tag-non-overwrite/script-tag-non-overwrite';
+import jsYaml from "js-yaml";
 
 const MODULE_NAME = 'brooklyn.components.spec-editor';
 const REPLACED_DSL_ENTITYSPEC = '___brooklyn:entitySpec';
@@ -37,6 +38,8 @@ const SUBSECTION = {
     CONFIG: 'config',
     PARAMETERS: 'parameters'
 }
+
+const CODE_MODE = "YAML";
 
 export const SUBSECTION_TEMPLATE_OTHERS_URL = 'blueprint-composer/component/spec-editor/section-others.html';
 
@@ -640,7 +643,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             if (!specEditor.defined(val)) return false;
             if (typeof val === 'string') {
                 try {
-                    // a YAML parse would be nicer, but JSON is simpler, and sufficient
+                    // a YAML parse would be nicer, but JSON is easier to detect its presence, and sufficient;
+                    // for convenience, we allow yaml to be _entered_
                     // (esp as we export a JSON stringify; preferable would be to export the exact YAML from model,
                     // including comments, but again lower priority)
                     let parsed = JSON.parse(val);
@@ -680,7 +684,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     try {
                         // if it's a parseable string, then parse it
                         if (typeof value === 'string' && value.length) {
-                            value = JSON.parse(value);
+                            value = parseYamlOrJson(value);
                             if (value instanceof Array || value instanceof Object) {
                                 // if result is not a primitive then don't allow user to leave code mode
                                 // (if type is known as a map/list then likely we should allow leaving code mode,
@@ -716,7 +720,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                         }
                     } catch (notJson) {
                         // if not parseable or not a string, then convert to json
-                        value = JSON.stringify(value);
+                        value = toCode(value);
                     }
                 }
                 if (value !== null) {
@@ -767,7 +771,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     } catch (notJson) {
                         // if not parseable or not a string, then convert to json
                         // (as with other stringify, this loses any comments etc)
-                        value = JSON.stringify(value, null, "  ");
+                        value = toCode(value, true);
                     }
                     if (value !== null) {
                         scope.state.parameters.edit.json = value;
@@ -975,7 +979,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 // also supporting yaml and comments, but that is a bigger task!)
                 if (scope.config && typeof scope.config[key] === 'string') {
                     try {
-                        if (JSON.stringify(JSON.parse(scope.config[key])) === JSON.stringify(value)) {
+                        if (JSON.stringify(parseYamlOrJson(scope.config[key])) === JSON.stringify(value)) {
                             return scope.config[key];
                         }
                     } catch (ignoredError) {
@@ -985,7 +989,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 // otherwise pretty print it, so they get decent multiline on first load and
                 // if they click off the entity then back on to the entity and this field
                 // (we'd like to respect what they actually typed but that needs the parse tree, as above)
-                return JSON.stringify(value, null, "  ");
+                return toCode(value, true);
             }
 
             // else treat as value, with array/map special
@@ -1026,6 +1030,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 // any map/array with complex json inside, or other value of complex json,
                 // will force the code editor
                 // (previously we did stringify on entries then tried to parse, but that was inconsistent)
+                console.log("Forcing code mode on ", key, "because", hasComplexJson);
+
                 scope.state.config.codeModeActive[key] = true;
                 // and the widget mode updated to be 'manual'
                 scope.getConfigWidgetMode(definition, value);
@@ -1090,13 +1096,15 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 // if JSON mode then parse
                 scope.state.config.codeModeError[keyRef] = null;
                 if (scope.state.config.codeModeActive && scope.state.config.codeModeActive[keyRef]) {
+                    // first try a yaml parse
                     try {
-                        result[keyRef] = JSON.parse(v);
+                        result[keyRef] = parseYamlOrJson(v);
+                        continue;
                     } catch (ex) {
                         scope.state.config.codeModeError[keyRef] = "Invalid JSON";
                         result[keyRef] = localConfig[keyRef];
+                        continue;
                     }
-                    continue;
                 }
 
                 // else return as is, or introspect for array/map
@@ -1147,7 +1155,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     model.addIssue(Issue.builder().group('config').ref(key).message('<code>' + $sanitize(value) + '</code> is not a number').build());
                 }
                 if (scope.state.config.codeModeError[key]) {
-                    model.addIssue(Issue.builder().group('config').ref(key).message('<code>' + $sanitize(value) + '</code> is not valid JSON').build());
+                    model.addIssue(Issue.builder().group('config').ref(key).message('Content is not valid '+(CODE_MODE)).build());
                 }
             });
         }
@@ -1207,7 +1215,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 scope.state.parameters.edit.errors = [];
                 if (scope.state.parameters.codeModeActive[item.name]) {
                     try {
-                        let parsed = JSON.parse(scope.state.parameters.edit.json);
+                        let parsed = parseYamlOrJson(scope.state.parameters.edit.json);
                         checkNameChange(item.name, parsed.name);
                         if (JSON.stringify(item)==JSON.stringify(parsed)) {
                             // no change; don't change else we get a digest cycle
@@ -1348,4 +1356,27 @@ export function specEditorTypeFilter() {
  */
 function templateCache($templateCache) {
     $templateCache.put(TEMPLATE_URL, template);
+}
+
+function parseYamlOrJson(v) {
+    // YAML mode experimental; if not working switch back to JSON
+    let error = null;
+    if (CODE_MODE=="YAML") {
+        try {
+            return jsYaml.safeLoad(v);
+        } catch (ex) {
+            error = ex;
+        }
+    }
+    try {
+        return JSON.parse(v);
+    } catch (ex) {
+        if (CODE_MODE=="YAML" && error) throw error;
+        throw ex;
+    }
+}
+
+function toCode(obj, pretty) {
+    if (CODE_MODE=="YAML") return jsYaml.dump(obj).trim();
+    return pretty ? JSON.stringify(obj, null, "  ") : JSON.stringify(obj);
 }
