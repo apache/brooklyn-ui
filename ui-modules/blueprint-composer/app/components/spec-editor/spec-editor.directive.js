@@ -591,6 +591,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     if (!Array.isArray(val)) return type + '-manual';  // causes default string editor
                 }
             }
+
             if (scope.state.config.codeModeActive[item.name]) {
                 // code mode forces manual editor
                 return type + '-manual';
@@ -991,27 +992,33 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
 
             try {
                 if (definition.widgetMode === 'array') {
-                    return value.map(item => {
-                        if (item instanceof Dsl) {
-                            return item.toString();
-                        } else if (item instanceof Array || item instanceof Object) {
-                            throw 'not simple json in array';
-                        } else {
-                            return item;
-                        }
-                    });
-                } else if (definition.widgetMode === 'map') {
-                    let object = {};
-                    for (let keyObject in value) {
-                        if (value[keyObject] instanceof Dsl) {
-                            object[keyObject] = value[keyObject].toString();
-                        } else if (value[keyObject] instanceof Array || value[keyObject] instanceof Object) {
-                            throw 'not simple json in map';
-                        } else {
-                            object[keyObject] = value[keyObject];
-                        }
+                    if (Array.isArray(value)) {
+                        return value.map(item => {
+                            if (item instanceof Dsl) {
+                                return item.toString();
+                            } else if (item instanceof Array || item instanceof Object) {
+                                throw 'not simple json in array';
+                            } else {
+                                return item;
+                            }
+                        });
                     }
-                    return object;
+                    // fall through to return toString below
+                } else if (definition.widgetMode === 'map') {
+                    if (typeof value === "object") {
+                        let object = {};
+                        for (let keyObject in value) {
+                            if (value[keyObject] instanceof Dsl) {
+                                object[keyObject] = value[keyObject].toString();
+                            } else if (value[keyObject] instanceof Array || value[keyObject] instanceof Object) {
+                                throw 'not simple json in map';
+                            } else {
+                                object[keyObject] = value[keyObject];
+                            }
+                        }
+                        return object;
+                    }
+                    // fall through to return toString below
                 } else if (!(value instanceof Dsl) && (value instanceof Object || value instanceof Array)) {
                     throw 'must use code editor';
                 }
@@ -1065,6 +1072,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 if (angular.isUndefined(localConfig[keyRef]) || localConfig[keyRef] === null || localConfig[keyRef].length < 1) {
                     continue;
                 }
+
                 if (localConfig[keyRef].hasOwnProperty(REPLACED_DSL_ENTITYSPEC)) {
                     result[keyRef] = {};
                     result[keyRef][DSL_ENTITY_SPEC] = localConfig[keyRef][REPLACED_DSL_ENTITYSPEC];
@@ -1077,11 +1085,13 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     scope.getConfigWidgetMode(definition, localConfig[keyRef])
                 }
 
+                let v = localConfig[keyRef];
+
                 // if JSON mode then parse
                 scope.state.config.codeModeError[keyRef] = null;
                 if (scope.state.config.codeModeActive && scope.state.config.codeModeActive[keyRef]) {
                     try {
-                        result[keyRef] = JSON.parse(localConfig[keyRef]);
+                        result[keyRef] = JSON.parse(v);
                     } catch (ex) {
                         scope.state.config.codeModeError[keyRef] = "Invalid JSON";
                         result[keyRef] = localConfig[keyRef];
@@ -1092,18 +1102,22 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 // else return as is, or introspect for array/map
 
                 if (definition.widgetMode === 'array') {
-                    result[keyRef] = localConfig[keyRef].map(getModelValueFromString);
-                    continue;
+                    if (Array.isArray(v)) {
+                        result[keyRef] = v.map(getModelValueFromString);
+                        continue;
+                    }
                 }
                 if (definition.widgetMode === 'map') {
-                    result[keyRef] = {};
-                    for (let keyObject in localConfig[keyRef]) {
-                        result[keyRef][keyObject] = getModelValueFromString(localConfig[keyRef][keyObject]);
+                    if (typeof v === "object") {
+                        result[keyRef] = {};
+                        for (let keyObject in v) {
+                            result[keyRef][keyObject] = getModelValueFromString(v[keyObject]);
+                        }
+                        continue;
                     }
-                    continue;
                 }
 
-                result[keyRef] = getModelValueFromString(localConfig[keyRef]);
+                result[keyRef] = getModelValueFromString(v);
             }
 
             scope.model.setConfigFromJson(result);

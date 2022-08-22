@@ -120,9 +120,9 @@
         },
         "type": {
           "title": "Parameter type",
-          "description": "The type of the parameter, one of string, boolean, integer, long, float, double, timestamp, duration, port, or a fully qualified Java type name; the default is string",
+          "description": "The type of the parameter, one of string, boolean, integer, long, float, double, timestamp, duration, port, or a registered type name; the default is string",
           "type": "string",
-          "pattern": "^(string|boolean|integer|long|float|double|timestamp|duration|port|[a-z]+(\\.[a-zA-Z]+)+)$"
+          "pattern": "^(string|[^ ]+)$"
         },
         "default": {
           "title": "Parameter default value",

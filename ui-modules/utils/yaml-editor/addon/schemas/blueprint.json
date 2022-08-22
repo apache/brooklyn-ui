@@ -39,6 +39,50 @@
     },
     "location": {
       "$ref": "/Blueprint/Location"
+    },
+    "brooklyn.config": {
+      "title": "Entity configuration",
+      "description": "Configuration key-value pairs passed to the service entity being created",
+      "type": "object"
+    },
+    "brooklyn.policies": {
+      "title": "Policies",
+      "description": "A list of policies, each as a map described with their type and their brooklyn.config as keys",
+      "type": "array",
+      "items": {
+        "title": "Policy",
+        "$ref": "/Blueprint/Entity"
+      },
+      "minItems": 1
+    },
+    "brooklyn.enrichers": {
+      "title": "Enrichers",
+      "description": "A list of enrichers, each as a map described with their type and their brooklyn.config as keys",
+      "type": "array",
+      "items": {
+        "title": "Enricher",
+        "$ref": "/Blueprint/Entity"
+      },
+      "minItems": 1
+    },
+    "brooklyn.initializers": {
+      "title": "Initializers",
+      "description": "A list of initializers instances to be constructed and run against the entity, each as a map described with their type and their brooklyn.config as keys",
+      "type": "array",
+      "items": {
+        "title": "Initializer",
+        "$ref": "/Blueprint/Entity"
+      },
+      "minItems": 1
+    },
+    "brooklyn.parameters": {
+      "title": "Parameters",
+      "description": "A list of typed parameters the entity accepts",
+      "type": "array",
+      "items": {
+        "$ref": "/Blueprint/Entity#/definitions/brooklynParameter"
+      },
+      "minItems": 1
     }
   }
 }
