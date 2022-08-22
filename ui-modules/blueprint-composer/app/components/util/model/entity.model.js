@@ -676,7 +676,7 @@ export const PREDICATE_MEMBERSPEC = (config, entity)=> {
  */
 function addConfig(key, value) {
     try {
-        if (value.hasOwnProperty(DSL.ENTITY_SPEC)) {
+        if (value && value.hasOwnProperty(DSL.ENTITY_SPEC)) {
             if (value[DSL.ENTITY_SPEC] instanceof Entity) {
                 value[DSL.ENTITY_SPEC].family = EntityFamily.SPEC.id;
                 value[DSL.ENTITY_SPEC].parent = this;
@@ -694,7 +694,7 @@ function addConfig(key, value) {
             let entity = null;
             if (value instanceof Entity) {
                 entity = value;
-            } else if (value['type']) {
+            } else if (value && value['type']) {
                 entity = new Entity().setEntityFromJson(value);
             }
             if (entity) {
@@ -927,8 +927,11 @@ function getClusterMemberspecEntities() {
         .filter((config)=>isPossiblyEntitySpec(baseType(config.type)))
         .reduce((acc, config)=> {
             if (CONFIG.get(this).has(config.name)) {
-                const val = CONFIG.get(this).get(config.name)[DSL.ENTITY_SPEC];
-                if (val) acc[config.name] = val;
+                const v0 = CONFIG.get(this).get(config.name);
+                if (v0) {
+                    const val = v0[DSL.ENTITY_SPEC];
+                    if (val) acc[config.name] = val;
+                }
             }
             return acc;
         }, {});
@@ -949,9 +952,12 @@ function getClusterMemberspecEntity(predicate = ()=>(true)) {
         .filter((config)=>isPossiblyEntitySpec(baseType(config.type)))
         .reduce((acc, config)=> {
             if (CONFIG.get(this).has(config.name)) {
-                let entityV = CONFIG.get(this).get(config.name)[DSL.ENTITY_SPEC];
-                if (entityV && predicate(config, entityV)) {
-                    return entityV;
+                const v0 = CONFIG.get(this).get(config.name);
+                if (v0) {
+                    let entityV = v0[DSL.ENTITY_SPEC];
+                    if (entityV && predicate(config, entityV)) {
+                        return entityV;
+                    }
                 }
             }
             return acc;

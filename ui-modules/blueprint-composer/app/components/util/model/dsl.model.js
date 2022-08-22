@@ -87,7 +87,7 @@ export class Dsl {
         ID.set(this, Math.random().toString(36).slice(2));
         PARAMS.set(this, new Array());
         KINDS.set(this, kind);
-        NAME.set(this, name === undefined ? ID.get(this).toString() : name.toString());
+        NAME.set(this, name === undefined || name === null ? ID.get(this).toString() : name.toString());
         RELATIONSHIPS.set(this, new Array());
         ISSUES.set(this, new Array());
     }
@@ -1026,7 +1026,7 @@ export class Tokenizer {
      * @return {boolean}
      */
     peekPortRange() {
-        return this.s.search(portRangeRegex) >= 0;
+        return this.s.search("^"+portRangeRegex) >= 0;
     }
 
     /**
