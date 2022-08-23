@@ -68,7 +68,7 @@ const ISSUES = new WeakMap();
 
 const numberRegex = /^[+-]?\d+(?:\.\d*)?|^[+-]?\.\d+/;
 
-const portRangeRegex = /[\d]+\+|[\d]+-[\d]+/;
+const portRangeRegex = /^[\d]+\+|[\d]+-[\d]+/;
 
 /**
  * A component of a Dsl expression.
@@ -1026,7 +1026,7 @@ export class Tokenizer {
      * @return {boolean}
      */
     peekPortRange() {
-        return this.s.search("^"+portRangeRegex) >= 0;
+        return this.s.search(portRangeRegex) >= 0;
     }
 
     /**
