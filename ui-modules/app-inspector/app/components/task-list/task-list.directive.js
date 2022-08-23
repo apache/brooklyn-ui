@@ -17,7 +17,7 @@
  * under the License.
  */
 import angular from "angular";
-import moment from "moment";
+import {fromNow, duration} from "brooklyn-ui-utils/utils/momentp";
 import template from "./task-list.template.html";
 
 const MODULE_NAME = 'inspector.task-list';
@@ -193,9 +193,7 @@ function topLevelTasks(tasks) {
 
 export function timeAgoFilter() {
     function timeAgo(input) {
-        if (input) {
-            return moment(input).fromNow();
-        }
+        return fromNow(input);
     }
 
     timeAgo.$stateful = true;
@@ -204,12 +202,7 @@ export function timeAgoFilter() {
 }
 export function durationFilter() {
     return function (input) {
-        if (angular.isNumber(input)) {
-            if (input==0) { return "a fraction of a millisecond"; }
-            if (input<100) { return "a few milliseconds"; }
-            if (input<1000) { return "a fraction of a second"; }
-            return moment.duration(input).humanize();
-        }
+        return duration(input);
     }
 }
 

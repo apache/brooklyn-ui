@@ -55,7 +55,6 @@
     "font-awesome": "^4.6.3",
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.16.4",
-    "moment": "^2.15.1",
     "ngclipboard": "^1.1.1",
     "normalizr": "^2.2.1"
   },

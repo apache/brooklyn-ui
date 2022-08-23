@@ -76,3 +76,68 @@ export function capitalizeFilter() {
         return capitalize(input);
     }
 }
+
+const TOLERANCE = 0.0000000001;
+
+export function isEqualWithinTolerance(n, n2, tolerance) {
+    return Math.abs(n2 - n)<(tolerance||TOLERANCE);
+}
+
+export function isInteger(n) {
+    return isEqualWithinTolerance(n, Math.round(n));
+}
+
+/** returns number rounded as first arg, and actual number of decimal places populated as second */
+function roundNumericWithPlaces(n, maxDecimalDigits, minDecimalDigits, onlyCountSignificantDecimalDigits, countNines) {
+    maxDecimalDigits = maxDecimalDigits || 0;
+    minDecimalDigits = minDecimalDigits || 0;
+    if (countNines) n = 1-n;
+
+    // one recommended way to round; but seems inefficient using strings, causes round(0.499, 2) to show 0.5 not 0.50, and doesn't deal with significant decimal digits
+    // return Number(Math.round(Number(''+n+'e'+maxDecimalDigits))+'e-'+maxDecimalDigits);
+
+    let placesToShow = 0;
+    let significantPlaces = 0;
+    for (;;) {
+        if (isInteger(n)) break;
+        n *= 10;
+        if (onlyCountSignificantDecimalDigits && !significantPlaces) {
+            if (isEqualWithinTolerance(n, 0, 1)) {
+                // accept an extra digit if we are still dealing with insignificant digits
+                significantPlaces--;
+            }
+        }
+        significantPlaces++;
+        placesToShow++;
+        if (significantPlaces >= maxDecimalDigits && significantPlaces>0 && placesToShow>=minDecimalDigits) break;
+    }
+    let nr = Math.round(n);
+    if (!maxDecimalDigits && placesToShow > significantPlaces) {
+        // if no decimal digits but significant places then keep the right number of zeroes/ones
+        nr = Math.round(nr/10);
+        placesToShow--;
+    }
+    let i = placesToShow;
+    while (i-->0) nr/=10;
+    if (countNines) nr = 1-nr;
+    return [nr, Math.max(placesToShow, minDecimalDigits)];
+}
+
+/** rounds up to a given number of places after the decimal point;
+ * but unlike Number.toFixed if the number is exact, it does not create needless trailing zeros.
+ * so eg round(0.501, 2) will give 0.50 but round(0.50, 2) will give 0.5.
+ *
+ * optionally only counts significant digits, which ignores leading zeroes, so eg
+ * whereas round(0.00123, 2) would give 0.00, round(0.00123, 2, true) would give 0.0012.
+ * (this is especially useful when rounding nines).
+ */
+export function round(n, maxDecimalDigits, onlyCountSignificantDecimalDigits) {
+    const [number, places] = roundNumericWithPlaces(n, maxDecimalDigits, 0, onlyCountSignificantDecimalDigits, false);
+    return number;
+}
+
+/** as round, but returning a string */
+export function rounded(n, maxDecimalDigits, onlyCountSignificantDecimalDigits) {
+    const [number, places] = roundNumericWithPlaces(n, maxDecimalDigits, 0, onlyCountSignificantDecimalDigits, false);
+    return number.toFixed(places);
+}

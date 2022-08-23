@@ -17,7 +17,7 @@
  * under the License.
  */
 import angular from "angular";
-import moment from "moment";
+import {fromNow, duration} from "brooklyn-ui-utils/utils/momentp";
 import * as d3 from "d3";
 import * as util from "./task-sunburst.util";
 import template from "./task-sunburst.template.html";
@@ -236,10 +236,10 @@ function initVisualization($scope, $element, $state) {
             detail3 = 
               (t.isError ? "Error running task. " : "")+
               "Completed "+
-              (moment(t.endTimeUtc).fromNow())+"; "+
-              "took "+moment.duration(t.endTimeUtc - t.startTimeUtc).humanize()+". ";
+              (fromNow(t.endTimeUtc))+"; "+
+              "took "+duration(t.endTimeUtc - t.startTimeUtc)+". ";
         } else if (t.startTimeUtc) {
-            detail3 = "In progress. Started "+(moment(t.startTimeUtc).fromNow())+".";
+            detail3 = "In progress. Started "+(fromNow(t.startTimeUtc))+".";
         } else {
             detail3 = "Not started.";
         }
