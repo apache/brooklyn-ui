@@ -21,16 +21,17 @@ import map from "lodash";
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./summary.template.html";
 import { isSensitiveFieldName } from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
+import { stringify as stringifyForQuery } from 'query-string';
 
 export const summaryState = {
     name: 'main.inspect.summary',
     url: '/summary',
     template: template,
-    controller: ['$scope', '$state', '$stateParams', '$q', '$http', '$httpParamSerializer', 'brSnackbar', 'entityApi', 'locationApi', 'iconService', summaryController],
+    controller: ['$scope', '$state', '$stateParams', '$q', '$http', '$httpParamSerializer', 'brSnackbar', 'brBrandInfo', 'entityApi', 'locationApi', 'iconService', summaryController],
     controllerAs: 'vm'
 };
 
-export function summaryController($scope, $state, $stateParams, $q, $http, $httpParamSerializer, brSnackbar, entityApi, locationApi, iconService) {
+export function summaryController($scope, $state, $stateParams, $q, $http, $httpParamSerializer, brSnackbar, brBrandInfo, entityApi, locationApi, iconService) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
     const {
@@ -69,6 +70,24 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
     });
 
     vm.showResolvedConfig = false;
+    vm.onClipboardSuccess = (e)=> {
+        angular.element(e.trigger).triggerHandler('copied');
+        e.clearSelection();
+    };
+    vm.getOpenInComposerHref = (formatAndPlanYaml) => {
+        if (!formatAndPlanYaml) formatAndPlanYaml = {
+            format: vm.specItem.format,
+            yaml: vm.specItem.contents,
+        }
+        let result = `${brBrandInfo.blueprintComposerBaseUrl}#!/`;
+
+        if (!vm.specItem.format || vm.specItem.format=='brooklyn-camp') result += 'graphical?';
+        // camp can open directly to graphical; any others go to editor
+        else result += "yaml?";
+
+        result += stringifyForQuery(formatAndPlanYaml);
+        return result;
+    };
 
     function getConfigState(resolved=false) {
         return entityApi.entityConfigState(applicationId, entityId, {

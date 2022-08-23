@@ -175,6 +175,16 @@
 
         <div class="form-group">
             <loading-state error="vm.error.specList" ng-if="!vm.specItem"></loading-state>
+            <div class="blueprint-copy-holder">
+                <a ng-if="vm.specItem" class="text-muted blueprint-button" ngclipboard ngclipboard-success="vm.onClipboardSuccess(e)" data-clipboard-text="{{vm.specItem.contents}}" uib-tooltip="Copied!" tooltip-trigger="{'copied': 'mouseleave'}" tooltip-placement="top"
+                    title="Copy to Clipboard">
+                    <i class="fa fa-clipboard"></i>
+                </a>
+                <a ng-if="vm.specItem" class="text-muted blueprint-button" href="{{vm.getOpenInComposerHref()}}"
+                   title="Open in Composer">
+                    <i class="fa fa-arrow-circle-o-right"></i>
+                </a>
+            </div>
             <pre ng-if="vm.specItem">{{vm.specItem.contents}}</pre>
         </div>
 
