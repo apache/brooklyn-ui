@@ -553,6 +553,10 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 // don't interrupt when the user has typed $brooklyn:component("x")!
                 return item.widgetMode;
             }
+            if (scope.state.config.codeModeActive[item.name] && item.widgetMode) {
+                if (item.widgetMode.endsWith("-manual")) return item.widgetMode;
+                return item.widgetMode+"-manual";
+            }
 
             if (specEditor.isDsl(item.name)) {
                 return scope.state.config.dslViewerManualOverride && scope.state.config.dslViewerManualOverride[item.name] ?
@@ -580,10 +584,13 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                     // otherwise try as map (but if val is not object will revert in next block to map-manual, meaning string editor)
                     if (val.hasOwnProperty(REPLACED_DSL_ENTITYSPEC)) {
                         type = 'org.apache.brooklyn.api.entity.EntitySpec';
-                    } else {
+                    } else if (Array.isArray(val)) {
+                        type = 'array';
+                    } else if (typeof val==='object') {
                         type = 'map';
                     }
                 }
+
                 // override to use string editor if the editor doesn't support the value
                 // (probably this is an error, though type-coercion might make it not so)
                 if (type === 'boolean') {
@@ -685,7 +692,21 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                         // if it's a parseable string, then parse it
                         if (typeof value === 'string' && value.length) {
                             value = parseYamlOrJson(value);
-                            if (value instanceof Array || value instanceof Object) {
+                            var mustUseCodeMode = false;
+                            const isComplex = x => x instanceof Array || x instanceof Object || typeof x === 'object';
+                            if (value instanceof Array) {
+                                const complexEntry = value.find(isComplex);
+                                if (complexEntry) {
+                                    mustUseCodeMode = true;
+                                }
+                            } else if (value instanceof Object) {
+                                mustUseCodeMode = true;
+                            } else if (typeof value === 'object') {
+                                for (var k in value) {
+                                    if (isComplex(k) || isComplex(value[k])) mustUseCodeMode = true;
+                                }
+                            }
+                            if (mustUseCodeMode) {
                                 // if result is not a primitive then don't allow user to leave code mode
                                 // (if type is known as a map/list then likely we should allow leaving code mode,
                                 // if we check and confirm that all entries are json primitives, but that can be left as a TODO;
@@ -963,7 +984,7 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                 definition = {};
                 scope.getConfigWidgetMode(definition, value)
             } else {
-                if (!definition.widgetMode) scope.getConfigWidgetMode(definition);
+                if (!definition.widgetMode) scope.getConfigWidgetMode(definition, value);
             }
 
             // if json mode, then just stringify
@@ -995,12 +1016,12 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             // else treat as value, with array/map special
 
             try {
-                if (definition.widgetMode === 'array') {
+                if (definition.widgetMode === 'array' || definition.widgetMode === 'array-manual') {
                     if (Array.isArray(value)) {
                         return value.map(item => {
                             if (item instanceof Dsl) {
                                 return item.toString();
-                            } else if (item instanceof Array || item instanceof Object) {
+                            } else if (item instanceof Array || item instanceof Object || typeof item === 'object') {
                                 throw 'not simple json in array';
                             } else {
                                 return item;
@@ -1008,13 +1029,13 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                         });
                     }
                     // fall through to return toString below
-                } else if (definition.widgetMode === 'map') {
+                } else if (definition.widgetMode === 'map' || definition.widgetMode === 'map-manual') {
                     if (typeof value === "object") {
                         let object = {};
                         for (let keyObject in value) {
                             if (value[keyObject] instanceof Dsl) {
                                 object[keyObject] = value[keyObject].toString();
-                            } else if (value[keyObject] instanceof Array || value[keyObject] instanceof Object) {
+                            } else if (value[keyObject] instanceof Array || value[keyObject] instanceof Object || typeof value[keyObject] === 'object') {
                                 throw 'not simple json in map';
                             } else {
                                 object[keyObject] = value[keyObject];
@@ -1023,14 +1044,14 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
                         return object;
                     }
                     // fall through to return toString below
-                } else if (!(value instanceof Dsl) && (value instanceof Object || value instanceof Array)) {
-                    throw 'must use code editor';
+                } else if ((value instanceof Object || value instanceof Array || typeof value === 'object') && !(value instanceof Dsl)) {
+                    throw 'must use code editor for array/object';
                 }
             } catch (hasComplexJson) {
                 // any map/array with complex json inside, or other value of complex json,
                 // will force the code editor
                 // (previously we did stringify on entries then tried to parse, but that was inconsistent)
-                console.log("Forcing code mode on ", key, "because", hasComplexJson);
+                console.log("Forcing code mode on ", key, "=", value, "because", hasComplexJson);
 
                 scope.state.config.codeModeActive[key] = true;
                 // and the widget mode updated to be 'manual'
