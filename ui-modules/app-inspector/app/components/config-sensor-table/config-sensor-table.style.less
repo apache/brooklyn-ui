@@ -45,9 +45,11 @@
 
   .grid-editable:not(.edit-disabled):after {
     font-family: "myriad-pro-1", Helvetica, Arial, sans-serif, FontAwesome;
-    content: '\f040 Edit';
-    opacity: 0.2;
+    content: '\f040';
+    opacity: 0.3;
+    width: 1.1em;
     color: @primary-50;
+    text-shadow: none;
   }
 
   .grid-editable {
@@ -55,7 +57,7 @@
     display: flex;
     justify-content: space-between;
     width: 100%;
-    padding: 8px;
+    //padding: 8px;
 
     &:hover {
       background: fade(@primary-50, 10%);
@@ -68,7 +70,6 @@
 }
 
 
-
 .config-sensor-table {
   table {
 //    table-layout: fixed;
@@ -77,23 +78,32 @@
 .config-value {
  > .content-row {
   display: flex;
+  margin-top: -3px;
+  margin-bottom: -3px;
   > .content {
     flex: 1 1 auto;
     max-height: 120pt;
     overflow: auto;
+    align-self: center;
   }
   > .extras {
     flex: 0 0 auto;
+    margin-left: 0.5ex;
+    margin-right: -0.6ex;
     button {
-      // don't make a huge button, it just makes the table less expressive
-      margin-bottom: -3px;
-      margin-top: -3px;
+      // don't make a huge button, it just makes the table too sparse
+      margin-bottom: 0;
+      margin-top: 0;
       padding: 3px 6px;
     }
   }
 
   .copy-btn {
     visibility: hidden;
+  }
+  .warning-icon {
+    position: relative;
+    bottom: -2px;
   }
 
   &:hover .copy-btn {
@@ -106,5 +116,41 @@
     .monospace();
   }
  }
+ .editable-click, a.editable-click {
+   color: inherit;
+ }
+ .editable-empty, .editable-empty:hover, .editable-empty:focus, a.editable-empty, a.editable-empty:hover, a.editable-empty:focus {
+   color: @gray-light;
+ }
+ .editable-wrap {
+   display: flex;
+   flex: 1 0 auto;
+   .editable-controls {
+     display: flex;
+     flex: 1 0 auto;
+     margin-right: 1ex;
+     input {
+       height: inherit;
+       flex: 1 0 auto;
+       padding: 2px 6px;
+     }
+     .btn {
+       padding: 2px 6px;
+     }
+   }
+ }
 }
 
+.sensitive-field {
+  > .content {
+    transition: none;
+    text-shadow: rgba(0, 0, 0, 0.95) 10px 0px 10px;
+
+  }
+  &.sensitive-field-show {
+    > .content {
+      transition: text-shadow 800ms ease-in-out;
+      text-shadow: rgba(0, 0, 0, 0.95) 10px 0px 0px;
+    }
+  }
+}

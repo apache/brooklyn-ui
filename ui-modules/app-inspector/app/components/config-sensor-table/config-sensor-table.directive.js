@@ -47,14 +47,22 @@ export function configSensorTableDirective(brSnackbar) {
     function link(scope) {
         scope.items = [];
         scope.mapInfo = {};
-        scope.WARNING_TEXT = 'This value is identified as potentially sensitive based on the name and so is ' +
-            'blurred here by default. However it is supplied in the blueprint as plaintext which is not secure. An ' +
-            'external provider should be used to store this value with a DSL expression supplied in the blueprint to ' +
-            'retrieve the value.';
+        scope.WARNING_TEXT = 'This value is identified as potentially sensitive based and so is masked here. ' +
+            'The value should be supplied as a DSL expression not as plain text. ' +
+            'Note that the unmasked value still might not reveal the actual value, ' +
+            'if sensitive values are blocked by the API or if DSL resolution is skipped.';
 
         scope.$watchGroup(['data'], (changes)=> {
             if (angular.isObject(scope.data)) {
-                scope.items = Object.entries(scope.data)
+                const dataPlusReconfigurable = Object.assign({}, scope.data);
+                if (scope.info) {
+                    scope.info.forEach(info => {
+                        if (info.reconfigurable && !dataPlusReconfigurable.hasOwnProperty(info.name)) {
+                            dataPlusReconfigurable[info.name] = undefined;
+                        }
+                    });
+                }
+                scope.items = Object.entries(dataPlusReconfigurable)
                     .map(([key, value]) => ({
                         key,
                         value,
@@ -90,6 +98,7 @@ export function configSensorTableDirective(brSnackbar) {
             }
             brSnackbar.create(message);
         };
+        scope.isNullish = (x) => x===null || typeof x === 'undefined';
     }
 }
 

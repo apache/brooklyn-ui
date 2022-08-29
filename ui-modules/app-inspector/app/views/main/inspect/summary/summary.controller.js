@@ -52,7 +52,7 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
     // the eventual entries to share with the sensor table component
     vm.configItems = null;
     vm.configItemsUnsafeMap = null;
-    vm.configItemsInfo = null;
+    vm.configInfo = null;
 
     let observers = [];
 
@@ -123,7 +123,7 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
         const handleError = (message) => {
             vm.error.configItems = message;
             vm.configItems = null;
-            vm.configItemsInfo = null;
+            vm.configInfo = null;
         }
 
         const successHandler = (key) => (response) => {
@@ -146,7 +146,7 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
                     handleError(`Could not load resolved configuration information for entity with ID: ${entityId}`);
                 } else { // all 200-OK case
                     vm.error.configItems = undefined; // clearing error flag
-                    // set configItems && configItemsInfo
+                    // set config && configInfo
 
                     const configHandler = successHandler('config');
                     const configResolvedHandler = successHandler('configResolved');

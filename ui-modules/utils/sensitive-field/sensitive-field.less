@@ -18,7 +18,7 @@
  */
 .sensitive-field {
   > .content {
-    transition: text-shadow 1s linear;
+    transition: text-shadow 1s ease-in-out;
     cursor: help;
     color: transparent;
     text-shadow: rgba(0, 0, 0, 0.95) 0px 0px 20px;
@@ -30,12 +30,9 @@
     }
   }
 
-  > .extras {
-
-    > .warning-icon {
-      //display: inline-block !important;
-      color: #ffcd00;
-      text-shadow: 0 0 3px #000;
-    }
+  .warning-icon {
+    color: #ddaa00;
+    //text-shadow: 0 0 3px #000;
   }
+
 }

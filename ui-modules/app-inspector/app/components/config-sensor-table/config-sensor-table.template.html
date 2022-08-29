@@ -34,20 +34,20 @@
                        uib-popover="{{mapInfo[item.key].description}}" popover-trigger="'mouseenter'" popover-title="Description" popover-animation="true"></i>
     </div>
     <div class="col2 config-value" ng-class="{ 'grid-even': $index%2 }" ng-repeat-end>
-              <div class="content-row">
+              <div class="content-row" sensitive-field field-name="{{item.key}}">
                 <span class="content">
-                    <div ng-show= "mapInfo[item.key].reconfigurable" ng-class="{'grid-editable': mapInfo[item.key].reconfigurable}" editable-text="item.value"
+                    <div ng-show="mapInfo[item.key].reconfigurable" ng-class="{'grid-editable': mapInfo[item.key].reconfigurable}" editable-text="item.value"
                          edit-disabled="!mapInfo[item.key].reconfigurable" onbeforesave="reconfigureCallback(item.key,$data)" buttons="right" e-disabled-submit-on-enter>
-                            <span ng-if="item.value === null"><i>value not set</i></span>
-                            <span ng-if="item.value !== null" ng-bind-html="item.value | brLinky:mapInfo[item.key]" class="literal-lines"></span>
+                            <span ng-if="isNullish(item.value)"><i>value not set</i></span>
+                            <span ng-if="!isNullish(item.value)" ng-bind-html="item.value | brLinky:mapInfo[item.key]" class="literal-lines"></span>
                     </div>
                     <div ng-show="!mapInfo[item.key].reconfigurable">
-                            <span ng-if="item.value === null"><i>value not set</i></span>
-                            <span ng-if="item.value !== null" ng-bind-html="item.value | brLinky:mapInfo[item.key]" class="literal-lines"></span>
+                            <span ng-if="isNullish(item.value)"><i>value not set</i></span>
+                            <span ng-if="!isNullish(item.value)" ng-bind-html="item.value | brLinky:mapInfo[item.key]" class="literal-lines"></span>
                     </div>
                 </span>
-                <span class="extras">
-                    <i class="fa fa-exclamation-triangle warning-icon" ng-class="{invisible: !item.isPlaintextSensitiveValue}"
+                <span class="extras" onclick="event.stopPropagation();">
+                    <i class="fa fa-exclamation-triangle warning-icon" ng-if="item.isPlaintextSensitiveValue"
                        uib-popover={{WARNING_TEXT}} popover-trigger="'mouseenter'" popover-animation="true"
                        popover-placement="left"
                     ></i>
