@@ -44,9 +44,9 @@
     },
     "itemType": {
       "title": "Catalog item type",
-      "description": "The type of the item being defined. The supported item types are: 'template', 'entity', 'policy', 'enricher' or 'location'",
+      "description": "The type of the item being defined. The supported item types are: 'template', 'entity', 'policy', 'enricher', 'location', or 'bean'",
       "type": "string",
-      "enum": [ "template", "entity", "policy", "enricher", "location" ]
+      "enum": [ "template", "entity", "policy", "enricher", "location", "bean" ]
     },
     "name": {
       "title": "Catalog item name",
