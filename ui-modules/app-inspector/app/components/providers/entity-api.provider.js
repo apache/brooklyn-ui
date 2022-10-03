@@ -70,8 +70,10 @@ function EntityApi($http, $q) {
         startEntityAdjunct: startEntityAdjunct,
         stopEntityAdjunct: stopEntityAdjunct,
         destroyEntityAdjunct: destroyEntityAdjunct,
-        updateEntityAdjunctConfig: updateEntityAdjunctConfig
-        
+        updateEntityAdjunctConfig: updateEntityAdjunctConfig,
+
+        getWorkflows: getWorkflows,
+        getWorkflow: getWorkflow,
     };
 
     function getEntity(applicationId, entityId) {
@@ -187,5 +189,11 @@ function EntityApi($http, $q) {
     }
     function updateEntityAdjunctConfig(applicationId, entityId, adjunctId, configId, data) {
         return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/adjuncts/' + adjunctId + '/config/' + configId, data);
-    }    
+    }
+    function getWorkflows(applicationId, entityId) {
+        return $http.get('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflows/', {observable: true, ignoreLoadingBar: true});
+    }
+    function getWorkflow(applicationId, entityId, workflowId) {
+        return $http.get('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflow/' + workflowId, {observable: true, ignoreLoadingBar: true});
+    }
 }

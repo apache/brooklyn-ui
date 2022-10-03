@@ -48,6 +48,8 @@ import taskList from "components/task-list/task-list.directive";
 import taskSunburst from "components/task-sunburst/task-sunburst.directive";
 import stream from "components/stream/stream.directive";
 import adjunctsList from "components/adjuncts-list/adjuncts-list";
+import workflowSteps from "components/workflow/workflow-steps.directive";
+import workflowStep from "components/workflow/workflow-step.directive";
 import {mainState} from "views/main/main.controller";
 import {inspectState} from "views/main/inspect/inspect.controller";
 import {summaryState, specToLabelFilter} from "views/main/inspect/summary/summary.controller";
@@ -69,6 +71,7 @@ angular.module('brooklynAppInspector', [ngResource, ngCookies, ngSanitize, uiRou
     brServerStatus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brSensitiveField, brooklynUserManagement,
     brYamlEditor, brWebNotifications, brExpandablePanel, 'xeditable', brLogbook, apiProvider, entityTree, loadingState,
     configSensorTable, entityEffector, entityPolicy, breadcrumbNavigation, taskList, taskSunburst, stream, adjunctsList,
+    workflowSteps, workflowStep,
     managementDetail, brandAngularJs])
     .provider('catalogApi', catalogApiProvider)
     .provider('apiObserverInterceptor', apiObserverInterceptorProvider)

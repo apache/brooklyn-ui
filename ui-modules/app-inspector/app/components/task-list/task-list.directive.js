@@ -190,7 +190,6 @@ function topLevelTasks(tasks) {
     return tasks.filter(t => isTopLevelTask(t, tasksById));
 }
 
-
 export function timeAgoFilter() {
     function timeAgo(input) {
         return fromNow(input);

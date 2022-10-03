@@ -157,10 +157,34 @@
                         </div>
                     </br-collapsible>
 
+                    <br-collapsible state="vm.model.accordion.workflowOpen"
+                                    ng-if="vm.model.workflow">
+                        <heading> Workflow</heading>
+
+                        <div class="workflow-body">
+                            <div ng-if="vm.model.workflow.loading == 'loaded'">
+                                <p style="margin-top: 12px; margin-bottom: 24px;">
+                                    This task is for
+                                    <span ng-if="vm.model.workflow.tag.stepIndex">step <b>{{ vm.model.workflow.tag.stepIndex+1 }}</b>
+                                        in workflow
+                                        <a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.taskId})">
+                                            <b>{{vm.model.workflow.data.name}}</b>.
+                                        </a>
+                                    </span>
+                                    <span ng-if="!vm.model.workflow.tag.stepIndex"> workflow <b>{{vm.model.workflow.data.name}}</b>.</span>
+                                </p>
+                                <workflow-steps workflow="vm.model.workflow" task="vm.model.activity"></workflow-steps>
+                            </div>
+                            <div ng-if="vm.model.workflow.loading != 'loaded'">
+                                <loading-state error="vm.model.workflow.loading !== 'loading' ? 'Details of this workflow are no longer available.' : ''"></loading-state>
+                            </div>
+                        </div>
+                    </br-collapsible>
+
                     <br-collapsible state="vm.model.accordion.subTaskOpen"
                                     ng-if="vm.model.activityChildren && vm.model.activityChildren.length > 0">
                         <heading> Sub-tasks</heading>
-                        
+
                         <div class="row">
                             <div ng-class="{ 'col-md-12': true, 'col-lg-8': !vm.wideKilt && vm.isNonEmpty(vm.model.activitiesDeep), 'col-lg-12': vm.wideKilt || !vm.isNonEmpty(vm.model.activitiesDeep)}">
                                 <task-list tasks="vm.model.activityChildren" task-type="activityChildren" filtered-callback="vm.onFilteredActivitiesChange"></task-list>

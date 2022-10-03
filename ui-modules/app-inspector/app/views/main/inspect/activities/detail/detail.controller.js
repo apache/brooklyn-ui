@@ -42,7 +42,8 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
         entityId: entityId,
         activityId: activityId,
         childFilter: {'EFFECTOR': true, 'SUB-TASK': false},
-        accordion: {summaryOpen: true, subTaskOpen: true, streamsOpen: true}
+        accordion: {summaryOpen: true, subTaskOpen: true, streamsOpen: true, workflowOpen: true},
+        workflow: {},
     };
 
     vm.modalTemplate = modalTemplate;
@@ -64,6 +65,28 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
                     if (effectorParams) {
                         vm.actions.invokeAgain = {effectorName, effectorParams, doAction: () => vm.invokeEffector(effectorName, effectorParams) };
                     }
+                }
+            }
+
+            if ((vm.model.activity.tags || []).find(t => t=="WORKFLOW")) {
+                const workflowTag = findWorkflowTag(vm.model.activity);
+                if (workflowTag) {
+                    vm.model.workflow.tag = workflowTag;
+                    vm.model.workflow.loading = 'loading';
+                    entityApi.getWorkflow(applicationId, entityId, workflowTag.workflowId).then(wResponse => {
+                        vm.model.workflow.data = wResponse.data;
+                        vm.model.workflow.loading = 'loaded';
+                        vm.model.workflow.applicationId = applicationId;
+                        vm.model.workflow.entityId = entityId;
+
+                        observers.push(wResponse.subscribe((wResponse2)=> {
+                           // change the workflow object so widgets get refreshed
+                           vm.model.workflow = { ...vm.model.workflow, data: wResponse2.data };
+                        }));
+                    }).catch(error => {
+                        console.log("ERROR loading workflow " + workflowTag.workflowId, error);
+                        vm.model.workflow.loading = 'error';
+                    });
                 }
             }
 
@@ -151,6 +174,7 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
     };
 
     vm.stringifyActivity = () => JSON.stringify(vm.model.activity, null, 2);
+    vm.stringify = (data) => JSON.stringify(data, null, 2);
 
     vm.invokeEffector = (effectorName, effectorParams) => {
         entityApi.invokeEntityEffector(applicationId, entityId, effectorName, effectorParams).then((response) => {
@@ -182,4 +206,10 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
         // so transient tasks etc less relevant
     }
 
+}
+
+function findWorkflowTag(task) {
+    if (!task) return null;
+    if (!task.tags) return null;
+    return task.tags.find(t => t.workflowId);
 }

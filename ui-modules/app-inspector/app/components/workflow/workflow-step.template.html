@@ -1,0 +1,194 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="workflow-step-outer">
+
+    <div class="workflow-step-status-indicators">
+        <span ng-if="isCurrent">
+            <span ng-if="isRunning" class="running-status">
+                <brooklyn-status-icon value="STARTING"></brooklyn-status-icon>
+            </span>
+        </span>
+
+        <span ng-if="osi.countCompleted && osi.countStarted === osi.countStarted">
+            <span class="color-succeeded">
+                <i class="fa fa-check-circle"></i>
+            </span>
+<!--            <span ng-if="osi.countCompleted > 1">{{ osi.countCompleted }}</span>-->
+        </span>
+        <span ng-if="osi.countStarted && osi.countStarted != osi.countCompleted && !(isCurrent && isRunning)">
+            <span class="color-failed" ng-if="isWorkflowError">
+                <i class="fa fa-times-circle"></i>
+            </span>
+            <span class="color-cancelled" ng-if="!isWorkflowError">
+                <i class="fa fa-exclamation-circle"></i>
+            </span>
+        </span>
+    </div>
+
+    <div class="workflow-step" id="workflow-step-{{stepIindex}}" ng-class="vm.getWorkflowStepClasses(stepIndex)">
+        <div class="rhs-icons">
+            <div ng-if="isFocusTask" class="workflow-step-pill focus-step">
+                selected
+            </div>
+            <div ng-click="vm.toggleExpandState()" class="expand-toggle">
+                <i ng-class="expanded ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"></i>
+            </div>
+        </div>
+
+        <div class="step-block-title">
+            <span ng-class="stepPrefixClass">{{ stepPrefix }}</span>
+            <span class="step-title-detail" ng-if="stepTitleDetail">{{ stepTitleDetail }}</span>
+        </div>
+
+        <div ng-if="expanded" class="step-details">
+            <div ng-if="osi.countStarted" class="space-above">
+                <div>
+                    <span ng-if="osi.countCompleted == osi.countStarted">
+                        <span ng-if="osi.countCompleted > 1">
+                            This step has run
+                            <span ng-if="osi.countCompleted == 2">
+                                twice,
+                            </span>
+                            <span ng-if="osi.countCompleted > 2">
+                                {{ osi.countCompleted }} times,
+                            </span>
+                            most recently
+                        </span>
+                        <span ng-if="osi.countCompleted == 1">
+                            This step ran
+                        </span>
+                    </span>
+                    <span ng-if="osi.countCompleted != osi.countStarted">
+                        <span ng-if="isCurrent">
+                            <span ng-if="osi.countCompleted == osi.countStarted - 1">
+                                This step is currently running
+                            </span>
+                            <span ng-if="osi.countCompleted <= osi.countStarted - 2">
+                                This step has had errors previously and is currently running
+                            </span>
+                        </span>
+                        <span ng-if="!isCurrent">
+                            <span ng-if="osi.countStarted == 1">
+                                This step had errors when it ran
+                            </span>
+                            <span ng-if="osi.countStarted > 2 && osi.countCompleted==0">
+                                This step has had errors on all previous runs, including when last run
+                            </span>
+                            <span ng-if="osi.countStarted > 2 && osi.countCompleted>0">
+                                This step has had errors on some previous runs. It most recently ran
+                            </span>
+                        </span>
+                    </span>
+
+                    <span ng-if="isFocusTask">
+                        in this task ({{ stepContext.taskId }}).
+                    </span>
+                    <span ng-if="!isFocusTask">
+                        in <a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId })">Task {{ stepContext.taskId }}</a>.
+                    </span>
+                </div>
+
+                <div ng-if="isFocusStep && !isFocusTask" class="space-above">
+                    <b>The currently selected task ({{ task.id }}) is for a previous invocation of this step.</b>
+                </div>
+
+                <div  class="more-space-above">
+                    <div class="data-row" ng-if="step.name"><div class="A">Name</div> <div class="B">{{ step.name }}</div></div>
+                    <div class="data-row" ng-if="step.id"><div class="A">ID</div> <div class="B fixed-width">{{ step.id }}</div></div>
+                    <div class="data-row"><div class="A">Step Number</div> <div class="B">{{ stepIndex+1 }}</div></div>
+                    <div class="data-row"><div class="A">Definition</div> <div class="B multiline-code">{{ vm.yamlOrPrimitive(step) }}</div></div>
+                </div>
+
+                <div ng-if="osi.countStarted > 1 && osi.countStarted > osi.countCompleted" class="space-above">
+                    <div class="data-row"><div class="A">Runs</div> <div class="B"><b>{{ osi.countStarted }}</b></div></div>
+                    <div class="data-row"><div class="A">Succeeded</div> <div class="B">{{ osi.countCompleted }}</div></div>
+                    <div class="data-row"><div class="A">Failed</div> <div class="B">{{ osi.countCompleted - osi.countStarted - (isCurrent ? 1 : 0) }}</div></div>
+                </div>
+
+                <div class="more-space-above" ng-if="stepContext.taskId">
+                    <div class="data-row">
+                        <div class="A"><span ng-if="isCurrent">CURRENT</span><span ng-if="!isCurrent">LAST</span> EXECUTION</div>
+                        <div class="B">
+                                    <span ng-if="isFocusTask">
+                                        Task {{ stepContext.taskId }}
+                                    </span>
+                            <span ng-if="!isFocusTask">
+                                         <a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId })">Task {{ stepContext.taskId }}</a>
+                                    </span>
+                        </div>
+                    </div>
+                    <div ng-if="!isFocusStep || isFocusTask">
+                        <div class="data-row nested"><div class="A">Preceeded by</div> <div class="B">
+                            <span ng-if="osi.previousTaskId">
+                                Step {{ osi.previous[0]+1 }}
+                                (<a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: osi.previousTaskId })"
+                                    >Task {{ osi.previousTaskId }}</a>)
+                            </span>
+                            <span ng-if="!osi.previousTaskId">(workflow start)</span>
+                        </div></div>
+                        <div class="data-row nested" ng-if="!isCurrent"><div class="A">Followed by</div> <div class="B">
+                            <span ng-if="osi.nextTaskId">
+                                Step {{ osi.next[0]+1 }}
+                                (<a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: osi.nextTaskId })"
+                                    >Task {{ osi.nextTaskId }}</a>)
+                            </span>
+                            <span ng-if="!osi.nextTaskId">(workflow end)</span>
+                        </div></div>
+
+                        <div class="data-row nested" ng-if="osi.workflowScratch"><div class="A">Workflow Vars</div> <div class="B multiline-code">{{ vm.yaml(osi.workflowScratch) }}</div></div>
+                        <div class="data-row nested" ng-if="stepContext.input"><div class="A">Input</div> <div class="B multiline-code">{{ vm.yaml(stepContext.input) }}</div></div>
+                        <div class="data-row nested" ng-if="!isCurrent && stepContext.output"><div class="A">Output</div> <div class="B multiline-code">{{ vm.yaml(stepContext.output) }}</div></div>
+                    </div>
+                </div>
+
+            </div>
+            <div ng-if="!osi.countStarted" class="space-above">
+                This step has not been run<span ng-if="isRunning"> yet</span>.
+            </div>
+
+            <div class="more-space-above" ng-if="vm.nonEmpty(stepContext) || vm.nonEmpty(step) || vm.nonEmpty(osi)">
+
+                <div class="btn-group right" uib-dropdown>
+                    <button id="single-button" type="button" class="btn btn-select-dropdown pull-right" uib-dropdown-toggle>
+                        View data <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu pull-right" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                        <li role="menuitem" > <a href="" ng-click="vm.showJson('stepContext', stepContext)" ng-class="{'selected' : jsonMode === 'stepContext'}">
+                            <i class="fa fa-check check"></i>
+                            Last Execution Context</a> </li>
+                        <li role="menuitem" > <a href="" ng-click="vm.showJson('osi', osi)" ng-class="{'selected' : jsonMode === 'osi'}">
+                            <i class="fa fa-check check"></i>
+                            Executions Record</a> </li>
+                        <li role="menuitem" > <a href="" ng-click="vm.showJson('step', step)" ng-class="{'selected' : jsonMode === 'step'}">
+                            <i class="fa fa-check check"></i>
+                            Step Definition</a> </li>
+                        <li role="menuitem" > <a href="" ng-click="vm.showJson(null)" ng-class="{'selected' : jsonMode === null}">
+                            <i class="fa fa-check check"></i>
+                            None</a> </li>
+                    </ul>
+                </div>
+
+                <pre ng-if="json" class="space-above">{{ json }}</pre>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
