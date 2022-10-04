@@ -43,6 +43,7 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
         activityId: activityId,
         childFilter: {'EFFECTOR': true, 'SUB-TASK': false},
         accordion: {summaryOpen: true, subTaskOpen: true, streamsOpen: true, workflowOpen: true},
+        activity: {},
         workflow: {},
     };
 
@@ -52,7 +53,39 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
     let observers = [];
 
     if ($state.current.name === detailState.name) {
-        
+
+        function loadWorkflow(workflowTag, optimistic) {
+            if (!workflowTag) {
+                workflowTag = {}
+                optimistic = true;
+            }
+            vm.model.workflow.loading = 'loading';
+
+            return entityApi.getWorkflow(workflowTag.applicationId || applicationId, workflowTag.entityId || entityId, workflowTag.workflowId || activityId).then(wResponse => {
+                workflowTag = {applicationId, entityId, workflowId: activityId, ...workflowTag};
+                if (optimistic) {
+                    vm.model.workflow.tag = workflowTag;
+                }
+                vm.model.workflow.data = wResponse.data;
+                vm.model.workflow.loading = 'loaded';
+                vm.model.workflow.applicationId = workflowTag.applicationId;
+                vm.model.workflow.entityId = workflowTag.entityId;
+
+                observers.push(wResponse.subscribe((wResponse2)=> {
+                    // change the workflow object so widgets get refreshed
+                    vm.model.workflow = { ...vm.model.workflow, data: wResponse2.data };
+                }));
+            }).catch(error => {
+                if (optimistic) {
+                    vm.model.workflow.loading = null;
+                    throw error;
+                }
+
+                console.log("ERROR loading workflow " + workflowTag.workflowId, error);
+                vm.model.workflow.loading = 'error';
+            });
+        };
+
         activityApi.activity(activityId).then((response)=> {
             vm.model.activity = response.data;
 
@@ -72,21 +105,7 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
                 const workflowTag = findWorkflowTag(vm.model.activity);
                 if (workflowTag) {
                     vm.model.workflow.tag = workflowTag;
-                    vm.model.workflow.loading = 'loading';
-                    entityApi.getWorkflow(applicationId, entityId, workflowTag.workflowId).then(wResponse => {
-                        vm.model.workflow.data = wResponse.data;
-                        vm.model.workflow.loading = 'loaded';
-                        vm.model.workflow.applicationId = applicationId;
-                        vm.model.workflow.entityId = entityId;
-
-                        observers.push(wResponse.subscribe((wResponse2)=> {
-                           // change the workflow object so widgets get refreshed
-                           vm.model.workflow = { ...vm.model.workflow, data: wResponse2.data };
-                        }));
-                    }).catch(error => {
-                        console.log("ERROR loading workflow " + workflowTag.workflowId, error);
-                        vm.model.workflow.loading = 'error';
-                    });
+                    loadWorkflow(workflowTag);
                 }
             }
 
@@ -96,12 +115,24 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
                 vm.error = undefined;
                 vm.errorBasic = false;
             }));
+
         }).catch((error)=> {
             $log.warn('Error loading activity for '+activityId, error);
             // prefer this simpler error message over the specific ones below
             vm.errorBasic = true;
             vm.error = $sce.trustAsHtml('Cannot load activity with ID: <b>' + _.escape(activityId) + '</b> <br/><br/>' +
                 'Task may have completed and been cleared from memory, or may not have been run. Details may be available in logs.');
+
+            // in case it corresponds to a workflow and not a task, try loading as a workflow
+
+            loadWorkflow(null).then(()=> {
+                // give a better error
+                vm.error = $sce.trustAsHtml('Information on workflow <b>' + _.escape(activityId) + '</b> is available but with limitations.<br/><br/>' +
+                    'The initial task is no longer available, possibly because this workflow has been resumed after a restart.');
+
+            }).catch(error2 => {
+                $log.debug("ID "+activityId+" does not correspond to workflow either", error2);
+            });
         });
 
         activityApi.activityChildren(activityId).then((response)=> {
@@ -173,7 +204,6 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
         $timeout(function() { $scope.$broadcast('resize') }, 100);
     };
 
-    vm.stringifyActivity = () => JSON.stringify(vm.model.activity, null, 2);
     vm.stringify = (data) => JSON.stringify(data, null, 2);
 
     vm.invokeEffector = (effectorName, effectorParams) => {
@@ -205,6 +235,12 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
         // this uses activity descendants api method which only uses TaskChildren,
         // so transient tasks etc less relevant
     }
+
+    vm.showReplayHelp = () => {
+        $scope.showReplayHelp = !$scope.showReplayHelp;
+    }
+
+    vm.isNullish = _.isNil;
 
 }
 

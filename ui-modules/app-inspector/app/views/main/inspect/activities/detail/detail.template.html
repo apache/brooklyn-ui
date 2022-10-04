@@ -18,9 +18,9 @@
 -->
 <ui-view class="activity-any">
     <div>
-        <loading-state error="vm.error" trust-error="true" ng-if="!vm.model.activity || !vm.model.activityChildren"></loading-state>
+        <loading-state error="vm.error" trust-error="true" ng-if="!vm.model.activity.id || !vm.model.activityChildren"></loading-state>
 
-        <div ng-if="vm.model.activity && vm.model.activityChildren">
+        <div ng-if="vm.model.activity.id && vm.model.activityChildren">
             <ol class="breadcrumb" ng-show="showParents">
                 <li breadcrumb-navigation parent-id="{{vm.model.activity.submittedByTask.metadata.id}}"
                     entity-id="{{vm.model.entityId}}"></li>
@@ -34,22 +34,24 @@
                 </li>
                 <li class="breadcrumb-item active">{{vm.model.activity.displayName}}</li>
             </ol>
+        </div>
 
-            <div ng-if="vm.model.activity" class="activity-detail">
+        <div>
+            <div class="activity-detail">
                 <div class="alert alert-info" ng-if="vm.model.activity.blockingTask">
                     <strong>Blocked on:</strong>
                     <span ng-if="vm.model.activity.blockingDetails">{{vm.model.activity.blockingDetails}}:</span>
                     <code><a ui-sref="main.inspect.activities.detail({entityId: vm.model.activity.blockingTask.metadata.entityId, activityId: vm.model.activity.blockingTask.metadata.id})">{{vm.model.activity.blockingTask.metadata.taskName}}</a></code> for <strong><a ui-sref="main.inspect.summary({entityId: vm.model.activity.blockingTask.metadata.entityId})">{{vm.model.activity.blockingTask.metadata.entityDisplayName}} entity</a></strong>
                 </div>
 
-                <div class="activity-header">
+                <div class="activity-header" ng-if="vm.model.activity.id">
                     <div class="activity-title">{{vm.model.activity.displayName}}</div>
                     <div class="activity-entity">{{vm.model.activity.entityDisplayName}}</div>
                     <div class="activity-description" ng-if="vm.model.activity.description">{{vm.model.activity.description}}</div>
                 </div>
 
                 <div class="activity-body">
-                    <div class="summary-body">
+                    <div class="summary-body" ng-if="vm.model.activity.id">
                         <div class="summary-block">
                             <div class="row">
                                 <div class="col-md-3 summary-item">
@@ -158,21 +160,56 @@
                     </br-collapsible>
 
                     <br-collapsible state="vm.model.accordion.workflowOpen"
-                                    ng-if="vm.model.workflow">
+                                    ng-if="vm.model.workflow.data">
                         <heading> Workflow</heading>
 
                         <div class="workflow-body">
                             <div ng-if="vm.model.workflow.loading == 'loaded'">
-                                <p style="margin-top: 12px; margin-bottom: 24px;">
+                                <div ng-if="vm.model.workflow.data.taskIds.length > 1">
+                                    <div style="float: right; margin-top: -9px;" class="btn-group" uib-dropdown>
+                                        <button id="replay-button" type="button" class="btn btn-select-dropdown" uib-dropdown-toggle>
+                                            Select replay <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="replay-button">
+                                            <li role="menuitem" ng-repeat="id in vm.model.workflow.data.taskIds" id="workflow-replay-{{ id }}">
+                                                <a href="" ui-sref="main.inspect.activities.detail({activityId: id})" ng-class="{'selected' : vm.model.activityId === id}">
+                                                    <i class="fa fa-check check"></i>
+                                                    <span class="monospace">{{ id }}</span></a> </li>
+                                            <li role="menuitem">
+                                                <a href="" ng-click="vm.showReplayHelp()" ng-class="{'selected' : showReplayHelp}"><i>More information</i></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 12px; margin-bottom: 24px;">
                                     This task is for
-                                    <span ng-if="vm.model.workflow.tag.stepIndex">step <b>{{ vm.model.workflow.tag.stepIndex+1 }}</b>
-                                        in workflow
+                                    <span ng-if="!vm.isNullish(vm.model.workflow.tag.stepIndex)">step <b>{{ vm.model.workflow.tag.stepIndex+1 }}</b>
+                                        in
                                         <a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.taskId})">
-                                            <b>{{vm.model.workflow.data.name}}</b>.
-                                        </a>
+                                            workflow <span class="monospace">{{vm.model.workflow.data.workflowId}}</span>:
+                                            <b>{{vm.model.workflow.data.name}}</b></a>.
                                     </span>
-                                    <span ng-if="!vm.model.workflow.tag.stepIndex"> workflow <b>{{vm.model.workflow.data.name}}</b>.</span>
-                                </p>
+                                    <span ng-if="vm.isNullish(vm.model.workflow.tag.stepIndex)">
+                                        <span ng-if="vm.model.workflow.data.taskIds.length>1">
+                                            <span ng-if="vm.model.workflow.data.taskIds[vm.model.workflow.data.taskIds.length-1] === vm.model.activityId">
+                                                the most recent </span>
+                                            <span ng-if="vm.model.workflow.data.taskIds[vm.model.workflow.data.taskIds.length-1] !== vm.model.activityId">
+                                                run {{vm.model.workflow.data.taskIds.indexOf(vm.model.activityId)+1}} </span>
+                                            of {{ vm.model.workflow.data.taskIds.length }} of
+                                        </span>
+                                        workflow <span class="monospace">{{vm.model.workflow.data.workflowId}}</span>:
+                                        <b>{{vm.model.workflow.data.name}}</b>.
+                                    </span>
+                                </div>
+                                <div ng-if="showReplayHelp" style="margin-top: 12px; margin-bottom: 24px;">
+                                    Workflows can be replayed in certain situations, such as if they fail or the server is restarted.
+                                    This workflow invocation instance has been replayed, with a total of {{ vm.model.workflow.data.taskIds.length }} runs.
+                                    Individual replays can be viewed by selecting a task ID from the dropdown.
+                                    The workflow step data below shows the most recent run of each step in any replay.
+                                    The arrows between steps show all step transitions in any replay of this workflow instance.
+                                    Sub-task and log views further below can be useful to disambiguate multiple replays if required.
+                                </div>
+
                                 <workflow-steps workflow="vm.model.workflow" task="vm.model.activity"></workflow-steps>
                             </div>
                             <div ng-if="vm.model.workflow.loading != 'loaded'">
@@ -211,19 +248,23 @@
 
                     <br-collapsible ng-if="vm.model.activity.detailedStatus" state="vm.model.accordion.jsonOpen">
                         <heading> JSON</heading>
-                        <pre>{{vm.stringifyActivity()}}</pre>
+                        <b>Activity</b>
+                        <pre>{{vm.stringify(vm.model.activity)}}</pre>
+                        <b>Workflow</b>
+                        <pre>{{vm.stringify(vm.model.workflow)}}</pre>
                     </br-collapsible>
+
+                    <div>
+                        <br-collapsible state="vm.model.accordion.logbookOpen">
+                            <heading> Logbook (activity)</heading>
+                            <br-logbook task-id="{{vm.model.activityId}}"></br-logbook>
+                        </br-collapsible>
+                    </div>
 
                 </div>
             </div>
         </div>
 
-        <div>
-            <br-collapsible state="vm.model.accordion.logbookOpen">
-                <heading> Logbook (activity)</heading>
-                <br-logbook task-id="{{vm.model.activityId}}"></br-logbook>
-            </br-collapsible>
-        </div>
 
     </div>
 </ui-view>

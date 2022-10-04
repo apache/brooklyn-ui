@@ -106,10 +106,6 @@
             .monospace();
         }
 
-        .monospace {
-            .monospace();
-        }
-        
         .table-responsive,
         .table {
             margin-bottom: 0;
@@ -161,7 +157,7 @@
             }
         }
     }
-    .result-parent {
+    .monospace, .result-parent {
         .monospace();
     }
     .result-parent.big-result {
@@ -188,6 +184,31 @@
         gap: 12px;
         margin-bottom: 24px;
         margin-top: -12px;
+    }
+
+    .workflow-body {
+        .btn-group {
+            > .dropdown-menu {
+                li a {
+                    padding-left: 2em;
+                }
+            }
+
+            .selected {
+                .check {
+                    margin-left: -1.5em;
+                    display: block;
+                    width: 0;
+                    height: 0;
+                    overflow: visible;
+                    margin-top: 3px;
+                    margin-bottom: -3px;
+                }
+            }
+            .check {
+                display: none;
+            }
+        }
     }
 
 }

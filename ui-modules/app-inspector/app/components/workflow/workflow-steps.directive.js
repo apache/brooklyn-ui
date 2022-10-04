@@ -54,7 +54,7 @@ export function workflowStepsDirective() {
         }
 
         $scope.expandStates = {};
-        if ($scope.workflow.tag && $scope.workflow.tag.stepIndex) {
+        if ($scope.workflow.tag && !_.isNil($scope.workflow.tag.stepIndex)) {
             $scope.expandStates[$scope.workflow.tag.stepIndex] = true;
         }
 

@@ -97,15 +97,15 @@
                     </span>
 
                     <span ng-if="isFocusTask">
-                        in this task ({{ stepContext.taskId }}).
+                        as the activity currently being viewed (<span class="monospace">{{ stepContext.taskId }}</span>).
                     </span>
                     <span ng-if="!isFocusTask">
-                        in <a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId })">Task {{ stepContext.taskId }}</a>.
+                        in <a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId })">task <span class="monospace">{{ stepContext.taskId }}</span></a>.
                     </span>
                 </div>
 
                 <div ng-if="isFocusStep && !isFocusTask" class="space-above">
-                    <b>The currently selected task ({{ task.id }}) is for a previous invocation of this step.</b>
+                    <b>The activity currently being viewed (<span class="monospace">{{ task.id }}</span>) is for a previous run of this step.</b>
                 </div>
 
                 <div  class="more-space-above">
@@ -126,10 +126,11 @@
                         <div class="A"><span ng-if="isCurrent">CURRENT</span><span ng-if="!isCurrent">LAST</span> EXECUTION</div>
                         <div class="B">
                                     <span ng-if="isFocusTask">
-                                        Task {{ stepContext.taskId }}
+                                        task <span class="monospace">{{ stepContext.taskId }}</span>
                                     </span>
                             <span ng-if="!isFocusTask">
-                                         <a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId })">Task {{ stepContext.taskId }}</a>
+                                         <a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId })"
+                                            >task <span class="monospace">{{ stepContext.taskId }}</span></a>
                                     </span>
                         </div>
                     </div>
@@ -138,17 +139,32 @@
                             <span ng-if="osi.previousTaskId">
                                 Step {{ osi.previous[0]+1 }}
                                 (<a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: osi.previousTaskId })"
-                                    >Task {{ osi.previousTaskId }}</a>)
+                                    >task <span class="monospace">{{ osi.previousTaskId }}</span></a>)
                             </span>
                             <span ng-if="!osi.previousTaskId">(workflow start)</span>
                         </div></div>
+
                         <div class="data-row nested" ng-if="!isCurrent"><div class="A">Followed by</div> <div class="B">
                             <span ng-if="osi.nextTaskId">
                                 Step {{ osi.next[0]+1 }}
                                 (<a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: osi.nextTaskId })"
-                                    >Task {{ osi.nextTaskId }}</a>)
+                                    >task <span class="monospace">{{ osi.nextTaskId }}</span></a>)
                             </span>
                             <span ng-if="!osi.nextTaskId">(workflow end)</span>
+                        </div></div>
+
+                        <div class="data-row nested with-buttons" ng-if="stepContext.subWorkflows && stepContext.subWorkflows.length"><div class="A" style="margin-top: 2px;">Sub-workflows</div> <div class="B">
+                            <div class="btn-group" uib-dropdown>
+                                <button id="workflow-button" type="button" class="btn btn-select-dropdown workflow-button-small" uib-dropdown-toggle>
+                                    {{ stepContext.subWorkflows.length }} nested workflow{{ stepContext.subWorkflows.length>1 ? 's' : '' }} <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="workflow-button">
+                                    <li role="menuitem" ng-repeat="sub in stepContext.subWorkflows" id="sub-workflow-{{ sub.workflowId }}">
+                                        <a href="" ui-sref="main.inspect.activities.detail({applicationId: sub.applicationId, entityId: sub.entityId, activityId: sub.workflowId})">
+                                            <i class="fa fa-check check"></i>
+                                            <span class="monospace">{{ sub.workflowId }}</span></a> </li>
+                                </ul>
+                            </div>
                         </div></div>
 
                         <div class="data-row nested" ng-if="osi.workflowScratch"><div class="A">Workflow Vars</div> <div class="B multiline-code">{{ vm.yaml(osi.workflowScratch) }}</div></div>
@@ -165,10 +181,10 @@
             <div class="more-space-above" ng-if="vm.nonEmpty(stepContext) || vm.nonEmpty(step) || vm.nonEmpty(osi)">
 
                 <div class="btn-group right" uib-dropdown>
-                    <button id="single-button" type="button" class="btn btn-select-dropdown pull-right" uib-dropdown-toggle>
+                    <button id="extra-data-button" type="button" class="btn btn-select-dropdown pull-right" uib-dropdown-toggle>
                         View data <span class="caret"></span>
                     </button>
-                    <ul class="dropdown-menu pull-right" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                    <ul class="dropdown-menu pull-right" uib-dropdown-menu role="menu" aria-labelledby="extra-data-button">
                         <li role="menuitem" > <a href="" ng-click="vm.showJson('stepContext', stepContext)" ng-class="{'selected' : jsonMode === 'stepContext'}">
                             <i class="fa fa-check check"></i>
                             Last Execution Context</a> </li>

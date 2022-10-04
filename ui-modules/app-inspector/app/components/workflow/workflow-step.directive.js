@@ -61,6 +61,7 @@ export function workflowStepDirective() {
             vm.yaml = (data) => jsyaml.dump(data);
             vm.yamlOrPrimitive = (data) => typeof data === "string" ? data : vm.yaml(data);
             vm.nonEmpty = (data) => data && (data.length || Object.keys(data).length);
+            vm.isNullish = _.isNil;
 
             $scope.json = null;
             $scope.jsonMode = null;
