@@ -18,7 +18,7 @@
  */
 
 import angular from 'angular';
-import moment from "moment";
+import { fromNow } from "brooklyn-ui-utils/utils/momentp";
 import { get } from 'lodash';
 import uiRouter from 'angular-ui-router';
 import uibModal from 'angular-ui-bootstrap/src/modal/index-nocss';
@@ -252,7 +252,7 @@ export function aboutStateController($scope, $rootScope, $element, $q, $uibModal
 export function timeAgoFilter() {
     return function (input) {
         if (input) {
-            return moment(input).fromNow();
+            return fromNow(input);
         }
     }
 }
