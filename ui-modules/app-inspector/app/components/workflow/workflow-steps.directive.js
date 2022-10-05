@@ -221,11 +221,11 @@ function makeArrows(workflow, steps) {
                 }
                 if (prev > i) rank = rank + 0.5;
                 width = 0.2 + 0.6 * (rank + 0.5) / (jumpSizes.length + 0.5);
-                // curveX = 0.8 + 0.2*width;
-                // curveY = 0.8 + 0.2*width;
+                curveX = 0.8 + 0.2*width;
+                curveY = 0.8 + 0.2*width;
                 // higher values (above) look nicer, but make disambiguation of complex paths harder
-                curveX = 0.5 + 0.3*width;
-                curveY = 0.4 + 0.4*width;
+                // curveX = 0.5 + 0.3*width;
+                // curveY = 0.4 + 0.4*width;
             }
             return arrowStep(prev, i, {hideArrowhead: prev==i, width, curveX, curveY, ...opts});
         }
