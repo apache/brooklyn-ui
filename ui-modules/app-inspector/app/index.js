@@ -21,6 +21,7 @@ import ngCookies from "angular-cookies";
 import ngResource from "angular-resource";
 import ngSanitize from "angular-sanitize";
 import uiRouter from "angular-ui-router";
+import dropdownNested from "views/main/inspect/activities/detail/dropdown-nested";
 
 import brCore from 'brooklyn-ui-utils/br-core/br-core';
 
@@ -68,6 +69,7 @@ import brandAngularJs from 'brand-angular-js';
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 
 angular.module('brooklynAppInspector', [ngResource, ngCookies, ngSanitize, uiRouter, brCore, brUtilsGeneral,
+    dropdownNested,
     brServerStatus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brSensitiveField, brooklynUserManagement,
     brYamlEditor, brWebNotifications, brExpandablePanel, 'xeditable', brLogbook, apiProvider, entityTree, loadingState,
     configSensorTable, entityEffector, entityPolicy, breadcrumbNavigation, taskList, taskSunburst, stream, adjunctsList,

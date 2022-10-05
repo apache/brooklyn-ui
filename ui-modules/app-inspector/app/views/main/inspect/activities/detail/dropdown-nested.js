@@ -1,11 +1,15 @@
-angular.module('ui.bootstrap.dropdown', ['ui.bootstrap.multiMap', 'ui.bootstrap.position'])
+const MODULE_NAME = 'ui.bootstrap.dropdown.nested';
 
-    .constant('uibDropdownConfig', {
+export default MODULE_NAME;
+
+angular.module(MODULE_NAME, ['ui.bootstrap.multiMap', 'ui.bootstrap.position'])
+
+    .constant('uibDropdownConfigNested', {
         appendToOpenClass: 'uib-dropdown-open',
         openClass: 'open'
     })
 
-    .service('uibDropdownService', ['$document', '$rootScope', '$$multiMap', function($document, $rootScope, $$multiMap) {
+    .service('uibDropdownServiceNested', ['$document', '$rootScope', '$$multiMap', function($document, $rootScope, $$multiMap) {
         var openScope = null;
         var openedContainers = $$multiMap.createNew();
 
@@ -135,7 +139,7 @@ angular.module('ui.bootstrap.dropdown', ['ui.bootstrap.multiMap', 'ui.bootstrap.
         };
     }])
 
-    .controller('UibDropdownController', ['$scope', '$element', '$attrs', '$parse', 'uibDropdownConfig', 'uibDropdownService', '$animate', '$uibPosition', '$document', '$compile', '$templateRequest', function($scope, $element, $attrs, $parse, dropdownConfig, uibDropdownService, $animate, $position, $document, $compile, $templateRequest) {
+    .controller('UibDropdownControllerNested', ['$scope', '$element', '$attrs', '$parse', 'uibDropdownConfigNested', 'uibDropdownServiceNested', '$animate', '$uibPosition', '$document', '$compile', '$templateRequest', function($scope, $element, $attrs, $parse, dropdownConfig, uibDropdownServiceNested, $animate, $position, $document, $compile, $templateRequest) {
         var self = this,
             scope = $scope.$new(), // create a child scope so we are not polluting original one
             templateScope,
@@ -317,7 +321,7 @@ angular.module('ui.bootstrap.dropdown', ['ui.bootstrap.multiMap', 'ui.bootstrap.
             var openContainer = appendTo ? appendTo : $element;
             var dropdownOpenClass = appendTo ? appendToOpenClass : openClass;
             var hasOpenClass = openContainer.hasClass(dropdownOpenClass);
-            var isOnlyOpen = uibDropdownService.isOnlyOpen($scope, appendTo);
+            var isOnlyOpen = uibDropdownServiceNested.isOnlyOpen($scope, appendTo);
 
             if (hasOpenClass === !isOpen) {
                 var toggleClass;
@@ -341,17 +345,17 @@ angular.module('ui.bootstrap.dropdown', ['ui.bootstrap.multiMap', 'ui.bootstrap.
                             var newEl = dropdownElement;
                             self.dropdownMenu.replaceWith(newEl);
                             self.dropdownMenu = newEl;
-                            $document.on('keydown', uibDropdownService.keybindFilter);
+                            $document.on('keydown', uibDropdownServiceNested.keybindFilter);
                         });
                     });
                 } else {
-                    $document.on('keydown', uibDropdownService.keybindFilter);
+                    $document.on('keydown', uibDropdownServiceNested.keybindFilter);
                 }
 
                 scope.focusToggleElement();
-                uibDropdownService.open(scope, $element, appendTo);
+                uibDropdownServiceNested.open(scope, $element, appendTo);
             } else {
-                uibDropdownService.close(scope, $element, appendTo);
+                uibDropdownServiceNested.close(scope, $element, appendTo);
                 if (self.dropdownMenuTemplateUrl) {
                     if (templateScope) {
                         templateScope.$destroy();
@@ -370,19 +374,19 @@ angular.module('ui.bootstrap.dropdown', ['ui.bootstrap.multiMap', 'ui.bootstrap.
         });
     }])
 
-    .directive('uibDropdown', function() {
+    .directive('uibDropdownNested', function() {
         return {
-            controller: 'UibDropdownController',
+            controller: 'UibDropdownControllerNested',
             link: function(scope, element, attrs, dropdownCtrl) {
                 dropdownCtrl.init();
             }
         };
     })
 
-    .directive('uibDropdownMenu', function() {
+    .directive('uibDropdownMenuNested', function() {
         return {
             restrict: 'A',
-            require: '?^uibDropdown',
+            require: '?^uibDropdownNested',
             link: function(scope, element, attrs, dropdownCtrl) {
                 if (!dropdownCtrl || angular.isDefined(attrs.dropdownNested)) {
                     return;
@@ -402,9 +406,9 @@ angular.module('ui.bootstrap.dropdown', ['ui.bootstrap.multiMap', 'ui.bootstrap.
         };
     })
 
-    .directive('uibDropdownToggle', function() {
+    .directive('uibDropdownToggleNested', function() {
         return {
-            require: '?^uibDropdown',
+            require: '?^uibDropdownNested',
             link: function(scope, element, attrs, dropdownCtrl) {
                 if (!dropdownCtrl) {
                     return;
