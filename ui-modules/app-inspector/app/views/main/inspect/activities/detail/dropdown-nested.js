@@ -1,3 +1,5 @@
+import {drop} from "lodash/array";
+
 const MODULE_NAME = 'ui.bootstrap.dropdown.nested';
 
 export default MODULE_NAME;
@@ -11,6 +13,7 @@ angular.module(MODULE_NAME, ['ui.bootstrap.multiMap', 'ui.bootstrap.position'])
 
     .service('uibDropdownServiceNested', ['$document', '$rootScope', '$$multiMap', function($document, $rootScope, $$multiMap) {
         var openScope = null;
+        var oldOpenScopes = [];
         var openedContainers = $$multiMap.createNew();
 
         this.isOnlyOpen = function(dropdownScope, appendTo) {
@@ -37,7 +40,8 @@ angular.module(MODULE_NAME, ['ui.bootstrap.multiMap', 'ui.bootstrap.position'])
             }
 
             if (openScope && openScope !== dropdownScope) {
-                openScope.isOpen = false;
+                // just remember it
+                oldOpenScopes.push(openScope);
             }
 
             openScope = dropdownScope;
@@ -65,9 +69,15 @@ angular.module(MODULE_NAME, ['ui.bootstrap.multiMap', 'ui.bootstrap.position'])
 
         this.close = function(dropdownScope, element, appendTo) {
             if (openScope === dropdownScope) {
+                openScope = null;
+            }
+            const indexOfOpen = oldOpenScopes.indexOf(dropdownScope);
+            if (indexOfOpen>=0) {
+                oldOpenScopes.splice(indexOfOpen, 1);
+            }
+            if (openScope==null && oldOpenScopes.length) {
                 $document.off('click', closeDropdown);
                 $document.off('keydown', this.keybindFilter);
-                openScope = null;
             }
 
             if (!appendTo) {
@@ -92,28 +102,78 @@ angular.module(MODULE_NAME, ['ui.bootstrap.multiMap', 'ui.bootstrap.position'])
         var closeDropdown = function(evt) {
             // This method may still be called during the same mouse event that
             // unbound this event handler. So check openScope before proceeding.
-            if (!openScope || !openScope.isOpen) { return; }
+            let scopesToApply = [];
 
-            if (evt && openScope.getAutoClose() === 'disabled') { return; }
+            function containsNested(container, target) {
+                if (!container) return false;
+                if (container==target) return true;
+                if (container[0] && container[0].contains && container[0].contains(target)) return true;
+                if (container.contains && container.contains(target)) return true;
 
-            if (evt && evt.which === 3) { return; }
-
-            var toggleElement = openScope.getToggleElement();
-            if (evt && toggleElement && toggleElement[0].contains(evt.target)) {
-                return;
+                let kids = angular.element(container).children();
+                if (kids && kids.length) {
+                    for (let i=0; i<kids.length; i++) {
+                        let found = containsNested(kids[i], target);
+                        if (found) return true;
+                    }
+                }
+                return false;
             }
 
-            var dropdownElement = openScope.getDropdownElement();
-            if (evt && openScope.getAutoClose() === 'outsideClick' &&
-                dropdownElement && dropdownElement[0].contains(evt.target)) {
-                return;
+            function isAnyTrigger(element) {
+                return element.hasClass('dropdown-toggle');
             }
 
-            openScope.focusToggleElement();
-            openScope.isOpen = false;
+            function closeIfApplicable(scope) {
+                if (evt && scope.getAutoClose() === 'disabled') {
+                    return;
+                }
 
+                if (evt && evt.which === 3) {
+                    return;
+                }
+
+                if (evt &&
+                    isAnyTrigger(angular.element(evt.target))) {
+                    return;
+                }
+                // could do "is contained in any trigger"; but doesn't seem needed yet
+
+                var toggleElement = scope.getToggleElement();
+                if (evt && toggleElement && containsNested(toggleElement, evt.target)) {
+                    return;
+                }
+
+                var dropdownElement = scope.getDropdownElement();
+                if (evt &&
+                    scope.getAutoClose() === 'outsideClick' &&
+                    dropdownElement && containsNested(dropdownElement, evt.target)) {
+                    return;
+                }
+                scope.isOpen = false;
+                scopesToApply.push(scope);
+
+                return true;
+            }
+
+            if (openScope && openScope.isOpen) {
+                if (closeIfApplicable(openScope)) {
+                    openScope.focusToggleElement();
+                }
+            }
+
+            // close all the others too
+            const scopesToKeep = [];
+            oldOpenScopes.forEach(scope => {
+                if (!closeIfApplicable(scope)) {
+                    scopesToKeep.push(scope);
+                }
+            });
+            oldOpenScopes.splice(0, oldOpenScopes.length, ...scopesToKeep);
+
+            // and apply
             if (!$rootScope.$$phase) {
-                openScope.$apply();
+                scopesToApply.forEach(s => s.$apply());
             }
         };
 

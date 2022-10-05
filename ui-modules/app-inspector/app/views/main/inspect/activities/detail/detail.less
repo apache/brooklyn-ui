@@ -21,6 +21,7 @@
     .activity-header {
         -webkit-font-smoothing: antialiased;
         margin-bottom: 40px;
+
         status {
             width: 50px;
             height: 50px;
@@ -50,7 +51,7 @@
             color: @gray-light;
         }
     }
-    
+
     table.summary {
         tr td:first-child {
             width: 25%;
@@ -69,7 +70,7 @@
     .summary-body {
         margin-bottom: 24px;
     }
-    
+
     .summary-item {
         margin-bottom: 35px;
 
@@ -77,20 +78,24 @@
         @redColor: @brand-danger;
         @greenColor: #58BA58;
         @redColor: #BA5858;
+
         .summary-item-value {
             &.status-completed {
                 color: @greenColor;
                 font-weight: bold;
                 -webkit-font-smoothing: antialiased;
             }
+
             &.status-failed {
                 color: @redColor;
                 font-weight: bold;
                 -webkit-font-smoothing: antialiased;
             }
+
             &.status-in-progress {
 
             }
+
             &.status-unknown {
 
             }
@@ -137,6 +142,7 @@
                 > div {
                     opacity: 1.0;
                     position: absolute;
+
                     &.fade.ng-hide {
                         opacity: 0;
                     }
@@ -157,20 +163,23 @@
             }
         }
     }
+
     .monospace, .result-parent {
         .monospace();
     }
+
     .result-parent.big-result {
-       border: 1px solid @gray-lighter;
-      .result-body {
-        padding: 4px;
-      }
+        border: 1px solid @gray-lighter;
+        .result-body {
+            padding: 4px;
+        }
     }
+
     .result-body {
         max-height: 56pt;
         overflow: scroll;
     }
-    
+
     .collapsing {
         // internal class used by bootstrap when opening/closing:
         // activity viewers are probably power users - don't want to
@@ -205,10 +214,17 @@
                     margin-bottom: -3px;
                 }
             }
+
             .check {
                 display: none;
             }
         }
     }
+}
 
+.dropdown-at-root {
+    width: auto;
+    &.dropdown-submenu-left, .dropdown-submenu-left {
+        margin-right: 36px;
+    }
 }

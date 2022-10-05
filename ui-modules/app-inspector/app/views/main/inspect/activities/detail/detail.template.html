@@ -38,10 +38,36 @@
 
         <div>
             <div class="activity-detail">
+
                 <div class="alert alert-info" ng-if="vm.model.activity.blockingTask">
                     <strong>Blocked on:</strong>
                     <span ng-if="vm.model.activity.blockingDetails">{{vm.model.activity.blockingDetails}}:</span>
                     <code><a ui-sref="main.inspect.activities.detail({entityId: vm.model.activity.blockingTask.metadata.entityId, activityId: vm.model.activity.blockingTask.metadata.id})">{{vm.model.activity.blockingTask.metadata.taskName}}</a></code> for <strong><a ui-sref="main.inspect.summary({entityId: vm.model.activity.blockingTask.metadata.entityId})">{{vm.model.activity.blockingTask.metadata.entityDisplayName}} entity</a></strong>
+                </div>
+
+                <div style="float:right;" ng-if="vm.isNonEmpty(vm.actions)" class="btn-group dropdown-nested dropdown-menu-right" uib-dropdown-nested dropdown-append-to-body="true">
+                    <br-button uib-dropdown-toggle-nested type="btn-primary">
+                        Actions <span class="caret"></span>
+                    </br-button>
+                    <ul uib-dropdown-menu-nested class="dropdown-at-root dropdown-menu-right">
+
+                        <li><a href="" ng-if="vm.actions.cancel" ng-click="vm.actions.cancel.doAction()">Cancel</a></li>
+
+                        <li ng-if="vm.actions.workflowReplays" uib-dropdown-nested dropdown-append-to-body="true">
+
+                            <a href="" uib-dropdown-toggle-nested>Replay workflow <span class="caret"></span></a>
+                            <ul class="dropdown-submenu-left dropdown-at-root dropdown-menu-right" uib-dropdown-menu-nested>
+                                <li ng-repeat="replay in vm.actions.workflowReplays track by $index" id="replay {{ replay[0] }}">
+                                    <a class="dropdown-item" href="" ng-click="replay[2]()">From {{ replay[0] }}</a>
+                                </li>
+                            </ul>
+
+                        </li>
+
+                        <li><a href="" ng-if="vm.actions.invokeAgain" ng-click="vm.actions.invokeAgain.doAction()">Reinvoke effector</a></li>
+                        <li><a href="" ng-if="vm.actions.effector" ui-sref="main.inspect.effectors({search: vm.actions.effector.effectorName})">Open in effector tab</a></li>
+
+                    </ul>
                 </div>
 
                 <div class="activity-header" ng-if="vm.model.activity.id">
@@ -124,11 +150,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="activity-actions" ng-if="vm.actions">
-                        <br-button ng-if="vm.actions.invokeAgain" on-click="vm.actions.invokeAgain.doAction()">Execute again</br-button>
-                        <br-button ng-if="vm.actions.effector" ui-sref="main.inspect.effectors({search: vm.actions.effector.effectorName})">Open effector tab</br-button>
                     </div>
 
                     <br-collapsible class="activity-streams"

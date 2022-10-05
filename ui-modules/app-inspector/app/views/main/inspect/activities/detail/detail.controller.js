@@ -25,7 +25,7 @@ export const detailState = {
     url: '/:activityId',
     template: template,
     controller: ['$scope', '$state', '$stateParams', '$log', '$uibModal', '$timeout', '$sanitize', '$sce', 'activityApi', 'entityApi', 'brUtilsGeneral', DetailController],
-    controllerAs: 'vm'
+    controllerAs: 'vm',
 }
 function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeout, $sanitize, $sce, activityApi, entityApi, Utils) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
@@ -71,10 +71,27 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
                 vm.model.workflow.applicationId = workflowTag.applicationId;
                 vm.model.workflow.entityId = workflowTag.entityId;
 
+                vm.actions.workflowReplays = [];
+                if (!vm.model.activity.endTimeUtc || vm.model.activity.endTimeUtc<=0) {
+                    // can't replay if active (same logic as 'cancel')
+                } else {
+                    [
+                        // TODO get from server
+                        // [ 'step 3 (continuing)', null ],
+                        // [ 'step 3 (replay point)', [2] ],
+                        // [ 'start (replay point)', [0] ],
+                    ].forEach(r => vm.actions.workflowReplays.push(r));
+                    vm.actions.workflowReplays.forEach(r => {
+                        r.push( () => console.log("TODO - replay from "+r[0], r[1]) );
+                    })
+                }
+                if (!vm.actions.workflowReplays.length) delete vm.actions['workflowReplays'];
+
                 observers.push(wResponse.subscribe((wResponse2)=> {
                     // change the workflow object so widgets get refreshed
                     vm.model.workflow = { ...vm.model.workflow, data: wResponse2.data };
                 }));
+
             }).catch(error => {
                 if (optimistic) {
                     vm.model.workflow.loading = null;
@@ -89,7 +106,9 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
         activityApi.activity(activityId).then((response)=> {
             vm.model.activity = response.data;
 
-            vm.actions = {};
+            vm.actions = vm.actions || {};
+            delete vm.actions['effector'];
+            delete vm.actions['invokeAgain'];
             if ((vm.model.activity.tags || []).find(t => t=="EFFECTOR")) {
                 const effectorName = (vm.model.activity.tags.find(t => t.effectorName) || {}).effectorName;
                 const effectorParams = (vm.model.activity.tags.find(t => t.effectorParams) || {}).effectorParams;
@@ -99,6 +118,11 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
                         vm.actions.invokeAgain = {effectorName, effectorParams, doAction: () => vm.invokeEffector(effectorName, effectorParams) };
                     }
                 }
+            }
+
+            delete vm.actions['cancel'];
+            if (!vm.model.activity.endTimeUtc || vm.model.activity.endTimeUtc<=0) {
+                vm.actions.cancel = { doAction: () => { activityApi.cancelActivity(activityId); } };
             }
 
             if ((vm.model.activity.tags || []).find(t => t=="WORKFLOW")) {
@@ -241,7 +265,8 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
     }
 
     vm.isNullish = _.isNil;
-
+    vm.isEmpty = x => vm.isNullish(x) || (x.length==0) || (typeof x === 'object' && !Object.keys(x).length);
+    vm.isNonEmpty = x => !vm.isEmpty(x);
 }
 
 function findWorkflowTag(task) {

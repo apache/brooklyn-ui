@@ -39,7 +39,8 @@ function ActivityApi($http) {
         activity: getActivity,
         activityChildren: getActivityChildren,
         activityDescendants: getActivityDescendants,
-        activityStream: getActivityStream
+        activityStream: getActivityStream,
+        cancelActivity: cancelActivity,
     };
 
     function getActivities() {
@@ -64,4 +65,9 @@ function ActivityApi($http) {
             }
         }});
     }
+
+    function cancelActivity(activityId) {
+        return $http.post('/v1/activities/' + activityId + '/cancel');
+    }
+
 }
