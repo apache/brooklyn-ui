@@ -28,17 +28,23 @@
             </br-button>
         </div>
         <div class="row-contents">
+            <div class="effector-name">
+                {{effector.name}}
+            </div>
+            <div class="effector-description" ng-if="effector.description">{{effector.description}}</div>
+        </div>
+        <div class="row-tail">
             <a ui-sref="main.inspect.activities({applicationId: applicationId, entityId: entityId, filter: 'EFFECTOR', search: effector.name})"
-                    ng-if="activities && activitiesSummary()" title="{{activitiesSummary()}}"><span class="pull-right effector-pills">
+                ng-if="activities && activitiesSummary()" title="{{activitiesSummary()}}"><span class="effector-pills">
                 <div class="effector-pill effector-active" ng-if="activities.active">
                     <i class="fa fa-play-circle"></i>
-<!--                    <i class="fa fa-dot-circle-o"></i></div>-->
+                    <!--                    <i class="fa fa-dot-circle-o"></i></div>-->
                     {{activities.active}}
                 </div>
                 <div class="effector-pill effector-cancelled" ng-if="activities.cancelled">
 <!--                    <i class="fa fa-pause-circle"></i></div>-->
-<!--                    <i class="fa fa-exclamation-circle"></i></div>-->
-<!--                    <i class="fa fa-minus-circle"></i></div>-->
+                    <!--                    <i class="fa fa-exclamation-circle"></i></div>-->
+                    <!--                    <i class="fa fa-minus-circle"></i></div>-->
                     <i class="fa fa-stop-circle"></i>
                     {{activities.cancelled}}
                 </div>
@@ -51,10 +57,6 @@
                     {{activities.succeeded}}
                 </div>
             </span></a>
-            <span class="effector-name">
-                {{effector.name}}
-            </span>
-            <span class="effector-description">{{effector.description}}</span>
         </div>
     </div>
 </div>
