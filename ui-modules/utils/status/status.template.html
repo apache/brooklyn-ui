@@ -60,6 +60,27 @@
             </g>
         </svg>
     </div>
+
+    <!-- for tasks -->
+    <div ng-switch-when="COMPLETED">
+        <svg viewBox="20 20 60 60">
+            <foreignObject x="20" y="15" width="100" height="100">
+                <body>
+                  <i class="fa fa-check-circle"></i>
+                </body>
+            </foreignObject>
+        </svg>
+    </div>
+    <div ng-switch-when="FAILED">
+        <svg viewBox="20 20 60 60">
+            <foreignObject x="20" y="15" width="100" height="100">
+                <body>
+                  <i class="fa fa-times-circle"></i>
+                </body>
+            </foreignObject>
+        </svg>
+    </div>
+
     <div ng-switch-when="UNKNOWN">
         <svg id="168033fd-2902-4e00-8797-d9d22be6bcd3" data-name="icon-unknown"
              xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">

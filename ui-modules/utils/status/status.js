@@ -27,7 +27,9 @@ const ICONS = {
     ON_FIRE: 'ON_FIRE',
     ERROR: 'ERROR',
     UNKNOWN: 'UNKNOWN',
-    NO_STATE: 'NO_STATE'
+    NO_STATE: 'NO_STATE',
+    COMPLETED: 'COMPLETED',
+    FAILED: 'FAILED',
 };
 
 const STATUS = {
@@ -43,10 +45,10 @@ const STATUS = {
 
     // for tasks
     'In progress': {name: 'In progress', icon: ICONS.STARTING},
-    'Completed': {name: 'Completed', icon: ICONS.RUNNING},
-    'Failed': {name: 'Failed', icon: ICONS.ERROR},
-    'Unavailable': {name: 'Incomplete', icon: ICONS.ERROR},
-    'Cancelled': {name: 'Cancelled', icon: ICONS.ERROR},
+    'Completed': {name: 'Completed', icon: ICONS.COMPLETED},
+    'Failed': {name: 'Failed', icon: ICONS.FAILED},
+    'Unavailable': {name: 'Incomplete', icon: ICONS.FAILED},
+    'Cancelled': {name: 'Cancelled', icon: ICONS.FAILED},
 };
 
 const MODULE_NAME = 'brooklyn.components.status';

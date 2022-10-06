@@ -20,6 +20,16 @@
 @brand-primary: #3C5588;
 @brand-accent: #bf3727;
 
+@color-succeeded: #363;
+@color-failed: #820;
+@color-cancelled: #660;
+@color-active: #6a2;
+
+// brand-success and others usually used for BG, so make lighter
+@color-succeeded-bg: #484;
+@color-failed-bg: #A41;
+@brand-success: @color-succeeded-bg;
+@brand-danger: @color-failed-bg;
 
 // bootstrap colours at
 // https://github.com/twbs/bootstrap-sass/blob/master/assets/stylesheets/bootstrap/_variables.scss
@@ -27,10 +37,13 @@
 @gray-light: #818899;   // override bootstrap default of #777
 @gray-lighter: #E1E5E7; // override bootstrap default of #eee
 @gray-lightest: #f8f8f9;
+
+@gray-light-lighter: lighten(@gray-light, 20%);
 @label-gray: darken(@gray-light, 10%);  // between @gray and @gray-light
 
 @body-bg: hsl(223,30%,97%);  // override bootstrap default, #333, same as @gray-dark, used for the button bar, body default bg colour from bootstrap scaffolding
 
+@navbar-divider-color: rgba(60, 85, 136, .5);
 @card-border-color: mix(black, @body-bg, 7%);
 
 /* Colors in pattern lab */
