@@ -57,22 +57,22 @@
             <tbody>
             <tr ng-repeat="task in tasks | activityTagFilter : [model.filterByTag, globalFilters] | activityFilter:filterValue as filterResult track by task.id">
                 <td class="status">
-                    <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id})">
+                    <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id, workflowId: getTaskWorkflowId(task)})">
                     <brooklyn-status-icon value="{{task.currentStatus}}" ng-if="!isScheduled(task)"></brooklyn-status-icon>
                     <span ng-if="isScheduled(task)" class="custom-status-task-icon"><i class="fa fa-clock-o" style="font-size: 250%;"></i></span>
                     </a>
                 </td>
                 <td class="name">
-                    <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id})">{{task.displayName}}
+                    <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id, workflowId: getTaskWorkflowId(task)})">{{task.displayName}}
                     </a>
                 </td>
                 <td class="started">
-                    <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id})">
+                    <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id, workflowId: getTaskWorkflowId(task)})">
                         {{task.startTimeUtc | timeAgoFilter}}
                     </a>
                 </td>
                 <td class="duration">
-                    <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id})"
+                    <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id, workflowId: getTaskWorkflowId(task)})"
                         	ng-if="task.startTimeUtc">
                         {{getTaskDuration(task) | durationFilter}} <span ng-if="task.endTimeUtc === null">and counting</span>
                     </a>

@@ -76,14 +76,14 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
             Object.values(vm.workflows || {})
                 .forEach(wf => {
                 (wf.replays || []).forEach(wft => {
-                    let newActivity = newActivitiesMap[wtf.taskId];
+                    let newActivity = newActivitiesMap[wft.taskId];
                     if (!newActivity) {
                         // create stub tasks for the replays of workflows
-                        newActivity = makeTaskStubFromWorkflowRecord(wf, wtf);
-                        newActivitiesMap[wtf.taskId] = newActivity;
+                        newActivity = makeTaskStubFromWorkflowRecord(wf, wft);
+                        newActivitiesMap[wft.taskId] = newActivity;
                     }
-                    newActivity.workflowId = wtf.workflowId;
-                    newActivity.isWorkflowOldReplay = wtf.workflowId !== wtf.taskId;
+                    newActivity.workflowId = wft.workflowId;
+                    newActivity.isWorkflowOldReplay = wft.workflowId !== wft.taskId;
                 });
             });
             newActivitiesMap['extra'] = makeTaskStubMock("Extra workflow", "extra", applicationId, entityId);
@@ -116,7 +116,7 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
                 vm.error = undefined;
             }));
         }).catch((error) => {
-            $log.warn('Error loading activity children deep for '+activityId, error);
+            $log.warn('Error loading activity children deep for entity '+entityId, error);
             vm.error = 'Cannot load activities (deep) for entity with ID: ' + entityId;
         });
 
@@ -151,9 +151,9 @@ export function makeTaskStubFromWorkflowRecord(wf, wft) {
         id: wft.taskId,
         displayName: wf.name + (wft.reasonForReplay ? " ("+wft.reasonForReplay+")" : ""),
         entityId: (wf.entity || {}).id,
-        isError: wtf.isError===false ? false : true,
-        currentStatus: vm.isNullish(wtf.isError) ? "Unavailable" : wtf.status,
-        submitTimeUtc: wft.submittedTimeUtc,
+        isError: wft.isError===false ? false : true,
+        currentStatus: _.isNil(wft.isError) ? "Unavailable" : wft.status,
+        submitTimeUtc: wft.submitTimeUtc,
         startTimeUtc: wft.startTimeUtc,
         endTimeUtc: wft.endTimeUtc,
         tags: [

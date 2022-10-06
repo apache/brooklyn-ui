@@ -19,7 +19,7 @@
 <div class="workflow-step-outer">
 
     <div class="workflow-step-status-indicators">
-        <span ng-if="isCurrent">
+        <span ng-if="isCurrentAndActive">
             <span ng-if="isRunning" class="running-status">
                 <brooklyn-status-icon value="STARTING"></brooklyn-status-icon>
             </span>
@@ -31,7 +31,7 @@
             </span>
 <!--            <span ng-if="osi.countCompleted > 1">{{ osi.countCompleted }}</span>-->
         </span>
-        <span ng-if="osi.countStarted && osi.countStarted != osi.countCompleted && !(isCurrent && isRunning)">
+        <span ng-if="osi.countStarted && osi.countStarted != osi.countCompleted && !isCurrentAndActive">
             <span class="color-failed" ng-if="isWorkflowError">
                 <i class="fa fa-times-circle"></i>
             </span>
@@ -86,7 +86,7 @@
                             </span>
                         </span>
                         <span ng-if="osi.countCompleted != osi.countStarted">
-                            <span ng-if="isCurrent">
+                            <span ng-if="isCurrentAndActive">
                                 <span ng-if="osi.countCompleted == osi.countStarted - 1">
                                     This step is currently running
                                 </span>
@@ -94,24 +94,24 @@
                                     This step has had errors previously and is currently running
                                 </span>
                             </span>
-                            <span ng-if="!isCurrent">
+                            <span ng-if="!isCurrentAndActive">
                                 <span ng-if="osi.countStarted == 1">
                                     This step had errors when it ran
                                 </span>
-                                <span ng-if="osi.countStarted > 2 && osi.countCompleted==0">
-                                    This step has had errors on all previous runs, including when last run
+                                <span ng-if="osi.countStarted >= 2 && osi.countCompleted==0">
+                                    This step has had errors on all previous runs, including the last run,
                                 </span>
-                                <span ng-if="osi.countStarted > 2 && osi.countCompleted>0">
+                                <span ng-if="osi.countStarted >= 2 && osi.countCompleted>0">
                                     This step has had errors on some previous runs. It most recently ran
                                 </span>
                             </span>
                         </span>
 
                         <span ng-if="isFocusTask">
-                            as the activity currently being viewed (<span class="monospace">{{ stepContext.taskId }}</span>).
+                            in the task focused on in this page (<span class="monospace">{{ stepContext.taskId }}</span>).
                         </span>
                         <span ng-if="!isFocusTask">
-                            in <a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId })">task <span class="monospace">{{ stepContext.taskId }}</span></a>.
+                            in <a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId, workflowId })">task <span class="monospace">{{ stepContext.taskId }}</span></a>.
                         </span>
                     </span>
                 </div>
@@ -130,18 +130,18 @@
                 <div ng-if="osi.countStarted > 1 && osi.countStarted > osi.countCompleted" class="space-above">
                     <div class="data-row"><div class="A">Runs</div> <div class="B"><b>{{ osi.countStarted }}</b></div></div>
                     <div class="data-row"><div class="A">Succeeded</div> <div class="B">{{ osi.countCompleted }}</div></div>
-                    <div class="data-row"><div class="A">Failed</div> <div class="B">{{ osi.countCompleted - osi.countStarted - (isCurrent ? 1 : 0) }}</div></div>
+                    <div class="data-row"><div class="A">Failed</div> <div class="B">{{ osi.countStarted - osi.countCompleted - (isCurrentAndActive ? 1 : 0) }}</div></div>
                 </div>
 
                 <div class="more-space-above" ng-if="stepContext.taskId">
                     <div class="data-row">
-                        <div class="A"><span ng-if="isCurrent">CURRENT</span><span ng-if="!isCurrent">LAST</span> EXECUTION</div>
+                        <div class="A"><span ng-if="isCurrentAndActive">CURRENT</span><span ng-if="!isCurrent">LAST</span> EXECUTION</div>
                         <div class="B">
                                     <span ng-if="isFocusTask">
                                         task <span class="monospace">{{ stepContext.taskId }}</span>
                                     </span>
                             <span ng-if="!isFocusTask">
-                                         <a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId })"
+                                         <a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId, workflowId })"
                                             >task <span class="monospace">{{ stepContext.taskId }}</span></a>
                                     </span>
                         </div>
@@ -150,16 +150,16 @@
                         <div class="data-row nested"><div class="A">Preceeded by</div> <div class="B">
                             <span ng-if="osi.previousTaskId">
                                 Step {{ osi.previous[0]+1 }}
-                                (<a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: osi.previousTaskId })"
+                                (<a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: osi.previousTaskId, workflowId })"
                                     >task <span class="monospace">{{ osi.previousTaskId }}</span></a>)
                             </span>
                             <span ng-if="!osi.previousTaskId">(workflow start)</span>
                         </div></div>
 
-                        <div class="data-row nested" ng-if="!isCurrent"><div class="A">Followed by</div> <div class="B">
+                        <div class="data-row nested" ng-if="!isCurrentMaybeInactive"><div class="A">Followed by</div> <div class="B">
                             <span ng-if="osi.nextTaskId">
                                 Step {{ osi.next[0]+1 }}
-                                (<a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: osi.nextTaskId })"
+                                (<a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: osi.nextTaskId, workflowId })"
                                     >task <span class="monospace">{{ osi.nextTaskId }}</span></a>)
                             </span>
                             <span ng-if="!osi.nextTaskId">(workflow end)</span>
@@ -184,7 +184,7 @@
                         <div class="data-row nested" ng-if="stepContext.otherMetadata" ng-repeat="(key,value) in stepContext.otherMetadata" id="$key">
                             <div class="A">{{ key }}</div> <div class="B multiline-code">{{ vm.yamlOrPrimitive(value) }}</div>
                         </div>
-                        <div class="data-row nested" ng-if="!isCurrent && stepContext.output"><div class="A">Output</div> <div class="B multiline-code">{{ vm.yaml(stepContext.output) }}</div></div>
+                        <div class="data-row nested" ng-if="!isCurrentMaybeInactive && stepContext.output"><div class="A">Output</div> <div class="B multiline-code">{{ vm.yaml(stepContext.output) }}</div></div>
                     </div>
                 </div>
 

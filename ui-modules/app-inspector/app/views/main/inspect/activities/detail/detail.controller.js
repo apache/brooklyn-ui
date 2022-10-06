@@ -23,7 +23,7 @@ import {makeTaskStubFromWorkflowRecord, makeTaskStubMock} from "../activities.co
 
 export const detailState = {
     name: 'main.inspect.activities.detail',
-    url: '/:activityId',
+    url: '/:activityId?workflowId',
     template: template,
     controller: ['$scope', '$state', '$stateParams', '$log', '$uibModal', '$timeout', '$sanitize', '$sce', 'activityApi', 'entityApi', 'brUtilsGeneral', DetailController],
     controllerAs: 'vm',
@@ -34,8 +34,9 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
     const {
         applicationId,
         entityId,
-        activityId
+        activityId,
     } = $stateParams;
+    $scope.workflowId = $stateParams.workflowId;
 
     let vm = this;
     vm.model = {
@@ -50,6 +51,7 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
 
     vm.modalTemplate = modalTemplate;
     vm.wideKilt = false;
+    vm.actions = {};
 
     let observers = [];
 
@@ -62,8 +64,10 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
             }
             vm.model.workflow.loading = 'loading';
 
-            return entityApi.getWorkflow(workflowTag.applicationId || applicationId, workflowTag.entityId || entityId, workflowTag.workflowId || activityId).then(wResponse => {
-                workflowTag = {applicationId, entityId, workflowId: activityId, ...workflowTag};
+            $scope.workflowId = workflowTag.workflowId || $scope.workflowId || activityId;
+            return entityApi.getWorkflow(workflowTag.applicationId || applicationId, workflowTag.entityId || entityId, $scope.workflowId).then(wResponse => {
+                $scope.workflowId = wResponse.data.workflowId;
+                workflowTag = {applicationId, entityId, workflowId: $scope.workflowId, ...workflowTag};
                 if (optimistic) {
                     vm.model.workflow.tag = workflowTag;
                 }
@@ -99,7 +103,7 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
                     throw error;
                 }
 
-                console.log("ERROR loading workflow " + workflowTag.workflowId, error);
+                console.log("ERROR loading workflow " + $scope.workflowId, error);
                 vm.model.workflow.loading = 'error';
             });
         };
@@ -107,7 +111,6 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
         activityApi.activity(activityId).then((response)=> {
             vm.model.activity = response.data;
 
-            vm.actions = vm.actions || {};
             delete vm.actions['effector'];
             delete vm.actions['invokeAgain'];
             if ((vm.model.activity.tags || []).find(t => t=="EFFECTOR")) {
@@ -126,8 +129,9 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
                 vm.actions.cancel = { doAction: () => { activityApi.cancelActivity(activityId); } };
             }
 
+            $scope.workflowId = null;  // if the task loads, force the workflow id to be found on it, otherwise ignore it
             if ((vm.model.activity.tags || []).find(t => t=="WORKFLOW")) {
-                const workflowTag = findWorkflowTag(vm.model.activity);
+                const workflowTag = getTaskWorkflowTag(vm.model.activity);
                 if (workflowTag) {
                     vm.model.workflow.tag = workflowTag;
                     loadWorkflow(workflowTag);
@@ -151,10 +155,10 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
             // in case it corresponds to a workflow and not a task, try loading as a workflow
 
             loadWorkflow(null).then(()=> {
-                const wft = (wf.mainTasks || []).find(t => t.taskId === activityId);
+                const wft = (vm.model.workflow.data.replays || []).find(t => t.taskId === activityId);
                 if (wft) {
-                    vm.model.activity = makeTaskStubFromWorkflowRecord(wf, wft);
-                    vm.model.workflow.tag = findWorkflowTag(vm.model.activity);
+                    vm.model.activity = makeTaskStubFromWorkflowRecord(vm.model.workflow.data, wft);
+                    vm.model.workflow.tag = getTaskWorkflowTag(vm.model.activity);
                 } else {
                     throw "Workflow task "+activityId+" not stored on workflow";
                 }
@@ -251,7 +255,7 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
             $state.go('main.inspect.activities.detail', {
                 applicationId: applicationId,
                 entityId: entityId,
-                activityId: response.data.id
+                activityId: response.data.id,
             });
         });
     }
@@ -285,7 +289,7 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
     vm.isNonEmpty = x => !vm.isEmpty(x);
 }
 
-function findWorkflowTag(task) {
+export function getTaskWorkflowTag(task) {
     if (!task) return null;
     if (!task.tags) return null;
     return task.tags.find(t => t.workflowId);

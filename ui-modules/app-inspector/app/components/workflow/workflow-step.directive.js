@@ -51,6 +51,7 @@ export function workflowStepDirective() {
 
             let step = $scope.step;
             let index = $scope.stepIndex;
+            $scope.workflowId = ($scope.workflow && $scope.workflow.data || {}).workflowId;
 
             vm.stepDetails = () => stepDetails($sce, $scope.workflow, step, index, $scope.expanded);
             vm.toggleExpandState = () => {
@@ -98,11 +99,12 @@ export function workflowStepDirective() {
                 $scope.workflowStepClasses = [];
                 if (workflow.data.currentStepIndex === index) $scope.workflowStepClasses.push('current-step');
 
-                $scope.isCurrent = (workflow.data.currentStepIndex === index);
                 $scope.isRunning = (workflow.data.status === 'RUNNING');
+                $scope.isCurrentMaybeInactive = (workflow.data.currentStepIndex === index);
+                $scope.isCurrentAndActive = ($scope.isCurrentMaybeInactive && $scope.isRunning);
                 $scope.isWorkflowError = (workflow.data.status && workflow.data.status.startsWith('ERROR'));
                 $scope.osi = workflow.data.oldStepInfo[index] || {};
-                $scope.stepContext = ($scope.isCurrent ? workflow.data.currentStepInstance : $scope.osi.context) || {};
+                $scope.stepContext = ($scope.isCurrentMaybeInactive ? workflow.data.currentStepInstance : $scope.osi.context) || {};
                 $scope.isFocusStep = $scope.workflow.tag && ($scope.workflow.tag.stepIndex === index);
                 $scope.isFocusTask = false;
 

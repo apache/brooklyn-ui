@@ -251,6 +251,8 @@ export function aboutStateController($scope, $rootScope, $element, $q, $uibModal
 
 export function timeAgoFilter() {
     return function (input) {
+        if (!input || input<=0) return '-';
+
         if (input) {
             return fromNow(input);
         }

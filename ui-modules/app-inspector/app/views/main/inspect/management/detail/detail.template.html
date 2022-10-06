@@ -87,7 +87,7 @@
                                 {{highlight.time > 0 ? (highlight.time | timeAgo) : 'ongoing'}}
                             </span>
                             <span class="utcTime fade" ng-show="showUTC">
-                                {{highlight.time > 0 ? (highlight.time | date : 'MMM dd, yyyy @ H:mm:ss.sss') : 'ongoing'}}
+                                {{highlight.time > 0 ? (highlight.time | dateFilter ) : 'ongoing'}}
                             </span>
                         </div>
                     </div>

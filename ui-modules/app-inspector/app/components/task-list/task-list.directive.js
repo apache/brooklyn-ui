@@ -18,13 +18,16 @@
  */
 import angular from "angular";
 import {fromNow, duration} from "brooklyn-ui-utils/utils/momentp";
+import moment from "moment";
 import template from "./task-list.template.html";
+import {getTaskWorkflowTag} from "../../views/main/inspect/activities/detail/detail.controller";
 
 const MODULE_NAME = 'inspector.task-list';
 
 angular.module(MODULE_NAME, [])
     .directive('taskList', taskListDirective)
     .filter('timeAgoFilter', timeAgoFilter)
+    .filter('dateFilter', dateFilter)
     .filter('durationFilter', durationFilter)
     .filter('activityTagFilter', activityTagFilter)
     .filter('activityFilter', ['$filter', activityFilter]);
@@ -85,6 +88,11 @@ export function taskListDirective() {
         $scope.$watch('model.filterResult', function () {
             if ($scope.filteredCallback && $scope.model.filterResult) $scope.filteredCallback()( $scope.model.filterResult, $scope.globalFilters );
         });
+        $scope.getTaskWorkflowId = task => {
+            const tag = getTaskWorkflowTag(task);
+            if (tag) return tag.workflowId;
+            return null;
+        };
     }
 
     function tagReducer(result, tag) {
@@ -192,6 +200,7 @@ function topLevelTasks(tasks) {
 
 export function timeAgoFilter() {
     function timeAgo(input) {
+        if (!input || input<=0) return "-";
         return fromNow(input);
     }
 
@@ -199,6 +208,24 @@ export function timeAgoFilter() {
 
     return timeAgo;
 }
+
+export function dateFilter() {
+    function date(input, args) {
+        // if (!input || input<=0) return "-";
+
+        if (args==='short') {
+            return moment(input).format('MMM D, yyyy @ HH:mm:ss');
+        } else if (args==='iso') {
+            return moment(input).format('yyyy-MM-DD HH:mm:ss.SSS');
+        } else {
+            return moment(input).format('MMM D, yyyy @ HH:mm:ss.SSS');
+        }
+        return "TODO - "+input;
+    }
+
+    return date;
+}
+
 export function durationFilter() {
     return function (input) {
         return duration(input);
