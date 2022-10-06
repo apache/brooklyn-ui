@@ -186,16 +186,18 @@
 
                         <div class="workflow-body">
                             <div ng-if="vm.model.workflow.loading == 'loaded'">
-                                <div ng-if="vm.model.workflow.data.taskIds.length > 1">
+                                <div ng-if="vm.model.workflow.data.replays.length > 1">
                                     <div style="float: right; margin-top: -9px;" class="btn-group" uib-dropdown>
                                         <button id="replay-button" type="button" class="btn btn-select-dropdown" uib-dropdown-toggle>
                                             Select replay <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="replay-button">
-                                            <li role="menuitem" ng-repeat="id in vm.model.workflow.data.taskIds" id="workflow-replay-{{ id }}">
-                                                <a href="" ui-sref="main.inspect.activities.detail({activityId: id})" ng-class="{'selected' : vm.model.activityId === id}">
+                                            <li role="menuitem" ng-repeat="replay in vm.model.workflow.data.replays" id="workflow-replay-{{ replay.taskId }}">
+                                                <a href="" ui-sref="main.inspect.activities.detail({activityId: replay.taskId})" ng-class="{'selected' : vm.model.activityId === replay.taskId}">
                                                     <i class="fa fa-check check"></i>
-                                                    <span class="monospace">{{ id }}</span></a> </li>
+<!--                                                    <span class="monospace">{{ replay.taskId }}</span>-->
+                                                    {{ replay.submitTimeUtc | date : 'MMM dd, yyyy @ H:mm:ss' }} - {{ replay.reasonForReplay || '(no reason supplied)' }}
+                                                </a> </li>
                                             <li role="menuitem">
                                                 <a href="" ng-click="vm.showReplayHelp()" ng-class="{'selected' : showReplayHelp}"><i>More information</i></a>
                                             </li>

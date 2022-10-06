@@ -19,6 +19,7 @@
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./detail.template.html";
 import modalTemplate from './kilt.modal.template.html';
+import {makeTaskStubFromWorkflowRecord, makeTaskStubMock} from "../activities.controller";
 
 export const detailState = {
     name: 'main.inspect.activities.detail',
@@ -144,18 +145,33 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
             $log.warn('Error loading activity for '+activityId, error);
             // prefer this simpler error message over the specific ones below
             vm.errorBasic = true;
-            vm.error = $sce.trustAsHtml('Cannot load activity with ID: <b>' + _.escape(activityId) + '</b> <br/><br/>' +
-                'Task may have completed and been cleared from memory, or may not have been run. Details may be available in logs.');
+            vm.error = $sce.trustAsHtml('Cannot load task with ID: <b>' + _.escape(activityId) + '</b> <br/><br/>' +
+                'The task is no longer stored in memory. Details may be available in logs.');
 
             // in case it corresponds to a workflow and not a task, try loading as a workflow
 
             loadWorkflow(null).then(()=> {
+                const wft = (wf.mainTasks || []).find(t => t.taskId === activityId);
+                if (wft) {
+                    vm.model.activity = makeTaskStubFromWorkflowRecord(wf, wft);
+                    vm.model.workflow.tag = findWorkflowTag(vm.model.activity);
+                } else {
+                    throw "Workflow task "+activityId+" not stored on workflow";
+                }
+
                 // give a better error
-                vm.error = $sce.trustAsHtml('Information on workflow <b>' + _.escape(activityId) + '</b> is available but with limitations.<br/><br/>' +
-                    'The initial task is no longer available, possibly because this workflow has been resumed after a restart.');
+                vm.error = $sce.trustAsHtml('Limited information on workflow task <b>' + _.escape(activityId) + '</b>.<br/><br/>' +
+                    (!vm.model.activity.endTimeUtc
+                        ? "The run appears to have been interrupted by a server restart or failover."
+                        : 'The workflow is known but this task is no longer stored in memory.') );
 
             }).catch(error2 => {
                 $log.debug("ID "+activityId+" does not correspond to workflow either", error2);
+
+                // vm.error = $sce.trustAsHtml('Mock data for workflow task <b>' + _.escape(activityId) + '</b>.');
+                //
+                // vm.model.activity = makeTaskStubMock("Extra workflow task", "extra", applicationId, entityId);
+                // vm.model.workflow.tag = findWorkflowTag(vm.model.activity);
             });
         });
 

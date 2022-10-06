@@ -194,6 +194,6 @@ function EntityApi($http, $q) {
         return $http.get('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflows/', {observable: true, ignoreLoadingBar: true});
     }
     function getWorkflow(applicationId, entityId, workflowId) {
-        return $http.get('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflow/' + workflowId, {observable: true, ignoreLoadingBar: true});
+        return $http.get('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflows/' + workflowId, {observable: true, ignoreLoadingBar: true});
     }
 }

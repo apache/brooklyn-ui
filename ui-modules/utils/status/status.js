@@ -40,9 +40,13 @@ const STATUS = {
     ERROR: {name: 'Error', icon: ICONS.ERROR},
     UNKNOWN: {name: 'Unknown', icon: ICONS.UNKNOWN},
     NO_STATE: {name: '', icon: ICONS.NO_STATE},
+
+    // for tasks
     'In progress': {name: 'In progress', icon: ICONS.STARTING},
     'Completed': {name: 'Completed', icon: ICONS.RUNNING},
-    'Failed': {name: 'Failed', icon: ICONS.ERROR}
+    'Failed': {name: 'Failed', icon: ICONS.ERROR},
+    'Unavailable': {name: 'Incomplete', icon: ICONS.ERROR},
+    'Cancelled': {name: 'Cancelled', icon: ICONS.ERROR},
 };
 
 const MODULE_NAME = 'brooklyn.components.status';
@@ -77,7 +81,7 @@ export function statusIconDirective() {
 }
 export function statusTextDirective() {
     var directive = {
-        template: '<div ng-class="statusClass()">{{status.name}}</div>',
+        template: '<div ng-class="statusClass()">{{status.name || value}}</div>',
         restrict: 'E',
         scope: {
             value: '@'

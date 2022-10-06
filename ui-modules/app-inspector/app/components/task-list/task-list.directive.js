@@ -206,6 +206,10 @@ export function durationFilter() {
 }
 
 function isTaskWithTag(task, tag) {
+    if (!task.tags) {
+        console.log("Task without tags: ", task);
+        return false;
+    }
     return task.tags.indexOf(tag)>=0;
 }
 

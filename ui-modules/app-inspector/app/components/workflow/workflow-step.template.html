@@ -43,7 +43,7 @@
 
     <div class="workflow-step" id="workflow-step-{{stepIindex}}" ng-class="vm.getWorkflowStepClasses(stepIndex)">
         <div class="rhs-icons">
-            <div ng-if="isFocusTask" class="workflow-step-pill focus-step">
+            <div ng-if="isFocusTask" class="workflow-step-pill focus-step" title="This step instance is for the task currently selected in the activity view.">
                 selected
             </div>
             <div ng-click="vm.toggleExpandState()" class="expand-toggle">

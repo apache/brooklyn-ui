@@ -62,17 +62,50 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
         onStateChange();
     })
 
+    function mergeActivities() {
+        // merge activitiesRaw records with workflows records, into vm.activities;
+        // only once activitiesRaw is loaded
+        if (vm.activitiesRaw) {
+            const newActivitiesMap = {};
+            vm.activitiesRaw.forEach(activity => {
+                newActivitiesMap[activity.id] = activity;
+            });
+
+            // TODO
+            //(vm.workflows || [])
+            Object.values(vm.workflows || {})
+                .forEach(wf => {
+                (wf.replays || []).forEach(wft => {
+                    let newActivity = newActivitiesMap[wtf.taskId];
+                    if (!newActivity) {
+                        // create stub tasks for the replays of workflows
+                        newActivity = makeTaskStubFromWorkflowRecord(wf, wtf);
+                        newActivitiesMap[wtf.taskId] = newActivity;
+                    }
+                    newActivity.workflowId = wtf.workflowId;
+                    newActivity.isWorkflowOldReplay = wtf.workflowId !== wtf.taskId;
+                });
+            });
+            newActivitiesMap['extra'] = makeTaskStubMock("Extra workflow", "extra", applicationId, entityId);
+
+            vm.activitiesMap = newActivitiesMap;
+            vm.activities = Object.values(vm.activitiesMap);
+        }
+    }
+
     function onStateChange() {
       if ($state.current.name === activitiesState.name && !vm.activities) {
         // only run if we are the active state
         entityApi.entityActivities(applicationId, entityId).then((response) => {
-            vm.activities = response.data;
+            vm.activitiesRaw = response.data;
+            mergeActivities();
             observers.push(response.subscribe((response) => {
-                vm.activities = response.data;
+                vm.activitiesRaw = response.data;
+                mergeActivities();
                 vm.error = undefined;
             }));
         }).catch((error) => {
-            $log.warn('Error loading activity for '+activityId, error);
+            $log.warn('Error loading activities for entity '+entityId, error);
             vm.error = 'Cannot load activities for entity with ID: ' + entityId;
         });
         
@@ -87,10 +120,22 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
             vm.error = 'Cannot load activities (deep) for entity with ID: ' + entityId;
         });
 
+        entityApi.getWorkflows(applicationId, entityId).then((response) => {
+          vm.workflows = response.data;
+          mergeActivities();
+          observers.push(response.subscribe((response) => {
+              vm.workflows = response.data;
+              mergeActivities();
+          }));
+        }).catch((error) => {
+          $log.warn('Error loading workflows for entity '+entityId, error);
+        });
+
+
         $scope.$on('$destroy', () => {
-            observers.forEach((observer) => {
-                observer.unsubscribe();
-            });
+          observers.forEach((observer) => {
+              observer.unsubscribe();
+          });
         });
       }
     }
@@ -99,4 +144,47 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
         vm.focusedActivities = newActivities;
         $scope.globalFilters = globalFilters;
     }
+}
+
+export function makeTaskStubFromWorkflowRecord(wf, wft) {
+    return {
+        id: wft.taskId,
+        displayName: wf.name + (wft.reasonForReplay ? " ("+wft.reasonForReplay+")" : ""),
+        entityId: (wf.entity || {}).id,
+        isError: wtf.isError===false ? false : true,
+        currentStatus: vm.isNullish(wtf.isError) ? "Unavailable" : wtf.status,
+        submitTimeUtc: wft.submittedTimeUtc,
+        startTimeUtc: wft.startTimeUtc,
+        endTimeUtc: wft.endTimeUtc,
+        tags: [
+            "WORKFLOW",
+            {
+                workflowId: wf.workflowId,
+                applicationId: wf.applicationId,
+                entityId: wf.entityId,
+            },
+        ],
+    };
+};
+
+// for testing only
+export function makeTaskStubMock(name, id, applicationId, entityId) {
+    return {
+        id,
+        displayName: name,
+        entityId: entityId,
+        isError: true,
+        currentStatus: "Unavailable",
+        submitTimeUtc: Date.now()-5000,
+        startTimeUtc: Date.now()-4000,
+        endTimeUtc: Date.now()-1000,
+        tags: [
+            "WORKFLOW",
+            {
+                workflowId: 'extra',
+                applicationId: applicationId,
+                entityId: entityId,
+            },
+        ],
+    };
 }

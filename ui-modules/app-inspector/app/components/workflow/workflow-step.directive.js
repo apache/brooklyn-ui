@@ -113,7 +113,7 @@ export function workflowStepDirective() {
                 $scope.isFocusTask = false;
 
                 if ($scope.task) {
-                    if ($scope.stepContext.taskId === $scope.task.id) {
+                    if (!vm.isNullish($scope.stepContext.taskId) && $scope.stepContext.taskId === $scope.task.id) {
                         $scope.isFocusTask = true;
 
                     } else if ($scope.isFocusStep) {
