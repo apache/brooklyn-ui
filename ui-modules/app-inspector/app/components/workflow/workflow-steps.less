@@ -64,18 +64,33 @@
       float: right;
       display: flex;
       gap: 1ex;
+      align-items: center;
+      margin-left: 1em;
       .expand-toggle {
         cursor: pointer;
+      }
+      .step-name {
+        font-weight: 600;
+        font-size: 90%;
+        margin-right: 1ex;
+        margin-top: 1px;
+      }
+
+      .step-id {
+        .monospace();
+        font-size: 80%;
+        background-color: @primary-50;
+      }
+      .focus-step {
+        //background color comes from label-info class
+        //background: @primary-100;
       }
     }
     .workflow-step-pill {
       padding: 2px 6px;
-      border-radius: 12px;
-      background: @gray-lighter;
+      border-radius: 9px;
+      //background: @gray-lighter;
       font-size: 75%;
-      &.focus-step {
-        background: @primary-100;
-      }
     }
     .step-block-title {
       overflow-x: hidden;
@@ -83,33 +98,23 @@
       white-space: nowrap;
       padding-right: 1.5ex;
 
-      .step-name, .step-id, .step-index {
-        padding-right: 1.5ex;
-      }
-
-      .step-name {
-        font-weight: 600;
-        font-size: 90%;
-      }
-
-      .step-id {
-        .monospace();
-        font-size: 85%;
-        font-weight: 600;
-      }
-
       .step-index {
-        font-size: 90%;
+        font-size: 70%;
+        border: solid 1px black;
+        padding: 0px 3px;
+        border-radius: 14px;
+        margin-right: 1ex;
         //font-style: italic;
       }
 
-      .step-title-detail {
+      .step-title-code {
         .monospace();
         font-size: 85%;
         font-weight: 300;
         color: @gray-light;
       }
     }
+
     .step-details {
       margin-top: 12px;
       .space-above {

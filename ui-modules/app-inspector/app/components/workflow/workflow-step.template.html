@@ -43,7 +43,14 @@
 
     <div class="workflow-step" id="workflow-step-{{stepIindex}}" ng-class="vm.getWorkflowStepClasses(stepIndex)">
         <div class="rhs-icons">
-            <div ng-if="isFocusTask" class="workflow-step-pill focus-step" title="This step instance is for the task currently selected in the activity view.">
+            <div ng-if="stepTitle.name" class="step-name">
+                {{ stepTitle.name}}
+            </div>
+            <div ng-if="stepTitle.id" class="workflow-step-pill step-id">
+                <i class="fa fa-id-card-o"></i>
+                {{ stepTitle.id }}
+            </div>
+            <div ng-if="isFocusTask" class="workflow-step-pill focus-step label-info" title="This step instance is for the task currently selected in the activity view.">
                 selected
             </div>
             <div ng-click="vm.toggleExpandState()" class="expand-toggle">
@@ -52,55 +59,60 @@
         </div>
 
         <div class="step-block-title">
-            <span ng-class="stepPrefixClass">{{ stepPrefix }}</span>
-            <span class="step-title-detail" ng-if="stepTitleDetail">{{ stepTitleDetail }}</span>
+            <span class="step-index">{{ stepTitle.index }}</span>
+            <span class="step-title-code">{{ stepTitle.code }}</span>
         </div>
 
         <div ng-if="expanded" class="step-details">
-            <div ng-if="osi.countStarted" class="space-above">
+            <div class="space-above">
                 <div>
-                    <span ng-if="osi.countCompleted == osi.countStarted">
-                        <span ng-if="osi.countCompleted > 1">
-                            This step has run
-                            <span ng-if="osi.countCompleted == 2">
-                                twice,
-                            </span>
-                            <span ng-if="osi.countCompleted > 2">
-                                {{ osi.countCompleted }} times,
-                            </span>
-                            most recently
-                        </span>
-                        <span ng-if="osi.countCompleted == 1">
-                            This step ran
-                        </span>
+                    <span ng-if="!osi.countStarted" class="space-above">
+                        This step has not been run<span ng-if="isRunning"> yet</span>.
                     </span>
-                    <span ng-if="osi.countCompleted != osi.countStarted">
-                        <span ng-if="isCurrent">
-                            <span ng-if="osi.countCompleted == osi.countStarted - 1">
-                                This step is currently running
+                    <span ng-if="osi.countStarted">
+                        <span ng-if="osi.countCompleted == osi.countStarted">
+                            <span ng-if="osi.countCompleted > 1">
+                                This step has run
+                                <span ng-if="osi.countCompleted == 2">
+                                    twice,
+                                </span>
+                                <span ng-if="osi.countCompleted > 2">
+                                    {{ osi.countCompleted }} times,
+                                </span>
+                                most recently
                             </span>
-                            <span ng-if="osi.countCompleted <= osi.countStarted - 2">
-                                This step has had errors previously and is currently running
-                            </span>
-                        </span>
-                        <span ng-if="!isCurrent">
-                            <span ng-if="osi.countStarted == 1">
-                                This step had errors when it ran
-                            </span>
-                            <span ng-if="osi.countStarted > 2 && osi.countCompleted==0">
-                                This step has had errors on all previous runs, including when last run
-                            </span>
-                            <span ng-if="osi.countStarted > 2 && osi.countCompleted>0">
-                                This step has had errors on some previous runs. It most recently ran
+                            <span ng-if="osi.countCompleted == 1">
+                                This step ran
                             </span>
                         </span>
-                    </span>
+                        <span ng-if="osi.countCompleted != osi.countStarted">
+                            <span ng-if="isCurrent">
+                                <span ng-if="osi.countCompleted == osi.countStarted - 1">
+                                    This step is currently running
+                                </span>
+                                <span ng-if="osi.countCompleted <= osi.countStarted - 2">
+                                    This step has had errors previously and is currently running
+                                </span>
+                            </span>
+                            <span ng-if="!isCurrent">
+                                <span ng-if="osi.countStarted == 1">
+                                    This step had errors when it ran
+                                </span>
+                                <span ng-if="osi.countStarted > 2 && osi.countCompleted==0">
+                                    This step has had errors on all previous runs, including when last run
+                                </span>
+                                <span ng-if="osi.countStarted > 2 && osi.countCompleted>0">
+                                    This step has had errors on some previous runs. It most recently ran
+                                </span>
+                            </span>
+                        </span>
 
-                    <span ng-if="isFocusTask">
-                        as the activity currently being viewed (<span class="monospace">{{ stepContext.taskId }}</span>).
-                    </span>
-                    <span ng-if="!isFocusTask">
-                        in <a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId })">task <span class="monospace">{{ stepContext.taskId }}</span></a>.
+                        <span ng-if="isFocusTask">
+                            as the activity currently being viewed (<span class="monospace">{{ stepContext.taskId }}</span>).
+                        </span>
+                        <span ng-if="!isFocusTask">
+                            in <a ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId })">task <span class="monospace">{{ stepContext.taskId }}</span></a>.
+                        </span>
                     </span>
                 </div>
 
@@ -167,15 +179,15 @@
                             </div>
                         </div></div>
 
-                        <div class="data-row nested" ng-if="osi.workflowScratch"><div class="A">Workflow Vars</div> <div class="B multiline-code">{{ vm.yaml(osi.workflowScratch) }}</div></div>
                         <div class="data-row nested" ng-if="stepContext.input"><div class="A">Input</div> <div class="B multiline-code">{{ vm.yaml(stepContext.input) }}</div></div>
+                        <div class="data-row nested" ng-if="osi.workflowScratch"><div class="A">Workflow Vars</div> <div class="B multiline-code">{{ vm.yaml(osi.workflowScratch) }}</div></div>
+                        <div class="data-row nested" ng-if="stepContext.otherMetadata" ng-repeat="(key,value) in stepContext.otherMetadata" id="$key">
+                            <div class="A">{{ key }}</div> <div class="B multiline-code">{{ vm.yamlOrPrimitive(value) }}</div>
+                        </div>
                         <div class="data-row nested" ng-if="!isCurrent && stepContext.output"><div class="A">Output</div> <div class="B multiline-code">{{ vm.yaml(stepContext.output) }}</div></div>
                     </div>
                 </div>
 
-            </div>
-            <div ng-if="!osi.countStarted" class="space-above">
-                This step has not been run<span ng-if="isRunning"> yet</span>.
             </div>
 
             <div class="more-space-above" ng-if="vm.nonEmpty(stepContext) || vm.nonEmpty(step) || vm.nonEmpty(osi)">

@@ -70,30 +70,25 @@ export function workflowStepDirective() {
                 $scope.json = json ? stringify(json) : null;
             }
 
+            $scope.stepTitle = {
+                index: index+1,
+            };
             if (typeof step === 'string') {
-                $scope.stepPrefixClass = 'step-index';
-                $scope.stepPrefix = index + 1;
-                $scope.stepTitleDetail = step;
+                $scope.stepTitle.code = step;
             } else {
 
                 let shorthand = step.userSuppliedShorthand || step.s || step.shorthand;
-                $scope.stepTitleDetail = shorthand;
-                if (step.name) {
-                    $scope.stepPrefixClass = 'step-name';
-                    $scope.stepPrefix = step.name;
-                } else {
-                    if (step.id) {
-                        $scope.stepPrefixClass = 'step-id';
-                        $scope.stepPrefix = step.id;
-                    } else {
-                        $scope.stepPrefixClass = 'step-index';
-                        $scope.stepPrefix = index + 1;
+                $scope.stepTitle.code = shorthand;
+                if (!shorthand) {
+                    $scope.stepTitle.code = step.type || '';
+                    if (step.input) $scope.stepTitle.code += ' ...';
+                }
 
-                        if (!shorthand) {
-                            $scope.stepTitleDetail = step.type || '';
-                            if (step.input) $scope.stepTitleDetail += ' ...';
-                        }
-                    }
+                if (step.name) {
+                    $scope.stepTitle.name = step.name;
+                }
+                if (step.id) {
+                    $scope.stepTitle.id = step.id;
                 }
             }
 
@@ -108,7 +103,6 @@ export function workflowStepDirective() {
                 $scope.isWorkflowError = (workflow.data.status && workflow.data.status.startsWith('ERROR'));
                 $scope.osi = workflow.data.oldStepInfo[index] || {};
                 $scope.stepContext = ($scope.isCurrent ? workflow.data.currentStepInstance : $scope.osi.context) || {};
-
                 $scope.isFocusStep = $scope.workflow.tag && ($scope.workflow.tag.stepIndex === index);
                 $scope.isFocusTask = false;
 
