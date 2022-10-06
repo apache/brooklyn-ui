@@ -86,7 +86,6 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
                     newActivity.isWorkflowOldReplay = wft.workflowId !== wft.taskId;
                 });
             });
-            newActivitiesMap['extra'] = makeTaskStubMock("Extra workflow", "extra", applicationId, entityId);
 
             vm.activitiesMap = newActivitiesMap;
             vm.activities = Object.values(vm.activitiesMap);
@@ -166,25 +165,3 @@ export function makeTaskStubFromWorkflowRecord(wf, wft) {
         ],
     };
 };
-
-// for testing only
-export function makeTaskStubMock(name, id, applicationId, entityId) {
-    return {
-        id,
-        displayName: name,
-        entityId: entityId,
-        isError: true,
-        currentStatus: "Unavailable",
-        submitTimeUtc: Date.now()-5000,
-        startTimeUtc: Date.now()-4000,
-        endTimeUtc: Date.now()-1000,
-        tags: [
-            "WORKFLOW",
-            {
-                workflowId: 'extra',
-                applicationId: applicationId,
-                entityId: entityId,
-            },
-        ],
-    };
-}

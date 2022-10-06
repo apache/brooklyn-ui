@@ -22,6 +22,7 @@
 import {capitalize, rounded} from "./general";
 
 export class MomentPrecise {
+    // means all time-ago round to 5s which is a nicer UX than constantly updating (even if occasionally misleading)
     precisionForFromNow = 5000;
     summaryForBelowPrecisionThreshhold = "a few seconds";
     capitalized = false;

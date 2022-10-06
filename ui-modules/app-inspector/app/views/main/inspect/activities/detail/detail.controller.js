@@ -19,7 +19,7 @@
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./detail.template.html";
 import modalTemplate from './kilt.modal.template.html';
-import {makeTaskStubFromWorkflowRecord, makeTaskStubMock} from "../activities.controller";
+import {makeTaskStubFromWorkflowRecord} from "../activities.controller";
 
 export const detailState = {
     name: 'main.inspect.activities.detail',
@@ -92,6 +92,7 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
                 }
                 if (!vm.actions.workflowReplays.length) delete vm.actions['workflowReplays'];
 
+                if (vm.model.workflow.data.status === 'RUNNING') wResponse.interval(1000);
                 observers.push(wResponse.subscribe((wResponse2)=> {
                     // change the workflow object so widgets get refreshed
                     vm.model.workflow = { ...vm.model.workflow, data: wResponse2.data };
@@ -139,6 +140,7 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
             }
 
             vm.error = undefined;
+            if (!vm.model.activity.endTimeUtc || vm.model.activity.endTimeUtc<0) response.interval(1000);
             observers.push(response.subscribe((response)=> {
                 vm.model.activity = response.data;
                 vm.error = undefined;
@@ -171,11 +173,6 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
 
             }).catch(error2 => {
                 $log.debug("ID "+activityId+" does not correspond to workflow either", error2);
-
-                // vm.error = $sce.trustAsHtml('Mock data for workflow task <b>' + _.escape(activityId) + '</b>.');
-                //
-                // vm.model.activity = makeTaskStubMock("Extra workflow task", "extra", applicationId, entityId);
-                // vm.model.workflow.tag = findWorkflowTag(vm.model.activity);
             });
         });
 

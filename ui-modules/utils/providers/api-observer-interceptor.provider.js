@@ -48,9 +48,13 @@ export function apiObserverInterceptorProvider() {
 
             function doDriveBy(response, error = false) {
                 if (response.config.hasOwnProperty(OBSERVABLE) && response.config[OBSERVABLE]) {
+                    response.clock = clock;
+                    response.interval = (interval) => {
+                        response.clock = Observable.interval(interval);
+                    }
                     response.subscribe = (next, error, complete)=> {
                         if (!OBSERVER_CACHE.has(response.config.url)) {
-                            OBSERVER_CACHE.set(response.config.url, clock.mapTo(coldObservableFactory(response.config)).exhaust().share());
+                            OBSERVER_CACHE.set(response.config.url, response.clock.mapTo(coldObservableFactory(response.config)).exhaust().share());
                         }
                         return OBSERVER_CACHE.get(response.config.url).subscribe(next, error, complete);
                     }
