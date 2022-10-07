@@ -61,6 +61,7 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
         // if we switch from child state to us and we haven't been initialized
         onStateChange();
     })
+    $scope.activitiesLoaded = false;
 
     function mergeActivities() {
         // merge activitiesRaw records with workflows records, into vm.activities;
@@ -76,7 +77,7 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
                 .forEach(wf => {
                     const last = wf.replays[wf.replays.length-1];
                     let submitted = {};
-                    let lastTask;
+                    let firstTask, lastTask;
 
                     wf.replays.forEach(wft => {
                         let t = newActivitiesMap[wft.taskId];
@@ -85,29 +86,36 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
                             t = makeTaskStubFromWorkflowRecord(wf, wft);
                             newActivitiesMap[wft.taskId] = t;
                         }
-                        t.workflowId = wft.workflowId;
+                        t.workflowId = wf.workflowId;
+                        t.workflowParentId = wf.parentId;
 
                         // overriding submitters breaks things (infinite loop, in kilt?)
                         // so instead just set whether it is the latest replay
-                        t.isWorkflowPreviousRun = last && wft.taskId !== last.taskId;
+                        t.isWorkflowFirstRun = false;
+                        t.isWorkflowLastRun = false;
+                        t.isWorkflowTopLevel = !wf.parentId;
+                        if (!firstTask) firstTask = t;
                         lastTask = t;
                     });
-                    if (wf.replays.length>=2) lastTask.isReplayedWorkflowLatest = true;
+                    firstTask.isWorkflowFirstRun = true;
+                    lastTask.isWorkflowLastRun = true;
                 });
 
             vm.activitiesMap = newActivitiesMap;
             vm.activities = Object.values(vm.activitiesMap);
-            // TODO weird bug
-            // vm.activitiesUniq = _.uniq(Object.values(vm.activitiesMap));
-            // if (vm.activities.length != Object.values(vm.activitiesMap).length) {
-            //     console.log("MISMATCH", vm.activitiesMap);
-            // }
         }
     }
+
+    let activitiesRawLoadAttemptFinished = false;
+    let workflowLoadAttemptFinished = false;
 
     function onStateChange() {
       if ($state.current.name === activitiesState.name && !vm.activities) {
         // only run if we are the active state
+
+        const checkTasksLoadAttemptsFinished = () => {
+            $scope.activitiesLoaded = activitiesRawLoadAttemptFinished && workflowLoadAttemptFinished;
+        }
         entityApi.entityActivities(applicationId, entityId).then((response) => {
             vm.activitiesRaw = response.data;
             mergeActivities();
@@ -116,9 +124,13 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
                 mergeActivities();
                 vm.error = undefined;
             }));
+            activitiesRawLoadAttemptFinished = true;
+            checkTasksLoadAttemptsFinished();
         }).catch((error) => {
             $log.warn('Error loading activities for entity '+entityId, error);
             vm.error = 'Cannot load activities for entity with ID: ' + entityId;
+            activitiesRawLoadAttemptFinished = true;
+            checkTasksLoadAttemptsFinished();
         });
 
         entityApi.getWorkflows(applicationId, entityId).then((response) => {
@@ -128,8 +140,12 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
                 vm.workflows = response.data;
                 mergeActivities();
             }));
+            workflowLoadAttemptFinished = true;
+            checkTasksLoadAttemptsFinished();
         }).catch((error) => {
             $log.warn('Error loading workflows for entity ' + entityId, error);
+            workflowLoadAttemptFinished = true;
+            checkTasksLoadAttemptsFinished();
         });
 
         entityApi.entityActivitiesDeep(applicationId, entityId).then((response) => {
@@ -151,6 +167,8 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
       }
     }
 
+    // these are passed around so that the task list and the kilt view share info on DST's, at least
+    // (would be nice to share more but that gets trickier, and this is the essential!)
     vm.onFilteredActivitiesChange = function (newActivities, globalFilters) {
         vm.focusedActivities = newActivities;
         $scope.globalFilters = globalFilters;

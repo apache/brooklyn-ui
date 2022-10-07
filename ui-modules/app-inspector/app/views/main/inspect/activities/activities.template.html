@@ -21,7 +21,7 @@
   <div class="row">
     <div ng-class="{ 'col-md-12': true, 'col-lg-8': !vm.wideKilt && vm.isNonEmpty(vm.activitiesDeep), 'col-lg-12': vm.wideKilt || !vm.isNonEmpty(vm.activitiesDeep)}">
         <loading-state error="vm.error" ng-if="!vm.activities"></loading-state>
-        <task-list task-type="{{filter || 'activity'}}" search="search" tasks="vm.activities" filtered-callback="vm.onFilteredActivitiesChange" ng-if="vm.activities"></task-list>
+        <task-list task-type="{{filter}}" search="search" tasks="vm.activities" tasks-loaded="activitiesLoaded" filtered-callback="vm.onFilteredActivitiesChange" ng-if="vm.activities"></task-list>
     </div>
 
     <div ng-class="{ 'col-md-12': true, 'col-lg-4': !vm.wideKilt, 'col-lg-12': vm.wideKilt }" ng-if="vm.isNonEmpty(vm.activitiesDeep)">

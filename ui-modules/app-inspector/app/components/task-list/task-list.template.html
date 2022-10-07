@@ -19,9 +19,14 @@
 <div class="no-activities" ng-if="tasks.length === 0">No activities</div>
 <div ng-if="tasks.length !== 0" class="task-list">
     <div class="form-group search-bar-with-controls">
-        <div class="btn-group activity-tag-filter" uib-dropdown keyboard-nav="true" dropdown-append-to="model.appendTo" ng-if="filters.selectedDisplayName">
+        <div class="btn-group activity-tag-filter" uib-dropdown keyboard-nav="true" dropdown-append-to="model.appendTo"
+                ng-if="filters.selectedDisplay && (globalFilters.transient || !isEmpty(filters.available))">
             <button id="single-button" type="button" class="btn btn-default" uib-dropdown-toggle>
-                Show <span class="selection-summary">{{filters.selectedDisplayName}}</span> <span class="caret"></span>
+                <i class="fa fa-filter" class="funnel"></i> <span class="selection-summary">
+                    <span class="dropdown-badges-for-category" ng-repeat="classAndBadges in filters.selectedDisplay" id="{{ classAndBadges.class }}"
+                        ><span class="dropdown-badge-for-category {{ classAndBadges.class }}" ng-repeat="badge in classAndBadges.badges" id="{{ badge }}">{{ badge }}</span
+                    ></span>
+                </span> <span class="caret"></span>
             </button>
             <ul class="dropdown-menu with-checks" uib-dropdown-menu role="menu" aria-labelledby="single-button">
                 <li role="menuitem" ng-repeat="(tag,value) in filters.available track by tag"
@@ -53,8 +58,11 @@
                         {{ value.countAbsolute - value.count}}
                     </span>
                 </li>
-                <li role="menuitem" class="activity-tag-filter-action" ng-if="globalFilters.transient" ng-click="globalFilters.transient.action()">
-                    <i><span class="main">{{globalFilters.transient.display}}</span></i>
+                <li role="menuitem" class="activity-tag-filter-action divider-above" style="padding-bottom: 9px;"
+                        ng-if="globalFilters.transient" ng-click="globalFilters.transient.onClick()"
+                        ng-class="{'selected': globalFilters.transient.checked}">
+                    <i class="fa fa-check check if-selected"></i>
+                    <span class="main" title="{{globalFilters.transient.help}}">{{globalFilters.transient.display}}</span>
                 </li>
                 <li role="menuitem" class="activity-tag-filter-error" ng-if="!globalFilters.transient && isEmpty(filters.available)">
                     <i><span class="main">No filter options</span></i>
@@ -92,11 +100,16 @@
                     </a>
                 </td>
                 <td class="name">
-                    <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id, workflowId: getTaskWorkflowId(task)})">{{task.displayName}}
+                    <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id, workflowId: getTaskWorkflowId(task)})"
+                       title="Task {{ task.id
+                            }}{{ task.workflowId ? '\n'+'Workflow '+task.workflowId : ''
+                            }}{{ task.isTaskStubFromWorkflowRecord ? '\n\n'+'This task is no longer available at the server. This stub was created from the limited information in the workflow record.' : ''
+                            }}{{ task.workflowId && !task.isWorkflowTopLevel ? '\n\n'+'This is a nested workflow, launched from workflow '+task.workflowParentId+'.' : ''
+                            }}{{ !task.isWorkflowFirstRun && task.isWorkflowLastRun ? '\n\n'+'Workflow replayed. This is the most recent.' : ''
+                            }}{{ task.workflowId && !task.isWorkflowLastRun ? '\n\n'+'Workflow replayed. This is an earlier run.' : ''
+                            }}"
+                    >{{task.displayName}}
                     </a>
-                    {{ task.id }} -
-                    prevRun={{ task.isWorkflowPreviousRun }}
-                    replLatest={{ task.isReplayedWorkflowLatest }}
                 </td>
                 <td class="started">
                     <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id, workflowId: getTaskWorkflowId(task)})">

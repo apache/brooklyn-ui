@@ -47,16 +47,29 @@ task-list {
         flex: 0;
 
         .selection-summary {
-          background-color: @gray-dark;
-          color: @gray-lighter;
-          padding: 3px 6px;
-          border-radius: 5px;
-        }
+          .funnal {
+            color: @gray-light;
+            margin-right: 1ex;
+          }
+          .dropdown-badges-for-category {
+            margin: 0 0.2ex;
+          }
+          .dropdown-badge-for-category {
+            background-color: @gray-dark;
+            color: @gray-lightest;
+            padding: 3px 6px;
+            border-radius: 5px;
+            margin: 0 0.3ex;
 
+            &.dropdown-category-type-tag {
+              background-color: @color-labels-dark;
+            }
+          }
+        }
+        margin-right: 0.6em;
       }
       .activity-name-filter {
         flex: 1;
-        margin-left: 0.5em;
       }
   }
 
@@ -123,6 +136,7 @@ task-list {
 
   .dropdown-menu.with-checks {
     width: auto;
+    max-height: 400px;
 
     li {
       padding-left: 2em;

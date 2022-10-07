@@ -259,7 +259,7 @@
 
                         <div class="row">
                             <div ng-class="{ 'col-md-12': true, 'col-lg-8': !vm.wideKilt && vm.isNonEmpty(vm.model.activitiesDeep), 'col-lg-12': vm.wideKilt || !vm.isNonEmpty(vm.model.activitiesDeep)}">
-                                <task-list tasks="vm.model.activityChildren" task-type="activityChildren" filtered-callback="vm.onFilteredActivitiesChange"></task-list>
+                                <task-list tasks="vm.model.activityChildren" parent-task-id="vm.model.activityId" filtered-callback="vm.onFilteredActivitiesChange"></task-list>
                             </div>
                             <div ng-class="{ 'col-md-12': true, 'col-lg-4': !vm.wideKilt, 'col-lg-12': vm.wideKilt }" ng-if="vm.isNonEmpty(vm.model.activitiesDeep)">
                                 <expandable-panel expandable-template="vm.modalTemplate" class="panel-table">

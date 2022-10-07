@@ -39,7 +39,9 @@ export function taskListDirective() {
         restrict: 'E',
         scope: {
             tasks: '=',
-            taskType: '@',
+            tasksLoaded: '<?',  // if tasks might complete initial loading late, the caller should pass a watchable expression that resolves to true when initially loaded
+            taskType: '@?',
+            parentTaskId: '@?',
             filteredCallback: '&?',
             search: '<',
         },
@@ -47,14 +49,15 @@ export function taskListDirective() {
     };
 
     function controller($scope, $element) {
-        const isActivityChildren = $scope.taskType === 'activityChildren';
+        const isActivityChildren = !! $scope.parentTaskId;
 
+        // selected filters are shared with other views esp kilt view so they can see what is and isn't included.
+        // currently only used for transient.
         $scope.globalFilters = {
             // transient set when those tags seen
         };
 
         $scope.isEmpty = x => _.isNil(x) || x.length==0 || (typeof x === "object" && Object.keys(x).length==0);
-        $scope.filters = { available: {}, selectedFilters: {}, selectedIds: {} };
         $scope.model = {
             appendTo: $element,
             filterResult: null,
@@ -65,13 +68,13 @@ export function taskListDirective() {
             let result = tasks || [];
 
             if (selected) {
-                _.uniq(Object.values(selected).map(f => f.category)).forEach(category => {
+                _.uniq(Object.values(selected).map(f => f.categoryForEvaluation || f.category)).forEach(category => {
                     if (categoryToExclude === '' || categoryToExclude != category) {
                         let newResult = [];
                         if ($scope.filters.startingSetFilterForCategory[category]) {
                             newResult = $scope.filters.startingSetFilterForCategory[category](result);
                         }
-                        Object.values(selected).filter(f => f.category === category).forEach(f => {
+                        Object.values(selected).filter(f => (f.categoryForEvaluation || f.category) === category).forEach(f => {
                             const filter = f.filter;
                             if (!filter) {
                                 console.warn("Incomplete activities tag filter", tagF);
@@ -98,31 +101,21 @@ export function taskListDirective() {
 
             // now update name
             const enabledCategories = _.uniq(Object.values($scope.filters.selectedFilters).map(f => f.category));
-            let filterNameParts = Object.entries($scope.filters.displayNameForCategory).map(([category, nameFn]) => {
+            $scope.filters.selectedDisplay = [];
+            Object.entries($scope.filters.displayNameFunctionForCategory).forEach(([category, nameFn]) => {
                 if (!enabledCategories.includes(category)) return null;
-                let nf = $scope.filters.displayNameForCategory[category];
-                return nf ? nf(Object.values($scope.filters.selectedFilters).filter(f => f.category === category)) : null;
-            }).filter(x => x);
-            $scope.filters.selectedDisplayName = filterNameParts.length ? filterNameParts.join('; ') :
-                isActivityChildren ? 'all sub-tasks' : 'all tasks';
+                let nf = $scope.filters.displayNameFunctionForCategory[category];
+                let badges = nf ? nf(Object.values($scope.filters.selectedFilters).filter(f => (f.categoryForBadges || f.category) === category)) : null;
+                badges = (badges || []).filter(x=>x);
+                if (badges.length) $scope.filters.selectedDisplay.push({ class: 'dropdown-category-'+category, badges });
+            });
+            if (!$scope.filters.selectedDisplay.length) $scope.filters.selectedDisplay.push({ class: 'dropdown-category-default', badges: ['all'] });
         };
 
         function selectFilter(filterId, state) {
-            // annoying, but since task list is live updated, we store the last value of selectedIds in the event filters come and go;
-            // mainly tried because initial order could be too strange, but now we correct that, so this isn't so important
-            let oldTheoreticalEnablement = $scope.filters.selectedIds[filterId];
-
             const f = $scope.filters.available[filterId];
             if (!f) {
-                console.log("FILTER "+filterId+" not available yet, storing theoretical enablement");
-
-                if (!_.isNil(state) ? state : !oldTheoreticalEnablement) {
-                    $scope.filters.selectedIds[filterId] = 'theoretically-enabled';
-                } else {
-                    delete $scope.filters.selectedIds[filterId];
-                }
-
-                // we tried to select eg effector, when it didn't exist
+                // we tried to select eg effector, when it didn't exist, just ignore
                 return false;
             } else {
                 f.select(filterId, f, state);
@@ -130,57 +123,9 @@ export function taskListDirective() {
             }
         }
 
-        setFiltersForTasks($scope, isActivityChildren);
         $scope.filterValue = $scope.search;
 
-        selectFilter("_top", true);
-        selectFilter("_anyTypeTag", true);
-        if ($scope.taskType === 'activity') {
-            // default?
-            selectFilter('EFFECTOR');
-            selectFilter('WORKFLOW');
-        } else if ($scope.taskType) {
-            selectFilter($scope.taskType);
-        } else {
-            // TODO when is this called?
-            selectFilter('EFFECTOR');
-            selectFilter('WORKFLOW');
-        }
-
-        cacheSelectedIdsFromFilters($scope);
-        selectFilter("_workflowReplayed");
-        selectFilter("_workflowNonLastReplayHidden");
-
-        console.log($scope.filters);
-
-        // // this would be nice, but it doesn't play nice with dynamic task updates
-        // // sometimes no tasks are loaded yet and this enables the "all" but then tasks get loaded
-        // if ($scope.tasksFilteredByTag.length==0) {
-        //     // if nothing found at top level then broaden
-        //     selectFilter("_top", false);
-        // }
-
-
-
-        // TODO check taskType=activity...  .... can they not all just leave it off, to send the default; send the default?
-        // and make sure others send EFFECTOR
-
-        // if ((!$scope.taskType || $scope.taskType.startsWith('activity')) && (!filterPreselected || $scope.tasksFilteredByTag.length==0 )) {
-        //     // if nothing found with filters, try disabling the filters
-        //     filterPreselected = selectFilter('_top', false);
-        //     if (!filterPreselected || $scope.tasksFilteredByTag.length == 0 ) {
-        //         selectFilter('_top', true);
-        //     }
-        // }
-
         $scope.isScheduled = isScheduled;
-
-        $scope.$watch('tasks', ()=>{
-            $scope.recomputeTasks();
-        });
-        $scope.$watch('globalFilters', ()=>{
-            $scope.recomputeTasks();
-        });
 
         $scope.getTaskDuration = function(task) {
             if (!task.startTimeUtc) {
@@ -189,17 +134,55 @@ export function taskListDirective() {
             if (!_.isNil(task.endTimeUtc) && task.endTimeUtc <= 0) return null;
             return (task.endTimeUtc === null ? new Date().getTime() : task.endTimeUtc) - task.startTimeUtc;
         }
-
-        $scope.$watch('model.filterResult', function () {
-            if ($scope.filteredCallback && $scope.model.filterResult) $scope.filteredCallback()( $scope.model.filterResult, $scope.globalFilters );
-        });
         $scope.getTaskWorkflowId = task => {
             const tag = getTaskWorkflowTag(task);
             if (tag) return tag.workflowId;
             return null;
         };
 
-        $scope.recomputeTasks();
+        $scope.$watch('model.filterResult', function () {
+            if ($scope.filteredCallback && $scope.model.filterResult) $scope.filteredCallback()( $scope.model.filterResult, $scope.globalFilters );
+        });
+
+        let tasksLoadedTrueReceived = false;
+
+        function refreshDropdownsUntilTasksAreLoaded() {
+            if (tasksLoadedTrueReceived || $scope.uiDropdownInteraction) return;
+            tasksLoadedTrueReceived = $scope.tasksLoaded;
+
+            $scope.filters = { available: {}, selectedFilters: {} };
+            setFiltersForTasks($scope, isActivityChildren);
+            selectFilter("_top", true);
+            selectFilter("_anyTypeTag", true);
+            if ($scope.taskType) {
+                selectFilter($scope.taskType);
+            } else {
+                // defaults
+                selectFilter('EFFECTOR');
+                selectFilter('WORKFLOW');
+            }
+            selectFilter("_workflowReplayedTopLevel");
+            selectFilter("_workflowNonLastReplayHidden");
+
+            if ($scope.tasksFilteredByTag.length==0) {
+                // if nothing found at top level then broaden
+                selectFilter("_top", false);
+            }
+
+            $scope.recomputeTasks();
+        }
+
+        $scope.$watch('tasks', ()=>{
+            $scope.recomputeTasks();
+        });
+        $scope.$watch('globalFilters', ()=>{
+            $scope.recomputeTasks();
+        });
+
+        $scope.$watch('tasksLoaded', v => {
+            refreshDropdownsUntilTasksAreLoaded();
+        });
+        refreshDropdownsUntilTasksAreLoaded();
     }
 
     function setFiltersForTasks(scope, isActivityChildren) {
@@ -213,9 +196,23 @@ export function taskListDirective() {
                 // only default to filtering transient if some but not all are transient
                 globalFilters.transient = {
                     include: true,
+                    checked: false,
+                    display: 'Exclude transient tasks',
+                    help: 'Routine, low-level, usually uninteresting tasks are tagged as TRANSIENT so they can be easily ignored' +
+                        'to simplify display and preserve memory for more interesting tasks. ' +
+                        'These are by default excluded from this view. ' +
+                        'They can be included by de-selecting this option. ' +
+                        'Note that transient tasks may be cleared from memory very quickly when they are completed ' +
+                        'and can subsequently give warnings in this UI.',
+                    filter: inputs => inputs.filter(t => !isTaskWithTag(t, 'TRANSIENT')),
+                    onClick: ()=> {
+                        globalFilters.transient.action();
+                        // need to recompute as the filters are changed now
+                        scope.recomputeTasks();
+                    },
                     action: ()=>{
                         globalFilters.transient.include = !globalFilters.transient.include;
-                        globalFilters.transient.display = (globalFilters.transient.include ? 'Hide' : 'Show') + ' transient tasks';
+                        globalFilters.transient.checked = !globalFilters.transient.include;
                         setFiltersForTasks(scope, isActivityChildren);
                     },
                 };
@@ -226,45 +223,20 @@ export function taskListDirective() {
         const tasks = tasksAfterGlobalFilters(tasksAll, globalFilters);
 
         function defaultToggleFilter(tag, value, forceValue, fromUi, skipRecompute) {
-            if ((scope.filters.selectedIds[tag] && _.isNil(forceValue)) || forceValue===false) {
-                delete scope.filters.selectedIds[tag];
+            if ((scope.filters.selectedFilters[tag] && _.isNil(forceValue)) || forceValue===false) {
                 delete scope.filters.selectedFilters[tag];
                 if (value.onDisabledPost) value.onDisabledPost(tag, value, forceValue);
             } else {
                 if (value.onEnabledPre) value.onEnabledPre(tag, value, forceValue);
-                scope.filters.selectedIds[tag] = 'enabled';
                 scope.filters.selectedFilters[tag] = value;
             }
             if (fromUi) {
                 // on a UI click, don't try to be too clever about remembered IDs
-                cacheSelectedIdsFromFilters(scope);
+                scope.uiDropdownInteraction = true;
             }
 
             if (!skipRecompute) scope.recomputeTasks();
         }
-
-        /*
-          MENU should look like following, with group-specific behaviour for filtering and enablement,
-          e.g. auto-enable all of first group if only is de-selected:
-
-          Only show top-level tasks
-        x Show tasks called from other entities
-                submittedByTask==null ||
-                submittedByTask.metadata.entityId != entityId
-          Show tasks nested within this entity
-          ---
-          Any task type/tag
-        x Effector calls
-        x Workflows
-          Tag: tag1
-          Tag: tag2
-
-
-TODO workflow ui
-          ? most recent run of workflow only
-             combine others under last if loaded
-          ? show individual workflows resumed on startup! ? label as top-level?
-         */
 
         function clearCategory(category) {
             return function(filterId, filter, forceValue) {
@@ -302,7 +274,7 @@ TODO workflow ui
             }
         }
 
-        const defaultFilters = {};
+        const filtersFullList = {};
 
         let tasksById = tasksAll.reduce( (result,t) => { result[t.id] = t; return result; }, {} );
         function filterTopLevelTasks(tasks) { return filterWithId(tasks, tasksById, isTopLevelTask); }
@@ -316,35 +288,33 @@ TODO workflow ui
         function getFilterOrEmpty(id) {
             return id && (id.filter ? id : scope.filters.available[id]) || {};
         }
-        scope.filters.displayNameForCategory = {
+        scope.filters.displayNameFunctionForCategory = {
             nested: set => {
                 if (!set || !set.length) return null;
                 let nestedFiltersAvailable = Object.values(scope.filters.available).filter(f => f.category === 'nested');
                 if (set.length == nestedFiltersAvailable.length-1 && !set[0].isDefault) {
                     // everything but first is selected, so no message
-                    return null;
+                    return [ 'all' ];
                 }
-                if (set.length==1) {
-                    return getFilterOrEmpty(set[0]).displaySummary;
-                }
-                // all tasks
-                return null;
+                return set.map(s => s.displaySummary || '');
+                // if (set.length==1) {
+                //     return [ getFilterOrEmpty(set[0]).displaySummary ];
+                // }
+                // // only happens if we have
+                // return null;
             },
-            'type/tag': set => {
+            'type-tag': set => {
                 if (!set || !set.length) return null;
                 if (set.length<=3) {
-                    let tags = set.map(s => (getFilterOrEmpty(s).displaySummary || '').toLowerCase()).filter(x => x);
-                    if (tags.length==0) return null;
-                    if (tags.length==1) return tags[0];
-                    if (tags.length==2) return tags[0] + ' or ' + tags[1];
-                    if (tags.length==3) return tags[0] + ', ' + tags[1] + ', or ' + tags[2];
+                    return set.map(s => (getFilterOrEmpty(s).displaySummary || '').toLowerCase()).filter(x => x);
+                } else {
+                    return ['any of '+set.length+' tags'];
                 }
-                return 'any of multiple tags'
             },
         };
-        defaultFilters['_top'] = {
+        filtersFullList['_top'] = {
             display: 'Only show ' + (isActivityChildren ? 'direct sub-tasks' : 'top-level tasks'),
-            displaySummary: 'only top-level tasks',
+            displaySummary: 'only top-level',
             isDefault: true,
             filter: filterTopLevelTasks,  // redundant with starting set, but contributes the right count
             category: 'nested',
@@ -352,15 +322,15 @@ TODO workflow ui
             onDisabledPost: enableOthersIfCategoryEmpty('_top'),
         }
         if (!isActivityChildren) {
-            defaultFilters['_cross_entity'] = {
+            filtersFullList['_cross_entity'] = {
                 display: 'Include cross-entity sub-tasks',
-                displaySummary: 'cross-entity tasks',
+                displaySummary: 'cross-entity',
                 filter: filterCrossEntityTasks,
                 category: 'nested',
                 onEnabledPre: clearOther('_top'),
                 onDisabledPost: enableFilterIfCategoryEmpty('_top'),
             }
-            defaultFilters['_recursive'] = {
+            filtersFullList['_recursive'] = {
                 display: 'Include sub-tasks on this entity',
                 displaySummary: 'sub-tasks',
                 filter: filterNestedSameEntityTasks,
@@ -369,9 +339,9 @@ TODO workflow ui
                 onDisabledPost: enableFilterIfCategoryEmpty('_top'),
             }
         } else {
-            defaultFilters['_recursive'] = {
+            filtersFullList['_recursive'] = {
                 display: 'Show all sub-tasks',
-                displaySummary: 'sub-tasks',
+                displaySummary: 'all sub-tasks',
                 filter: filterNonTopLevelTasks,
                 category: 'nested',
                 onEnabledPre: clearOther('_top'),
@@ -379,89 +349,115 @@ TODO workflow ui
             }
         }
 
-        const countWorkflowsWhichAreNestedButHaveReplayed = tasksAll.filter(t =>
-            t.isReplayedWorkflowLatest && t.submittedByTask
-        ).length;
-        defaultFilters['_workflowReplayed'] = {
-            display: 'Include workflow sub-tasks which are replayed',
+        filtersFullList['_anyTypeTag'] = {
+            display: 'Any task type or tag',
             displaySummary: null,
-            filter: tasks => tasks.filter(t => t.isReplayedWorkflowLatest && t.submittedByTask),
-            category: 'nested',
-            count: countWorkflowsWhichAreNestedButHaveReplayed,
-            countAbsolute: countWorkflowsWhichAreNestedButHaveReplayed,
+            filter: input => input,
+            category: 'type-tag',
             onEnabledPre: clearCategory(),
             onDisabledPost: enableOthersIfCategoryEmpty('_anyTypeTag'),
         }
 
-        const countWorkflowsWhichArePreviousReplays = tasksAll.filter(t => t.isWorkflowPreviousRun).length;
-        defaultFilters['_workflowNonLastReplayHidden'] = {
-            display: 'Exclude old runs of workflows',
+        function addTagFilter(tag, target, display, extra) {
+            if (!target[tag]) target[tag] = {
+                display: display,
+                displaySummary: tag.toLowerCase(),
+                filter: filterForTasksWithTag(tag),
+                category: 'type-tag',
+                onEnabledPre: clearOther('_anyTypeTag'),
+                onDisabledPost: enableFilterIfCategoryEmpty('_anyTypeTag'),
+                ...(extra || {}),
+            }
+        }
+        // put these first
+        addTagFilter('EFFECTOR', filtersFullList, 'Effectors', { displaySummary: 'effector', includeIfZero: true });
+        addTagFilter('WORKFLOW', filtersFullList, 'Workflow', { includeIfZero: true });
+
+        // add filters for other tags
+        tasks.forEach(t =>
+            (t.tags || []).filter(tag => typeof tag === 'string' && tag.length < 32).forEach(tag =>
+                    addTagFilter(tag, filtersFullList, 'Tag: ' + tag.toLowerCase())
+            ));
+
+
+        const filterWorkflowsReplayedTopLevel = t => !t.isWorkflowFirstRun && t.isWorkflowLastRun && t.isWorkflowTopLevel;
+        const countWorkflowsReplayedTopLevel = tasksAll.filter(filterWorkflowsReplayedTopLevel).length;
+        filtersFullList['_workflowReplayedTopLevel'] = {
+            display: 'Include replayed top-level workflows',
             help: 'Some workflows have been replayed, either manually or on a server restart or failover. ' +
-                'To simplify the display, old runs of workflow invocations which have been replayed are excluded here by default. ' +
-                'The most recent replay will be included, subject to other filters, and previous replays can be accessed ' +
-                'on the workflow page.',
+                'Top-level workflows which have been replayed can be listed explicitly to make ' +
+                'them easier to find, because they usually have had issues which may require attention.',
             displaySummary: null,
-            filter: tasks => tasks.filter(t => {
-                    return _.isNil(t.isWorkflowPreviousRun) || !t.isWorkflowPreviousRun;
-                }),
-            count: countWorkflowsWhichArePreviousReplays,
-            countAbsolute: countWorkflowsWhichArePreviousReplays,
+            filter: tasks => tasks.filter(filterWorkflowsReplayedTopLevel),
+            categoryForEvaluation: 'nested',
             category: 'workflow',
-            onEnabledPre: null,
-            onDisabledPost: null,
+            count: countWorkflowsReplayedTopLevel,
+            countAbsolute: countWorkflowsReplayedTopLevel,
         }
 
-        const countWorkflowsWithoutTaskWhichAreCompleted = tasksAll.filter(t => t.endTimeUtc>0 && t.isTaskStubFromWorkflowRecord).length;
-        defaultFilters['_workflowCompletedWithoutTaskHidden'] = {
+        const filterWorkflowsReplayedNested = t => !t.isWorkflowFirstRun && t.isWorkflowLastRun && !t.isWorkflowTopLevel;
+        const countWorkflowsReplayedNested = tasksAll.filter(filterWorkflowsReplayedNested).length;
+        filtersFullList['_workflowReplayedNested'] = {
+            display: 'Include replayed sub-workflows',
+            help: 'Some nested workflows have been replayed, either manually or on a server restart or failover. ' +
+                'Nested workflows are those invoked by other workflows, and their replay is usually due to a replay of their parent workflow. '+
+                'To simplify the display, these are excluded in this list by default. ' +
+                'Their root workflow or task will be shown, subject to other filters, and can be navigated on the workflow page. ' +
+                'If this option is enabled, these tasks will included here.',
+            displaySummary: null,
+            filter: tasks => tasks.filter(filterWorkflowsReplayedNested),
+            categoryForEvaluation: 'nested',
+            category: 'workflow',
+            count: countWorkflowsReplayedNested,
+            countAbsolute: countWorkflowsReplayedNested,
+        }
+
+        const filterWorkflowsWhichAreNotPreviousReplays = t => _.isNil(t.isWorkflowLastRun) || t.isWorkflowLastRun;
+        const filterWorkflowsWhichAreActuallyPreviousReplays = t => !_.isNil(t.isWorkflowLastRun) && !t.isWorkflowLastRun;
+        const countWorkflowsWhichArePreviousReplays = tasksAll.filter(filterWorkflowsWhichAreActuallyPreviousReplays).length;
+        filtersFullList['_workflowNonLastReplayHidden'] = {
+            display: 'Exclude old runs of workflows',
+            help: 'Some workflows have been replayed, either manually or on a server restart or failover. ' +
+                'To simplify the display, old runs of workflow invocations which have been replayed are excluded in this list by default. ' +
+                'The most recent replay will be included, subject to other filters, and previous replays can be accessed on the workflow page. ' +
+                'If this option is enabled, these tasks will not be excluded here.',
+            displaySummary: null,
+            filter: tasks => tasks.filter(filterWorkflowsWhichAreNotPreviousReplays),
+            count: countWorkflowsWhichArePreviousReplays,
+            countAbsolute: countWorkflowsWhichArePreviousReplays,
+            categoryForEvaluation: 'workflow1',
+            category: 'workflow',
+        }
+
+        const filterWorkflowsWithoutTaskWhichAreCompleted = t => t.endTimeUtc>0 && t.isTaskStubFromWorkflowRecord;
+        const countWorkflowsWithoutTaskWhichAreCompleted = tasksAll.filter(filterWorkflowsWithoutTaskWhichAreCompleted).length;
+        filtersFullList['_workflowCompletedWithoutTaskHidden'] = {
             display: 'Exclude old completed workflows',
             help: 'Some older workflows no longer have a task record, '+
                 'either because they completed in a previous server prior to a server restart or failover, ' +
                 'or because their tasks have been cleared from memory in this server. ' +
                 'These can be excluded to focus on more recent tasks.',
             displaySummary: null,
-            // filter: tasks => tasks.filter(t => t.isWorkflowPreviousRun !== false),
-            filter: tasks => tasks.filter(t => !(t.endTimeUtc>0 && t.isTaskStubFromWorkflowRecord)),
+            filter: tasks => tasks.filter(filterWorkflowsWithoutTaskWhichAreCompleted),
             count: countWorkflowsWithoutTaskWhichAreCompleted,
             countAbsolute: countWorkflowsWithoutTaskWhichAreCompleted,
-            category: 'workflow2',
-            onEnabledPre: null,
-            onDisabledPost: null,
+            categoryForEvaluation: 'workflow2',
+            category: 'workflow',
         }
-
-        defaultFilters['_anyTypeTag'] = {
-            display: 'Any task type or tag',
-            displaySummary: null,
-            filter: input => input,
-            category: 'type/tag',
-            onEnabledPre: clearCategory(),
-            onDisabledPost: enableOthersIfCategoryEmpty('_anyTypeTag'),
-        }
-
-        function addTagFilter(tag, target, display, displaySummary) {
-            if (!target[tag]) target[tag] = {
-                display: display,
-                displaySummary: displaySummary || tag.toLowerCase(),
-                filter: filterForTasksWithTag(tag),
-                category: 'type/tag',
-                onEnabledPre: clearOther('_anyTypeTag'),
-                onDisabledPost: enableFilterIfCategoryEmpty('_anyTypeTag'),
-            }
-        }
-        // put these first
-        addTagFilter('EFFECTOR', defaultFilters, 'Effectors', 'effector');
-        addTagFilter('WORKFLOW', defaultFilters, 'Workflow');
-
-        const filtersIncludingTags = {...defaultFilters};
-
-        // add filters for other tags
-        tasks.forEach(t =>
-            (t.tags || []).filter(tag => typeof tag === 'string' && tag.length < 32).forEach(tag =>
-                    addTagFilter(tag, filtersIncludingTags, 'Tag: ' + tag.toLowerCase())
-            ));
 
         // fill in fields
+        function updateSelectedFilters(newValues) {
+            Object.entries(scope.filters.selectedFilters).forEach(([filterId, oldValue]) => {
+                const newValue = newValues[filterId];
+                scope.filters.selectedFilters[filterId] = newValue;
+                if (!newValue) delete scope.filters.selectedFilters[filterId];
+            });
+        }
 
-        Object.entries(filtersIncludingTags).forEach(([k, f]) => {
+        updateSelectedFilters(filtersFullList);
+
+        // add counts
+        Object.entries(filtersFullList).forEach(([k, f]) => {
             if (!f.select) f.select = defaultToggleFilter;
             if (!f.onClick) f.onClick = (filterId, filter) => defaultToggleFilter(filterId, filter, null, true);
 
@@ -469,44 +465,15 @@ TODO workflow ui
             if (_.isNil(f.countAbsolute)) f.countAbsolute = f.filter(tasks).length;
         });
 
-        function updateSelectedFilters(newValues) {
-            const deferredCalls = [];
-            Object.entries(scope.filters.selectedIds).forEach(([filterId,filterSelectionNote]) => {
-                const newValue = newValues[filterId];
-                const oldValue = scope.filters.selectedFilters[filterId];
-                //console.log("enabling ",filterId,filterSelectionNote,newValue,oldValue);
-                scope.filters.selectedFilters[filterId] = newValue;
-                scope.filters.selectedIds[filterId] = newValue ? 'updated' : filterSelectionNote;
-                if (!newValue) delete scope.filters.selectedFilters[filterId];
-
-                if (newValue && filterSelectionNote==="theoretically-enabled") {
-                    deferredCalls.push(()=> {
-                        // trigger the handler, update other categories, if a category becomes available late
-                        console.log("Delayed enablement of filter ", filterId);
-                        // console.log("=");
-                        newValue.select(filterId, newValue, true, false, true);
-                        // console.log("--");
-                        // console.log("CATS 1", Object.keys(scope.filters.selectedIds));
-                        // console.log("CATS 2", Object.keys(scope.filters.selectedFilters));
-                        // console.log("CATS 3", Object.keys(scope.filters.selectedIds));
-                    });
-                }
-            });
-            deferredCalls.forEach(c => c());
-        }
-
-        // add counts
-        //updateSelectedFilters(filtersIncludingTags);
-
         // filter and move to new map
         let result = {};
-        Object.entries(filtersIncludingTags).forEach(([k, f]) => {
-            if (f.countAbsolute > 0) result[k] = f;
+        Object.entries(filtersFullList).forEach(([k, f]) => {
+            if (f.countAbsolute > 0 || f.includeIfZero) result[k] = f;
         });
 
         // and delete categories that are redundant
-        function deleteCategoryIfAllCountsAreEqual(category) {
-            if (_.uniq(Object.values(result).filter(f => f.category === category).map(f => f.countAbsolute)).length==1) {
+        function deleteCategoryIfAllCountsAreEqualOrZero(category) {
+            if (_.uniq(Object.values(result).filter(f => f.category === category).filter(f => f.countAbsolute).map(f => f.countAbsolute)).length==1) {
                 Object.entries(result).filter(([k,f]) => f.category === category).forEach(([k,f])=>delete result[k]);
             }
         }
@@ -519,7 +486,7 @@ TODO workflow ui
         }
         deleteFiltersInCategoryThatAreEmpty('nested');
         deleteCategoryIfSize1('nested');
-        deleteCategoryIfAllCountsAreEqual('type/tag');  // because all tags are on all tasks
+        deleteCategoryIfAllCountsAreEqualOrZero('type-tag');  // because all tags are on all tasks
 
         if (!result['_cross_entity'] && result['_recursive']) {
             // if we don't have cross-entity sub-tasks, tidy this message
@@ -533,14 +500,16 @@ TODO workflow ui
         // now add dividers between categories
         let lastCat = null;
         for (let v of Object.values(result)) {
-            if (lastCat!=null && lastCat!=v.category) {
+            let thisCat = v.categoryForDisplay || v.category;
+            if (lastCat!=null && lastCat!=thisCat) {
                 v.classes = (v.classes || '') + ' divider-above';
             }
-            lastCat = v.category;
+            lastCat = thisCat;
         }
 
         scope.filters.available = result;
         updateSelectedFilters(result);
+
         return result;
     }
 }
@@ -622,14 +591,12 @@ function filterForTasksWithTag(tag) {
 
 function tasksAfterGlobalFilters(inputs, globalFilters) {
     if (inputs) {
-        if (globalFilters && globalFilters.transient && !globalFilters.transient.include) {
-            inputs = inputs.filter(t => !isTaskWithTag(t, 'TRANSIENT'));
-        }
+        Object.values(globalFilters || {}).filter(gf => !gf.include).forEach(gf => {
+            inputs = gf.filter(inputs);
+        });
     }
     return inputs;
 }
-
-function cacheSelectedIdsFromFilters(scope) { scope.filters.selectedIds = { ...scope.filters.selectedFilters }; }
 
 export function activityFilter($filter) {
     return function (activities, searchText) {
