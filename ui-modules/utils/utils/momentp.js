@@ -69,7 +69,7 @@ export class MomentPrecise {
         if (millis < 0) {
             millis = -millis;
             tweak = x=> {
-                return this.capitalized("-" + x.replace(/ /g, ""));
+                return "- " + this.capitalize(x);
             }
         }
 
@@ -77,8 +77,8 @@ export class MomentPrecise {
 
         let secs = millis/1000;
         let secsR = Math.round(secs);
-        if (secsR < 10) return tweak(rounded(secs, 1)+"s");
-        if (secsR < 60) return tweak(secsR+"s");
+        if (secs < 10) return tweak(rounded(secs, 1)+"s");
+        if (secs < 60) return tweak(secsR+"s");
 
         let mins = Math.floor(secs/60);
         let minsR = Math.round(secs/60);
@@ -90,32 +90,32 @@ export class MomentPrecise {
         if (mins < 5) {
             return tweak(mins +"m" + " " + secs +"s");
         }
-        if (minsR < 60) {
+        if (mins < 60) {
             return tweak(minsR) +" mins";
         }
 
-        let hours = Math.floor(minsR/60);
-        let hoursR = Math.round(minsR/60);
+        let hours = Math.floor(mins/60);
+        let hoursR = Math.round(mins/60);
         mins = Math.round(mins - hours*60);
         if (mins >= 60) {
             hours++;
             mins -= 60;
         }
         if (hours < 4) return tweak(hours +"h" +" " + mins +"m");
-        if (hoursR < 24) return tweak(hoursR) +" hours";
+        if (hours < 24) return tweak(hoursR) +" hours";
 
-        let days = Math.floor(hoursR/24);
-        let daysR = Math.round(hoursR/24);
+        let days = Math.floor(hours/24);
+        let daysR = Math.round(hours/24);
         hours = Math.round(hours - days*24);
         if (hours >= 24) {
             days++;
             hours -= 24;
         }
         if (days < 7) return tweak(days + "d" +" " + hours +"h");
-        if (daysR < 365) return tweak(daysR) + " days";
+        if (days < 365) return tweak(daysR) + " days";
 
-        let years = Math.floor(daysR / 365.25);
-        let yearsR = Math.round(daysR / 365.25);
+        let years = Math.floor(days / 365.25);
+        let yearsR = Math.round(days / 365.25);
         days = Math.round(days - years*365.25);
         if (days >= 365) {
             years += 1;
