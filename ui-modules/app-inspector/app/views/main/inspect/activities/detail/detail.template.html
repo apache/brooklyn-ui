@@ -101,14 +101,14 @@
                         </div>
                         <div class="summary-block" ng-mouseenter="showUTC=true" ng-mouseleave="showUTC=false">
                             <div class="row">
-                                <div ng-if="vm.model.activity.endTimeUtc" class="col-md-3 summary-item summary-item-timestamp">
+                                <div ng-if="vm.model.activity.endTimeUtc && vm.model.activity.endTimeUtc>0" class="col-md-3 summary-item summary-item-timestamp">
                                     <div class="summary-item-icon">
                                         <div class="icon-stopwatch"></div>
                                     </div>
                                     <div class="summary-item-label">Duration</div>
                                     <div class="summary-item-value">
                                         <div class="humanized fade" ng-show="!showUTC">
-                                            took {{vm.model.activity.endTimeUtc- vm.model.activity.startTimeUtc | durationFilter}}
+                                            took {{vm.model.activity.endTimeUtc - vm.model.activity.startTimeUtc | durationFilter}}
                                         </div>
                                         <div class="utcTime fade" ng-show="showUTC">
                                             {{vm.model.activity.endTimeUtc- vm.model.activity.startTimeUtc }} ms
@@ -194,7 +194,7 @@
                                         <ul class="dropdown-menu dropdown-menu-right dropdown-menu-replays" uib-dropdown-menu role="menu" aria-labelledby="replay-button">
                                             <li role="menuitem" ng-repeat="replay in vm.model.workflow.data.replays" id="workflow-replay-{{ replay.taskId }}">
                                                 <a href="" ui-sref="main.inspect.activities.detail({activityId: replay.taskId, workflowId: workflowId})" ng-class="{'selected' : vm.model.activityId === replay.taskId}">
-                                                    <i class="fa fa-check check"></i>
+                                                    <i class="fa fa-check check if-selected"></i>
 <!--                                                    <span class="monospace">{{ replay.taskId }}</span>-->
                                                     <span ng-if="replay.reasonForReplay">{{ replay.reasonForReplay }} (</span
                                                     ><span>{{ replay.submitTimeUtc | dateFilter: 'short' }}</span
@@ -202,7 +202,10 @@
 
                                                 </a> </li>
                                             <li role="menuitem">
-                                                <a href="" ng-click="vm.showReplayHelp()" ng-class="{'selected' : showReplayHelp}"><i>More information</i></a>
+                                                <a href="" ng-click="vm.showReplayHelp()" ng-class="{'selected' : showReplayHelp}">
+                                                    <i class="fa fa-check check if-selected"></i>
+                                                    <i>More information</i>
+                                                </a>
                                             </li>
                                         </ul>
                                     </div>

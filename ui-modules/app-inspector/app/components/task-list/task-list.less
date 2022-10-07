@@ -45,6 +45,14 @@ task-list {
 
       .activity-tag-filter {
         flex: 0;
+
+        .selection-summary {
+          background-color: @gray-dark;
+          color: @gray-lighter;
+          padding: 3px 6px;
+          border-radius: 5px;
+        }
+
       }
       .activity-name-filter {
         flex: 1;
@@ -53,40 +61,99 @@ task-list {
   }
 
 
-  .activity-tag-filter-tag {
-    color: #A8B2B9;
-  }
-  .activity-tag-filter-action {
-    color: mix(#A8B2B9, #444);
-  }
-  .activity-tag-filter-tag, .activity-tag-filter-action {
+  //.activity-tag-filter-tag {
+  //  color: #A8B2B9;
+  //}
+  //.activity-tag-filter-action {
+  //  color: mix(#A8B2B9, #444);
+  //}
+  .activity-tag-filter-error, .activity-tag-filter-tag, .activity-tag-filter-action {
     -webkit-font-smoothing: antialiased;
     padding: 5px 10px 5px 10px;
+  }
+  .activity-tag-filter-tag, .activity-tag-filter-action {
     cursor: pointer;
     transition: color 0.5s;
 
     &:hover {
-      color: #7B8C98;
+      //color: #7B8C98;
       background-color: @dropdown-link-hover-bg;
+
       .badge {
-        background-color: #7B8C98;
+        //background-color: #7B8C98;
       }
     }
+
     &.active {
-      color: #3B558A;
+      //color: #3B558A;
       background-color: @dropdown-link-active-bg;
+
       .badge {
-        background-color: #3B558A;
+//        background-color: #3B558A;
       }
+
       &:hover {
-        color: #3B558A;
+        //color: #3B558A;
       }
+    }
+
+    .main {
+      margin-right: 1em;
     }
     .badge {
-      color: #3b558a;
-      color: white;
+      //color: #3b558a;
+      //color: white;
       background-color: #e6e6e6;
-      background-color: #A8B2B9;;
+      //background-color: #A8B2B9;
+
+      margin-left: 1ex;
+      float: right;
+
+      &.included {
+        background-color: @brand-primary;
+      }
+      &.more-excluded-elsewhere, &.more-excluded-elsewhere {
+        background-color: @gray-lighter;
+      }
+      &.excluded-here {
+        background-color: @primary-50;
+      }
+    }
+  }
+
+  .dropdown-menu.with-checks {
+    width: auto;
+
+    li {
+      padding-left: 2em;
+      &.divider-above {
+        border-top: 1px solid @gray-lighter;
+        margin-top: 6px;
+        padding-top: 10px;
+      }
+    }
+    .selected {
+      .check.if-selected {
+        margin-left: -1.5em;
+        display: block;
+        width: 0;
+        height: 0;
+        overflow: visible;
+        margin-top: 3px;
+        margin-bottom: -3px;
+      }
+      .included, .more-excluded-elsewhere {
+        display: block;
+      }
+      .excluded-here {
+        display: none;
+      }
+    }
+    .included, .more-excluded-elsewhere {
+      display: none;
+    }
+    .check.if-selected {
+      display: none;
     }
   }
 }

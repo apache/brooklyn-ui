@@ -71,24 +71,37 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
                 newActivitiesMap[activity.id] = activity;
             });
 
-            // TODO
-            //(vm.workflows || [])
             Object.values(vm.workflows || {})
+                .filter(wf => wf.replays && wf.replays.length)
                 .forEach(wf => {
-                (wf.replays || []).forEach(wft => {
-                    let newActivity = newActivitiesMap[wft.taskId];
-                    if (!newActivity) {
-                        // create stub tasks for the replays of workflows
-                        newActivity = makeTaskStubFromWorkflowRecord(wf, wft);
-                        newActivitiesMap[wft.taskId] = newActivity;
-                    }
-                    newActivity.workflowId = wft.workflowId;
-                    newActivity.isWorkflowOldReplay = wft.workflowId !== wft.taskId;
+                    const last = wf.replays[wf.replays.length-1];
+                    let submitted = {};
+                    let lastTask;
+
+                    wf.replays.forEach(wft => {
+                        let t = newActivitiesMap[wft.taskId];
+                        if (!t) {
+                            // create stub tasks for the replays of workflows
+                            t = makeTaskStubFromWorkflowRecord(wf, wft);
+                            newActivitiesMap[wft.taskId] = t;
+                        }
+                        t.workflowId = wft.workflowId;
+
+                        // overriding submitters breaks things (infinite loop, in kilt?)
+                        // so instead just set whether it is the latest replay
+                        t.isWorkflowPreviousRun = last && wft.taskId !== last.taskId;
+                        lastTask = t;
+                    });
+                    if (wf.replays.length>=2) lastTask.isReplayedWorkflowLatest = true;
                 });
-            });
 
             vm.activitiesMap = newActivitiesMap;
             vm.activities = Object.values(vm.activitiesMap);
+            // TODO weird bug
+            // vm.activitiesUniq = _.uniq(Object.values(vm.activitiesMap));
+            // if (vm.activities.length != Object.values(vm.activitiesMap).length) {
+            //     console.log("MISMATCH", vm.activitiesMap);
+            // }
         }
     }
 
@@ -107,7 +120,18 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
             $log.warn('Error loading activities for entity '+entityId, error);
             vm.error = 'Cannot load activities for entity with ID: ' + entityId;
         });
-        
+
+        entityApi.getWorkflows(applicationId, entityId).then((response) => {
+            vm.workflows = response.data;
+            mergeActivities();
+            observers.push(response.subscribe((response) => {
+                vm.workflows = response.data;
+                mergeActivities();
+            }));
+        }).catch((error) => {
+            $log.warn('Error loading workflows for entity ' + entityId, error);
+        });
+
         entityApi.entityActivitiesDeep(applicationId, entityId).then((response) => {
             vm.activitiesDeep = response.data;
             observers.push(response.subscribe((response) => {
@@ -115,21 +139,9 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
                 vm.error = undefined;
             }));
         }).catch((error) => {
-            $log.warn('Error loading activity children deep for entity '+entityId, error);
+            $log.warn('Error loading activity children deep for entity ' + entityId, error);
             vm.error = 'Cannot load activities (deep) for entity with ID: ' + entityId;
         });
-
-        entityApi.getWorkflows(applicationId, entityId).then((response) => {
-          vm.workflows = response.data;
-          mergeActivities();
-          observers.push(response.subscribe((response) => {
-              vm.workflows = response.data;
-              mergeActivities();
-          }));
-        }).catch((error) => {
-          $log.warn('Error loading workflows for entity '+entityId, error);
-        });
-
 
         $scope.$on('$destroy', () => {
           observers.forEach((observer) => {
@@ -146,7 +158,7 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
 }
 
 export function makeTaskStubFromWorkflowRecord(wf, wft) {
-    return {
+    const result = {
         id: wft.taskId,
         displayName: wf.name + (wft.reasonForReplay ? " ("+wft.reasonForReplay+")" : ""),
         entityId: (wf.entity || {}).id,
@@ -155,6 +167,7 @@ export function makeTaskStubFromWorkflowRecord(wf, wft) {
         submitTimeUtc: wft.submitTimeUtc,
         startTimeUtc: wft.startTimeUtc,
         endTimeUtc: wft.endTimeUtc,
+        isTaskStubFromWorkflowRecord: true,
         tags: [
             "WORKFLOW",
             {
@@ -164,4 +177,5 @@ export function makeTaskStubFromWorkflowRecord(wf, wft) {
             },
         ],
     };
+    return result;
 };

@@ -64,6 +64,12 @@ export function workflowStepDirective() {
             vm.nonEmpty = (data) => data && (data.length || Object.keys(data).length);
             vm.isNullish = _.isNil;
 
+            vm.getWorkflowNameFromReference = (ref) => {
+                // would be nice to get a name, but all we have is appId, entityId, workflowId; and no lookup table;
+                // could look it up or store at server, but seems like overkill
+                return null;
+            };
+
             $scope.json = null;
             $scope.jsonMode = null;
             vm.showJson = (mode, json) => {

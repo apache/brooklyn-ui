@@ -166,7 +166,7 @@
                         </div></div>
 
                         <div class="data-row nested with-buttons" ng-if="stepContext.subWorkflows && stepContext.subWorkflows.length"><div class="A" style="margin-top: 2px;">Sub-workflows</div> <div class="B">
-                            <div class="btn-group" uib-dropdown>
+                            <div class="btn-group" uib-dropdown ng-if="stepContext.subWorkflows.length>1">
                                 <button id="workflow-button" type="button" class="btn btn-select-dropdown workflow-button-small" uib-dropdown-toggle>
                                     {{ stepContext.subWorkflows.length }} nested workflow{{ stepContext.subWorkflows.length>1 ? 's' : '' }} <span class="caret"></span>
                                 </button>
@@ -174,8 +174,15 @@
                                     <li role="menuitem" ng-repeat="sub in stepContext.subWorkflows" id="sub-workflow-{{ sub.workflowId }}">
                                         <a href="" ui-sref="main.inspect.activities.detail({applicationId: sub.applicationId, entityId: sub.entityId, activityId: sub.workflowId})">
                                             <i class="fa fa-check check"></i>
+                                            <span>{{ vm.getWorkflowNameFromReference(sub) }}</span>
                                             <span class="monospace">{{ sub.workflowId }}</span></a> </li>
                                 </ul>
+                            </div>
+                            <div class="btn-group" uib-dropdown ng-if="stepContext.subWorkflows.length==1">
+                                <a href="" ui-sref="main.inspect.activities.detail({applicationId: stepContext.subWorkflows[0].applicationId, entityId: stepContext.subWorkflows[0].entityId, activityId: stepContext.subWorkflows[0].workflowId})">
+                                    <span>{{ vm.getWorkflowNameFromReference(stepContext.subWorkflows[0]) }}</span>
+                                    <span class="monospace">{{ stepContext.subWorkflows[0].workflowId }}</span>
+                                </a>
                             </div>
                         </div></div>
 
@@ -194,7 +201,7 @@
 
                 <div class="btn-group right" uib-dropdown>
                     <button id="extra-data-button" type="button" class="btn btn-select-dropdown pull-right" uib-dropdown-toggle>
-                        View data <span class="caret"></span>
+                        JSON <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu pull-right" uib-dropdown-menu role="menu" aria-labelledby="extra-data-button">
                         <li role="menuitem" > <a href="" ng-click="vm.showJson('stepContext', stepContext)" ng-class="{'selected' : jsonMode === 'stepContext'}">

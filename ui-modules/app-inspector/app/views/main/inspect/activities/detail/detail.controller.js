@@ -155,8 +155,7 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
                 'The task is no longer stored in memory. Details may be available in logs.');
 
             // in case it corresponds to a workflow and not a task, try loading as a workflow
-
-            loadWorkflow(null).then(()=> {
+            function onNonTaskWorkflowLoad() {
                 const wft = (vm.model.workflow.data.replays || []).find(t => t.taskId === activityId);
                 if (wft) {
                     vm.model.activity = makeTaskStubFromWorkflowRecord(vm.model.workflow.data, wft);
@@ -167,13 +166,18 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
 
                 // give a better error
                 vm.error = $sce.trustAsHtml('Limited information on workflow task <b>' + _.escape(activityId) + '</b>.<br/><br/>' +
-                    (!vm.model.activity.endTimeUtc
+                    (!vm.model.activity.endTimeUtc || vm.model.activity.endTimeUtc==-1
                         ? "The run appears to have been interrupted by a server restart or failover."
                         : 'The workflow is known but this task is no longer stored in memory.') );
+            }
 
-            }).catch(error2 => {
-                $log.debug("ID "+activityId+" does not correspond to workflow either", error2);
-            });
+            loadWorkflow({workflowId: activityId}).then(onNonTaskWorkflowLoad)
+                .catch(error => {
+                    loadWorkflow(null).then(onNonTaskWorkflowLoad)
+                        .catch(error => {
+                            $log.debug("ID "+activityId+"/"+$scope.workflowId+" does not correspond to workflow either", error);
+                        });
+                });
         });
 
         activityApi.activityChildren(activityId).then((response)=> {

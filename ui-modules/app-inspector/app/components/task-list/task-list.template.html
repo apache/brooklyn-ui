@@ -19,16 +19,45 @@
 <div class="no-activities" ng-if="tasks.length === 0">No activities</div>
 <div ng-if="tasks.length !== 0" class="task-list">
     <div class="form-group search-bar-with-controls">
-        <div class="btn-group activity-tag-filter" uib-dropdown keyboard-nav="true" dropdown-append-to="model.appendTo">
+        <div class="btn-group activity-tag-filter" uib-dropdown keyboard-nav="true" dropdown-append-to="model.appendTo" ng-if="filters.selectedDisplayName">
             <button id="single-button" type="button" class="btn btn-default" uib-dropdown-toggle>
-                Displaying <kbd>{{model.filterByTag.display}}</kbd> <span class="caret"></span>
+                Show <span class="selection-summary">{{filters.selectedDisplayName}}</span> <span class="caret"></span>
             </button>
-            <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
-                <li role="menuitem" class="activity-tag-filter-tag" ng-repeat="(tag,value) in filters track by tag" ng-model="model.filterByTag" uib-btn-radio="value">
-                    <span>{{value.display}}</span> <span class="badge">{{value.count}}</span>
+            <ul class="dropdown-menu with-checks" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                <li role="menuitem" ng-repeat="(tag,value) in filters.available track by tag"
+                        class="activity-tag-filter-tag {{value.classes}}"
+                        ng-click="value.onClick(tag, value)"
+                        ng-class="{'selected': filters.selectedFilters[tag]}">
+
+                    <i class="fa fa-check check if-selected"></i>
+
+                    <span class="main" title="{{value.help}}">{{value.display}}</span>
+
+                    <span class="badge included"
+                          title="Activities included by this filter">
+                        {{value.count}}
+                    </span>
+                    <span class="badge excluded-here"
+                          ng-if="value.count > 0"
+                          title="Activities included by this filter">
+                        {{value.count}}
+                    </span>
+                    <span class="badge more-excluded-elsewhere"
+                          title="Additional activities excluded by other filter categories"
+                          ng-if="value.count > 0 && value.countAbsolute > value.count">
+                        {{ value.countAbsolute - value.count}}
+                    </span>
+                    <span class="badge all-excluded-elsewhere"
+                          title="Activities are excluded by other filter categories"
+                          ng-if="value.count == 0 && value.countAbsolute > 0">
+                        {{ value.countAbsolute - value.count}}
+                    </span>
                 </li>
                 <li role="menuitem" class="activity-tag-filter-action" ng-if="globalFilters.transient" ng-click="globalFilters.transient.action()">
-                    <i><span>{{globalFilters.transient.display}}</span></i>
+                    <i><span class="main">{{globalFilters.transient.display}}</span></i>
+                </li>
+                <li role="menuitem" class="activity-tag-filter-error" ng-if="!globalFilters.transient && isEmpty(filters.available)">
+                    <i><span class="main">No filter options</span></i>
                 </li>
             </ul>
         </div>
@@ -55,7 +84,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="task in tasks | activityTagFilter : [model.filterByTag, globalFilters] | activityFilter:filterValue as filterResult track by task.id">
+            <tr ng-repeat="task in tasksFilteredByTag | activityFilter:filterValue as filterResult track by task.id">
                 <td class="status">
                     <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id, workflowId: getTaskWorkflowId(task)})">
                     <brooklyn-status-icon value="{{task.currentStatus}}" ng-if="!isScheduled(task)"></brooklyn-status-icon>
@@ -65,6 +94,9 @@
                 <td class="name">
                     <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id, workflowId: getTaskWorkflowId(task)})">{{task.displayName}}
                     </a>
+                    {{ task.id }} -
+                    prevRun={{ task.isWorkflowPreviousRun }}
+                    replLatest={{ task.isReplayedWorkflowLatest }}
                 </td>
                 <td class="started">
                     <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id, workflowId: getTaskWorkflowId(task)})">
@@ -73,7 +105,7 @@
                 </td>
                 <td class="duration">
                     <a ui-sref="main.inspect.activities.detail({entityId: task.entityId, activityId: task.id, workflowId: getTaskWorkflowId(task)})"
-                        	ng-if="task.startTimeUtc">
+                        	ng-if="task.startTimeUtc && task.startTimeUtc>0">
                         {{getTaskDuration(task) | durationFilter}} <span ng-if="task.endTimeUtc === null">and counting</span>
                     </a>
                 </td>
@@ -83,7 +115,7 @@
                 <td colspan="4" class="text-center"><h4>
                     No tasks found matching
                     <span ng-if="filterValue">current search <code>{{filterValue}}</code> and</span>
-                    filter <code>{{model.filterByTag.display}}</code>
+                    filter <code>{{filters.selectedDisplayName}}</code>
                 </h4></td>
             </tr>
             </tbody>
