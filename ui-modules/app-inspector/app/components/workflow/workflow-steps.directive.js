@@ -40,7 +40,6 @@ export function workflowStepsDirective() {
 
     function controller($sce, $timeout, $scope, $element) {
         let vm = this;
-        //console.log("controller for workflow steps", $scope.workflow);
 
         vm.stringify = stringify;
 
@@ -180,29 +179,6 @@ function makeArrows(workflow, steps) {
             return arrowSvg(s1, s2, opts);
         }
 
-        function colorFor(step, references) {
-            if (!references) return 'red';
-            const i = references.indexOf(step);
-            if (i==-1) return 'red';
-            // skew quadratically for lightness
-            const skewTowards1 = x => (1 - (1-x)*(1-x));
-            let gray = Math.round(240 * skewTowards1(i / references.length) );
-            return 'rgb('+gray+','+gray+','+gray+')';
-        }
-
-        let jumpSizes = {1: 0};
-        for (var i = -1; i < steps.length - 1; i++) {
-            const prevsHere = stepsPrev[i];
-            if (prevsHere && prevsHere.length) {
-                prevsHere.forEach(prev => {
-                    if (i!=-1 && prev!=-1 && i!=prev) {
-                        jumpSizes[Math.abs(prev - i)] = true;
-                    }
-                });
-            }
-        }
-        jumpSizes = Object.keys(jumpSizes).sort();
-
         function arrowStep2(prev, i, opts) {
             let curveX = 0.5;
             let curveY = 0.75;
@@ -230,19 +206,34 @@ function makeArrows(workflow, steps) {
             return arrowStep(prev, i, {hideArrowhead: prev==i, width, curveX, curveY, ...opts});
         }
 
-        for (var i = -1; i < steps.length; i++) {
+        function colorFor(step, references) {
+            if (!references) return 'red';
+            const i = references.indexOf(step);
+            if (i==-1) return 'red';
+            // skew quadratically for lightness
+            const skewTowards1 = x => (1 - (1-x)*(1-x));
+            let gray = Math.round(240 * skewTowards1(i / references.length) );
+            return 'rgb('+gray+','+gray+','+gray+')';
+        }
+
+        let jumpSizes = {1: true};
+        let arrowSpecs = {};
+        function recordTransition(from, to, opts) {
+            if (to!=-1 && from!=-1 && to!=from) {
+                jumpSizes[Math.abs(from-to)] = true;
+            }
+            arrowSpecs[[from,to]] = { from, to, ...(opts||{}) };
+        }
+
+        for (var i = -1; i < steps.length - 1; i++) {
             const prevsHere = stepsPrev[i];
             if (prevsHere && prevsHere.length) {
-                let insertionPoint = 0;
                 prevsHere.forEach(prev => {
-                    const colorStart = colorFor(i, stepsNext[prev]);
-                    const colorEnd = colorFor(prev, prevsHere);
-
                     // last in list has higher z-order; this ensures within each prevStep we preserve order,
                     // so inbound arrows are correct. currently we also prefer earlier steps, which isn't quite right for outbound arrows;
                     // ideally we'd reconstruct the flow order, but that's a bit more work than we want to do just now.
                     // so insertion point is always 0. (header items added at end so we don't need to include those here.)
-                    arrows.splice(insertionPoint, 0, arrowStep2(prev, i, { colorStart, colorEnd }));
+                    recordTransition(prev, i, { insertionPoint: 0, visited: true, colorStart: colorFor(i, stepsNext[prev]), colorEnd: colorFor(prev, prevsHere) });
                 });
             }
         }
@@ -251,37 +242,45 @@ function makeArrows(workflow, steps) {
         var indexOfId = {};
         for (var i = 0; i < steps.length; i++) {
             const s = workflow.data.stepsDefinition[i];
-            if (s.id) {
-                indexOfId[s.id] = i;
-            }
+            if (s.id) indexOfId[s.id] = i;
         }
-        if (steps.length>0) {
-            arrows.splice(0, 0, arrowStep2(-1, 0, {color: '#C0C0C0', arrowheadId: 'arrowhead-gray', dashLength: 8 }));
+
+        function isStepType(step, type) {
+            if (!step) return false;
+            if (step.type) return step.type == type;
+            let s = step.startsWith ? step : step.s || step.shorthand || step.userSuppliedShorthand;
+            if (s) return s == type || s.startsWith(type);
+            return false;
         }
+
         for (var i = 0; i < steps.length; i++) {
             const s = workflow.data.stepsDefinition[i];
-            var next = null;
+            let next = null;
             if (s.next) {
-                if (indexOfId[s.next]) {
-                    next = indexOfId[s.next];
-                } else {
-                    next = null;
-                }
-            } else {
-                if (s.type === 'return' || (s.userSuppliedShorthand && s.userSuppliedShorthand.startsWith("return"))) {
-                    next = -1;
-                } else {
-                    next = i + 1;
-                    if (next >= steps.length) next = -1;  //end
-                }
+                if (s.next.toLowerCase()=='end') next = -1;
+                else if (indexOfId[s.next]) next = indexOfId[s.next];
             }
-            if (next!=null) arrows.splice(0, 0, arrowStep2(i, next, { color: '#C0C0C0', arrowheadId: 'arrowhead-gray', dashLength: 8 }));
+            if (isStepType(s, 'return')) next = -1;
+            if (next!=null) {
+                // special next per step
+                recordTransition(i, next, { insertionPoint: 0, color: '#C0C0C0', arrowheadId: 'arrowhead-gray', dashLength: 8 });
+                if (!s.condition) continue;
+            }
+            // if nothing special, or if was conditional, then go to next step
+            next = i+1;
+            if (i + 1 >= steps.length) next = -1;
+
+            recordTransition(i, next, { insertionPoint: 0, color: '#C0C0C0', arrowheadId: 'arrowhead-gray', dashLength: 8 });
         }
 
-        // put defs at start
+        jumpSizes = Object.keys(jumpSizes).sort();
+
+        // insert arrows
+        Object.values(arrowSpecs).forEach(arrowSpec =>
+            arrows.splice(arrowSpec.insertionPoint || 0, 0, arrowStep2(arrowSpec.from, arrowSpec.to, arrowSpec)) );
+        // then defs at start
         arrows.splice(0, 0, '<defs>'+defs.join('')+'</defs>');
     }
-
     return arrows;
 }
 
