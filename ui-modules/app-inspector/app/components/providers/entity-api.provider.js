@@ -74,6 +74,7 @@ function EntityApi($http, $q) {
 
         getWorkflows: getWorkflows,
         getWorkflow: getWorkflow,
+        replayWorkflow: replayWorkflow,
     };
 
     function getEntity(applicationId, entityId) {
@@ -195,5 +196,9 @@ function EntityApi($http, $q) {
     }
     function getWorkflow(applicationId, entityId, workflowId) {
         return $http.get('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflows/' + workflowId, {observable: true, ignoreLoadingBar: true});
+    }
+    function replayWorkflow(applicationId, entityId, workflowId, step, options) {
+        return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflows/' + workflowId
+            + '/replay/from/' + step, {params: options, observable: true, ignoreLoadingBar: true});
     }
 }

@@ -51,7 +51,7 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
 
     vm.modalTemplate = modalTemplate;
     vm.wideKilt = false;
-    vm.actions = {};
+    $scope.actions = {};
 
     let observers = [];
 
@@ -76,21 +76,57 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
                 vm.model.workflow.applicationId = workflowTag.applicationId;
                 vm.model.workflow.entityId = workflowTag.entityId;
 
-                vm.actions.workflowReplays = [];
+                $scope.actions.workflowReplays = [];
                 if (!vm.model.activity.endTimeUtc || vm.model.activity.endTimeUtc<=0) {
                     // can't replay if active (same logic as 'cancel')
                 } else {
-                    [
-                        // TODO get from server
-                        // [ 'step 3 (continuing)', null ],
-                        // [ 'step 3 (replay point)', [2] ],
-                        // [ 'start (replay point)', [0] ],
-                    ].forEach(r => vm.actions.workflowReplays.push(r));
-                    vm.actions.workflowReplays.forEach(r => {
-                        r.push( () => console.log("TODO - replay from "+r[0], r[1]) );
-                    })
+                    $scope.actions.workflowReplays = [];
+                    const stepIndex = (vm.model.workflow.tag || {}).stepIndex;
+
+                    let replayableFromStart = vm.model.workflow.data.replayableFromStart, replayableContinuing = vm.model.workflow.data.replayableLastStep>=0;
+
+                    if (replayableContinuing) {
+                        $scope.actions.workflowReplays.push({ targetId: 'end', targetName: 'Resume '+(stepIndex>=0 ? 'workflow ' : '')+' (at step '+(vm.model.workflow.data.replayableLastStep+1)+')' });
+                    }
+
+                    // get current step, replay from that step
+                    if (stepIndex>=0) {
+                        const osi = workflow.data.oldStepInfo[stepIndex] || {};
+                        if (osi.replayableFromHere) {
+                            $scope.actions.workflowReplays.push({ targetId: ''+stepIndex, targetName: 'Replay from here (step '+(stepIndex+1) });
+                        } else {
+                            $scope.actions.workflowReplays.push({ targetId: ''+stepIndex, targetName: 'Force replay from here (step '+(stepIndex+1), force: true });
+                        }
+                    }
+
+                    if (replayableFromStart) {
+                        let w1 = 'Restart', w2 = '(not resumable)';
+                        if (stepIndex<0) { w1 = 'Run'; w2 = 'again'; }
+                        else if (_.isNil(stepIndex)) { w2 = '(did not start)'; }
+                        else if (replayableContinuing) w2 = '';
+
+                        $scope.actions.workflowReplays.push({targetId: 'start', targetName: 'Restart '+(stepIndex>=0 ? 'workflow ' : '')+reason});
+                    }
+
+                    if (!replayableFromStart) {
+                        $scope.actions.workflowReplays.push({targetId: 'start', targetName: 'Force restart', force: true});
+                    }
+                    // force replays
+                    $scope.actions.workflowReplays.forEach(r => {
+                        // could prompt for a reason
+                        const targetId = r.targetId;
+                        const opts = {};
+                        opts.reason = "UI manual replay";
+                        if (r.force) {
+                            opts.force = true;
+                            opts.reason += " (forced)";
+                        }
+                        r.action = () => {
+                            entityApi.replay(applicationId, entityId, $scope.workflowId. targetId, opts);
+                        };
+                    });
                 }
-                if (!vm.actions.workflowReplays.length) delete vm.actions['workflowReplays'];
+                if (!$scope.actions.workflowReplays.length) delete $scope.actions['workflowReplays'];
 
                 if (vm.model.workflow.data.status === 'RUNNING') wResponse.interval(1000);
                 observers.push(wResponse.subscribe((wResponse2)=> {
@@ -112,22 +148,22 @@ function DetailController($scope, $state, $stateParams, $log, $uibModal, $timeou
         activityApi.activity(activityId).then((response)=> {
             vm.model.activity = response.data;
 
-            delete vm.actions['effector'];
-            delete vm.actions['invokeAgain'];
+            delete $scope.actions['effector'];
+            delete $scope.actions['invokeAgain'];
             if ((vm.model.activity.tags || []).find(t => t=="EFFECTOR")) {
                 const effectorName = (vm.model.activity.tags.find(t => t.effectorName) || {}).effectorName;
                 const effectorParams = (vm.model.activity.tags.find(t => t.effectorParams) || {}).effectorParams;
                 if (effectorName) {
-                    vm.actions.effector = {effectorName};
+                    $scope.actions.effector = {effectorName};
                     if (effectorParams) {
-                        vm.actions.invokeAgain = {effectorName, effectorParams, doAction: () => vm.invokeEffector(effectorName, effectorParams) };
+                        $scope.actions.invokeAgain = {effectorName, effectorParams, doAction: () => vm.invokeEffector(effectorName, effectorParams) };
                     }
                 }
             }
 
-            delete vm.actions['cancel'];
+            delete $scope.actions['cancel'];
             if (!vm.model.activity.endTimeUtc || vm.model.activity.endTimeUtc<=0) {
-                vm.actions.cancel = { doAction: () => { activityApi.cancelActivity(activityId); } };
+                $scope.actions.cancel = { doAction: () => { activityApi.cancelActivity(activityId); } };
             }
 
             $scope.workflowId = null;  // if the task loads, force the workflow id to be found on it, otherwise ignore it

@@ -89,6 +89,7 @@ function makeArrows(workflow, steps) {
 
     defs.push('<marker id="arrowhead" markerWidth="'+3*arrowheadWidth+'" markerHeight="'+3*arrowheadWidth+'" refX="'+0+'" refY="'+1.5*arrowheadWidth+'" orient="auto"><polygon fill="#000" points="0 0, '+3*arrowheadWidth+' '+1.5*arrowheadWidth+', 0 '+(3*arrowheadWidth)+'" /></marker><');
     defs.push('<marker id="arrowhead-gray" markerWidth="'+3*arrowheadWidth+'" markerHeight="'+3*arrowheadWidth+'" refX="'+0+'" refY="'+1.5*arrowheadWidth+'" orient="auto"><polygon fill="#C0C0C0" points="0 0, '+3*arrowheadWidth+' '+1.5*arrowheadWidth+', 0 '+(3*arrowheadWidth)+'" /></marker><');
+    defs.push('<marker id="arrowhead-red" markerWidth="'+3*arrowheadWidth+'" markerHeight="'+3*arrowheadWidth+'" refX="'+0+'" refY="'+1.5*arrowheadWidth+'" orient="auto"><polygon fill="red" points="0 0, '+3*arrowheadWidth+' '+1.5*arrowheadWidth+', 0 '+(3*arrowheadWidth)+'" /></marker><');
 
     if (steps) {
         let gradientCount = 0;
@@ -179,6 +180,8 @@ function makeArrows(workflow, steps) {
             return arrowSvg(s1, s2, opts);
         }
 
+        let jumpSizes = {1: true};
+
         function arrowStep2(prev, i, opts) {
             let curveX = 0.5;
             let curveY = 0.75;
@@ -216,7 +219,6 @@ function makeArrows(workflow, steps) {
             return 'rgb('+gray+','+gray+','+gray+')';
         }
 
-        let jumpSizes = {1: true};
         let arrowSpecs = {};
         function recordTransition(from, to, opts) {
             if (to!=-1 && from!=-1 && to!=from) {
@@ -259,22 +261,32 @@ function makeArrows(workflow, steps) {
 
         for (var i = 0; i < steps.length; i++) {
             const s = workflow.data.stepsDefinition[i];
+
+            let opts = { insertionPoint: 0 };
+            if (workflow.data.currentStepIndex === i && workflow.data.status && workflow.data.status.startsWith('ERROR')) {
+                recordTransition(i, -1, { ...opts, color: 'red', arrowheadId: 'arrowhead-red' });
+            }
+
+            opts = { ...opts, color: '#C0C0C0', arrowheadId: 'arrowhead-gray', dashLength: 8 };
+
             let next = null;
             if (s.next) {
                 if (s.next.toLowerCase()=='end') next = -1;
                 else if (indexOfId[s.next]) next = indexOfId[s.next];
             }
             if (isStepType(s, 'return')) next = -1;
+
             if (next!=null) {
                 // special next per step
-                recordTransition(i, next, { insertionPoint: 0, color: '#C0C0C0', arrowheadId: 'arrowhead-gray', dashLength: 8 });
+                recordTransition(i, next, opts);
                 if (!s.condition) continue;
             }
             // if nothing special, or if was conditional, then go to next step
+            // (only go forward 1, even if it is conditional, otherwise too many arrows)
+
             next = i+1;
             if (i + 1 >= steps.length) next = -1;
-
-            recordTransition(i, next, { insertionPoint: 0, color: '#C0C0C0', arrowheadId: 'arrowhead-gray', dashLength: 8 });
+            recordTransition(i, next, opts);
         }
 
         jumpSizes = Object.keys(jumpSizes).sort();

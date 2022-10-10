@@ -118,7 +118,7 @@ export function workflowStepDirective() {
                     : ($scope.isWorkflowError && $scope.isCurrentMaybeInactive) ? 'The workflow encountered an error around this step.'
                     : null;
                 const incomplete = $scope.osi.countStarted - $scope.osi.countCompleted > ($scope.isCurrentAndActive ? 1 : 0);
-                $scope.stepCurrentWarning = incomplete ? 'This step has previously been interrupted.' : null;
+                $scope.stepCurrentWarning = incomplete && !$scope.stepCurrentError ? 'This step has previously had an error' : null;
                 $scope.stepCurrentSuccess = (!$scope.isCurrentAndActive && !incomplete && $scope.osi.countCompleted > 0)
                     ? 'This step has completed without errors.' : null;
 
