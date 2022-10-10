@@ -114,6 +114,14 @@ export function workflowStepDirective() {
                 $scope.isFocusStep = $scope.workflow.tag && ($scope.workflow.tag.stepIndex === index);
                 $scope.isFocusTask = false;
 
+                $scope.stepCurrentError = (($scope.task || {}).currentStatus === 'Error') ? 'This step returned an error.'
+                    : ($scope.isWorkflowError && $scope.isCurrentMaybeInactive) ? 'The workflow encountered an error around this step.'
+                    : null;
+                const incomplete = $scope.osi.countStarted - $scope.osi.countCompleted > ($scope.isCurrentAndActive ? 1 : 0);
+                $scope.stepCurrentWarning = incomplete ? 'This step has previously been interrupted.' : null;
+                $scope.stepCurrentSuccess = (!$scope.isCurrentAndActive && !incomplete && $scope.osi.countCompleted > 0)
+                    ? 'This step has completed without errors.' : null;
+
                 if ($scope.task) {
                     if (!vm.isNullish($scope.stepContext.taskId) && $scope.stepContext.taskId === $scope.task.id) {
                         $scope.isFocusTask = true;

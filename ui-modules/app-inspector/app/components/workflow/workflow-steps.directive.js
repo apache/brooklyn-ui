@@ -222,7 +222,11 @@ function makeArrows(workflow, steps) {
             if (to!=-1 && from!=-1 && to!=from) {
                 jumpSizes[Math.abs(from-to)] = true;
             }
-            arrowSpecs[[from,to]] = { from, to, ...(opts||{}) };
+            if (arrowSpecs[[from,to]]) {
+                // prefer earlier additions (real steps) over theoretical ones
+            } else {
+                arrowSpecs[[from, to]] = {from, to, ...(opts || {})};
+            }
         }
 
         for (var i = -1; i < steps.length - 1; i++) {

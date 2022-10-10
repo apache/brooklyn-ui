@@ -19,25 +19,17 @@
 <div class="workflow-step-outer">
 
     <div class="workflow-step-status-indicators">
-        <span ng-if="isCurrentAndActive">
-            <span ng-if="isRunning" class="running-status">
-                <brooklyn-status-icon value="STARTING"></brooklyn-status-icon>
-            </span>
+        <span ng-if="isCurrentAndActive" class="running-status">
+            <brooklyn-status-icon value="STARTING"></brooklyn-status-icon>
         </span>
-
-        <span ng-if="osi.countCompleted && osi.countStarted === osi.countStarted">
-            <span class="color-succeeded">
-                <i class="fa fa-check-circle"></i>
-            </span>
-<!--            <span ng-if="osi.countCompleted > 1">{{ osi.countCompleted }}</span>-->
+        <span ng-if="stepCurrentSuccess" class="color-succeeded" title="{{ stepCurrentSuccess }}">
+            <i class="fa fa-check-circle"></i>
         </span>
-        <span ng-if="osi.countStarted && osi.countStarted != osi.countCompleted && !isCurrentAndActive">
-            <span class="color-failed" ng-if="isWorkflowError">
-                <i class="fa fa-times-circle"></i>
-            </span>
-            <span class="color-cancelled" ng-if="!isWorkflowError">
-                <i class="fa fa-exclamation-circle"></i>
-            </span>
+        <span ng-if="stepCurrentWarning" class="color-cancelled" title="{{ stepCurrentWarning }}">
+            <i class="fa fa-exclamation-circle"></i>
+        </span>
+        <span ng-if="stepCurrentError" class="color-failed" title="{{ stepCurrentError }}">
+            <i class="fa fa-times-circle"></i>
         </span>
     </div>
 
