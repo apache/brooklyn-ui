@@ -50,7 +50,7 @@ describe('momentp', ()=> {
         expect(mp.duration(8000)).toBe("8s");
         expect(mp.duration(8123)).toBe("8.1s");
         expect(mp.duration(10123)).toBe("10s");
-        expect(mp.duration(59501)).toBe("1m 0s");
+        expect(mp.duration(59501)).toBe("60s");
         expect(mp.duration(62123)).toBe("1m 2s");
         expect(mp.duration(20*60000 + 2123)).toBe("20 mins");
         expect(mp.duration(62123 + 60*60*1000)).toBe("1h 1m");
