@@ -67,6 +67,12 @@ angular.module(MODULE_NAME, ['ui.bootstrap.multiMap', 'ui.bootstrap.position'])
             }
         };
 
+        function containsNested(container, target) {
+            if (!container || !target || !container[0] || !target[0]) return false;
+            if (container[0]==target[0]) return true;
+            return containsNested(container, angular.element(target.parent()));
+        }
+
         this.close = function(dropdownScope, element, appendTo) {
             if (openScope === dropdownScope) {
                 openScope = null;
@@ -79,6 +85,8 @@ angular.module(MODULE_NAME, ['ui.bootstrap.multiMap', 'ui.bootstrap.position'])
                 $document.off('click', closeDropdown);
                 $document.off('keydown', this.keybindFilter);
             }
+            [openScope, oldOpenScopes].filter(candidateChild => candidateChild && candidateChild.getToggleElement && containsNested(dropdownScope.getDropdownElement(), candidateChild.getToggleElement()))
+                .forEach(containedChild => containedChild.isOpen = false);
 
             if (!appendTo) {
                 return;
@@ -104,52 +112,43 @@ angular.module(MODULE_NAME, ['ui.bootstrap.multiMap', 'ui.bootstrap.position'])
             // unbound this event handler. So check openScope before proceeding.
             let scopesToApply = [];
 
-            function containsNested(container, target) {
-                if (!container) return false;
-                if (container==target) return true;
-                if (container[0] && container[0].contains && container[0].contains(target)) return true;
-                if (container.contains && container.contains(target)) return true;
-
-                let kids = angular.element(container).children();
-                if (kids && kids.length) {
-                    for (let i=0; i<kids.length; i++) {
-                        let found = containsNested(kids[i], target);
-                        if (found) return true;
-                    }
-                }
-                return false;
+            function isAnyTrigger($element) {
+                return $element.hasClass('dropdown-toggle');
             }
 
-            function isAnyTrigger(element) {
-                return element.hasClass('dropdown-toggle');
+            function isAnyAncestor($element, test) {
+                if (!$element || !$element[0]) return false;
+                if (test($element)) {
+                    return true;
+                }
+                return isAnyAncestor(angular.element($element.parent()), test);
             }
 
             function closeIfApplicable(scope) {
-                if (evt && scope.getAutoClose() === 'disabled') {
-                    return;
+                if (evt) {
+                    if (scope.getAutoClose() === 'disabled') {
+                        return;
+                    }
+
+                    if (evt.which === 3) {
+                        return;
+                    }
+
+                    if (isAnyAncestor(angular.element(evt.target), isAnyTrigger)) {
+                        return;
+                    }
+
+                    var toggleElement = scope.getToggleElement();
+                    if (toggleElement && containsNested(angular.element(toggleElement), angular.element(evt.target))) {
+                        return;
+                    }
+
+                    if (scope.getAutoClose() === 'outsideClick' &&
+                        containsNested(angular.element(scope.getDropdownElement()), angular.element(evt.target))) {
+                        return;
+                    }
                 }
 
-                if (evt && evt.which === 3) {
-                    return;
-                }
-
-                if (evt &&
-                    isAnyTrigger(angular.element(evt.target))) {
-                    return;
-                }
-                // could do "is contained in any trigger"; but doesn't seem needed yet
-
-                var toggleElement = scope.getToggleElement();
-                if (evt && toggleElement && containsNested(toggleElement, evt.target)) {
-                    return;
-                }
-
-                var dropdownElement = scope.getDropdownElement();
-                if (evt &&
-                    scope.getAutoClose() === 'outsideClick' &&
-                    dropdownElement && containsNested(dropdownElement, evt.target)) {
-                    return;
-                }
                 scope.isOpen = false;
                 scopesToApply.push(scope);
 

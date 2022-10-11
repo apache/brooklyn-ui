@@ -164,14 +164,14 @@
                                 </button>
                                 <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="workflow-button">
                                     <li role="menuitem" ng-repeat="sub in stepContext.subWorkflows" id="sub-workflow-{{ sub.workflowId }}">
-                                        <a href="" ui-sref="main.inspect.activities.detail({applicationId: sub.applicationId, entityId: sub.entityId, activityId: sub.workflowId})">
+                                        <a href="" ui-sref="main.inspect.activities.detail({applicationId: sub.applicationId, entityId: sub.entityId, activityId: sub.workflowId, workflowLatestRun: true})">
                                             <i class="fa fa-check check"></i>
                                             <span>{{ vm.getWorkflowNameFromReference(sub) }}</span>
                                             <span class="monospace">{{ sub.workflowId }}</span></a> </li>
                                 </ul>
                             </div>
                             <div class="btn-group" uib-dropdown ng-if="stepContext.subWorkflows.length==1">
-                                <a href="" ui-sref="main.inspect.activities.detail({applicationId: stepContext.subWorkflows[0].applicationId, entityId: stepContext.subWorkflows[0].entityId, activityId: stepContext.subWorkflows[0].workflowId})">
+                                <a href="" ui-sref="main.inspect.activities.detail({applicationId: stepContext.subWorkflows[0].applicationId, entityId: stepContext.subWorkflows[0].entityId, activityId: stepContext.subWorkflows[0].workflowId, workflowLatestRun: true})">
                                     <span>{{ vm.getWorkflowNameFromReference(stepContext.subWorkflows[0]) }}</span>
                                     <span class="monospace">{{ stepContext.subWorkflows[0].workflowId }}</span>
                                 </a>

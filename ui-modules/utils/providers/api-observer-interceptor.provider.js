@@ -47,7 +47,7 @@ export function apiObserverInterceptorProvider() {
             };
 
             function doDriveBy(response, error = false) {
-                if (response.config.hasOwnProperty(OBSERVABLE) && response.config[OBSERVABLE]) {
+                if ((response.config || {}).hasOwnProperty(OBSERVABLE) && response.config[OBSERVABLE]) {
                     response.clock = clock;
                     response.interval = (interval) => {
                         response.clock = Observable.interval(interval);

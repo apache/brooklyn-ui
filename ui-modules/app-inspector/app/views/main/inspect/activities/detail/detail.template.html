@@ -51,14 +51,14 @@
                     </br-button>
                     <ul uib-dropdown-menu-nested class="dropdown-at-root dropdown-menu-right">
 
-                        <li><a href="" ng-if="actions.cancel" ng-click="actions.cancel.doAction()">Cancel</a></li>
+                        <li><a href="" ng-if="actions.cancel" ng-click="actions.cancel.doAction()">{{actions.cancel.label}}</a></li>
 
                         <li ng-if="actions.workflowReplays" uib-dropdown-nested dropdown-append-to-body="true">
 
                             <a href="" uib-dropdown-toggle-nested>Replay workflow <span class="caret"></span></a>
                             <ul class="dropdown-submenu-left dropdown-at-root dropdown-menu-right" uib-dropdown-menu-nested>
                                 <li ng-repeat="replay in actions.workflowReplays track by $index" id="replay-{{replay.targetId}}">
-                                    <a class="dropdown-item" href="" ng-click="replay.action()">{{ replay.targetName }}</a>
+                                    <a class="dropdown-item" href="" ng-click="replay.action()">{{ replay.label }}</a>
                                 </li>
                             </ul>
 
@@ -187,17 +187,17 @@
                         <div class="workflow-body">
                             <div ng-if="vm.model.workflow.loading == 'loaded'">
                                 <div ng-if="vm.model.workflow.data.replays.length > 1">
-                                    <div style="float: right; margin-top: -9px;" class="btn-group" uib-dropdown>
+                                    <div  class="workflow-buttons btn-group" uib-dropdown>
                                         <button id="replay-button" type="button" class="btn btn-select-dropdown" uib-dropdown-toggle>
                                             Select replay <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-right dropdown-menu-replays" uib-dropdown-menu role="menu" aria-labelledby="replay-button">
-                                            <li role="menuitem" ng-repeat="replay in vm.model.workflow.data.replays" id="workflow-replay-{{ replay.taskId }}">
+                                            <li role="menuitem" ng-repeat="replay in vm.model.workflow.data.replays.slice().reverse()" id="workflow-replay-{{ replay.taskId }}">
                                                 <a href="" ui-sref="main.inspect.activities.detail({activityId: replay.taskId, workflowId: workflowId})" ng-class="{'selected' : vm.model.activityId === replay.taskId}">
                                                     <i class="fa fa-check check if-selected"></i>
 <!--                                                    <span class="monospace">{{ replay.taskId }}</span>-->
                                                     <span ng-if="replay.reasonForReplay">{{ replay.reasonForReplay }} (</span
-                                                    ><span>{{ replay.submitTimeUtc | dateFilter: 'short' }}</span
+                                                    ><span ng-if="replay.submitTimeUtc>0">{{ replay.submitTimeUtc | dateFilter: 'short' }}</span
                                                     ><span ng-if="replay.reasonForReplay">)</span>
 
                                                 </a> </li>
@@ -214,6 +214,10 @@
                                     This task is
                                     <span ng-if="!vm.isNullish(vm.model.workflow.tag.stepIndex)">for step <b>{{ vm.model.workflow.tag.stepIndex+1 }}</b>
                                         in
+                                        <span ng-if="vm.model.workflow.runReplayId">
+                                            <span ng-if="vm.model.workflow.runIsOld">a previous run of </span>
+                                            <span ng-if="vm.model.workflow.runIsLatest">the most recent run of </span>
+                                        </span>
                                         <a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.taskId, workflowId})">
                                             workflow <span class="monospace">{{vm.model.workflow.data.workflowId}}</span>:
                                             <b>{{vm.model.workflow.data.name}}</b></a>.
@@ -225,18 +229,53 @@
                                     </span>
                                     <span ng-if="vm.isNullish(vm.model.workflow.tag.stepIndex) && vm.model.activity.id">
                                         for
-                                        <span ng-if="vm.model.workflow.data.taskIds.length>1">
-                                            <span ng-if="vm.model.workflow.data.taskIds[vm.model.workflow.data.taskIds.length-1] === vm.model.activityId">
-                                                the most recent </span>
-                                            <span ng-if="vm.model.workflow.data.taskIds[vm.model.workflow.data.taskIds.length-1] !== vm.model.activityId">
-                                                run {{vm.model.workflow.data.taskIds.indexOf(vm.model.activityId)+1}} </span>
-                                            of {{ vm.model.workflow.data.taskIds.length }} of
+                                        <span ng-if="vm.model.workflow.runIsOld" style="font-weight: bold;">
+                                            a previous run of
+                                            <a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.taskId, workflowId})">
+                                                    workflow <span class="monospace">{{vm.model.workflow.data.workflowId}}</span>:
+                                                <b>{{vm.model.workflow.data.name}}</b>.</a>
                                         </span>
-                                        workflow <span class="monospace">{{vm.model.workflow.data.workflowId}}</span>:
-                                        <b>{{vm.model.workflow.data.name}}</b>.
+                                        <span ng-if="!vm.model.workflow.runIsOld">
+                                            <span ng-if="vm.model.workflow.runIsLatest">the most recent run of </span>
+                                            workflow <span class="monospace">{{vm.model.workflow.data.workflowId}}</span>:
+                                            <b>{{vm.model.workflow.data.name}}</b>.
+                                        </span>
                                     </span>
                                 </div>
-                                <div ng-if="showReplayHelp" style="margin-top: 12px; margin-bottom: 24px;">
+
+                                <div ng-if="vm.model.workflow.data.parentId" class="workflow-preface-para">
+                                    This is a sub-workflow in
+                                    <b><a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.parentId, workflowId: vm.model.workflow.data.parentId, workflowLatestRun: true})">
+                                        workflow <span class="monospace">{{vm.model.workflow.data.parentId}}</span
+                                    ></a></b>.
+                                </div>
+
+                                <div ng-if="vm.model.workflow.runIsOld" class="workflow-preface-para">
+                                    For previous runs, the subtask view
+                                    <span ng-if="!vm.isNullish(vm.model.workflow.tag.stepIndex)">for
+                                        <a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.runReplayId, workflowId})">
+                                            the relevant run
+                                        </a>
+                                    </span>
+                                    <span ng-if="vm.isNullish(vm.model.workflow.tag.stepIndex)">
+                                        <span ng-if="showOldWorkflowRunStepDetails">further</span>
+                                        below
+                                    </span>
+                                    is normally more informative than workflow steps.
+                                    <span ng-if="!showOldWorkflowRunStepDetails">
+                                        However the workflow step view
+                                        <a href="" ng-click="vm.toggleOldWorkflowRunStepDetails()">
+                                            can be shown</a>
+                                        below if desired.
+                                    </span>
+                                    <span ng-if="showOldWorkflowRunStepDetails">
+                                        The workflow step view immediately below
+                                        <a href="" ng-click="vm.toggleOldWorkflowRunStepDetails()">
+                                            can be hidden</a>.
+                                    </span>
+                                </div>
+
+                                <div ng-if="showReplayHelp" class="workflow-preface-para">
                                     Workflows can be replayed in certain situations, such as if they fail or the server is restarted.
                                     This workflow invocation instance has been replayed, with a total of {{ vm.model.workflow.data.taskIds.length }} runs.
                                     Individual replays can be viewed by selecting a task ID from the dropdown.
@@ -245,7 +284,7 @@
                                     Sub-task and log views further below can be useful to disambiguate multiple replays if required.
                                 </div>
 
-                                <workflow-steps workflow="vm.model.workflow" task="vm.model.activity"></workflow-steps>
+                                <workflow-steps workflow="vm.model.workflow" task="vm.model.activity" ng-if="!vm.model.workflow.runIsOld || showOldWorkflowRunStepDetails"></workflow-steps>
                             </div>
                             <div ng-if="vm.model.workflow.loading != 'loaded'">
                                 <loading-state error="vm.model.workflow.loading !== 'loading' ? 'Details of this workflow are no longer available.' : ''"></loading-state>

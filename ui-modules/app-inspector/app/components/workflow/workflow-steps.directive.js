@@ -88,8 +88,8 @@ function makeArrows(workflow, steps) {
     const defs = [];
 
     defs.push('<marker id="arrowhead" markerWidth="'+3*arrowheadWidth+'" markerHeight="'+3*arrowheadWidth+'" refX="'+0+'" refY="'+1.5*arrowheadWidth+'" orient="auto"><polygon fill="#000" points="0 0, '+3*arrowheadWidth+' '+1.5*arrowheadWidth+', 0 '+(3*arrowheadWidth)+'" /></marker><');
-    defs.push('<marker id="arrowhead-gray" markerWidth="'+3*arrowheadWidth+'" markerHeight="'+3*arrowheadWidth+'" refX="'+0+'" refY="'+1.5*arrowheadWidth+'" orient="auto"><polygon fill="#C0C0C0" points="0 0, '+3*arrowheadWidth+' '+1.5*arrowheadWidth+', 0 '+(3*arrowheadWidth)+'" /></marker><');
-    defs.push('<marker id="arrowhead-red" markerWidth="'+3*arrowheadWidth+'" markerHeight="'+3*arrowheadWidth+'" refX="'+0+'" refY="'+1.5*arrowheadWidth+'" orient="auto"><polygon fill="red" points="0 0, '+3*arrowheadWidth+' '+1.5*arrowheadWidth+', 0 '+(3*arrowheadWidth)+'" /></marker><');
+    defs.push('<marker id="arrowhead-gray" markerWidth="'+3*arrowheadWidth+'" markerHeight="'+3*arrowheadWidth+'" refX="'+0+'" refY="'+1.5*arrowheadWidth+'" orient="auto"><polygon class="fill-future" points="0 0, '+3*arrowheadWidth+' '+1.5*arrowheadWidth+', 0 '+(3*arrowheadWidth)+'" /></marker><');
+    defs.push('<marker id="arrowhead-red" markerWidth="'+3*arrowheadWidth+'" markerHeight="'+3*arrowheadWidth+'" refX="'+0+'" refY="'+1.5*arrowheadWidth+'" orient="auto"><polygon class="fill-failed" points="0 0, '+3*arrowheadWidth+' '+1.5*arrowheadWidth+', 0 '+(3*arrowheadWidth)+'" /></marker><');
 
     if (steps) {
         let gradientCount = 0;
@@ -103,7 +103,7 @@ function makeArrows(workflow, steps) {
             }
 
             if (!opts) opts = {};
-            const color = opts.color || (opts.colorEnd && opts.colorEnd==opts.colorStart ? opts.colorEnd : '#000');
+            const color = opts.class ? '' : opts.color || (opts.colorEnd && opts.colorEnd==opts.colorStart ? opts.colorEnd : '#000');
 
             const rightFarEdge = 56;
             const rightArrowheadStart = rightFarEdge - arrowheadLength;
@@ -121,14 +121,14 @@ function makeArrows(workflow, steps) {
             const controlPointStart = controlPointRightArrowheadStart;
             const controlPointEnd = controlPointRightArrowheadStart;
 
-            const strokeConstant =
-                'stroke="'+color+'"';
+            const strokeConstant = color ? 'stroke="'+color+'"' : ''
 
             let standard =
                 'stroke-width="'+(opts.lineWidth || strokeWidth)+'" '+
                 'fill="transparent" '+
                 '/>';
-            if (!opts.hideArrowhead) standard = 'marker-end="url(#'+(opts.arrowheadId || 'arrowhead')+'" ' +standard;
+            if (opts.class) standard = 'class="'+opts.class+'" '+standard;
+            if (!opts.hideArrowhead) standard = 'marker-end="url(#'+(opts.arrowheadId || 'arrowhead')+')" ' +standard;
             if (opts.dashLength) standard = 'stroke-dasharray="'+opts.dashLength+'" '+standard;
 
             if (start) {
@@ -154,10 +154,11 @@ function makeArrows(workflow, steps) {
                 standard = 'stroke="url(#'+gradientId+')" ' + standard;
             }
 
-            return '<path d="M ' + rightFarEdge + ' ' + y1 +
+            const result = '<path d="M ' + rightFarEdge + ' ' + y1 +
                 // ' L ' + r0 + ' ' + y1 + ' ' +
                 ' C ' + controlPointStart + ' ' + y1 + ', ' + leftActive + ' ' + (yM - yMCH) + ', ' + leftActive + ' ' + yM + ' ' +
                 ' S ' + controlPointEnd + ' ' + y2 + ', ' + rightArrowheadStart + ' ' + y2 + '" '+standard;
+            return result;
         }
 
         function stepY(n) {
@@ -264,10 +265,10 @@ function makeArrows(workflow, steps) {
 
             let opts = { insertionPoint: 0 };
             if (workflow.data.currentStepIndex === i && workflow.data.status && workflow.data.status.startsWith('ERROR')) {
-                recordTransition(i, -1, { ...opts, color: 'red', arrowheadId: 'arrowhead-red' });
+                recordTransition(i, -1, { ...opts, class: 'arrow-failed', arrowheadId: 'arrowhead-red' });
             }
 
-            opts = { ...opts, color: '#C0C0C0', arrowheadId: 'arrowhead-gray', dashLength: 8 };
+            opts = { ...opts, class: 'arrow-future', arrowheadId: 'arrowhead-gray', dashLength: 8 };
 
             let next = null;
             if (s.next) {

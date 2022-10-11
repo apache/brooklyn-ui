@@ -37,29 +37,6 @@
 
     border: solid @gray-light-lighter 1px;
 
-    // could do borders around active/error steps. but instead icons at left.
-    //&.current-step {
-    //  border: solid @gray-light-lighter 2px;
-    //  padding-left: 3px;
-    //  padding-right: 3px;
-    //}
-  }
-  //&.workflow-status-RUNNING {
-  //  .workflow-step.current-step {
-  //    border: solid #363 2px;
-  //    padding-left: 3px;
-  //    padding-right: 3px;
-  //  }
-  //}
-  //&.workflow-error {
-  //  .workflow-step.current-step {
-  //    border: solid #820 2px;
-  //    padding-left: 3px;
-  //    padding-right: 3px;
-  //  }
-  //}
-
-  .workflow-step {
     .rhs-icons {
       float: right;
       display: flex;
@@ -256,8 +233,15 @@
 
   svg.workflow-arrows {
     //opacity: 10%;
+
+    .arrow-failed { stroke: @color-failed; }
+    .arrow-future { stroke: @gray-lighter; }
+
+    .fill-failed { fill: @color-failed; }
+    .fill-future { fill: @gray-lighter; }
   }
   svg.workflow-arrows:hover {
     opacity: 100%;
   }
+
 }

@@ -199,6 +199,6 @@ function EntityApi($http, $q) {
     }
     function replayWorkflow(applicationId, entityId, workflowId, step, options) {
         return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflows/' + workflowId
-            + '/replay/from/' + step, {params: options, observable: true, ignoreLoadingBar: true});
+            + '/replay/from/' + step, {params: options});
     }
 }

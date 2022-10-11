@@ -395,7 +395,6 @@ export function taskListDirective() {
             countAbsolute: countWorkflowsReplayedTopLevel,
         }
 
-        const filterWorkflowsReplayedNested = t => !t.isWorkflowFirstRun && t.isWorkflowLastRun && !t.isWorkflowTopLevel;
         const countWorkflowsReplayedNested = tasksAll.filter(filterWorkflowsReplayedNested).length;
         filtersFullList['_workflowReplayedNested'] = {
             display: 'Include replayed sub-workflows',
@@ -514,12 +513,14 @@ export function taskListDirective() {
     }
 }
 
+const filterWorkflowsReplayedNested = t => !t.isWorkflowFirstRun && t.isWorkflowLastRun && !t.isWorkflowTopLevel;
 
 function isScheduled(task) {
   return task && task.currentStatus && task.currentStatus.startsWith("Schedule");
 }
 
 function isTopLevelTask(t, tasksById) {
+    if (filterWorkflowsReplayedNested(t)) return false;
     if (!t.submittedByTask) return true;
     if (t.forceTopLevel) return true;
     if (t.tags && t.tags.includes("TOP-LEVEL")) return true;
@@ -533,11 +534,11 @@ function isNonTopLevelTask(t, tasksById) {
 }
 function isCrossEntityTask(t, tasksById) {
     if (isTopLevelTask(t, tasksById)) return false;
-    return t.submittedByTask.metadata.entityId !== t.entityId;
+    return t.submittedByTask && t.submittedByTask.metadata.entityId !== t.entityId;
 }
 function isNestedSameEntityTask(t, tasksById) {
     if (isTopLevelTask(t, tasksById)) return false;
-    return t.submittedByTask.metadata.entityId === t.entityId;
+    return t.submittedByTask && t.submittedByTask.metadata.entityId === t.entityId;
 }
 function filterWithId(tasks, tasksById, nextFilter) {
     if (!tasks) return tasks;
