@@ -176,7 +176,6 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
 }
 
 export function makeTaskStubFromWorkflowRecord(wf, wft) {
-    console.log("WFT", wft.status, wft);
     const result = {
         id: wft.taskId,
         displayName: wf.name + (wft.reasonForReplay ? " ("+wft.reasonForReplay+")" : ""),

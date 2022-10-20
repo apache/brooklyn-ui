@@ -18,6 +18,7 @@
  */
 import template from "./inspect.template.html";
 import addChildModalTemplate from "./add-child-modal.template.html";
+import runWorkflowModalTemplate from "./run-workflow-modal.template.html";
 import confirmModalTemplate from "./confirm.modal.template.html";
 
 export const inspectState = {
@@ -75,6 +76,25 @@ export function inspectController($scope, $stateParams, $uibModal, brSnackbar, e
         })
     };
 
+    this.runWorkflow = function() {
+        $uibModal.open({
+            animation: true,
+            template: runWorkflowModalTemplate,
+            controller: ['$scope', '$http', '$uibModalInstance', 'applicationId', 'entityId', runWorkflowController],
+            size: 'lg',
+            resolve: {
+                applicationId: ()=>(applicationId),
+                entityId: ()=>(entityId),
+            }
+        }).result.then((closeData)=> {
+            $state.go('main.inspect.activites', {
+                applicationId: applicationId,
+                entityId: closeData.entityId,
+                activityId: closeData.id
+            });
+        })
+    };
+
     this.resetEntityProblems = function() {
         entityApi.resetEntityProblems(applicationId, entityId).catch((error)=> {
             brSnackbar.create('Cannot reset entity problems: the entity [' + entityId + '] or sensor [service.notUp.indicators] is undefined');
@@ -113,11 +133,37 @@ export function addChildController($scope, $http, $uibModalInstance, application
                 $scope.deploying = false;
                 $uibModalInstance.close(response.data);
             }, (error)=> {
+                console.log("Error adding child", error);
                 $scope.deploying = false;
                 if (error.data.hasOwnProperty('message')) {
                     $scope.errorMessage = error.data.message;
                 } else {
                     $scope.errorMessage = 'Could not add child ... unknown error';
+                }
+            });
+    }
+}
+
+export function runWorkflowController($scope, $http, $uibModalInstance, applicationId, entityId) {
+    $scope.workflowYaml = 'steps:\n  - ';
+    $scope.errorMessage = null;
+    $scope.running = false;
+    $scope.runWorkflow = runWorkflow;
+
+    function runWorkflow() {
+        $scope.running = true;
+        $scope.errorMessage = null;
+        $http.post('/v1/applications/' + applicationId + '/entities/' + entityId + '/workflow?start=true&timeout=20ms', $scope.workflowYaml)
+            .then((response)=> {
+                $scope.running = false;
+                $uibModalInstance.close(response.data);
+            }, (error)=> {
+                console.log("Error running workflow", error);
+                $scope.running = false;
+                if (error.data.hasOwnProperty('message')) {
+                    $scope.errorMessage = error.data.message;
+                } else {
+                    $scope.errorMessage = 'Could not run workflow ... unknown error';
                 }
             });
     }
