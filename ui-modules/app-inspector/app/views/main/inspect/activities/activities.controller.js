@@ -195,5 +195,13 @@ export function makeTaskStubFromWorkflowRecord(wf, wft) {
             },
         ],
     };
+    if (wft.submittedByTaskId) {
+        result.submittedByTask = {
+            metadata: {
+                id: wft.submittedByTaskId,
+                entityId: result.entityId,
+            }
+        };
+    }
     return result;
 };

@@ -52,7 +52,8 @@
 
         <div class="step-block-title">
             <span class="step-index">{{ stepTitle.index }}</span>
-            <span class="step-title-code">{{ stepTitle.code }}</span>
+            <span ng-if="stepTitle.code" class="step-title-code">{{ stepTitle.code }}</span>
+            <span ng-if="stepTitle.leftExtra" class="step-left-extra">{{ stepTitle.leftExtra}}</span>
         </div>
 
         <div ng-if="expanded" class="step-details">
@@ -128,7 +129,7 @@
 
                 <div class="more-space-above" ng-if="stepContext.taskId">
                     <div class="data-row">
-                        <div class="A"><span ng-if="isCurrentAndActive">CURRENT</span><span ng-if="!isCurrent">LAST</span> EXECUTION</div>
+                        <div class="A"><span ng-if="isCurrentAndActive">CURRENT</span><span ng-if="!isCurrentAndActive">LAST</span> EXECUTION</div>
                         <div class="B">
                                     <span ng-if="isFocusTask">
                                         task <span class="monospace">{{ stepContext.taskId }}</span>

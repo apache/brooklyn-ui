@@ -90,6 +90,10 @@ export function workflowStepDirective() {
                     $scope.stepTitle.code = step.shorthandTypeName || step.type || '';
                     if (step.input) $scope.stepTitle.code += ' ...';
                 }
+                if ("workflow" === $scope.stepTitle.code) {
+                    $scope.stepTitle.code = null;
+                    $scope.stepTitle.leftExtra = "nested workflow";
+                }
 
                 if (step.name) {
                     $scope.stepTitle.name = step.name;

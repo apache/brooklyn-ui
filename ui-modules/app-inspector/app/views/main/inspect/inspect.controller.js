@@ -153,7 +153,7 @@ export function runWorkflowController($scope, $http, $uibModalInstance, applicat
     function runWorkflow() {
         $scope.running = true;
         $scope.errorMessage = null;
-        $http.post('/v1/applications/' + applicationId + '/entities/' + entityId + '/workflow?start=true&timeout=20ms', $scope.workflowYaml)
+        $http.post('/v1/applications/' + applicationId + '/entities/' + entityId + '/workflows?start=true&timeout=20ms', $scope.workflowYaml)
             .then((response)=> {
                 $scope.running = false;
                 $uibModalInstance.close(response.data);

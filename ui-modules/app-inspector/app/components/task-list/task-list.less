@@ -20,17 +20,18 @@ task-list {
   display: block;
   position: relative;
 
-  i.sub-task-link {
-    font-size: 40px;
-    color: @brand-primary;
-  }
-
   brooklyn-status-icon {
     margin-right: 15px;
     width: 30px;
     height: 30px;
     display: block;
   }
+
+  i.sub-task-link {
+    font-size: 40px;
+    color: @brand-primary;
+  }
+
   .custom-status-task-icon {
     color: @brand-success;
   }
@@ -213,15 +214,33 @@ task-list {
 
     }
 
-    &.status a {
-      padding-top: 0;
-      padding-bottom: 0;
+    &.status {
+      a {
+        padding-top: 0;
+        padding-bottom: 0;
+
+        display: flex;
+        justify-content: center;
+
+        brooklyn-status-icon {
+          margin: 0;
+          width: 24px;
+          height: 24px;
+        }
+      }
     }
+
+    &.no-tasks-found {
+      padding: 24px;
+      font-size: 125%;
+    }
+
   }
 
   tr > td > a:hover {
     text-decoration: none;
   }
+
 }
 
 .no-activities {

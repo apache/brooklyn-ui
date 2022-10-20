@@ -77,7 +77,7 @@
         <table class="table table-bordered">
             <thead>
             <tr>
-                <th>
+                <th style="text-align: center;">
                     Status
                 </th>
                 <th>
@@ -125,11 +125,11 @@
             </tr>
             {{ model.filterResult = filterResult; "comment: update those interested in the result of the filter"; "" }}
             <tr ng-if="filterResult.length == 0 ">
-                <td colspan="4" class="text-center"><h4>
+                <td colspan="4" class="text-center no-tasks-found">
                     No tasks found matching
                     <span ng-if="filterValue">current search <code>{{filterValue}}</code> and</span>
-                    filter <code>{{filters.selectedDisplayName}}</code>
-                </h4></td>
+                    filter options
+                </td>
             </tr>
             </tbody>
         </table>

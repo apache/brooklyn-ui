@@ -157,15 +157,25 @@ export function taskListDirective() {
             if ($scope.taskType) {
                 selectFilter($scope.taskType);
             } else {
-                // defaults
-                selectFilter('EFFECTOR');
-                selectFilter('WORKFLOW');
+                if (!isActivityChildren) {
+                    // defaults (when not in subtask view; in subtask view it is as above)
+                    selectFilter('EFFECTOR');
+                    selectFilter('WORKFLOW');
+                } else {
+                    selectFilter('SUB-TASK');
+                }
             }
             selectFilter("_workflowReplayedTopLevel");
             selectFilter("_workflowNonLastReplayHidden");
 
+            // pick other filter combos until we get some conetnt
             if ($scope.tasksFilteredByTag.length==0) {
-                // if nothing found at top level then broaden
+                selectFilter('INITIALIZATION');
+            }
+            if ($scope.tasksFilteredByTag.length==0) {
+                selectFilter("_anyTypeTag", true);
+            }
+            if ($scope.tasksFilteredByTag.length==0) {
                 selectFilter("_top", false);
             }
 
@@ -215,6 +225,8 @@ export function taskListDirective() {
                         globalFilters.transient.checked = !globalFilters.transient.include;
                         setFiltersForTasks(scope, isActivityChildren);
                     },
+                    category: 'status',
+                    categoryForEvaluation: 'status-transient',
                 };
                 globalFilters.transient.action();
             }
@@ -369,9 +381,18 @@ export function taskListDirective() {
                 ...(extra || {}),
             }
         }
-        // put these first
-        addTagFilter('EFFECTOR', filtersFullList, 'Effectors', { displaySummary: 'effector', includeIfZero: true });
-        addTagFilter('WORKFLOW', filtersFullList, 'Workflow', { includeIfZero: true });
+
+        // put these first if present, to get this order, then remove if false
+        if (!isActivityChildren) {
+            addTagFilter('EFFECTOR', filtersFullList, 'Effectors', {displaySummary: 'effector', includeIfZero: true});
+            addTagFilter('WORKFLOW', filtersFullList, 'Workflow', { includeIfZero: true });
+        } else {
+            filtersFullList['EFFECTOR'] = false;
+            filtersFullList['WORKFLOW'] = false;
+        }
+        filtersFullList['SENSOR'] = false;
+        filtersFullList['INITIALIZATION'] = false;
+        filtersFullList['SUB-TASK'] = false;
 
         // add filters for other tags
         tasks.forEach(t =>
@@ -379,6 +400,31 @@ export function taskListDirective() {
                     addTagFilter(tag, filtersFullList, 'Tag: ' + tag.toLowerCase())
             ));
 
+        ['EFFECTOR', 'WORKFLOW', 'SUB-TASK', 'SENSORS', 'INITIALIZATION'].forEach(t => { if (!filtersFullList[t]) delete filtersFullList[t]; });
+        (filtersFullList['SUB-TASK'] || {}).display = 'Sub-tasks';
+        (filtersFullList['SENSOR'] || {}).display = 'Sensors';
+        (filtersFullList['INITIALIZATION'] || {}).display = 'Initialization';
+
+        filtersFullList['_active'] = {
+            display: 'Only show active tasks',
+            displaySummary: 'active',
+            filter: tasks => tasks.filter(t => !t.endTimeUtc || t.endTimeUtc<0),
+            category: 'status',
+            categoryForEvaluation: 'status-active',
+        }
+        filtersFullList['_scheduled_sub'] = {
+            display: 'Only show scheduled tasks',
+            displaySummary: 'scheduled',
+            filter: tasks => tasks.filter(t => {
+                // show scheduled tasks (the parent) and each scheduled run, if sub-tasks are selected
+                if (!t || !t.submittedByTask) return false;
+                if (isScheduled(t)) return true;
+                let submitter = tasksById[t.submittedByTask.metadata.id];
+                return isScheduled(submitter);
+            }),
+            category: 'status',
+            categoryForEvaluation: 'status-scheduled',
+        }
 
         const filterWorkflowsReplayedTopLevel = t => !t.isWorkflowFirstRun && t.isWorkflowLastRun && t.isWorkflowTopLevel;
         const countWorkflowsReplayedTopLevel = tasksAll.filter(filterWorkflowsReplayedTopLevel).length;
@@ -525,8 +571,14 @@ function isTopLevelTask(t, tasksById) {
     if (t.forceTopLevel) return true;
     if (t.tags && t.tags.includes("TOP-LEVEL")) return true;
     let submitter = tasksById[t.submittedByTask.metadata.id];
-    if (!submitter) return true;
-    if (isScheduled(submitter) && (!t.endTimeUtc || t.endTimeUtc<=0)) return true;
+
+    // we could include those which are submitted but the submitter is forgotten
+    // (but they are accesible as CrossEntity or NestedSameEntity so don't include for now)
+    //if (!submitted) return true;
+
+    // active scheduled tasks
+    //if (isScheduled(submitter) && (!t.endTimeUtc || t.endTimeUtc<=0)) return true;
+
     return false;
 }
 function isNonTopLevelTask(t, tasksById) {
