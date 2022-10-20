@@ -114,6 +114,8 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                     // change the workflow object so widgets get refreshed
                     vm.model.workflow = { ...vm.model.workflow, data: wResponse2.data };
 
+                    vm.model.workflow.isError = !!(vm.model.workflow.data.status && vm.model.workflow.data.status.startsWith("ERROR"));
+
                     const replays = (vm.model.workflow.data.replays || []);
 
                     vm.model.workflow.runMultipleTimes = replays.length > 1;

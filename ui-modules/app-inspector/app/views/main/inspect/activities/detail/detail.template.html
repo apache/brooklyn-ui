@@ -214,7 +214,7 @@
                                     This task is
                                     <span ng-if="!vm.isNullish(vm.model.workflow.tag.stepIndex)">for step <b>{{ vm.model.workflow.tag.stepIndex+1 }}</b>
                                         in
-                                        <span ng-if="vm.model.workflow.runReplayId">
+                                        <span ng-if="vm.model.workflow.runMultipleTimes">
                                             <span ng-if="vm.model.workflow.runIsOld">a previous run of </span>
                                             <span ng-if="vm.model.workflow.runIsLatest">the most recent run of </span>
                                         </span>
@@ -236,9 +236,14 @@
                                                 <b>{{vm.model.workflow.data.name}}</b>.</a>
                                         </span>
                                         <span ng-if="!vm.model.workflow.runIsOld">
-                                            <span ng-if="vm.model.workflow.runIsLatest">the most recent run of </span>
+                                            <span ng-if="vm.model.workflow.runIsLatest && vm.model.workflow.runMultipleTimes">the most recent run of </span>
                                             workflow <span class="monospace">{{vm.model.workflow.data.workflowId}}</span>:
                                             <b>{{vm.model.workflow.data.name}}</b>.
+                                        </span>
+                                        <span ng-if="vm.model.workflow.isError && vm.model.workflow.data.currentStepInstance && vm.model.workflow.data.currentStepInstance.taskId">
+                                            Details of the failure can be found by opening
+                                            <a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.currentStepInstance.taskId, workflowId})">
+                                                the failed task</a>.
                                         </span>
                                     </span>
                                 </div>

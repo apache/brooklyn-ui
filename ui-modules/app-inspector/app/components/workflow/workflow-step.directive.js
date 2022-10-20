@@ -87,7 +87,7 @@ export function workflowStepDirective() {
                 let shorthand = step.userSuppliedShorthand || step.s || step.shorthand;
                 $scope.stepTitle.code = shorthand;
                 if (!shorthand) {
-                    $scope.stepTitle.code = step.type || '';
+                    $scope.stepTitle.code = step.shorthandTypeName || step.type || '';
                     if (step.input) $scope.stepTitle.code += ' ...';
                 }
 
