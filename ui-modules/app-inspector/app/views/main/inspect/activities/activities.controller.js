@@ -72,6 +72,7 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
                 newActivitiesMap[activity.id] = activity;
             });
 
+            const workflowActivities = {}
             Object.values(vm.workflows || {})
                 .filter(wf => wf.replays && wf.replays.length)
                 .forEach(wf => {
@@ -84,7 +85,8 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
                         if (!t) {
                             // create stub tasks for the replays of workflows
                             t = makeTaskStubFromWorkflowRecord(wf, wft);
-                            newActivitiesMap[wft.taskId] = t;
+                            workflowActivities[wft.taskId] = t;
+                            //newActivitiesMap[wft.taskId] = t;
                         }
                         t.workflowId = wf.workflowId;
                         t.workflowParentId = wf.parentId;
@@ -101,8 +103,23 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
                     lastTask.isWorkflowLastRun = true;
                 });
 
+            // workflow stubs need sorting by us
+            let workflowStubsToSort = Object.values(workflowActivities);
+            function firstDate(d1, d2, nextSupplier) {
+                if (d1==d2) return nextSupplier();
+                if (!(d1>0) && !(d2>0)) return nextSupplier();
+                if (d1>0 && d2>0) return d2-d1;
+                return d1>0 ? 1 : -1;
+            }
+            workflowStubsToSort.sort( (w1,w2) =>
+                firstDate(w1.endTimeUtc, w2.endTimeUtc,
+                    () => firstDate(w1.startTimeUtc, w2.startTimeUtc,
+                        () => firstDate(w1.submitTimeUtc, w2.submitTimeUtc,
+                            () => 0))) );
+            workflowStubsToSort.forEach(wst => newActivitiesMap[wst.id] = wst);
+
             vm.activitiesMap = newActivitiesMap;
-            vm.activities = Object.values(vm.activitiesMap);
+            vm.activities = Object.values(newActivitiesMap);
         }
     }
 
@@ -178,7 +195,7 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
 export function makeTaskStubFromWorkflowRecord(wf, wft) {
     const result = {
         id: wft.taskId,
-        displayName: wf.name + (wft.reasonForReplay ? " ("+wft.reasonForReplay+")" : ""),
+        displayName: wf.name + (wft.reasonForReplay && wft.reasonForReplay!="initial run" ? " ("+wft.reasonForReplay+")" : ""),
         entityId: (wf.entity || {}).id,
         isError: wft.isError===false ? false : true,
         currentStatus: _.isNil(wft.isError) ? "Unavailable" : wft.status,

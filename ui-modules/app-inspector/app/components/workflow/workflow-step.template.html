@@ -110,7 +110,19 @@
                     </span>
                 </div>
 
-                <div ng-if="isFocusStep && !isFocusTask" class="space-above">
+                <div ng-if="isErrorHandler" class="space-above">
+                    The task on this page is for the error handler for this step.
+                    More details may be found in the other sections on this page.
+                </div>
+
+                <div ng-if="stepContext.errorHandlerTaskId && !isErrorHandler" class="space-above">
+                    The error triggered an error handler in
+                    <b><a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: stepContext.errorHandlerTaskId, workflowId})">
+                        <span class="monospace">task {{stepContext.errorHandlerTaskId}}</span
+                        ></a></b>.
+                </div>
+
+                <div ng-if="isFocusStep && !isFocusTask && !isErrorHandler" class="space-above">
                     <b>The activity currently being viewed (<span class="monospace">{{ task.id }}</span>) is for a previous run of this step.</b>
                 </div>
 

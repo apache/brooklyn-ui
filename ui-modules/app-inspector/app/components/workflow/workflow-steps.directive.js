@@ -232,7 +232,7 @@ function makeArrows(workflow, steps) {
             }
         }
 
-        for (var i = -1; i < steps.length - 1; i++) {
+        for (var i = -1; i < steps.length; i++) {
             const prevsHere = stepsPrev[i];
             if (prevsHere && prevsHere.length) {
                 prevsHere.forEach(prev => {

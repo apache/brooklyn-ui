@@ -165,11 +165,14 @@ export function taskListDirective() {
                     selectFilter('SUB-TASK');
                 }
             }
+            if (!isActivityChildren) selectFilter("_workflowStepsHidden");
             selectFilter("_workflowReplayedTopLevel");
             selectFilter("_workflowNonLastReplayHidden");
+            selectFilter("_workflowCompletedWithoutTaskHidden");
 
             // pick other filter combos until we get some conetnt
             if ($scope.tasksFilteredByTag.length==0) {
+                selectFilter('_cross_entity');
                 selectFilter('INITIALIZATION');
             }
             if ($scope.tasksFilteredByTag.length==0) {
@@ -305,15 +308,10 @@ export function taskListDirective() {
                 if (!set || !set.length) return null;
                 let nestedFiltersAvailable = Object.values(scope.filters.available).filter(f => f.category === 'nested');
                 if (set.length == nestedFiltersAvailable.length-1 && !set[0].isDefault) {
-                    // everything but first is selected, so no message
+                    // everything but first is selected, so no message (assume _top is always shown)
                     return [ 'all' ];
                 }
                 return set.map(s => s.displaySummary || '');
-                // if (set.length==1) {
-                //     return [ getFilterOrEmpty(set[0]).displaySummary ];
-                // }
-                // // only happens if we have
-                // return null;
             },
             'type-tag': set => {
                 if (!set || !set.length) return null;
@@ -332,6 +330,7 @@ export function taskListDirective() {
             category: 'nested',
             onEnabledPre: clearCategory(),
             onDisabledPost: enableOthersIfCategoryEmpty('_top'),
+            includeIfZero: true,
         }
         if (!isActivityChildren) {
             filtersFullList['_cross_entity'] = {
@@ -395,11 +394,12 @@ export function taskListDirective() {
         filtersFullList['SUB-TASK'] = false;
 
         // add filters for other tags
-        tasks.forEach(t =>
-            (t.tags || []).filter(tag => typeof tag === 'string' && tag.length < 32).forEach(tag =>
-                    addTagFilter(tag, filtersFullList, 'Tag: ' + tag.toLowerCase())
-            ));
+        let tags = _.uniq(tasks.flatMap(t => (t.tags || []).filter(tag => typeof tag === 'string' && tag.length < 32)));
+        tags.sort( (t1,t2) => t1.toLowerCase().localeCompare(t2.toLowerCase()) );
+        // same tag with different cases will be shown multiple times, unable to disambiguate, but that's unlikely
+        tags.forEach(tag => addTagFilter(tag, filtersFullList, 'Tag: ' + tag.toLowerCase()) );
 
+        Object.entries(filtersFullList).forEach(([k,v]) => { if (!v) delete filtersFullList[k]; });
         ['EFFECTOR', 'WORKFLOW', 'SUB-TASK', 'SENSORS', 'INITIALIZATION'].forEach(t => { if (!filtersFullList[t]) delete filtersFullList[t]; });
         (filtersFullList['SUB-TASK'] || {}).display = 'Sub-tasks';
         (filtersFullList['SENSOR'] || {}).display = 'Sensors';
@@ -425,6 +425,7 @@ export function taskListDirective() {
             category: 'status',
             categoryForEvaluation: 'status-scheduled',
         }
+
 
         const filterWorkflowsReplayedTopLevel = t => !t.isWorkflowFirstRun && t.isWorkflowLastRun && t.isWorkflowTopLevel;
         const countWorkflowsReplayedTopLevel = tasksAll.filter(filterWorkflowsReplayedTopLevel).length;
@@ -470,7 +471,7 @@ export function taskListDirective() {
             filter: tasks => tasks.filter(filterWorkflowsWhichAreNotPreviousReplays),
             count: countWorkflowsWhichArePreviousReplays,
             countAbsolute: countWorkflowsWhichArePreviousReplays,
-            categoryForEvaluation: 'workflow1',
+            categoryForEvaluation: 'workflow-non-last-replays',
             category: 'workflow',
         }
 
@@ -483,10 +484,26 @@ export function taskListDirective() {
                 'or because their tasks have been cleared from memory in this server. ' +
                 'These can be excluded to focus on more recent tasks.',
             displaySummary: null,
-            filter: tasks => tasks.filter(filterWorkflowsWithoutTaskWhichAreCompleted),
+            filter: tasks => tasks.filter(t => !filterWorkflowsWithoutTaskWhichAreCompleted(t)),
             count: countWorkflowsWithoutTaskWhichAreCompleted,
             countAbsolute: countWorkflowsWithoutTaskWhichAreCompleted,
-            categoryForEvaluation: 'workflow2',
+            categoryForEvaluation: 'workflow-old-completed',
+            category: 'workflow',
+        }
+
+        const filterWorkflowTasksWhichAreSteps = t => getTaskWorkflowTag(t) && !_.isNil(getTaskWorkflowTag(t));
+        const countWorkflowTasksWhichAreSteps = tasksAll.filter(filterWorkflowTasksWhichAreSteps).length;
+        filtersFullList['_workflowStepsHidden'] = {
+            display: 'Exclude individual workflow steps',
+            help: 'Individual steps within workflows are hidden in most views, except where showing workflow tasks. ' +
+                'This makes it easier to navigate to primary tasks, such as workflows, and from there explore the steps within. ' +
+                'If this option is disabled and if nested sub-tasks are enabled, then individual steps will be listed in this view ' +
+                'to facilitate finding a specific step.',
+            displaySummary: null,
+            filter: tasks => tasks.filter(t => _.isNil((getTaskWorkflowTag(t) || {}).stepIndex)),
+            count: countWorkflowTasksWhichAreSteps,
+            countAbsolute: countWorkflowTasksWhichAreSteps,
+            categoryForEvaluation: 'workflow-steps',
             category: 'workflow',
         }
 
@@ -512,6 +529,7 @@ export function taskListDirective() {
 
         // filter and move to new map
         let result = {};
+        // include non-zero filters or those included if zero
         Object.entries(filtersFullList).forEach(([k, f]) => {
             if (f.countAbsolute > 0 || f.includeIfZero) result[k] = f;
         });
@@ -522,14 +540,15 @@ export function taskListDirective() {
                 Object.entries(result).filter(([k,f]) => f.category === category).forEach(([k,f])=>delete result[k]);
             }
         }
-        function deleteFiltersInCategoryThatAreEmpty(category) {
-            Object.entries(result).filter(([k,f]) => f.category === category && f.countAbsolute==0).forEach(([k,f])=>delete result[k]);
-        }
+        // function deleteFiltersInCategoryThatAreEmpty(category) {
+        //     // redundant with population of 'result' above
+        //     Object.entries(result).filter(([k,f]) => f.category === category && f.countAbsolute==0 && !f.includeIfZero).forEach(([k,f])=>delete result[k]);
+        // }
         function deleteCategoryIfSize1(category) {
             const found = Object.entries(result).filter(([k,f]) => f.category === category);
             if (found.length==1) delete result[found[0][0]];
         }
-        deleteFiltersInCategoryThatAreEmpty('nested');
+        // deleteFiltersInCategoryThatAreEmpty('nested');
         deleteCategoryIfSize1('nested');
         deleteCategoryIfAllCountsAreEqualOrZero('type-tag');  // because all tags are on all tasks
 

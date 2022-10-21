@@ -118,10 +118,10 @@
                                 <div class="col-md-3 summary-item summary-item-timestamp">
                                     <div class="summary-item-label">Submitted</div>
                                     <div class="summary-item-value">
-                                        <div class="humanized fade" ng-show="!showUTC">
+                                        <div class="humanized fade" ng-show="!showUTC || !(vm.model.activity.submitTimeUtc>0)">
                                             {{vm.model.activity.submitTimeUtc | timeAgoFilter}}
                                         </div>
-                                        <div class="utcTime fade" ng-show="showUTC">
+                                        <div class="utcTime fade" ng-show="showUTC && vm.model.activity.submitTimeUtc>0">
                                             {{vm.model.activity.submitTimeUtc | dateFilter }}
                                         </div>
                                     </div>
@@ -129,10 +129,10 @@
                                 <div class="col-md-3 summary-item summary-item-timestamp">
                                     <div class="summary-item-label">Started</div>
                                     <div class="summary-item-value">
-                                        <div class="humanized fade" ng-show="!showUTC">
+                                        <div class="humanized fade" ng-show="!showUTC || !(vm.model.activity.startTimeUtc>0)">
                                             {{vm.model.activity.startTimeUtc | timeAgoFilter}}
                                         </div>
-                                        <div class="utcTime fade" ng-show="showUTC">
+                                        <div class="utcTime fade" ng-show="showUTC && vm.model.activity.startTimeUtc>0">
                                             {{vm.model.activity.startTimeUtc | dateFilter }}
                                         </div>
                                     </div>
@@ -140,10 +140,10 @@
                                 <div ng-if="vm.model.activity.endTimeUtc" class="col-md-3 summary-item summary-item-timestamp">
                                     <div class="summary-item-label">Finished</div>
                                     <div class="summary-item-value">
-                                        <div class="humanized fade" ng-show="!showUTC">
+                                        <div class="humanized fade" ng-show="!showUTC || !(vm.model.activity.endTimeUtc>0)">
                                             {{vm.model.activity.endTimeUtc | timeAgoFilter}}
                                         </div>
-                                        <div class="utcTime fade" ng-show="showUTC">
+                                        <div class="utcTime fade" ng-show="showUTC && vm.model.activity.endTimeUtc>0">
                                             {{vm.model.activity.endTimeUtc | dateFilter }}
                                         </div>
                                     </div>
@@ -210,7 +210,7 @@
                                         </ul>
                                     </div>
                                 </div>
-                                <div style="margin-top: 12px; margin-bottom: 24px;">
+                                <div class="workflow-preface-para">
                                     This task is
                                     <span ng-if="!vm.isNullish(vm.model.workflow.tag.stepIndex)">for step <b>{{ vm.model.workflow.tag.stepIndex+1 }}</b>
                                         in
@@ -255,8 +255,21 @@
                                     ></a></b>.
                                 </div>
 
+                                <div ng-if="vm.model.workflow.data.errorHandlerTaskId" class="workflow-preface-para">
+                                    <span ng-if="vm.model.activityId==vm.model.workflow.data.errorHandlerTaskId">
+                                        This is the page for the error handler for this workflow.
+                                        More details of how the error was handled can be found in other sections on this page.
+                                    </span>
+                                    <span ng-if="vm.model.activityId!=vm.model.workflow.data.errorHandlerTaskId">
+                                        This workflow had an error which ran error handler
+                                        <b><a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.errorHandlerTaskId, workflowId})">
+                                            <span class="monospace">task {{vm.model.workflow.data.errorHandlerTaskId}}</span
+                                        ></a></b>.
+                                    </span>
+                                </div>
+
                                 <div ng-if="vm.model.workflow.runIsOld" class="workflow-preface-para">
-                                    For previous runs, the subtask view
+                                    For previous runs such as this, the subtask view
                                     <span ng-if="!vm.isNullish(vm.model.workflow.tag.stepIndex)">for
                                         <a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.runReplayId, workflowId})">
                                             the relevant run

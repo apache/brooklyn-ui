@@ -117,6 +117,7 @@ export function workflowStepDirective() {
                 $scope.stepContext = ($scope.isCurrentMaybeInactive ? workflow.data.currentStepInstance : $scope.osi.context) || {};
                 $scope.isFocusStep = $scope.workflow.tag && ($scope.workflow.tag.stepIndex === index);
                 $scope.isFocusTask = false;
+                $scope.isErrorHandler = $scope.workflow.tag && ($scope.workflow.tag.errorHandlerForTask);
 
                 $scope.stepCurrentError = (($scope.task || {}).currentStatus === 'Error') ? 'This step returned an error.'
                     : ($scope.isWorkflowError && $scope.isCurrentMaybeInactive) ? 'The workflow encountered an error around this step.'

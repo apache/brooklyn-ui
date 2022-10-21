@@ -106,7 +106,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                     // give a better error
                     vm.error = $sce.trustAsHtml('Limited information on workflow task <b>' + _.escape(activityId) + '</b>.<br/><br/>' +
                         (!vm.model.activity.endTimeUtc || vm.model.activity.endTimeUtc == -1
-                            ? "The run appears to have been interrupted by a server restart or failover."
+                            ? "The run appears to have been interrupted, either by a server restart or a failure or cancellation and removal from memory."
                             : 'The workflow is known but this task is no longer stored in memory.'));
                 }
 
@@ -171,7 +171,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                             else if (replayableContinuing) w2 = '';
 
                             $scope.actions.workflowReplays.push({targetId: 'start', reason: 'Restart workflow from UI',
-                                label: 'Restart '+(stepIndex>=0 ? 'workflow ' : '')+reason});
+                                label: w1+' '+(stepIndex>=0 ? 'workflow ' : '')+w2});
                         }
 
                         if (!replayableFromStart) {

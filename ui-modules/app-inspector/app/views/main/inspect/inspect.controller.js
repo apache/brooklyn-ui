@@ -26,11 +26,11 @@ export const inspectState = {
     name: 'main.inspect',
     url: 'application/:applicationId/entity/:entityId',
     template: template,
-    controller: ['$scope', '$stateParams', '$uibModal', 'brSnackbar', 'entityApi', inspectController],
+    controller: ['$scope', '$state', '$stateParams', '$uibModal', 'brSnackbar', 'entityApi', inspectController],
     controllerAs: 'vm'
 };
 
-export function inspectController($scope, $stateParams, $uibModal, brSnackbar, entityApi) {
+export function inspectController($scope, $state, $stateParams, $uibModal, brSnackbar, entityApi) {
     const {
         applicationId,
         entityId
@@ -68,7 +68,7 @@ export function inspectController($scope, $stateParams, $uibModal, brSnackbar, e
                 entityId: ()=>(entityId),
             }
         }).result.then((closeData)=> {
-            $state.go('main.inspect.activites', {
+            $state.go('main.inspect.activities.detail', {
                 applicationId: applicationId,
                 entityId: closeData.entityId,
                 activityId: closeData.id
@@ -87,7 +87,7 @@ export function inspectController($scope, $stateParams, $uibModal, brSnackbar, e
                 entityId: ()=>(entityId),
             }
         }).result.then((closeData)=> {
-            $state.go('main.inspect.activites', {
+            $state.go('main.inspect.activities.detail', {
                 applicationId: applicationId,
                 entityId: closeData.entityId,
                 activityId: closeData.id
