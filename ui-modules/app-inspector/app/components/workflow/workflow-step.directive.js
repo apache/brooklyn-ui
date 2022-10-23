@@ -53,7 +53,6 @@ export function workflowStepDirective() {
             let index = $scope.stepIndex;
             $scope.workflowId = ($scope.workflow && $scope.workflow.data || {}).workflowId;
 
-            vm.stepDetails = () => stepDetails($sce, $scope.workflow, step, index, $scope.expanded);
             vm.toggleExpandState = () => {
                 $scope.expanded = !$scope.expanded;
                 if ($scope.onSizeChange) $scope.onSizeChange();
@@ -84,7 +83,7 @@ export function workflowStepDirective() {
                 $scope.stepTitle.code = step;
             } else {
 
-                let shorthand = step.userSuppliedShorthand || step.s || step.shorthand;
+                let shorthand = step.userSuppliedShorthand || step.step || step.s || step.shorthand;
                 $scope.stepTitle.code = shorthand;
                 if (!shorthand) {
                     $scope.stepTitle.code = step.shorthandTypeName || step.type || '';
@@ -146,50 +145,6 @@ export function workflowStepDirective() {
         }
     }
 
-}
-
-function stepDetails($sce, workflow, step, index, expanded) {
-    let v;
-    if (typeof step === 'string') {
-        v = '<span class="step-index">'+_.escape(index+1)+'</span> ';
-        v += ' <span class="step-body">' + _.escape(step) + '</span>';
-    } else {
-        let shorthand = step.userSuppliedShorthand || step.s || step.shorthand;
-        if (step.name) {
-            v = '<span class="step-name">' + _.escape(step.name) + '</span>';
-            if (shorthand) {
-                v += ' <span class="step-body">' + _.escape(shorthand) + '</span>';
-            }
-        } else {
-            if (step.id) {
-                v = '<span class="step-id">' + _.escape(step.id) + '</span>';
-                if (shorthand) {
-                    v += ' <span class="step-body">' + _.escape(shorthand) + '</span>';
-                }
-            } else {
-                v = '<span class="step-index">'+_.escape(index+1)+'</span> ';
-                if (shorthand) {
-                    v += '<span class="step-body">' + _.escape(shorthand);
-                } else {
-                    v += _.escape(step.type);
-                    if (step.input) v += ' ...';
-                }
-                v += '</span>';
-            }
-        }
-    }
-    v = '<div class="step-block-title">'+v+'</div>';
-
-    if (expanded) {
-        v += '<br/>';
-        const oldStepInfo = (workflow.data.oldStepInfo || {})[index]
-        if (oldStepInfo) {
-            v += '<pre>' + _.escape(stringify(oldStepInfo)) + '</pre>';
-        } else {
-            v += _.escape("Step has not been run yet.");
-        }
-    }
-    return $sce.trustAsHtml(v);
 }
 
 function stringify(data) { return JSON.stringify(data, null, 2); }

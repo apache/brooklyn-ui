@@ -157,7 +157,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                             const osi = vm.model.workflow.data.oldStepInfo[stepIndex] || {};
                             if (osi.replayableFromHere) {
                                 $scope.actions.workflowReplays.push({ targetId: ''+stepIndex, reason: 'Replay workflow from step '+(stepIndex+1)+' from UI',
-                                    label: 'Replay from here (step '+(stepIndex+1) });
+                                    label: 'Replay from here (step '+(stepIndex+1)+')' });
                             } else {
                                 $scope.actions.workflowReplays.push({ targetId: ''+stepIndex, reason: 'Force replay from step '+(stepIndex+1)+' from UI',
                                     label: 'Force replay from here (step '+(stepIndex+1), force: true });
