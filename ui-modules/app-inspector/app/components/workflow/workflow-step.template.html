@@ -197,7 +197,7 @@
                         <div class="data-row nested" ng-if="stepContext.otherMetadata" ng-repeat="(key,value) in stepContext.otherMetadata" id="$key">
                             <div class="A">{{ key }}</div> <div class="B multiline-code">{{ vm.yamlOrPrimitive(value) }}</div>
                         </div>
-                        <div class="data-row nested" ng-if="!isCurrentMaybeInactive && stepContext.output"><div class="A">Output</div> <div class="B multiline-code">{{ vm.yaml(stepContext.output) }}</div></div>
+                        <div class="data-row nested" ng-if="stepContext.output"><div class="A">Output</div> <div class="B multiline-code">{{ vm.yaml(stepContext.output) }}</div></div>
                     </div>
                 </div>
 
