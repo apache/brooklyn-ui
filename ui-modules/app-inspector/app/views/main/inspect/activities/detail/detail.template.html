@@ -95,7 +95,7 @@
                                 </div>
                                 <div class="col-md-6 summary-item" ng-if="vm.model.activity.result!=undefined">
                                     <div class="summary-item-label">Result</div>
-                                    <div class="summary-item-value result-parent" ng-class="{ 'big-result': (''+vm.model.activity.result).length > 10 }"><div class="result-body">{{::vm.model.activity.result}}</div></div>
+                                    <div class="summary-item-value result-parent" ng-class="{ 'big-result': (''+vm.model.activity.result).length > 10 }"><div class="result-body">{{::vm.yaml(vm.model.activity.result)}}</div></div>
                                 </div>
                             </div>
                         </div>
@@ -336,6 +336,17 @@
                     <br-collapsible ng-if="vm.model.activity.detailedStatus" state="vm.model.accordion.detailsOpen">
                         <heading> Details</heading>
                         <pre>{{vm.model.activity.detailedStatus}}</pre>
+                    </br-collapsible>
+
+                    <br-collapsible ng-if="workflow_yaml" state="vm.model.accordion.workflowYamlOpen">
+                        <heading> Workflow Definition</heading>
+                        <div class="blueprint-copy-holder">
+                            <a class="text-muted blueprint-button" ng-click="vm.openInRunModel(workflow_yaml)"
+                               title="Open in Run Workflow">
+                                <i class="fa fa-arrow-circle-o-right"></i>
+                            </a>
+                        </div>
+                        <pre>{{workflow_yaml}}</pre>
                     </br-collapsible>
 
                     <br-collapsible ng-if="vm.model.activity.id || vm.model.workflow.data" state="vm.model.accordion.jsonOpen">

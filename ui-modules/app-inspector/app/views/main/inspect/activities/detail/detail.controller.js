@@ -20,6 +20,9 @@ import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-sp
 import template from "./detail.template.html";
 import modalTemplate from './kilt.modal.template.html';
 import {makeTaskStubFromWorkflowRecord} from "../activities.controller";
+import jsyaml from 'js-yaml';
+import runWorkflowModalTemplate from "../../run-workflow-modal.template.html";
+import {runWorkflowController} from "../../inspect.controller";
 
 export const detailState = {
     name: 'main.inspect.activities.detail',
@@ -243,6 +246,10 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                     vm.model.workflow.tag = workflowTag;
                     loadWorkflow(workflowTag);
                 }
+                const workflowYaml = vm.model.activity.tags.find(t => t.workflow_yaml);
+                if (workflowYaml) {
+                    $scope.workflow_yaml = workflowYaml.workflow_yaml;
+                }
             }
 
             function saveActivity(response) {
@@ -311,6 +318,27 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
     }
 
     vm.isNonEmpty = Utils.isNonEmpty;
+    vm.yaml = jsyaml.dump;
+
+    vm.openInRunModel = function (workflowYaml) {
+        $uibModal.open({
+            animation: true,
+            template: runWorkflowModalTemplate,
+            controller: ['$scope', '$http', '$uibModalInstance', 'applicationId', 'entityId', 'workflowYaml', runWorkflowController],
+            size: 'lg',
+            resolve: {
+                applicationId: ()=>(applicationId),
+                entityId: ()=>(entityId),
+                workflowYaml: ()=>(workflowYaml),
+            }
+        }).result.then((closeData)=> {
+            $state.go('main.inspect.activities.detail', {
+                applicationId: applicationId,
+                entityId: closeData.entityId,
+                activityId: closeData.id
+            });
+        });
+    }
 
     vm.getStreamIdsInOrder = function () {
         // sort with known streams first, in preferred order

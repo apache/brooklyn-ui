@@ -144,8 +144,8 @@ export function addChildController($scope, $http, $uibModalInstance, application
     }
 }
 
-export function runWorkflowController($scope, $http, $uibModalInstance, applicationId, entityId) {
-    $scope.workflowYaml = 'steps:\n  - ';
+export function runWorkflowController($scope, $http, $uibModalInstance, applicationId, entityId, workflowYaml) {
+    $scope.workflowYaml = workflowYaml || 'steps:\n  - ';
     $scope.errorMessage = null;
     $scope.running = false;
     $scope.runWorkflow = runWorkflow;

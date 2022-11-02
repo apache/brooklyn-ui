@@ -138,10 +138,10 @@ function EntityApi($http, $q) {
     }
     
     function getEntityActivities(applicationId, entityId) {
-        return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/activities', {observable: true, ignoreLoadingBar: true});
+        return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/activities', {observable: true, ignoreLoadingBar: true, params: { suppressSecrets: true }});
     }
     function getEntityActivitiesDeep(applicationId, entityId) {
-        return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/activities', {observable: true, ignoreLoadingBar: true, params: { recurse: true }});
+        return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/activities', {observable: true, ignoreLoadingBar: true, params: { recurse: true, suppressSecrets: true }});
     }
 
     function getEntityLocations(applicationId, entityId) {
@@ -192,10 +192,10 @@ function EntityApi($http, $q) {
         return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/adjuncts/' + adjunctId + '/config/' + configId, body);
     }
     function getWorkflows(applicationId, entityId) {
-        return $http.get('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflows/', {observable: true, ignoreLoadingBar: true});
+        return $http.get('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflows/', {observable: true, ignoreLoadingBar: true, params: { suppressSecrets: true }});
     }
     function getWorkflow(applicationId, entityId, workflowId) {
-        return $http.get('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflows/' + workflowId, {observable: true, ignoreLoadingBar: true});
+        return $http.get('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflows/' + workflowId, {observable: true, ignoreLoadingBar: true, params: { suppressSecrets: true }});
     }
     function replayWorkflow(applicationId, entityId, workflowId, step, options) {
         return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflows/' + workflowId

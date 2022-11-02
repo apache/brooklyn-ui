@@ -44,17 +44,17 @@ function ActivityApi($http) {
     };
 
     function getActivities() {
-        return $http.get('/v1/activities', {observable: true, ignoreLoadingBar: true});
+        return $http.get('/v1/activities', {observable: true, ignoreLoadingBar: true, params: { suppressSecrets: true }});
     }
     function getActivity(activityId) {
-        return $http.get('/v1/activities/' + activityId, {observable: true, ignoreLoadingBar: true});
+        return $http.get('/v1/activities/' + activityId, {observable: true, ignoreLoadingBar: true, params: { suppressSecrets: true }});
     }
     function getActivityChildren(activityId) {
-        return $http.get('/v1/activities/' + activityId + '/children?includeBackground=true', {observable: true, ignoreLoadingBar: true});
+        return $http.get('/v1/activities/' + activityId + '/children', {observable: true, ignoreLoadingBar: true, params: { suppressSecrets: true, includeBackground: true }});
     }
     function getActivityDescendants(activityId, maxDepth) {
         return $http.get('/v1/activities/' + activityId + '/children/recurse'+
-            (maxDepth ? '?maxDepth='+maxDepth : ''), {observable: true, ignoreLoadingBar: true});
+            (maxDepth ? '?maxDepth='+maxDepth : ''), {observable: true, ignoreLoadingBar: true, params: { suppressSecrets: true }});
     }
     function getActivityStream(activityId, streamType) {
         return $http.get('/v1/activities/' + activityId + '/stream/' + encodeURIComponent(streamType), {observable: true, ignoreLoadingBar: true, transformResponse: (data)=> {
