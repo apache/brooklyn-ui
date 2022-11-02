@@ -141,7 +141,7 @@ function EntityApi($http, $q) {
         return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/activities', {observable: true, ignoreLoadingBar: true});
     }
     function getEntityActivitiesDeep(applicationId, entityId) {
-        return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/activities?recurse=true', {observable: true, ignoreLoadingBar: true});
+        return $http.get('/v1/applications/' + applicationId + '/entities/' + entityId + '/activities', {observable: true, ignoreLoadingBar: true, params: { recurse: true }});
     }
 
     function getEntityLocations(applicationId, entityId) {
@@ -166,18 +166,18 @@ function EntityApi($http, $q) {
         ]);
     }
     function expungeEntity(applicationId, entityId, release) {
-        return $http.post('/v1/applications/' + applicationId + '/entities/' + entityId + '/expunge?release=' + release + '&timeout=0');
+        return $http.post('/v1/applications/' + applicationId + '/entities/' + entityId + '/expunge', null, { params: { release, timeout: 0 } });
     }
-    function invokeEntityEffector(applicationId, entityId, effectorId, params) {
-        return $http.post('/v1/applications/' + applicationId + '/entities/' + entityId + '/effectors/' + effectorId + '?timeout=0', params);
+    function invokeEntityEffector(applicationId, entityId, effectorId, body) {
+        return $http.post('/v1/applications/' + applicationId + '/entities/' + entityId + '/effectors/' + effectorId, body, { params: { timeout: 0 } });
     }
     
-    function addEntityPolicy(applicationId, entityId, policyType, params) {
-        return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/policies/?type=' + policyType, params);
+    function addEntityPolicy(applicationId, entityId, policyType, body) {
+        return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/policies', body, { params: { type: policyType } });
     }
 
-    function addEntityAdjunct(applicationId, entityId, adjunctType, params) {
-        return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/adjuncts/?type=' + adjunctType, params);
+    function addEntityAdjunct(applicationId, entityId, adjunctType, body) {
+        return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/adjuncts', body, { params: { type: adjunctType } });
     }
     function startEntityAdjunct(applicationId, entityId, adjunctId) {
         return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/adjuncts/' + adjunctId + '/start');
@@ -188,8 +188,8 @@ function EntityApi($http, $q) {
     function destroyEntityAdjunct(applicationId, entityId, adjunctId) {
         return $http.delete('/v1/applications/'+ applicationId +'/entities/' + entityId + '/adjuncts/' + adjunctId);
     }
-    function updateEntityAdjunctConfig(applicationId, entityId, adjunctId, configId, data) {
-        return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/adjuncts/' + adjunctId + '/config/' + configId, data);
+    function updateEntityAdjunctConfig(applicationId, entityId, adjunctId, configId, body) {
+        return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/adjuncts/' + adjunctId + '/config/' + configId, body);
     }
     function getWorkflows(applicationId, entityId) {
         return $http.get('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflows/', {observable: true, ignoreLoadingBar: true});
@@ -199,6 +199,6 @@ function EntityApi($http, $q) {
     }
     function replayWorkflow(applicationId, entityId, workflowId, step, options) {
         return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflows/' + workflowId
-            + '/replay/from/' + step, {params: options});
+            + '/replay/from/' + step, null, {params: options});
     }
 }

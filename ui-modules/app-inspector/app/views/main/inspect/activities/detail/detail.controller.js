@@ -166,7 +166,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
 
                         if (replayableFromStart) {
                             let w1 = 'Restart', w2 = '(not resumable)';
-                            if (stepIndex<0) { w1 = 'Run'; w2 = 'again'; }
+                            if (stepIndex<0 || (_.isNil(stepIndex) && vm.model.workflow.data.replayableLastStep==-2)) { w1 = 'Run'; w2 = 'again'; }
                             else if (_.isNil(stepIndex)) { w2 = '(did not start)'; }
                             else if (replayableContinuing) w2 = '';
 
@@ -187,11 +187,14 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                                 if (r.force) opts.force = true;
                                 entityApi.replayWorkflow(applicationId, entityId, $scope.workflowId, r.targetId, opts)
                                     .then(response => {
+                                        console.log("Replay requested", response);
                                         $state.go('main.inspect.activities.detail', {
                                             applicationId: applicationId,
                                             entityId: entityId,
-                                            activityId: response.data,
+                                            activityId: response.data.id,
                                         });
+                                    }).catch(error => {
+                                        console.log("Replay failed", error);
                                     });
                             };
                         });
