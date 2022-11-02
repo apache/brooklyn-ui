@@ -255,6 +255,10 @@
                                     ></a></b>.
                                 </div>
 
+                                <div ng-if="vm.model.workflow.finishedWithNoSteps" class="workflow-preface-para">
+                                    The workflow did not run any steps; if this is unexpected, check the conditions on the steps.
+                                </div>
+
                                 <div ng-if="vm.model.workflow.data.errorHandlerTaskId" class="workflow-preface-para">
                                     <span ng-if="vm.model.activityId==vm.model.workflow.data.errorHandlerTaskId">
                                         This is the page for the error handler for this workflow.

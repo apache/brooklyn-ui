@@ -45,7 +45,8 @@ export function yamlEditorDirective($rootScope, brSnackbar) {
         scope: {
             type: '@',
             value: '=',
-            onChange: '&'
+            onChange: '&',
+            resetToEndOnExternalValueSet: '=?',
         },
         link: link
     };
@@ -180,6 +181,9 @@ export function yamlEditorDirective($rootScope, brSnackbar) {
             $scope.cm.focus();
             if ($scope.cm.getValue() !== newVal && angular.isDefined(newVal)) {
                 $scope.cm.setValue(newVal);
+                if ($scope.resetToEndOnExternalValueSet) {
+                    $scope.cm.setCursor($scope.cm.lineCount(), 0);
+                }
             }
             setTimeout(()=> {
                 $scope.cm.focus();

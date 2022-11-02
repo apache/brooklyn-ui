@@ -195,7 +195,7 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
 export function makeTaskStubFromWorkflowRecord(wf, wft) {
     const result = {
         id: wft.taskId,
-        displayName: wf.name + (wft.reasonForReplay && wft.reasonForReplay!="initial run" ? " ("+wft.reasonForReplay+")" : ""),
+        displayName: wf.name + (wft.reasonForReplay && wft.reasonForReplay!="Initial run" ? " ("+wft.reasonForReplay+")" : ""),
         entityId: (wf.entity || {}).id,
         isError: wft.isError===false ? false : true,
         currentStatus: _.isNil(wft.isError) ? "Unavailable" : wft.status,

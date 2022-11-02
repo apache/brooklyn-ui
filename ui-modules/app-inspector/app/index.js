@@ -36,6 +36,7 @@ import brYamlEditor from "brooklyn-ui-utils/yaml-editor/yaml-editor";
 import brWebNotifications from 'brooklyn-ui-utils/web-notifications/web-notifications';
 import brExpandablePanel from 'brooklyn-ui-utils/expandable-panel/expandable-panel';
 import brLogbook from 'brooklyn-ui-utils/logbook/logbook';
+import serverApi from 'brooklyn-ui-utils/api/brooklyn/server';
 
 import "angular-xeditable";
 import apiProvider from "components/providers/api.provider";
@@ -71,7 +72,7 @@ const IS_PRODUCTION = process.env.NODE_ENV === 'production' || false;
 angular.module('brooklynAppInspector', [ngResource, ngCookies, ngSanitize, uiRouter, brCore, brUtilsGeneral,
     dropdownNested,
     brServerStatus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brSensitiveField, brooklynUserManagement,
-    brYamlEditor, brWebNotifications, brExpandablePanel, 'xeditable', brLogbook, apiProvider, entityTree, loadingState,
+    brYamlEditor, brWebNotifications, brExpandablePanel, 'xeditable', brLogbook, apiProvider, entityTree, loadingState, serverApi,
     configSensorTable, entityEffector, entityPolicy, breadcrumbNavigation, taskList, taskSunburst, stream, adjunctsList,
     workflowSteps, workflowStep,
     managementDetail, brandAngularJs])

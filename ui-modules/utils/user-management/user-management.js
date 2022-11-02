@@ -42,7 +42,6 @@ export function userMenuDirective($compile, serverApi) {
             .addClass('dropdown')
             .removeAttr('br-user-menu') //remove the attribute to avoid indefinite loop
             .removeAttr('data-br-user-menu'); //also remove the same attribute with data- prefix in case users specify data-common-things in the html
-
         serverApi.getUser().then((response) => {
             scope.user = response.data;
         }).catch((response) => {

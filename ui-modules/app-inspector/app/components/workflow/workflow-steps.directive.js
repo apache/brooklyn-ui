@@ -163,7 +163,7 @@ function makeArrows(workflow, steps) {
 
         function stepY(n) {
             if (n==-1) return 'start/end';
-            if (!steps || n<0 || n>=steps.length) {
+            if (!steps || n<0 || n>=steps.length || _.isNil(n)) {
                 console.log("workflow arrow bounds error", steps, n);
                 return null;
             }

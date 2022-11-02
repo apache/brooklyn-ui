@@ -142,7 +142,10 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                         });
                     }
 
-                    $scope.actions.workflowReplays = [];
+                    let osi = vm.model.workflow.data.oldStepInfo;
+                    vm.model.workflow.finishedWithNoSteps = ((osi["-2"] || {}).previous || [])[0] == -1;
+
+                        $scope.actions.workflowReplays = [];
                     if (vm.model.workflow.data.status !== 'RUNNING') {
 
                         $scope.actions.workflowReplays = [];
@@ -170,8 +173,8 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                         if (replayableFromStart) {
                             let w1 = 'Restart', w2 = '(not resumable)';
                             if (stepIndex<0 || (_.isNil(stepIndex) && vm.model.workflow.data.replayableLastStep==-2)) { w1 = 'Run'; w2 = 'again'; }
-                            else if (_.isNil(stepIndex)) { w2 = '(did not start)'; }
                             else if (replayableContinuing) w2 = '';
+                            else if (_.isNil(stepIndex)) { w2 = '(did not start)'; }
 
                             $scope.actions.workflowReplays.push({targetId: 'start', reason: 'Restart workflow from UI',
                                 label: w1+' '+(stepIndex>=0 ? 'workflow ' : '')+w2});
@@ -211,6 +214,21 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
 
                 if (vm.model.workflow.data.status === 'RUNNING') wResponse.interval(1000);
                 observers.push(wResponse.subscribe(processWorkflowData));
+
+                function initFromWorkflowFirstReplayTask(task) {
+                    if (task) {
+                        const workflowYaml = (task.tags || []).find(t => t.workflow_yaml);
+                        if (workflowYaml) {
+                            $scope.workflow_yaml = workflowYaml.workflow_yaml;
+                        }
+                    }
+                }
+
+                if ($scope.workflowId === activityId) initFromWorkflowFirstReplayTask(vm.model.activity);
+                else activityApi.activity($scope.workflowId).then((response)=> {
+                    initFromWorkflowFirstReplayTask(response.data);
+                });
+
 
             }).catch(error => {
                 if (optimistic) {
@@ -318,13 +336,13 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
     }
 
     vm.isNonEmpty = Utils.isNonEmpty;
-    vm.yaml = jsyaml.dump;
+    vm.yaml = (o) => typeof o === 'string' ? o : jsyaml.dump(o);
 
     vm.openInRunModel = function (workflowYaml) {
         $uibModal.open({
             animation: true,
             template: runWorkflowModalTemplate,
-            controller: ['$scope', '$http', '$uibModalInstance', 'applicationId', 'entityId', 'workflowYaml', runWorkflowController],
+            controller: ['$scope', '$http', '$uibModalInstance', 'serverApi', 'applicationId', 'entityId', 'workflowYaml', runWorkflowController],
             size: 'lg',
             resolve: {
                 applicationId: ()=>(applicationId),

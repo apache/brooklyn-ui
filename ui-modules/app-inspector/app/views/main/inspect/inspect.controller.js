@@ -80,7 +80,7 @@ export function inspectController($scope, $state, $stateParams, $uibModal, brSna
         $uibModal.open({
             animation: true,
             template: runWorkflowModalTemplate,
-            controller: ['$scope', '$http', '$uibModalInstance', 'applicationId', 'entityId', runWorkflowController],
+            controller: ['$scope', '$http', '$uibModalInstance', 'serverApi', 'applicationId', 'entityId', runWorkflowController],
             size: 'lg',
             resolve: {
                 applicationId: ()=>(applicationId),
@@ -144,11 +144,26 @@ export function addChildController($scope, $http, $uibModalInstance, application
     }
 }
 
-export function runWorkflowController($scope, $http, $uibModalInstance, applicationId, entityId, workflowYaml) {
-    $scope.workflowYaml = workflowYaml || 'steps:\n  - ';
+export function runWorkflowController($scope, $http, $uibModalInstance, serverApi, applicationId, entityId, workflowYaml) {
+    $scope.workflowYaml = workflowYaml;
     $scope.errorMessage = null;
     $scope.running = false;
     $scope.runWorkflow = runWorkflow;
+
+    if (!$scope.workflowYaml) {
+        function initWorkflowYaml() {
+            if (!$scope.workflowYaml) {
+                $scope.workflowYaml = 'name: Workflow via UI' + ($scope.user ? ' ' + $scope.user : '') + '\n' + 'steps:\n  - ';
+            }
+        }
+        serverApi.getUser().then((response) => {
+            $scope.user = response.data;
+            initWorkflowYaml();
+        }).catch((response) => {
+            $scope.user = null;
+            initWorkflowYaml();
+        });
+    }
 
     function runWorkflow() {
         $scope.running = true;
