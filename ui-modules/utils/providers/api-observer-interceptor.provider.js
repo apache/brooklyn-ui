@@ -53,10 +53,11 @@ export function apiObserverInterceptorProvider() {
                         response.clock = Observable.interval(interval);
                     }
                     response.subscribe = (next, error, complete)=> {
-                        if (!OBSERVER_CACHE.has(response.config.url)) {
-                            OBSERVER_CACHE.set(response.config.url, response.clock.mapTo(coldObservableFactory(response.config)).exhaust().share());
+                        const key = response.config.url+'?'+JSON.stringify(response.config.params);
+                        if (!OBSERVER_CACHE.has(key)) {
+                            OBSERVER_CACHE.set(key, response.clock.mapTo(coldObservableFactory(response.config)).exhaust().share());
                         }
-                        return OBSERVER_CACHE.get(response.config.url).subscribe(next, error, complete);
+                        return OBSERVER_CACHE.get(key).subscribe(next, error, complete);
                     }
                 }
             }
