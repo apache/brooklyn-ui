@@ -53,7 +53,7 @@
                            uib-typeahead="location.id for location in locations | filter:$viewValue"
                            typeahead-popup-template-url="DropdownTemplate.html"
                            typeahead-template-url="LocationTemplate.html" typeahead-min-length="0"
-                           required />
+                           />
                     <small class="help-block">
                         <span ng-if="deploy.location.$error.required && (deploy.$submitted || deploy.location.$touched)">You must select a location.</span>
                         <span ng-if="!args.noCreateLocationLink">Alternatively, you can <a href="/brooklyn-ui-location-manager/#!/wizard">create a new location</a></span>

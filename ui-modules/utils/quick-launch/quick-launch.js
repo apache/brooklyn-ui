@@ -97,7 +97,8 @@ export function quickLaunchDirective() {
             if (args.location) { // inline Location definition passed
                 model.location = args.location;
             } else if (locations.length === 1) {
-                model.location = locations[0].id; // predefined/uploaded Location objects, ID prop is sufficient
+                // we could pre-fill the target location, but a single location pre-installed might not be relevant, so don't
+                // model.location = locations[0].id; // predefined/uploaded Location objects, ID prop is sufficient
             }
         };
 
@@ -149,7 +150,7 @@ export function quickLaunchDirective() {
                     result[config.name] = config;
 
                     let configValue = parseConfigValue((parsedPlan[BROOKLYN_CONFIG] || {})[config.name]);
-                    if (typeof configValue == 'undefined') {
+                    if (typeof configValue == 'undefined' && parsedPlan.services.length==1) {
                         configValue = parseConfigValue((parsedPlan.services[0] && parsedPlan.services[0][BROOKLYN_CONFIG] || {})[config.name]);
                     }
 
