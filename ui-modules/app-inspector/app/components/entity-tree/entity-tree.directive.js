@@ -501,7 +501,11 @@ export function entityNodeDirective() {
 
     function controller ($scope, $state, $stateParams, iconService) {
         $scope.isOpen = true;
-        iconService.get($scope.entity, true).then(value => $scope.iconUrl = value);
+        if ($scope.entity.type) {
+            iconService.get($scope.entity, true).then(value => $scope.iconUrl = value);
+        } else {
+            // it's a member of a group; we could look up the target and take that icon, but for now, no icon
+        }
         
         if ($stateParams.entityId === $scope.entity.id) {
             $scope.$emit('notifyEntity', {
