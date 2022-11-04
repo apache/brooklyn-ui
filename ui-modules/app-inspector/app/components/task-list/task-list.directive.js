@@ -127,12 +127,18 @@ export function taskListDirective() {
 
         $scope.isScheduled = isScheduled;
 
+        function roundChangingMillis(x) {
+            if (x<100) return "-";
+            if (x<1000) return Math.round(x/100)*100;
+            return Math.round(x/1000)*1000;
+        }
+
         $scope.getTaskDuration = function(task) {
             if (!task.startTimeUtc) {
                 return null;
             }
             if (!_.isNil(task.endTimeUtc) && task.endTimeUtc <= 0) return null;
-            return (task.endTimeUtc === null ? new Date().getTime() : task.endTimeUtc) - task.startTimeUtc;
+            return (task.endTimeUtc === null ? roundChangingMillis(new Date().getTime() - task.startTimeUtc) : task.endTimeUtc - task.startTimeUtc);
         }
         $scope.getTaskWorkflowId = task => {
             const tag = getTaskWorkflowTag(task);
