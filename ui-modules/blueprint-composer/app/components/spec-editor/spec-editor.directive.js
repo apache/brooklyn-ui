@@ -1097,6 +1097,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             let result = {};
             for (let keyRef in localConfig) {
                 if (angular.isUndefined(localConfig[keyRef]) || localConfig[keyRef] === null || localConfig[keyRef].length < 1) {
+                    // TODO if we wanted to support explicit empty strings or null, this would be the place to tweak it,
+                    // plus a few other guards on null, and forcing code mode.
                     continue;
                 }
 

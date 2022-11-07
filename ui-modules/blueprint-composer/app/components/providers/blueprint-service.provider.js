@@ -466,8 +466,9 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                     $log.warn("Unknown constraint object", typeof constraintO, constraintO, config);
                     key = constraintO;
                 }
-                let val = (k) => entity.config.get(k || config.name);
-                let isSet = (k) => entity.config.has(k || config.name) && angular.isDefined(val(k));
+                let valExplicit = (k) => entity.config.get(k || config.name);
+                let isSet = (k) => entity.config.has(k || config.name) && angular.isDefined(valExplicit(k));
+                let val = (k) => isSet(k) ? entity.config.get(k || config.name) : config.defaultValue;
                 let isAnySet = (k) => {
                     if (!k || !Array.isArray(k)) return false;
                     return k.some(isSet);
@@ -477,12 +478,12 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                 switch (key) {
                     case 'Predicates.notNull()':
                     case 'Predicates.notNull':
-                        if (!isSet() && !hasDefault) {
+                        if ((!isSet() && !hasDefault) || val()==null) {
                             message = `<samp>${config.name}</samp> is required`;
                         }
                         break;
                     case 'required':
-                        if (!isSet() && !hasDefault && val()!='') {
+                        if ((!isSet() && !hasDefault) || val()==null || val()=='') {
                             message = `<samp>${config.name}</samp> is required`;
                         }
                         break;

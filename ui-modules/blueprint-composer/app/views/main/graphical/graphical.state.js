@@ -53,6 +53,9 @@ function graphicalController($scope, $state, $filter, blueprintService, paletteS
 
     $scope.blueprint = blueprintService.get();
     $scope.$watch('blueprint', () => vm.computeIssues(), true);
+    // thought these might be needed to ensure errors are set, but seems not to be the case, above seems sufficient
+    //blueprintService.refreshBlueprintMetadata().then(()=> vm.computeIssues());
+    //$scope.$watch('blueprint.lastUpdated', () => vm.computeIssues(), true);
 
     this.computeIssues = () => {
         $scope.allIssues = computeQuickFixes(blueprintService);
