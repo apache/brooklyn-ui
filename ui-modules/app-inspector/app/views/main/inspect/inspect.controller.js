@@ -110,8 +110,10 @@ export function inspectController($scope, $state, $stateParams, $uibModal, brSna
             template: confirmModalTemplate,
             scope: modalScope
         }).result.then((result)=> {
+            brSnackbar.create('Entity [' + entityId + '] is being submitted to be ' + (release ? 'expunged' : 'unmanaged'));
             entityApi.expungeEntity(applicationId, entityId, release).then((response)=> {
-                brSnackbar.create('Entity [' + entityId + '] will be ' + (release ? 'expunged' : 'unmanaged') + ' shortly');
+                brSnackbar.create('Entity [' + entityId + '] is in the process of being ' + (release ? 'expunged' : 'unmanaged')
+                    + '. ' + 'If this is not immediate, the details can be found in the activites tab by applying suitable filters.');
             }).catch((error)=> {
                 brSnackbar.create('Cannot expunge entity problems: the entity [' + entityId + '] is undefined');
             });
