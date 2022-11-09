@@ -62,13 +62,14 @@ export function quickLaunchDirective() {
             }
             return obj;
         }
-        quickLaunch.buildNewApp = () => ({
-            name: $scope.model.name || $scope.app.displayName,
-            location: $scope.model.location || '<REPLACE>',
-            services: [
-                removeNullConfig(angular.copy($scope.entityToDeploy))
-            ],
-        });
+        quickLaunch.buildNewApp = () => {
+            const result = {
+                name: $scope.model.name || $scope.app.displayName,
+            };
+            if ($scope.model.location) result.location = $scope.model.location;
+            result.services = [removeNullConfig(angular.copy($scope.entityToDeploy))];
+            return result;
+        };
         quickLaunch.getOriginalPlanFormat = getOriginalPlanFormat;
         quickLaunch.planSender =
             (plan) => {
@@ -141,6 +142,7 @@ export function quickLaunchDirective() {
             $scope.formEnabled = $scope.forceFormOnly || (parsedPlan!==null && !checkForLocationTags(parsedPlan));
             $scope.yamlViewDisplayed = !$scope.formEnabled;
 
+            $scope.entityToDeployConfigJson = {};
             $scope.entityToDeploy = {
                 type: $scope.app.symbolicName + ($scope.app.version ? ':' + $scope.app.version : ''),
                 [BROOKLYN_CONFIG]: {},
@@ -149,15 +151,21 @@ export function quickLaunchDirective() {
                 $scope.configMap = $scope.app.config.reduce((result, config) => {
                     result[config.name] = config;
 
-                    let configValue = parseConfigValue((parsedPlan[BROOKLYN_CONFIG] || {})[config.name]);
+                    let configValue = (parsedPlan[BROOKLYN_CONFIG] || {})[config.name];
                     if (typeof configValue == 'undefined' && parsedPlan.services.length==1) {
-                        configValue = parseConfigValue((parsedPlan.services[0] && parsedPlan.services[0][BROOKLYN_CONFIG] || {})[config.name]);
+                        configValue = (parsedPlan.services[0] && parsedPlan.services[0][BROOKLYN_CONFIG] || {})[config.name];
                     }
 
                     if (typeof configValue !== 'undefined') {
                         $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = configValue;
                     } else if (config.pinned || (isRequired(config) && (typeof config.defaultValue !== 'undefined'))) {
-                        $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = parseConfigValue(get(config, 'defaultValue', null));
+                        $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = get(config, 'defaultValue', null);
+                    }
+
+                    let json = getJsonOfConfigValue($scope.entityToDeploy[BROOKLYN_CONFIG][config.name]);
+                    if (json!=null) {
+                        $scope.entityToDeployConfigJson[config.name] = json;
+                        result[config.name].json = true;
                     }
 
                     return result;
@@ -217,10 +225,10 @@ export function quickLaunchDirective() {
         }
 
         // serialize value if it happens to be a complex object
-        function parseConfigValue(item) {
+        function getJsonOfConfigValue(item) {
             return (typeof item === 'object' && !isEmpty(item))
                 ? JSON.stringify(item)
-                : item;
+                : null;
         }
 
         function deleteConfigField(key) {

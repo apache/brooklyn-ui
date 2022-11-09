@@ -55,6 +55,8 @@
                            typeahead-template-url="LocationTemplate.html" typeahead-min-length="0"
                            />
                     <small class="help-block">
+                        <span>A location may not be required.</span>
+                        <!-- no longer required, so error should never come back -->
                         <span ng-if="deploy.location.$error.required && (deploy.$submitted || deploy.location.$touched)">You must select a location.</span>
                         <span ng-if="!args.noCreateLocationLink">Alternatively, you can <a href="/brooklyn-ui-location-manager/#!/wizard">create a new location</a></span>
                     </small>
@@ -65,7 +67,7 @@
         <section class="quick-launch-section quick-launch-configuration">
             <h3 class="quick-launch-section-title">Configuration</h3>
             <div class="quick-launch-section-content">
-                <div ng-repeat="(key,value) in entityToDeploy['brooklyn.config'] track by key" ng-switch="configMap[key].type">
+                <div ng-repeat="(key,value) in entityToDeploy['brooklyn.config'] track by key" ng-switch="configMap[key].json ? 'json' : type">
                     <div class="checkbox" ng-class="{'has-error': deploy[key].$invalid && deploy[key].$touched}" ng-switch-when="java.lang.Boolean">
                         <label>
                             <input type="checkbox" ng-model="entityToDeploy['brooklyn.config'][key]" ng-disabled="deploying" auto-focus="focus === key" />
@@ -93,6 +95,13 @@
                         <input type="number" id="{{key}}" name="{{key}}" class="form-control" ng-model="entityToDeploy['brooklyn.config'][key]" ng-required="isRequired(configMap[key])" ng-disabled="deploying" auto-focus="focus === key" />
                         <small class="help-block" ng-show="deploy.$submitted || deploy[key].$touched">
                             <span ng-if="deploy[key].$error.required">You must enter a value</span>
+                        </small>
+                    </div>
+                    <div class="form-group" ng-class="{'has-error': deploy[key].$invalid && deploy[key].$touched}" ng-switch-when="json">
+                        <label for="{{key}}">{{key}} <i ng-click="deleteConfigField(key)" class="fa fa-trash form-delete"></i></label>
+                        <input type="text" id="{{key}}" name="{{key}}" class="form-control" ng-model="entityToDeployConfigJson[key]" ng-required="isRequired(configMap[key])" disabled auto-focus="focus === key" />
+                        <small class="help-block">
+                            <span>This complex value can only be edited in composer.</span>
                         </small>
                     </div>
                     <div class="form-group" ng-class="{'has-error': deploy[key].$invalid && deploy[key].$touched}" ng-switch-default>
