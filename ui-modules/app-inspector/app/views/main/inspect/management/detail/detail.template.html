@@ -84,10 +84,10 @@
                         </div>
                         <div class="timestamp">
                             <span class="humanized fade" ng-show="!showUTC">
-                                {{highlight.time > 0 ? (highlight.time | timeAgo) : 'ongoing'}}
+                                {{highlight.time > 0 ? (highlight.time | timeAgo) : ''}}
                             </span>
                             <span class="utcTime fade" ng-show="showUTC">
-                                {{highlight.time > 0 ? (highlight.time | dateFilter ) : 'ongoing'}}
+                                {{highlight.time > 0 ? (highlight.time | dateFilter ) : ''}}
                             </span>
                         </div>
                     </div>

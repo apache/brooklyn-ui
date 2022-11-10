@@ -59,7 +59,7 @@
             <p ng-repeat="(id, highlight) in adjunctsWithHighlightsSorted[adjunct.id] track by id" ng-show="showHighlight(id)" class="highlight"
                     ng-class="{'adjunct-last-action': id === 'lastAction', 'adjunct-last-confirmation': id === 'lastConfirmation', 'adjunct-last-violation': id === 'lastViolation', 'adjunct-trigger': id === 'triggers'}">
                 <span class="highlight-description">{{highlight.description}}</span>
-                <span class="highlight-time">{{highlight.time > 0 ? (highlight.time | timeAgo) : 'ongoing'}}</span>
+                <span class="highlight-time">{{highlight.time > 0 ? (highlight.time | timeAgo) : ''}}</span>
             </p>
         </div>
       </div>
