@@ -68,6 +68,7 @@ export function quickLaunchDirective() {
             };
             if ($scope.model.location) result.location = $scope.model.location;
             result.services = [removeNullConfig(angular.copy($scope.entityToDeploy))];
+            if ($scope.setServiceName) result.services[0].name = $scope.model.name;
             return result;
         };
         quickLaunch.getOriginalPlanFormat = getOriginalPlanFormat;
@@ -112,8 +113,7 @@ export function quickLaunchDirective() {
             
             // should never be null, so the placeholder in UI for model.name will never be used;
             // hence autofocus is disabled
-            // get display name if there is a template so we can collapse
-            // (still won't collapse if you change the name; ideally we'd overwrite the name of a single first child service in that case)
+            // note name is updated if we parse the plan and discover it sets a name, so it can collapse
             name: get($scope.app, 'displayName') || get($scope.app, 'name') || get($scope.app, 'symbolicName', null),
         };
         $scope.args = $scope.args || {};
@@ -149,6 +149,12 @@ export function quickLaunchDirective() {
                 type: $scope.app.symbolicName + ($scope.app.version ? ':' + $scope.app.version : ''),
                 [BROOKLYN_CONFIG]: {},
             };
+            if (parsedPlan && parsedPlan.name) {
+                // per model.name init above, prefer parsed plan name so it can collapse;
+                // in case changed, also set as service name
+                $scope.model.name = parsedPlan.name;
+                $scope.setServiceName = true;
+            }
             if ($scope.app.config) {
                 $scope.configMap = $scope.app.config.reduce((result, config) => {
                     result[config.name] = config;
