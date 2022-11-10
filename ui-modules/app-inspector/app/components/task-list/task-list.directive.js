@@ -161,7 +161,11 @@ export function taskListDirective() {
             selectFilter("_top", true);
             selectFilter("_anyTypeTag", true);
             if ($scope.taskType) {
-                selectFilter($scope.taskType);
+                if ($scope.taskType == "ALL") {
+                    selectFilter("_top", false);
+                } else {
+                    selectFilter($scope.taskType);
+                }
             } else {
                 if (!isActivityChildren) {
                     // defaults (when not in subtask view; in subtask view it is as above)
