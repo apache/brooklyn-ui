@@ -112,7 +112,9 @@ export function quickLaunchDirective() {
             
             // should never be null, so the placeholder in UI for model.name will never be used;
             // hence autofocus is disabled
-            name: get($scope.app, 'name') || get($scope.app, 'symbolicName', null),
+            // get display name if there is a template so we can collapse
+            // (still won't collapse if you change the name; ideally we'd overwrite the name of a single first child service in that case)
+            name: get($scope.app, 'displayName') || get($scope.app, 'name') || get($scope.app, 'symbolicName', null),
         };
         $scope.args = $scope.args || {};
 
