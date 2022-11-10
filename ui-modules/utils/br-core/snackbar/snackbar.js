@@ -130,7 +130,7 @@ export function brSnackbar($rootScope, $document, $compile, $templateCache, $ani
         // Remove the snackbar after the timeout
         snackbar.timeout = $timeout(function() {
             removeSnackbar(snackbar);
-        }, 5000);
+        }, snackbar.options.timeout || 5000);
     }
 
     function removeSnackbar(snackbar) {
@@ -157,27 +157,36 @@ export function brSnackbar($rootScope, $document, $compile, $templateCache, $ani
          * the current `$element` object of the snackbar
          * @returns {promise} A promise that will be resolved once the snackbar is dismissed
          */
-        create: function(message, action) {
+        create: function(message, action, options) {
+            if (!options) options = {};
+
             var scope = $rootScope.$new(true);
             scope.message = message;
             scope.action = angular.extend({}, action);
             scope.hasAction = function() {
                 return !angular.isUndefined(scope.action.label) && !angular.isUndefined(scope.action.callback);
             };
+            scope.extraClasses = options.class;
             scope.performAction = function() {
                 var snackbar = $rootScope.snackbars[0];
                 scope.action.callback(snackbar.elm);
+                scope.close();
+            };
+            scope.closeText = options.closeText
+            scope.close = function() {
+                var snackbar = $rootScope.snackbars[0];
                 $timeout.cancel(snackbar.timeout);
                 removeSnackbar(snackbar);
-            };
+            }
 
             var template = $templateCache.get(TEMPLATE_URL);
             var elm = angular.element($compile(template)(scope));
             var promise = $q.defer();
 
             $rootScope.snackbars.push({
-                elm: elm,
-                promise: promise
+                elm,
+                promise,
+                options,
             });
 
             return promise.promise;

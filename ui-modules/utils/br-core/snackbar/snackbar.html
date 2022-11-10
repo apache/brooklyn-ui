@@ -16,7 +16,9 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<div class="snackbar">
+<div class="snackbar {{extraClasses}}">
     <div class="snackbar-message">{{message}}</div>
-    <div class="snackbar-action" ng-if="hasAction()" ng-click="performAction()">{{action.label}}</div>
+<!--    <div class="snackbar-action" ng-if="hasAction()" ng-click="performAction()">{{action.label}}</div>-->
+    <button class="btn btn-warning btn-xs" ng-if="hasAction()" ng-click="performAction()">{{action.label}}</button>
+    <button class="btn btn-info btn-xs" ng-if="closeText" ng-click="close()">{{ closeText }}</button>
 </div>

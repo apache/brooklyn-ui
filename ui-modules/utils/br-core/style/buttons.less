@@ -18,8 +18,9 @@
  */
 @btn-primary-border: @btn-primary-bg;
 
-
-// Danger and error appear as red
+.btn-primary-light {
+    .button-variant(@btn-accent-color; @primary-light; @primary-light);
+}
 .btn-accent {
     .button-variant(@btn-accent-color; @btn-accent-bg; @btn-accent-border);
 }
@@ -31,6 +32,10 @@
     &.btn-primary:not(:hover) {
         background-color: transparent;
         color: @brand-primary;
+    }
+    &.btn-primary-light:not(:hover) {
+        background-color: transparent;
+        color: @primary-light;
     }
     &.btn-accent:not(:hover) {
         background-color: transparent;

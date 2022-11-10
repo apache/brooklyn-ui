@@ -20,7 +20,7 @@
     overflow: hidden;
     background-color: #323232;
     padding: 14px 24px 14px 24px;
-    color: #fff;
+    color: @gray-lighter;
     min-width: 288px;
     max-width: 568px;
     position: fixed;
@@ -29,22 +29,25 @@
     right: 15px;
     display: flex;
     flex-wrap: nowrap;
+    gap: 1ex;
     align-items: center;
     transition: all linear 0.3s;
     z-index: 1001;
+    border-radius: 6px;
 
     .snackbar-message {
         overflow: hidden;
         line-height: 1.2em;
         min-height: 1.2em;
         max-height: 2.4em;
+        margin-right: 1em;
         flex: 1;
     }
     .snackbar-action {
         text-transform: uppercase;
         font-weight: bold;
         margin-left: 48px;
-        color: @accent-500;
+        color: @gray-lighter;
         cursor: pointer;
         cursor: hand;
     }

@@ -249,22 +249,25 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
     vm.displayIssues = () => {
         let isOnlyWarnings = blueprintService.getIssues().length === blueprintService.getIssues().filter(issue => issue.level === ISSUE_LEVEL.WARN).length;
         let message = '';
-        let options = {};
+        let action = {};
+        let options = { timeout: 15*1000, class: 'snackbar-top-right' };
         if (isOnlyWarnings) {
-            message = 'Blueprint has some warnings, deployment might fail. Do you wish to proceed anyway?';
-            options = {
+            message = 'Blueprint has warnings which may cause the deployment to fail. Do you wish to proceed anyway?';
+            action = {
                 label: 'Deploy',
                 callback: deployApplication
             }
+            options.closeText = 'Cancel';
         } else {
             message = 'Blueprint is not valid: there ' + (
                 blueprintService.getIssues().filter(issue => issue.level === ISSUE_LEVEL.ERROR).length > 1 ?
                     'are ' + blueprintService.getIssues().filter(issue => issue.level === ISSUE_LEVEL.ERROR).length + ' problems' :
                     'is 1 problem'
             ) + ' to fix';
+            options.closeText = 'OK';
         }
 
-        brSnackbar.create(message, options);
+        brSnackbar.create(message, action, options);
 
         let firstEntityWithIssue = blueprintService.getIssues().filter(issue => {
             if (isOnlyWarnings) {
