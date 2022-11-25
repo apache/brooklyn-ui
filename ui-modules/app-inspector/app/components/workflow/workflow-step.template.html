@@ -41,10 +41,23 @@
             <div ng-if="isFocusTask" class="workflow-step-pill focus-step label-info" title="This step instance is for the task currently selected in the activity view.">
                 selected
             </div>
-            <div ng-if="stepTitle.id" class="workflow-step-pill step-id">
+
+            <div ng-if="stepTitle.id && isFocusTask" class="workflow-step-pill step-id">
                 <i class="fa fa-id-card-o"></i>
                 {{ stepTitle.id }}
             </div>
+            <div ng-if="stepTitle.id && !isFocusTask" class="workflow-step-pill step-id handy"
+                    title="Select this task"
+                    ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId, workflowId })">
+                <i class="fa fa-id-card-o"></i>
+                {{ stepTitle.id }}
+            </div>
+            <div ng-if="!stepTitle.id && !isFocusTask" class="workflow-step-pill step-id handy hover-only"
+                 title="Select this task"
+                 ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId, workflowId })">
+                <i class="fa fa-id-card-o"></i>
+            </div>
+
             <div ng-click="vm.toggleExpandState()" class="expand-toggle">
                 <i ng-class="expanded ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"></i>
             </div>

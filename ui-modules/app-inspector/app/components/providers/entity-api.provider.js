@@ -74,6 +74,7 @@ function EntityApi($http, $q) {
 
         getWorkflows: getWorkflows,
         getWorkflow: getWorkflow,
+        deleteWorkflow: deleteWorkflow,
         replayWorkflow: replayWorkflow,
     };
 
@@ -196,6 +197,9 @@ function EntityApi($http, $q) {
     }
     function getWorkflow(applicationId, entityId, workflowId) {
         return $http.get('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflows/' + workflowId, {observable: true, ignoreLoadingBar: true, params: { suppressSecrets: true }});
+    }
+    function deleteWorkflow(applicationId, entityId, workflowId) {
+        return $http.delete('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflows/' + workflowId, {observable: true, ignoreLoadingBar: true, params: { suppressSecrets: true }});
     }
     function replayWorkflow(applicationId, entityId, workflowId, step, options) {
         return $http.post('/v1/applications/'+ applicationId +'/entities/' + entityId + '/workflows/' + workflowId

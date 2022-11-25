@@ -68,10 +68,17 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
 
         function onActivityOrWorkflowUpdate() {
             delete $scope.actions['cancel'];
+            delete $scope.actions['delete'];
+
             if (!vm.model.activity.endTimeUtc || vm.model.activity.endTimeUtc<=0) {
                 $scope.actions.cancel = { label: 'Cancel task', doAction: () => { activityApi.cancelActivity(activityId); } };
             } else if (vm.model.workflow.data && vm.model.workflow.data.taskId && vm.model.workflow.data.status === 'RUNNING') {
                 $scope.actions.cancel = { label: 'Cancel workflow', doAction: () => { activityApi.cancelActivity(vm.model.workflow.taskId); } };
+            } else if (vm.model.workflow.data && vm.model.workflow.tag) {
+                $scope.actions.delete = { label: 'Delete workflow', doAction: () => {
+                    entityApi.deleteWorkflow(vm.model.workflow.tag.applicationId || applicationId, vm.model.workflow.tag.entityId || entityId, $scope.workflowId)
+                        .then(result => $state.go($state.current, {}, {reload: true}) );
+                } };
             }
         }
 
@@ -149,41 +156,53 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                     if (vm.model.workflow.data.status !== 'RUNNING') {
 
                         $scope.actions.workflowReplays = [];
-                        const stepIndex = (vm.model.workflow.tag || {}).stepIndex;
+                        const stepIndex = (vm.model.workflow.tag || {}).stepIndex;  // selected by user
+                        const currentStepIndex = vm.model.workflow.data.currentStepIndex;  // of workflow
 
-                        let replayableFromStart = vm.model.workflow.data.replayableFromStart, replayableContinuing = vm.model.workflow.data.replayableLastStep>=0;
+                        let replayableDisabled = vm.model.workflow.data.replayableDisabled;
+                        let replayableFromStart = vm.model.workflow.data.replayableFromStart && !replayableDisabled,
+                            replayableFromLastStep = vm.model.workflow.data.replayableLastStep>=0 && !replayableDisabled;
 
-                        if (replayableContinuing) {
-                            $scope.actions.workflowReplays.push({ targetId: 'end', reason: 'Resume workflow at step '+(vm.model.workflow.data.replayableLastStep+1)+' from UI',
-                                label: 'Resume '+(stepIndex>=0 ? 'workflow ' : '')+' (at step '+(vm.model.workflow.data.replayableLastStep+1)+')' });
+                        if (replayableFromLastStep) {
+                            let msg = 'Replay from last replay point (step '+(vm.model.workflow.data.replayableLastStep+1)+')';
+                            $scope.actions.workflowReplays.push({ targetId: 'last', reason: msg+' from UI', label: msg });
                         }
 
                         // get current step, replay from that step
                         if (stepIndex>=0) {
                             const osi = vm.model.workflow.data.oldStepInfo[stepIndex] || {};
-                            if (osi.replayableFromHere) {
-                                $scope.actions.workflowReplays.push({ targetId: ''+stepIndex, reason: 'Replay workflow from step '+(stepIndex+1)+' from UI',
+                            if (osi.replayableFromHere && !replayableDisabled) {
+                                $scope.actions.workflowReplays.push({ targetId: ''+stepIndex, reason: 'Replay from step '+(stepIndex+1)+' from UI',
                                     label: 'Replay from here (step '+(stepIndex+1)+')' });
                             } else {
                                 $scope.actions.workflowReplays.push({ targetId: ''+stepIndex, reason: 'Force replay from step '+(stepIndex+1)+' from UI',
-                                    label: 'Force replay from here (step '+(stepIndex+1), force: true });
+                                    label: 'Force replay from here (step '+(stepIndex+1)+')', force: true });
                             }
                         }
 
                         if (replayableFromStart) {
-                            let w1 = 'Restart', w2 = '(not resumable)';
+                            let w1 = 'Replay from start', w2 = '(no other replay points)';
                             if (stepIndex<0 || (_.isNil(stepIndex) && vm.model.workflow.data.replayableLastStep==-2)) { w1 = 'Run'; w2 = 'again'; }
-                            else if (replayableContinuing) w2 = '';
+                            else if (replayableFromLastStep) w2 = '';
                             else if (_.isNil(stepIndex)) { w2 = '(did not start)'; }
 
-                            $scope.actions.workflowReplays.push({targetId: 'start', reason: 'Restart workflow from UI',
-                                label: w1+' '+(stepIndex>=0 ? 'workflow ' : '')+w2});
+                            $scope.actions.workflowReplays.push({targetId: 'start', reason: 'Replay from start from UI',
+                                label: w1+' '+w2});
+                        }
+
+                        if (currentStepIndex>=0 && currentStepIndex < vm.model.workflow.data.stepsDefinition.length) {
+                            let msg = 'eplay resuming (at step ' + (currentStepIndex + 1);
+                            if (!replayableDisabled) {
+                                $scope.actions.workflowReplays.push({ targetId: 'last', label: 'R'+msg+' if possible)', reason: 'R'+msg+') from UI' });
+                            }
+                            $scope.actions.workflowReplays.push({ targetId: 'last', label: 'Force r'+msg+')', reason: 'Force r'+msg+') from UI', force: true });
                         }
 
                         if (!replayableFromStart) {
-                            $scope.actions.workflowReplays.push({targetId: 'start', reason: 'Force restart from UI',
-                                label: 'Force restart', force: true});
+                            $scope.actions.workflowReplays.push({targetId: 'start', reason: 'Force replay from start from UI',
+                                label: 'Force replay from start', force: true});
                         }
+
                         // force replays
                         $scope.actions.workflowReplays.forEach(r => {
                             // could prompt for a reason

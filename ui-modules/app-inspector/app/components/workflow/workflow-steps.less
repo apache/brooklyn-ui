@@ -42,6 +42,8 @@
       display: flex;
       gap: 1ex;
       align-items: center;
+      max-width: 50%;
+      white-space: nowrap;
       margin-left: 1em;
       .expand-toggle {
         cursor: pointer;
@@ -51,17 +53,33 @@
         font-size: 90%;
         margin-right: 1ex;
         margin-top: 1px;
+        flex: 1 5 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .step-id {
         .monospace();
         font-size: 80%;
+        flex: 5 1 auto;
         background-color: @primary-50;
+
+        &.handy {
+          cursor: pointer;
+        }
       }
       .focus-step {
         //background color comes from label-info class
         //background: @primary-100;
       }
+    }
+    .step-id.hover-only {
+      visibility: hidden;
+      //display: none;
+    }
+    &:hover .step-id.hover-only {
+      visibility: visible;
+      display: inherit;
     }
     .workflow-step-pill {
       padding: 2px 6px;

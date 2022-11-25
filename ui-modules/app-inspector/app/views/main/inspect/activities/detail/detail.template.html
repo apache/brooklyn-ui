@@ -45,7 +45,7 @@
                     <code><a ui-sref="main.inspect.activities.detail({entityId: vm.model.activity.blockingTask.metadata.entityId, activityId: vm.model.activity.blockingTask.metadata.id})">{{vm.model.activity.blockingTask.metadata.taskName}}</a></code> for <strong><a ui-sref="main.inspect.summary({entityId: vm.model.activity.blockingTask.metadata.entityId})">{{vm.model.activity.blockingTask.metadata.entityDisplayName}} entity</a></strong>
                 </div>
 
-                <div style="float:right;" ng-if="vm.isNonEmpty(actions)" class="btn-group dropdown-nested dropdown-menu-right" uib-dropdown-nested dropdown-append-to-body="true">
+                <div style="float:right; margin-left: 1em;" ng-if="vm.isNonEmpty(actions)" class="btn-group dropdown-nested dropdown-menu-right" uib-dropdown-nested dropdown-append-to-body="true">
                     <br-button uib-dropdown-toggle-nested type="btn-primary">
                         Actions <span class="caret"></span>
                     </br-button>
@@ -63,6 +63,8 @@
                             </ul>
 
                         </li>
+
+                        <li><a href="" ng-if="actions.delete" ng-click="actions.delete.doAction()">{{actions.delete.label}}</a></li>
 
                         <li><a href="" ng-if="actions.invokeAgain" ng-click="actions.invokeAgain.doAction()">Reinvoke effector</a></li>
                         <li><a href="" ng-if="actions.effector" ui-sref="main.inspect.effectors({search: actions.effector.effectorName})">Open in effector tab</a></li>
