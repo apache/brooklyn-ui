@@ -22,7 +22,7 @@
             <brooklyn-status-icon value="{{entity.serviceState}}" ng-if="entity.serviceState || entity.applicationId"></brooklyn-status-icon>
             <i class="fa fa-2x fa-external-link" ng-if="!entity.serviceState && !entity.applicationId"></i>
             <span>{{entity.name}}</span>
-            <span class="node-icon"><img ng-src="{{ iconUrl }}"/></span>
+            <div class="node-icon" ng-if="iconUrl"><img ng-src="{{ iconUrl }}"/></div>
         </a>
         <div class="entity-node-toggle-wrapper">
           <div class="entity-node-toggle"

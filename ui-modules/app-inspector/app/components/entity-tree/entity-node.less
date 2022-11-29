@@ -42,6 +42,7 @@
 
   .entity-node-item {
     display: flex;
+    align-items: center;
     background-color: #fff;
     border: 1px solid @well-border;
     border-radius: @border-radius-base;
@@ -63,12 +64,18 @@
     &.active {
       color: #fff;
       background-color: @brand-primary;
+      .node-icon {
+        img {
+          borde-radius: 3px; //need to trim edge so that blurred white forced bg hides it
+        }
+      }
     }
 
     .entity-node-link {
       flex-grow: 1;
       padding: 10px;
       display: flex;
+      align-items: center;
       min-width: 0;
 
       brooklyn-status-icon {
@@ -96,16 +103,20 @@
     }
   }
   .node-icon {
+    margin-left: 10px;
     flex-grow: 0 !important;
-    max-height: 20px; //let it extend above and below span's boundaries
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    box-shadow: 0 0 2px 2px #fff;
+    border-radius: 3px;
+
+    max-height: 36px;
+    max-width: 36px;
+
     overflow: visible !important;
-    margin-top: -8px;
-    margin-left: 0 !important;
     img {
       .make-icon(36px);
-    }
-    img[src] {
-      margin-left: 10px;
     }
   }
 
