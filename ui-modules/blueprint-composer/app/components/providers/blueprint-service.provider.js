@@ -478,12 +478,12 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                 switch (key) {
                     case 'Predicates.notNull()':
                     case 'Predicates.notNull':
-                        if ((!isSet() && !hasDefault) || val()==null) {
+                        if ((!isSet() && !hasDefault) || val()===null) {
                             message = `<samp>${config.name}</samp> is required`;
                         }
                         break;
                     case 'required':
-                        if ((!isSet() && !hasDefault) || val()==null || val()=='') {
+                        if ((!isSet() && !hasDefault) || val()===null || val()==='') {
                             message = `<samp>${config.name}</samp> is required`;
                         }
                         break;
