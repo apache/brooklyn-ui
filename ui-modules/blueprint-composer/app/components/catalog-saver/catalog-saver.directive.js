@@ -66,49 +66,84 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $f
         link: link
     };
 
+    /*
+     * Categories of data stored in 'config':
+     *
+     * original: what the catalog has
+     * default: what should be shown as a placeholder if blank
+     * initial: what current should be initalized as (not to show a placeholder)
+     *
+     * local.default: as above, but locally computed (not remembered)
+     * current: what is being edited (ng model)
+     *
+     * Subfields:
+     * {name,descriptiopn,version,bundle,symbolicName,itemType,iconUrl}
+     *
+     * Of the above, `local` and `current` are cleared each time the modal runs.
+     * If the modal saves, then `initial` is replaced with the value of `current` so it is available next time.
+     */
+
     // TODO We might need to refactor the controller and directive around this to structure it better
     function updateBundleConfig(entity, metadata, config) {
         // the name or can be inherited if root node is a known application type we are editing
         // (normally in those cases $scope.config will already be set by caller, but maybe not always)
-        if (!config.name && entity.hasName()) {
-            config.name = entity.name;
-        }
-        // the ID can be set in the UI or can be inherited if root node is a known application type we are editing
-        // (normally in those cases $scope.config will already be set by caller, but maybe not always)
-        if (!config.symbolicName && (entity.hasId() || metadata.has('id'))) {
-            config.symbolicName = entity.id || metadata.get('id');
-        }
-        if (!config.version && (entity.hasVersion() || metadata.has('version'))) {
-            config.version = entity.version || metadata.get('version');
-        }
-        config.bundle =  config.bundle || config.symbolicName;
+
+        config.current.name = config.current.name || config.initial.name || config.local.default.name || entity.name
+
+        // if user clears the current name, the placeholder could show the default or entity name
+        // (rather than the last saved name); BUT this is subtle, maybe too much so;
+        // also we don't support default values on name in the UI, nor in bundlizing, so actually better
+        // not to set this
+        // config.local.default.name = config.local.default.name || entity.name || config.original.name;
+
+        config.current.version = config.initial.version || config.local.default.version || entity.version || metadata.get('version');
+
+        // we do NOT set symbolic name from any entity metadata anymore; that ID is mostly used _internally_ eg might be 'root',
+        // so it is not necessarily an appropriate symbolic name for the item in the bundle.
+        //
+        // if we DID want to do this then we would need to change bundlize to have the same logic
+        // (or put this logic there instead)
+        //
+        // normally it make it a little bit simpler we just set the _current_ for symbolicName and bundle,
+        // or we allow it to use bundlize to infer from the name
     }
 
-    function link($scope, $element) {
-        if (!$scope.config.original) {
-            // original if provided contains the original metadata, e.g. for use if coming from a template and switching between template and non-template
-            $scope.config.original = {}
-        }
-        $scope.isNewFromTemplate = () => ($scope.config.itemType !== 'template' && $scope.config.original.itemType === 'template');
-        $scope.isUpdate = () => !$scope.isNewFromTemplate() && Object.keys($scope.config.original).length>0 && $scope.config.bundle === $scope.config.original.bundle;
+    function initOurConfig($scope) {
+        $scope.config.original = $scope.config.original || {}
+        $scope.config.initial = $scope.config.initial || {}
+        $scope.config.default = $scope.config.default || {}
+        $scope.config.current = {};
+        $scope.config.local = { default: {} };
+
+        Object.assign($scope.config.local.default, $scope.config.default);
+        Object.assign($scope.config.current, $scope.config.initial);
+
+        $scope.isNewFromTemplate = () => ($scope.config.initial.itemType !== 'template' && $scope.config.original.itemType === 'template');
+        $scope.isUpdate = () => !$scope.isNewFromTemplate() && Object.keys($scope.config.original).length>0 && $scope.config.initial.bundle === $scope.config.original.bundle;
         $scope.buttonTextFn = () => {
-            const name = $scope.config.label || ($scope.isUpdate() && ($scope.config.name || $scope.config.original.name || $scope.config.symbolicName || $scope.config.original.symbolicName));
+            const name = $scope.config.label || ($scope.isUpdate() && ($scope.config.initial.name || $scope.config.original.name || $scope.config.initial.symbolicName || $scope.config.original.symbolicName));
             return !!name ? 'Update ' + name : 'Add to catalog';
         }
         $scope.buttonText = $scope.buttonTextFn();
+    }
+
+    function link($scope, $element) {
+        initOurConfig($scope);
 
         $scope.activateModal = () => {
             let entity = blueprintService.get();
             let metadata = blueprintService.entityHasMetadata(entity) ? blueprintService.getEntityMetadata(entity) : new Map();
 
-            if (!$scope.config.itemType) {
+            initOurConfig($scope);
+
+            if (!$scope.config.current.itemType) {
                 // This is the default item type
-                $scope.config.itemType = 'application';
+                $scope.config.current.itemType = $scope.config.local.default.itemType || 'application';
             }
 
             // Set various properties from the blueprint entity data if not already set
-            if (!$scope.config.iconUrl && (entity.hasIcon() || metadata.has('iconUrl'))) {
-                $scope.config.iconUrl = entity.icon || metadata.get('iconUrl');
+            if (!$scope.config.current.iconUrl && ($scope.config.initial.iconUrl || entity.hasIcon() || metadata.has('iconUrl'))) {
+                $scope.config.current.iconUrl = $scope.config.initial.iconUrl || entity.icon || metadata.get('iconUrl');
             }
             if (!$scope.isNewFromTemplate()) {
                 // (these should only be set if not making something new from a template, as the entity items will refer to the template)
@@ -118,7 +153,7 @@ export function saveToCatalogModalDirective($rootScope, $uibModal, $injector, $f
             // Override this callback to update configuration data elsewhere
             $scope.config = (composerOverrides.updateCatalogConfig || ((config, $element) => config))($scope.config, $element);
 
-            const { bundle, symbolicName } = ($scope.config || {});
+            const { bundle, symbolicName } = ($scope.config.initial || {});
 
             // Show advanced tab initially if bundle or symbolic name does not match the naming pattern.
             $scope.showAdvanced = (bundle && symbolicName)
@@ -162,11 +197,13 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
     };
     /* Derived properties & calculators, will be updated whenever $scope.state.view changes */
     $scope.getTitle = () => {
+        // expect we should always have current or default name, possibly don't need symbolicName or `blueprint` defaults
+        const name = $scope.config.current.name || $scope.config.local.default.name || $scope.config.current.symbolicName || $scope.config.local.default.symbolicName;
         switch ($scope.state.view) {
             case VIEWS.form:
-                return $scope.isUpdate() ? `Update ${$scope.config.name || $scope.config.symbolicName || 'blueprint'}` : 'Add to catalog';
+                return $scope.isUpdate() ? `Update ${name || 'blueprint'}` : 'Add to catalog';
             case VIEWS.saved:
-                return `${$scope.config.name || $scope.config.symbolicName || 'Blueprint'} ${$scope.isUpdate() ? 'updated' : 'saved'}`;
+                return `${name || 'Blueprint'} ${$scope.isUpdate() ? 'updated' : 'saved'}`;
         }
     };
 
@@ -175,6 +212,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
             case VIEWS.form:
                 return '';
             case VIEWS.saved:
+                // TODO where do these come from
                 return `/brooklyn-ui-catalog/#!/bundles/${$scope.config.catalogBundleId}/${$scope.config.version}/types/${$scope.config.catalogBundleSymbolicName}/${$scope.config.version}`;
         }
     };
@@ -228,7 +266,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         });
 
         // Watch for bundle name and display warning if bundle exists already.
-        $scope.$watchGroup(['config.bundle', 'defaultBundle'], () => {
+        $scope.$watchGroup(['config.current.bundle', 'config.local.default.bundle'], () => {
             checkIfBundleExists();
         });
     }
@@ -281,12 +319,13 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
 
         // Now, try to save.
         let bom = createBom();
+        $scope.config.initial = $scope.config.current;
         paletteApi.create(bom, {forceUpdate: $scope.state.force})
             .then((savedItem) => {
                 if (!angular.isArray($scope.config.versions)) {
                     $scope.config.versions = [];
                 }
-                $scope.config.versions.push($scope.config.version);
+                $scope.config.versions.push($scope.config.current.version);
                 $scope.state.view = VIEWS.saved;
             })
             .catch(error => {
@@ -298,7 +337,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
     };
 
     function getBundleBase() {
-        return $scope.config.bundle || $scope.defaultBundle;
+        return $scope.config.current.bundle || $scope.config.local.default.bundle;
     }
 
     function getBundleId() {
@@ -306,7 +345,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
     }
 
     function getSymbolicName() {
-        return $scope.config.symbolicName || $scope.defaultSymbolicName;
+        return $scope.config.current.symbolicName || $scope.config.local.default.symbolicName;
     }
 
     function createBom() {
@@ -320,7 +359,7 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
 
         let bomItem = {
             id: bundleSymbolicName,
-            itemType: $scope.config.itemType,
+            itemType: $scope.config.current.itemType,
             item: blueprint
         };
         // tags can now be added to a blueprint created in the YAML Editor
@@ -336,22 +375,22 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
         const bundleId = getBundleId();
         let bomCatalogYaml = {
             bundle: bundleId,
-            version: $scope.config.version,
+            version: $scope.config.current.version,
             items: [ bomItem ]
         };
         if(tags) {
             bomCatalogYaml.tags = tags
         }
 
-        let bundleName = $scope.config.name || $scope.defaultName;
+        let bundleName = $scope.config.current.name || $scope.config.local.default.name;
         if (brUtilsGeneral.isNonEmpty(bundleName)) {
             bomItem.name = bundleName;
         }
-        if (brUtilsGeneral.isNonEmpty($scope.config.description)) {
-            bomItem.description = $scope.config.description;
+        if (brUtilsGeneral.isNonEmpty($scope.config.current.description)) {
+            bomItem.description = $scope.config.current.description;
         }
-        if (brUtilsGeneral.isNonEmpty($scope.config.iconUrl)) {
-            bomItem.iconUrl = $scope.config.iconUrl;
+        if (brUtilsGeneral.isNonEmpty($scope.config.current.iconUrl)) {
+            bomItem.iconUrl = $scope.config.current.iconUrl;
         }
         $scope.config.catalogBundleId = bundleId;
         $scope.config.catalogBundleSymbolicName = bundleSymbolicName;
@@ -360,11 +399,11 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
 
     let bundlize = $filter('bundlize');
     $scope.updateDefaults = (newName) => {
-        $scope.defaultName = ($scope.config.itemType==='template' && $scope.config.original.name) || null;
-        $scope.defaultSymbolicName = ($scope.config.itemType==='template' && $scope.config.original.symbolicName) || bundlize(newName) || null;
-        $scope.defaultBundle = ($scope.config.itemType==='template' && $scope.config.original.bundle) || bundlize(newName) || null;
+        if (!newName) newName = $scope.config.local.default.name;
+        $scope.config.local.default.symbolicName = $scope.config.default.symbolicName || ($scope.config.current.itemType==='template' && $scope.config.original.symbolicName) || bundlize(newName) || null;
+        $scope.config.local.default.bundle = $scope.config.default.bundle || ($scope.config.current.itemType==='template' && $scope.config.original.bundle) || bundlize(newName) || null;
     };
-    $scope.$watchGroup(['config.name', 'config.itemType', 'config.bundle', 'config.symbolicName'], (newVals) => {
+    $scope.$watchGroup(['config.current.name', 'config.current.itemType', 'config.current.bundle', 'config.current.symbolicName'], (newVals) => {
         $scope.updateDefaults(newVals[0]);
         $scope.form.name.$validate();
         $scope.buttonText = $scope.buttonTextFn();
@@ -383,11 +422,11 @@ function composerBlueprintNameValidatorDirective() {
                     return true;
                 }
                 // if not set, we need a bundle and symbolic name
-                if (scope.config.bundle && scope.config.symbolicName) {
+                if (scope.config.current.bundle && scope.config.current.symbolicName) {
                     return true;
                 }
                 // or if we have defaults for bundle and symbolic name we don't need this name
-                if (scope.defaultBundle && scope.defaultSymbolicName) {
+                if (scope.config.local.default.bundle && scope.config.local.default.symbolicName) {
                     return true;
                 }
                 return false;

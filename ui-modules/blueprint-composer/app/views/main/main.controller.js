@@ -168,28 +168,42 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
 
     vm.saveToCatalogConfig = {};
     if (edit) {
+        // 'edit' is the details of an existing blueprint from catalog being edited, which via state parameters are loaded and passed to controller
+        // it might be a template in which case we take the values SUGGESTED BY the template and make them _current_
+        // or it might be an existing bundle (non-template), in which case we take the values OF the item being edited
+        console.log("EDIT TYPE", edit.type);
+        console.log("VERSIONS", edit.versions);
+        console.log("EDIT", edit);
         vm.saveToCatalogConfig = Object.assign(vm.saveToCatalogConfig, {
-            version: edit.type.version,
-            template: edit.type.template || false,
-            itemType: edit.type.template || !edit.type.superTypes || edit.type.superTypes.contains("org.apache.brooklyn.api.entity.Application") 
-                ? 'application'
-                : 'entity',
-            description: edit.type.description,
-            iconUrl: edit.type.iconUrlSource || edit.type.iconUrl,
+            initial: {
+                version: edit.type.version,
+                description: edit.type.description,
+                iconUrl: edit.type.iconUrlSource || edit.type.iconUrl,
+            },
             original: {
                 bundle: edit.bundle.symbolicName.replace(/^catalog-bom-/, ''),
                 symbolicName: edit.type.symbolicName,
                 name: edit.type.displayName,
-                versions: edit.versions,
-                itemType: edit.type.template ? 'template'  
+                itemType: edit.type.template ? 'template'
                     : !edit.type.superTypes || edit.type.superTypes.contains("org.apache.brooklyn.api.entity.Application") ? 'application'
                     : 'entity', 
-            }
+            },
+            default: {},
         });
+
         if (!edit.type.template) {
-            // if loading a templates, do NOT set name, bundle, symbolicName, versions
+            // set name, bundle, symbolicName, and itemType unless we are a template
             // or in other words, for other items, DO set these
-            vm.saveToCatalogConfig = Object.assign(vm.saveToCatalogConfig, vm.saveToCatalogConfig.original); 
+            vm.saveToCatalogConfig.initial.template = false;
+            ['itemType','bundle','symbolicName','name'].forEach(key => vm.saveToCatalogConfig.initial[key] = vm.saveToCatalogConfig.original[key]);
+            // no defaults supplied by this view
+            // [].forEach(key => vm.saveToCatalogConfig.default[key] = vm.saveToCatalogConfig.original[key]);
+            vm.saveToCatalogConfig.versions = edit.versions; // only set if not a template
+
+        } else {
+            // if we are from a template the name etc should be blank (could use a placeholder)
+            vm.saveToCatalogConfig.initial.template = edit.type.template;
+            vm.saveToCatalogConfig.initial.itemType = 'application';
         }
 
         $scope.initialYamlFormat = $stateParams.format;
