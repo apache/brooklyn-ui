@@ -26,7 +26,7 @@
 
         <div class="form-group" ng-class="{'has-error': form.name.$invalid}">
             <label class="control-label">Blueprint display name</label>
-            <input ng-model="config.name" ng-disabled="state.saving" class="form-control" name="name" type="text" placeholder="{{ defaultName }}" composer-blueprint-name-validator/>
+            <input ng-model="config.current.name" ng-disabled="state.saving" class="form-control" name="name" type="text" placeholder="{{ config.local.default.name }}" composer-blueprint-name-validator/>
             <p class="help-block" ng-show="form.name.$invalid">
                 <span ng-if="form.name.$invalid">You must specify a name for this item or supply explicit bundle ID and blueprint symbolic name</span>
             </p>
@@ -34,13 +34,13 @@
 
         <div class="form-group">
             <label class="control-label">Blueprint description</label>
-            <textarea ng-model="config.description" ng-disabled="state.saving" class="form-control" name="description" rows="3"></textarea>
+            <textarea ng-model="config.current.description" ng-disabled="state.saving" class="form-control" name="description" rows="3"></textarea>
         </div>
 
         <div class="form-group" ng-class="{'has-error': form.version.$invalid}">
             <label class="control-label">Version</label>
             <div class="input-group">
-                <input ng-model="config.version" ng-disabled="state.saving" class="form-control" placeholder="E.g. 1.0.0-SNAPSHOT" name="version" type="text" required catalog-version="config.versions" catalog-version-force="state.force" ng-pattern="state.pattern" />
+                <input ng-model="config.current.version" ng-disabled="state.saving" class="form-control" placeholder="E.g. 1.0.0-SNAPSHOT" name="version" type="text" required catalog-version="config.versions" catalog-version-force="state.force" ng-pattern="state.pattern" />
                 <span class="input-group-btn">
                     <button class="btn btn-default" ng-class="{'btn-primary active': state.force}" ng-click="state.force = !state.force"
                             uib-tooltip="Force override of existing bundle at this version." tooltip-placement="top-right">
@@ -59,7 +59,7 @@
                 <label class="control-label">Bundle ID</label>
                 <div class="input-group">
                     <span class="input-group-addon">{{catalogBomPrefix}}</span>
-                    <input ng-model="config.bundle" ng-disabled="state.saving" class="form-control" name="bundle" ng-pattern="state.pattern" autofocus placeholder="{{ defaultBundle || 'E.g. my-bundle-id' }}"/>
+                    <input ng-model="config.current.bundle" ng-disabled="state.saving" class="form-control" name="bundle" ng-pattern="state.pattern" autofocus placeholder="{{ config.local.default.bundle || 'E.g. my-bundle-id' }}"/>
                 </div>
                 <p class="help-block" ng-show="form.bundle.$invalid">
                     <span ng-if="form.bundle.$error.pattern">The bundle ID can contain only letters, numbers as well as the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
@@ -68,7 +68,7 @@
 
             <div class="form-group" ng-class="{'has-error': form.symbolicName.$invalid}">
                 <label class="control-label">Blueprint symbolic name</label>
-                <input ng-model="config.symbolicName" ng-disabled="state.saving" class="form-control" name="symbolicName" ng-pattern="state.pattern" autofocus placeholder="{{ defaultSymbolicName || 'E.g. my-catalog-id' }}"/>
+                <input ng-model="config.current.symbolicName" ng-disabled="state.saving" class="form-control" name="symbolicName" ng-pattern="state.pattern" autofocus placeholder="{{ config.local.default.symbolicName || 'E.g. my-catalog-id' }}"/>
                 <p class="help-block" ng-show="form.symbolicName.$invalid">
                     <span ng-if="form.symbolicName.$error.pattern">The blueprint symbolic name can contain only letters, numbers as well as the following characters: <code>.</code>, <code>-</code> and <code>_</code></span>
                 </p>
@@ -78,7 +78,7 @@
                 <label class="control-label">Blueprint type</label>
                 <div class="checkbox">
                     <label>
-                        <input ng-model="config.itemType" ng-disabled="state.saving" name="itemType" type="radio" value="application" />
+                        <input ng-model="config.current.itemType" ng-disabled="state.saving" name="itemType" type="radio" value="application" />
                         Application entity
                         <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
                            uib-popover="Save as an application entity which can be deployed on its own, or configured and used in blueprints but only config and sensors declared at the root are accessible in the Composer ('application' item type)"></i>
@@ -86,7 +86,7 @@
                 </div>
                 <div class="checkbox">
                     <label>
-                        <input ng-model="config.itemType" ng-disabled="state.saving" name="itemType" type="radio" value="template" />
+                        <input ng-model="config.current.itemType" ng-disabled="state.saving" name="itemType" type="radio" value="template" />
                         Application template
                         <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
                            uib-popover="Save as a blueprint template which can be used as an editable starting point for blueprints or used as an application entity, and in some contexts this prioritizes the blueprint for inclusion in quick-selection views ('template' item type)"></i>
@@ -94,7 +94,7 @@
                 </div>
                 <div class="checkbox">
                     <label>
-                        <input ng-model="config.itemType" ng-disabled="state.saving" name="itemType" type="radio" value="entity" />
+                        <input ng-model="config.current.itemType" ng-disabled="state.saving" name="itemType" type="radio" value="entity" />
                         Extended entity
                         <i class="fa fa-fw fa-info-circle" popover-trigger="'mouseenter'"
                            uib-popover="Save as an entity which can be configured and used in blueprints, exposing the config and adjuncts it inherits ('entity' item type)"></i>
@@ -104,7 +104,7 @@
 
             <div class="form-group">
                 <label class="control-label">Blueprint icon URL</label>
-                <input ng-model="config.iconUrl" ng-disabled="state.saving" class="form-control" name="iconUrl" type="text" />
+                <input ng-model="config.current.iconUrl" ng-disabled="state.saving" class="form-control" name="iconUrl" type="text" />
             </div>
         </br-collapsible>
     </form>
@@ -122,7 +122,7 @@
             <button class="btn btn-default btn-block" ng-click="$close(REASONS.continue)">Continue to edit this blueprint</button>
             <button class="btn btn-info btn-block" ng-click="$close(REASONS.new)">Create a new blueprint</button>
             <a class="btn btn-primary btn-block" ng-href="{{catalogURL}}">View in catalog</a>
-            <button ng-if="['template', 'entity'].indexOf(config.itemType) > -1" class="btn btn-link btn-block" ng-click="$close(REASONS.deploy)">Or deploy</button>
+            <button ng-if="['template', 'entity'].indexOf(config.current.itemType) > -1" class="btn btn-link btn-block" ng-click="$close(REASONS.deploy)">Or deploy</button>
         </div>
     </div>
 
