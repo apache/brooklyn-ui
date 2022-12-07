@@ -50,11 +50,11 @@ const METADATA = new WeakMap();
 const CONFIG = new WeakMap();
 const PARAMETERS = new WeakMap();
 const INITIALIZERS = new WeakMap();
-const CHILDREN = new WeakMap();
-const LOCATION = new WeakMap();
 const LOCATIONS = new WeakMap();
-const POLICIES = new WeakMap();
+const LOCATION = new WeakMap();
 const ENRICHERS = new WeakMap();
+const POLICIES = new WeakMap();
+const CHILDREN = new WeakMap();
 const MISC_DATA = new WeakMap();
 
 /**
@@ -68,19 +68,7 @@ const NOT_EMPTY = function (value) {
 
 export class Entity {
     constructor() {
-        ID.set(this, Math.random().toString(36).slice(2));
-        CONFIG.set(this, new Map());
-        PARAMETERS.set(this, []);
-        INITIALIZERS.set(this, []);
-        LOCATIONS.set(this, []);
-        METADATA.set(this, new Map());
-        ENRICHERS.set(this, new Map());
-        POLICIES.set(this, new Map());
-        CHILDREN.set(this, []);
-        MISC_DATA.set(this, new Map());
-        MISC_DATA.get(this).set('issues', []);
-        this.family = EntityFamily.ENTITY.id;
-        this.touch();
+        resetEntity(this);
     }
 
     /**
@@ -284,14 +272,18 @@ export class Entity {
      */
     removeLocation() {
         LOCATION.delete(this);
-        this.miscData.delete('locationName');
-        this.miscData.delete('locationIcon');
+        if (this.miscData) {
+            // if not yet initialized, don't bother
 
-        // this field provides a way for consumers to detect if the location was explicitly removed;
-        // this can be useful to prevent default locations from being applied
-        this.miscData.set('locationRemoved', true);
+            this.miscData.delete('locationName');
+            this.miscData.delete('locationIcon');
 
-        this.touch();
+            // this field provides a way for consumers to detect if the location was explicitly removed;
+            // this can be useful to prevent default locations from being applied
+            this.miscData.set('locationRemoved', true);
+
+            this.touch();
+        }
     }
 
     /**
@@ -1126,20 +1118,22 @@ function deleteEntity() {
 /**
  * Reset this entity
  */
-function resetEntity() {
-    ID.set(this, Math.random().toString(36).slice(2));
-    this.removeLocation();
-    CONFIG.set(this, new Map());
-    PARAMETERS.set(this, []);
-    METADATA.set(this, new Map());
-    INITIALIZERS.set(this, new Map());
-    ENRICHERS.set(this, new Map());
-    POLICIES.set(this, new Map());
-    CHILDREN.set(this, []);
-    MISC_DATA.set(this, new Map());
-    MISC_DATA.get(this).set('issues', []);
-    this.family = EntityFamily.ENTITY.id;
-    this.touch();
+function resetEntity(entity) {
+    entity = entity || this;
+    ID.set(entity, Math.random().toString(36).slice(2));
+    METADATA.set(entity, new Map());
+    CONFIG.set(entity, new Map());
+    PARAMETERS.set(entity, []);
+    INITIALIZERS.set(entity, []);
+    LOCATIONS.set(entity, []);
+    entity.removeLocation();
+    ENRICHERS.set(entity, new Map());
+    POLICIES.set(entity, new Map());
+    CHILDREN.set(entity, []);
+    MISC_DATA.set(entity, new Map());
+    MISC_DATA.get(entity).set('issues', []);
+    entity.family = EntityFamily.ENTITY.id;
+    entity.touch();
 }
 
 function isDslish(x) {
