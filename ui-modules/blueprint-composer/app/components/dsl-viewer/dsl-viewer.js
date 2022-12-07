@@ -55,7 +55,7 @@ export function dslViewerDirective($log) {
         };
         
         function updateModeAndIcon(dsl) {
-            var fam = dsl.kind && dsl.kind.family;
+            var fam = dsl.kindFamily;
             if (fam === FAMILY.FUNCTION) {
                 switch (dsl.kind) {
                     case KIND.METHOD: {
@@ -108,7 +108,8 @@ export function dslViewerDirective($log) {
                 return null;
             }
         }
-        
+
+        updateModeAndIcon(scope.dsl);  // do this now so watcher doesn't unnecessarily change things
         scope.$watch('dsl', () => {
             updateModeAndIcon(scope.dsl);
         }, true);

@@ -223,6 +223,12 @@ export class Dsl {
         return KINDS.get(this);
     }
 
+    get kindFamily() {
+        // guard against kind being null due to GC (eg in errors)
+        let k = KINDS.get(this);
+        return k && k.family;
+    }
+
     /**
      * Set kind
      * @param kind
@@ -275,7 +281,7 @@ export class Dsl {
      */
     param(param) {
         if (param instanceof Dsl) {
-            if (this.kind.family !== FAMILY.FUNCTION) {
+            if (this.kindFamily !== FAMILY.FUNCTION) {
                 throw new DslError('Cannot push param to non-function... Dsl kind is: ' + this.kind.name);
             }
             PARAMS.get(this).push(param);
@@ -375,7 +381,7 @@ export class Dsl {
      */
     chain(method) {
         if (method instanceof Dsl) {
-            if (method.kind.family !== FAMILY.FUNCTION) {
+            if (method.kindFamily !== FAMILY.FUNCTION) {
                 throw new DslError('Cannot push method ... method must be a function');
             }
             let last = this.getLastMethod();
@@ -438,7 +444,7 @@ export class Dsl {
     toString() {
         let current = this;
         let yaml = current.generate();
-        switch (current.kind.family) {
+        switch (current.kindFamily) {
             case FAMILY.FUNCTION:
                 yaml = FUNCTION_PREFIX + yaml;
                 // fallthrough to next case
@@ -483,7 +489,7 @@ export class Dsl {
      * @return {string}
      */
     generate() {
-        if (this.kind.family === FAMILY.FUNCTION) {
+        if (this.kindFamily === FAMILY.FUNCTION) {
             return this.name + '(' + this.generateParams() + ')';
         }
         else if (this.kind === KIND.ENTITY) {
