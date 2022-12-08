@@ -147,6 +147,7 @@ export function catalogSelectorDirective() {
             $scope.freeFormTile = {
                 symbolicName: $scope.search,
                 name: $scope.search,
+                id: $scope.search,
                 displayName: $scope.search,
                 supertypes: ($scope.family ? [ $scope.family.superType ] : []),
             };
@@ -215,7 +216,7 @@ export function catalogSelectorDirective() {
                 $scope.popoverVisible = true;
                 $scope.popoverModal = true;
             }
-            $event.stopPropagation();
+            if ($event) $event.stopPropagation();
         };
         $scope.closePopover = () => {
             $scope.popoverVisible = false;
