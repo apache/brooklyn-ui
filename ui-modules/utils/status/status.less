@@ -38,7 +38,7 @@ brooklyn-status-icon, brooklyn-status-text {
 
 brooklyn-status-icon {
     display: inline-block;
-
+    font-size: 2em;
     svg {
         margin: 0 auto;
         background: none;
@@ -48,7 +48,7 @@ brooklyn-status-icon {
         height: 100%;
     }
     .fa {
-        font-size: 6vh;
+        font-size: 2em;  //vh in foreignObject does not seem to change as we change zoom level; em does _if_ a parent ancestor defines it also
     }
 }
 
