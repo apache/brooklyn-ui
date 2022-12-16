@@ -156,9 +156,13 @@ export function dslEditorDirective($rootScope, $filter, $log, brUtilsGeneral, bl
                     return argument.kind === KIND.STRING ? argument.name : argument.toString();
                 });
             }
-            let relatedEntity = scope.dsl.getRoot().relationships.find(entity => entity.id === scope.dsl.params[0].name);
-            if (relatedEntity) {
-                scope.state.filter = scope.filters.find(filter => filter.id === relatedEntity._id);
+            try {
+                let relatedEntity = scope.dsl.params.length && scope.dsl.getRoot().relationships.find(entity => entity.id === scope.dsl.params[0].name);
+                if (relatedEntity) {
+                    scope.state.filter = scope.filters.find(filter => filter.id === relatedEntity._id);
+                }
+            } catch (e) {
+                console.log("Error analysing DSL (ignore)", scope.dsl, scope.filters, e);
             }
         }
 
