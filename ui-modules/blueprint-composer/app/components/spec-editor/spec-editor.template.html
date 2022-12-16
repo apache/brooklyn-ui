@@ -481,6 +481,10 @@
                                         'one': '{} entry',
                                         'other': '{} entries'}"></ng-pluralize>)
                                 </span>
+                                <span ng-if="getObjectSize(config[item.name])==0" class="no-entries-buttons">
+                                    <i class="fa fa-fw fa-code" ng-click="codeModeClick(item)" aria-hidden="true" title="{{getJsonModeTitle(item.name)}} [{{item.name}}]"></i>
+                                    <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
+                                </span>
                             </p>
                             <ul class="collection-map" 
                                     ng-class="{'default-collapse': expandMode=='default', 'collapse': expandMode=='closed'}">
@@ -532,6 +536,10 @@
                                               when="{'0': 'no entries',
                                         'one': '{} entry',
                                         'other': '{} entries'}"></ng-pluralize>)
+                                </span>
+                                <span ng-if="(config[item.name] || []).length==0" class="no-entries-buttons">
+                                    <i class="fa fa-fw fa-code" ng-click="codeModeClick(item)" aria-hidden="true" title="{{getJsonModeTitle(item.name)}} [{{item.name}}]"></i>
+                                    <a ui-sref="main.graphical.edit.dsl({entityId: model._id, for: item.name})" title="Open in DSL editor"><i class="fa fa-bolt"></i></a>
                                 </span>
                             </p>
                             <ul class="collection-list"

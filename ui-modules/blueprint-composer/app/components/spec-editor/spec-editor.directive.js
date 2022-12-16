@@ -575,7 +575,8 @@ export function specEditorDirective($rootScope, $templateCache, $injector, $sani
             if (type === 'java.lang.String') type = 'string';
             else if (type === 'java.lang.Boolean') type = 'boolean';
             else if (type === 'java.util.Map') type = 'map';
-            else if (type === 'java.util.Set' || type === 'java.util.List' || type === 'java.util.Collection') type = 'array';
+            else if (type === 'java.util.Set' || type === 'java.util.List' || type === 'java.util.Collection'
+                || type==='list' || type==='set') type = 'array';
             else if (type === 'java.lang.Object') type = 'object';
 
             if (specEditor.defined(val)) {
