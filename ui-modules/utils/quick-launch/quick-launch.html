@@ -67,7 +67,7 @@
         <section class="quick-launch-section quick-launch-configuration">
             <h3 class="quick-launch-section-title">Configuration</h3>
             <div class="quick-launch-section-content">
-                <div ng-repeat="(key,value) in entityToDeploy['brooklyn.config'] track by key" ng-switch="configMap[key].json ? 'json' : type">
+                <div ng-repeat="(key,value) in entityToDeploy['brooklyn.config'] track by key" ng-switch="configMap[key].json ? 'json' : configMap[key].type">
                     <div class="checkbox" ng-class="{'has-error': deploy[key].$invalid && deploy[key].$touched}" ng-switch-when="java.lang.Boolean">
                         <label>
                             <input type="checkbox" ng-model="entityToDeploy['brooklyn.config'][key]" ng-disabled="deploying" auto-focus="focus === key" />
