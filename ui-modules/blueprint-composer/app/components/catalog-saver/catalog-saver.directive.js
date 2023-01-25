@@ -208,7 +208,8 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
     };
 
     $scope.getCatalogURL = () => {
-        const urlPartVersion = $scope.config.current.version || $scope.config.version;
+        const urlPartVersion = _.get($scope, 'config.current.version') || _.get($scope, 'config.version');
+        if (!urlPartVersion) return "";
 
         switch ($scope.state.view) {
             case VIEWS.form:
