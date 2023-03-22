@@ -26,7 +26,7 @@
                 <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
                     <li role="menuitem" class="dropdown-header">Filters</li>
                     <li role="menuitem" ng-repeat="types in filters.types track by $index" ng-class="{'active': types.active}" class="layer">
-                        <a href="#" ng-click="$event.preventDefault(); types.active = !types.active"><i class="fa fa-fw fa-circle"></i> {{types.value | lowercase}}</a>
+                        <a href="#" ng-click="$event.preventDefault(); types.active = !types.active"><i class="fa fa-fw fa-check-thin" ng-class="{'fa-check': types.active, 'fa-check-thin': !types.active}"></i> {{types.value | lowercase}}</a>
                     </li>
                 </ul>
             </div>
