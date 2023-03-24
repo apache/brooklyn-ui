@@ -16,9 +16,27 @@
   specific language governing permissions and limitations
   under the License.
 -->
+<div class="form-group">
+    <input type="text" class="form-control" placeholder="Filter by name or value" ng-model="filterValue">
+    <br>
+</div>
+<loading-state error="vm.error.adjuncts" ng-if="!vm.adjuncts"></loading-state>
+
+<div class="adjuncts-table" ng-if="vm.adjuncts">
+    <entity-adjunct ng-repeat="adjunct in vm.adjuncts" activities="" adjunct="adjunct" ng-show="!filterValue || filterResult.indexOf(adjunct.name) >= 0" application-id="{{vm.applicationId}}" entity-id="{{vm.entityId}}" open="vm.adjunctToOpen==adjunct.name"></entity-adjunct>
+</div>
+<div ng-if="vm.adjuncts && vm.adjuncts.length && filterValue && !filterResult.length" class="grid-row no-content">
+    <span>No matches for <code>{{filterValue}}</code></span>
+</div>
+
+<div ng-if="!vm.adjuncts || !vm.adjuncts.length">
+    <span>No management adjuncts available on this entity</span>
+</div>
+
+<!-- Old code from here -->
+
 <ui-view>
     <loading-state error="vm.error.adjuncts" ng-if="!vm.adjuncts"></loading-state>
-
     <div ng-if="vm.adjuncts">
     
         <div class="add-adjuncts-wrapper">
