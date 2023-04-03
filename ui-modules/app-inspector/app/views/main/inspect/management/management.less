@@ -52,10 +52,7 @@
 .add-new-policy {
     border: 1px solid fade(@brand-primary, 41%);
     background: @primary-5;
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding: 0px;
     margin-bottom: 20px;
 
     h3 {
@@ -109,6 +106,12 @@
                 stroke: darken(#5ab959, 15%);
             }
         }
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: end;
+        gap: 1em;
     }
 }
 
