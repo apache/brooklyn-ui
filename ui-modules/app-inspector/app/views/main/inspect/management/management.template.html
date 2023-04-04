@@ -18,13 +18,9 @@
 -->
 <div class="form-group">
     <input type="text" class="form-control" placeholder="Filter by name or value" ng-model="filterValue">
-    <br>
 </div>
 <loading-state error="vm.error.adjuncts" ng-if="!vm.adjuncts"></loading-state>
 
-<div class="adjuncts-table" ng-if="vm.adjuncts">
-    <entity-adjunct ng-repeat="adjunct in vm.adjuncts" activities="" adjunct="adjunct" ng-show="!filterValue || filterResult.indexOf(adjunct.name) >= 0" application-id="{{vm.applicationId}}" entity-id="{{vm.entityId}}" open="vm.adjunctToOpen==adjunct.name"></entity-adjunct>
-</div>
 <div ng-if="vm.adjuncts && vm.adjuncts.length && filterValue && !filterResult.length" class="grid-row no-content">
     <span>No matches for <code>{{filterValue}}</code></span>
 </div>
@@ -38,7 +34,7 @@
 <ui-view>
     <loading-state error="vm.error.adjuncts" ng-if="!vm.adjuncts"></loading-state>
     <div ng-if="vm.adjuncts">
-    
+        <button class="btn btn-primary adjunct-add" ng-if="!vm.newPolicy.show" ng-click="vm.newPolicy.show = true">Add new policy</button>
         <div class="add-adjuncts-wrapper">
             <div class="add-new-policy" ng-show="vm.newPolicy.show">
                 <div class="modal-header">
@@ -122,9 +118,7 @@
             </div>
         </div>
 
-        <adjuncts-list ng-if="vm.adjuncts" adjuncts="vm.adjuncts" summary="false">
-            <button class="btn btn-primary adjunct-add" ng-if="!vm.newPolicy.show" ng-click="vm.newPolicy.show = true">Add</button>
-        </adjuncts-list>
+        <adjuncts-list ng-if="vm.adjuncts" adjuncts="filterResult" summary="false" show-filter="false"></adjuncts-list>
 
         <div class="no-adjuncts" ng-if="vm.adjuncts.length === 0 && !vm.newPolicy.show">No adjuncts are attached to this entity</div>
         
