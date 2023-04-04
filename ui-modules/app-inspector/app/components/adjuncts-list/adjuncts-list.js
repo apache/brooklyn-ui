@@ -76,7 +76,8 @@ export function adjunctsListDirective() {
         transclude: true,
         scope: {
             adjuncts: '<',
-            summary: '<'
+            summary: '<',
+            showFilter: '=',
         },
         link: link
     };
