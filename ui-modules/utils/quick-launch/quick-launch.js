@@ -160,7 +160,7 @@ export function quickLaunchDirective() {
                     result[config.name] = config;
 
                     let configValue = (parsedPlan[BROOKLYN_CONFIG] || {})[config.name];
-                    if (typeof configValue == 'undefined' && parsedPlan.services.length==1) {
+                    if (typeof configValue === 'undefined' &&  parsedPlan.services && parsedPlan.services.length === 1) {
                         configValue = (parsedPlan.services[0] && parsedPlan.services[0][BROOKLYN_CONFIG] || {})[config.name];
                     }
 
