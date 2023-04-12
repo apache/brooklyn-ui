@@ -23,6 +23,9 @@
             <h2 ng-if="vm.entity" class="entity-name">
               <span class="node-icon"><img ng-src="{{ vm.iconUrl }}"/></span>
               <span class="node-name" editable-text="vm.name" blur="submit" buttons="no" blur="submit" onaftersave="vm.updateEntityName()">{{ vm.entity.name }}</span>
+              <span class="tooltip">
+                  <span class="tooltiptext">{{ vm.entity.name }}</span>  
+              </span>
             </h2>
         </div>
         <p ng-if="vm.sensors['main.uri']">

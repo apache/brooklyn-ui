@@ -124,4 +124,30 @@ a.blueprint-button {
   font-style: italic;
 }
 
+.tooltip {
+  position: absolute;
+  display: inline-block;
+  opacity: 100%;
+}
+
+.tooltip .tooltiptext {
+  background-color: #e3f5db;;
+  color: inherit;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  /* Position the tooltip text - see examples below! */
+  z-index: 1;
+}
+
+.tooltiptext {
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.tooltip:hover .tooltiptext {
+  opacity: 1;
+}
+
+
 .modal-dialog .modal-header .text-danger:extend(.text-danger) {}
