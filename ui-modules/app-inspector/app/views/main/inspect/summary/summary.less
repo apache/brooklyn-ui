@@ -125,22 +125,20 @@ a.blueprint-button {
 }
 
 .tooltip {
-  position: absolute;
+  position: relative;
   display: inline-block;
-  opacity: 100%;
+  opacity: 1;
+  filter: drop-shadow(5px 5px 4px #b3c5ab);
 }
 
 .tooltip .tooltiptext {
-  background-color: #e3f5db;;
-  color: inherit;
-  text-align: center;
-  padding: 5px 0;
+  background-color: #e3f5db;
   border-radius: 6px;
-  /* Position the tooltip text - see examples below! */
   z-index: 1;
 }
 
 .tooltiptext {
+  position: absolute;
   opacity: 0;
   transition: opacity 0.5s;
 }
