@@ -20,6 +20,9 @@
     <div class="tab-header">
         <div class="entity-header">
             <h2 ng-if="!vm.entity" class="entity-name loading"><loading-state error="vm.error.entity"></loading-state></h2>
+              <span ng-if="vm.entity" class="tooltip">
+                  <span class="tooltiptext">{{ vm.entity.name }}</span>  
+              </span>
             <h2 ng-if="vm.entity" class="entity-name">
               <span class="node-icon"><img ng-src="{{ vm.iconUrl }}"/></span>
               <span class="node-name" editable-text="vm.name" blur="submit" buttons="no" blur="submit" onaftersave="vm.updateEntityName()">{{ vm.entity.name }}</span>

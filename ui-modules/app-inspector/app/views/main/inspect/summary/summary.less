@@ -39,6 +39,7 @@
       .node-name {
         flex: 1 0 200px;
         border: none;
+        .text-overflow();
       }
       .editable-wrap {
         flex: 1 0 200px;
@@ -122,5 +123,30 @@ a.blueprint-button {
   content: 'not available';
   font-style: italic;
 }
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  opacity: 1;
+  top: 25px;
+  filter: drop-shadow(5px 5px 4px #b3c5ab);
+}
+
+.tooltip .tooltiptext {
+  background-color: #e3f5db;
+  border-radius: 6px;
+  z-index: 1;
+}
+
+.tooltiptext {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.tooltip:hover .tooltiptext {
+  opacity: 1;
+}
+
 
 .modal-dialog .modal-header .text-danger:extend(.text-danger) {}
