@@ -63,9 +63,15 @@ export function workflowStepDirective() {
             vm.nonEmpty = (data) => data && (data.length || Object.keys(data).length);
             vm.isNullish = _.isNil;
 
-            vm.getWorkflowNameFromReference = (ref) => {
+            vm.getWorkflowNameFromReference = (ref, suffixIfFound) => {
                 // would be nice to get a name, but all we have is appId, entityId, workflowId; and no lookup table;
                 // could look it up or store at server, but seems like overkill
+                if (ref && $scope.task && $scope.task.children) {
+                  var matchingChild = $scope.task.children.find(c => c.metadata && c.metadata.id === ref.workflowId);
+                  if (matchingChild && matchingChild.metadata.taskName) {
+                    return matchingChild.metadata.taskName + (suffixIfFound ? " "+suffixIfFound+" " : "");
+                  }
+                }
                 return null;
             };
 

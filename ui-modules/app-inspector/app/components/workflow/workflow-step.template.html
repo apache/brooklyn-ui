@@ -139,11 +139,10 @@
                     <b>The activity currently being viewed (<span class="monospace">{{ task.id }}</span>) is for a previous run of this step.</b>
                 </div>
 
-                <div  class="more-space-above">
+                <div class="more-space-above">
                     <div class="data-row" ng-if="step.name"><div class="A">Name</div> <div class="B">{{ step.name }}</div></div>
                     <div class="data-row" ng-if="step.id"><div class="A">ID</div> <div class="B fixed-width">{{ step.id }}</div></div>
                     <div class="data-row"><div class="A">Step Number</div> <div class="B">{{ stepIndex+1 }}</div></div>
-                    <div class="data-row"><div class="A">Definition</div> <div class="B multiline-code">{{ vm.yamlOrPrimitive(step) }}</div></div>
                 </div>
 
                 <div ng-if="osi.countStarted > 1 && osi.countStarted > osi.countCompleted" class="space-above">
@@ -166,6 +165,27 @@
                         </div>
                     </div>
                     <div ng-if="!isFocusStep || isFocusTask">
+                        <div class="data-row nested with-buttons" ng-if="stepContext.subWorkflows && stepContext.subWorkflows.length"><div class="A" style="margin-top: 2px;">Sub-workflows</div> <div class="B">
+                            <div class="btn-group" uib-dropdown ng-if="stepContext.subWorkflows.length>1">
+                                <button id="workflow-button" type="button" class="btn btn-select-dropdown workflow-button-small" uib-dropdown-toggle style="padding-left: 9px; padding-right: 9px">
+                                    {{ stepContext.subWorkflows.length }} nested workflow{{ stepContext.subWorkflows.length>1 ? 's' : '' }} <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="workflow-button" style="width: auto; max-width: 40em;">
+                                    <li role="menuitem" ng-repeat="sub in stepContext.subWorkflows" id="sub-workflow-{{ sub.workflowId }}">
+                                        <a href="" ui-sref="main.inspect.activities.detail({applicationId: sub.applicationId, entityId: sub.entityId, activityId: sub.workflowId, workflowLatestRun: true})" style="padding-left: 9px; padding-right: 9px;">
+                                            <span>{{ vm.getWorkflowNameFromReference(sub, "-") }}</span>
+                                            <span class="monospace">{{ sub.workflowId }}</span>
+                                    </a></li>
+                                </ul>
+                            </div>
+                            <div class="btn-group" uib-dropdown ng-if="stepContext.subWorkflows.length==1">
+                                <a href="" ui-sref="main.inspect.activities.detail({applicationId: stepContext.subWorkflows[0].applicationId, entityId: stepContext.subWorkflows[0].entityId, activityId: stepContext.subWorkflows[0].workflowId, workflowLatestRun: true})">
+                                    <span>{{ vm.getWorkflowNameFromReference(stepContext.subWorkflows[0]) }}</span>
+                                    <span class="monospace">{{ stepContext.subWorkflows[0].workflowId }}</span>
+                                </a>
+                            </div>
+                        </div></div>
+
                         <div class="data-row nested"><div class="A">Preceeded by</div> <div class="B">
                             <span ng-if="osi.previousTaskId">
                                 Step {{ osi.previous[0]+1 }}
@@ -184,27 +204,6 @@
                             <span ng-if="!osi.nextTaskId">(workflow end)</span>
                         </div></div>
 
-                        <div class="data-row nested with-buttons" ng-if="stepContext.subWorkflows && stepContext.subWorkflows.length"><div class="A" style="margin-top: 2px;">Sub-workflows</div> <div class="B">
-                            <div class="btn-group" uib-dropdown ng-if="stepContext.subWorkflows.length>1">
-                                <button id="workflow-button" type="button" class="btn btn-select-dropdown workflow-button-small" uib-dropdown-toggle>
-                                    {{ stepContext.subWorkflows.length }} nested workflow{{ stepContext.subWorkflows.length>1 ? 's' : '' }} <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="workflow-button">
-                                    <li role="menuitem" ng-repeat="sub in stepContext.subWorkflows" id="sub-workflow-{{ sub.workflowId }}">
-                                        <a href="" ui-sref="main.inspect.activities.detail({applicationId: sub.applicationId, entityId: sub.entityId, activityId: sub.workflowId, workflowLatestRun: true})">
-                                            <i class="fa fa-check check"></i>
-                                            <span>{{ vm.getWorkflowNameFromReference(sub) }}</span>
-                                            <span class="monospace">{{ sub.workflowId }}</span></a> </li>
-                                </ul>
-                            </div>
-                            <div class="btn-group" uib-dropdown ng-if="stepContext.subWorkflows.length==1">
-                                <a href="" ui-sref="main.inspect.activities.detail({applicationId: stepContext.subWorkflows[0].applicationId, entityId: stepContext.subWorkflows[0].entityId, activityId: stepContext.subWorkflows[0].workflowId, workflowLatestRun: true})">
-                                    <span>{{ vm.getWorkflowNameFromReference(stepContext.subWorkflows[0]) }}</span>
-                                    <span class="monospace">{{ stepContext.subWorkflows[0].workflowId }}</span>
-                                </a>
-                            </div>
-                        </div></div>
-
                         <div class="data-row nested" ng-if="stepContext.input"><div class="A">Input</div> <div class="B multiline-code">{{ vm.yaml(stepContext.input) }}</div></div>
                         <div class="data-row nested" ng-if="osi.workflowScratch"><div class="A">Workflow Vars</div> <div class="B multiline-code">{{ vm.yaml(osi.workflowScratch) }}</div></div>
                         <div class="data-row nested" ng-if="stepContext.otherMetadata" ng-repeat="(key,value) in stepContext.otherMetadata" id="$key">
@@ -212,6 +211,10 @@
                         </div>
                         <div class="data-row nested" ng-if="stepContext.output"><div class="A">Output</div> <div class="B multiline-code">{{ vm.yaml(stepContext.output) }}</div></div>
                     </div>
+                </div>
+
+                <div class="more-space-above">
+                    <div class="data-row"><div class="A">Definition</div> <div class="B multiline-code">{{ vm.yamlOrPrimitive(step) }}</div></div>
                 </div>
 
             </div>
