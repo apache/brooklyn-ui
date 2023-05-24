@@ -133,11 +133,11 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
         const checkTasksLoadAttemptsFinished = () => {
             $scope.activitiesLoaded = activitiesRawLoadAttemptFinished && workflowLoadAttemptFinished;
         }
-        entityApi.entityActivities(applicationId, entityId).then((response) => {
-            vm.activitiesRaw = response.data;
+        entityApi.entityActivitiesDeep(applicationId, entityId).then((response) => {
+            vm.activitiesDeep = vm.activitiesRaw = response.data;
             mergeActivities();
             observers.push(response.subscribe((response) => {
-                vm.activitiesRaw = response.data;
+                vm.activitiesDeep = vm.activitiesRaw = response.data;
                 mergeActivities();
                 vm.error = undefined;
             }));
@@ -165,16 +165,18 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
             checkTasksLoadAttemptsFinished();
         });
 
-        entityApi.entityActivitiesDeep(applicationId, entityId).then((response) => {
-            vm.activitiesDeep = response.data;
-            observers.push(response.subscribe((response) => {
-                vm.activitiesDeep = response.data;
-                vm.error = undefined;
-            }));
-        }).catch((error) => {
-            $log.warn('Error loading activity children deep for entity ' + entityId, error);
-            vm.error = 'Cannot load activities (deep) for entity with ID: ' + entityId;
-        });
+        // previously we loaded these separately, and the (now Deep) call above was previously entityActivities
+        // but the only difference is for cross-entitiy activities, and calling just Deep and using for both is more efficient
+//        entityApi.entityActivitiesDeep(applicationId, entityId).then((response) => {
+//            vm.activitiesDeep = response.data;
+//            observers.push(response.subscribe((response) => {
+//                vm.activitiesDeep = response.data;
+//                vm.error = undefined;
+//            }));
+//        }).catch((error) => {
+//            $log.warn('Error loading activity children deep for entity ' + entityId, error);
+//            vm.error = 'Cannot load activities (deep) for entity with ID: ' + entityId;
+//        });
 
         $scope.$on('$destroy', () => {
           observers.forEach((observer) => {
