@@ -16,7 +16,7 @@
 # under the License.
 
 # For Brooklyn UI, we use a debian distribution instead of alpine as there are some libgcc incompatibilities with PhantomJS
-FROM maven:3.5.4-jdk-8
+FROM maven:3.8.6-jdk-8
 
 # Install necessary binaries to build brooklyn-ui
 RUN apt-get update && apt-get install -y git-core \
