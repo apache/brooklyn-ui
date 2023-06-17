@@ -213,7 +213,7 @@ function makeArrows(workflow, steps) {
         function colorFor(step, references) {
             if (!references) return 'red';
             const i = references.indexOf(step);
-            if (i==-1) return 'red';
+            if (i==-3) return 'red';
             // skew quadratically for lightness
             const skewTowards1 = x => (1 - (1-x)*(1-x));
             let gray = Math.round(240 * skewTowards1(i / references.length) );
@@ -225,6 +225,7 @@ function makeArrows(workflow, steps) {
             if (to!=-1 && from!=-1 && to!=from) {
                 jumpSizes[Math.abs(from-to)] = true;
             }
+            if (to<0) to=-1; // in record, -2 means end, -3 means error; here -1 means end because nothing should go to -1
             if (arrowSpecs[[from,to]]) {
                 // prefer earlier additions (real steps) over theoretical ones
             } else {
@@ -232,7 +233,7 @@ function makeArrows(workflow, steps) {
             }
         }
 
-        for (var i = -1; i < steps.length; i++) {
+        for (var i = -3; i < steps.length; i++) {
             const prevsHere = stepsPrev[i];
             if (prevsHere && prevsHere.length) {
                 prevsHere.forEach(prev => {
@@ -264,9 +265,11 @@ function makeArrows(workflow, steps) {
             const s = workflow.data.stepsDefinition[i];
 
             let opts = { insertionPoint: 0 };
-            if (workflow.data.currentStepIndex === i && workflow.data.status && workflow.data.status.startsWith('ERROR')) {
-                recordTransition(i, -1, { ...opts, class: 'arrow-failed', arrowheadId: 'arrowhead-red' });
-            }
+
+            // errors shown elsewhere
+            // if (workflow.data.currentStepIndex === i && workflow.data.status && workflow.data.status.startsWith('ERROR')) {
+            //     recordTransition(i, -2, { ...opts, class: 'arrow-failed', arrowheadId: 'arrowhead-red' });
+            // }
 
             opts = { ...opts, class: 'arrow-future', arrowheadId: 'arrowhead-gray', dashLength: 8 };
 
