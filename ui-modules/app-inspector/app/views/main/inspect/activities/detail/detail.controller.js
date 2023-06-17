@@ -410,6 +410,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
     };
 
     vm.stringify = (data) => JSON.stringify(data, null, 2);
+    vm.stringifiedSize = (data) => JSON.stringify(data).length;
 
     vm.invokeEffector = (effectorName, effectorParams) => {
         entityApi.invokeEntityEffector(applicationId, entityId, effectorName, effectorParams).then((response) => {

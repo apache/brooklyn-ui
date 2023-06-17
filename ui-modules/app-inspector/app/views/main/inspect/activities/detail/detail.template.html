@@ -360,7 +360,7 @@
                         <b>Activity</b>
                         <pre>{{vm.stringify(vm.model.activity)}}</pre>
                         <div ng-if="vm.model.workflow.data">
-                            <b>Workflow</b>
+                            <b>Workflow</b> ({{vm.stringifiedSize(vm.model.workflow)}} bytes)
                             <pre>{{vm.stringify(vm.model.workflow)}}</pre>
                         </div>
                     </br-collapsible>
