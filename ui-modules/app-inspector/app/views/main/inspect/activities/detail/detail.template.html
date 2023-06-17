@@ -69,6 +69,8 @@
                         <li><a href="" ng-if="actions.invokeAgain" ng-click="actions.invokeAgain.doAction()">Reinvoke effector</a></li>
                         <li><a href="" ng-if="actions.effector" ui-sref="main.inspect.effectors({search: actions.effector.effectorName})">Open in effector tab</a></li>
 
+                        <li><a href="" ng-if="workflow_yaml" ng-click="vm.openInRunModel(workflow_yaml)">Edit and re-run</a></li>
+
                     </ul>
                 </div>
 
