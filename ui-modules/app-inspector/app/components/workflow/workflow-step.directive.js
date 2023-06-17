@@ -74,12 +74,27 @@ export function workflowStepDirective() {
                 }
                 return null;
             };
+            vm.hasInterestingWorkflowNameFromReference = (ref, suffixIfFound) => {
+                const wn = vm.getWorkflowNameFromReference(ref, suffixIfFound);
+                return wn && wn.toLowerCase()!='sub-workflow';
+            };
+            vm.classForCodeMaybeMultiline = (obj) => {
+                let os = vm.yamlOrPrimitive(obj);
+                if (!os) return "simple-code";
+                os = ''+os;
+                if (os.endsWith('\n')) os = os.substring(0, os.length-1);
+                const lines = os.split('\n');
+                if (lines.length==1) return "simple-code";
+                if (lines.length <= 5) return "multiline-code lines-"+lines.length;
+                return "multiline-code multiline-code-resizable lines-"+lines.length;
+            };
 
             $scope.json = null;
             $scope.jsonMode = null;
-            vm.showJson = (mode, json) => {
+            vm.showAdditional = (title, mode, obj) => {
+                $scope.jsonTitle = title;
                 $scope.jsonMode = mode;
-                $scope.json = json ? stringify(json) : null;
+                $scope.json = obj==undefined ? null : vm.yamlOrPrimitive(obj);
             }
 
             $scope.stepTitle = {
@@ -108,6 +123,44 @@ export function workflowStepDirective() {
                 }
             }
 
+            function gatherOutputAndScratchForStep(osi, result, visited, isPrevious) {
+                if (result.output!=undefined && result.workflowScratch!=undefined) return ;
+                if (osi==undefined) {
+                    if (result.workflowScratchPartial != undefined) result.workflowScratch = result.workflowScratchPartial;
+                    delete result['workflowScratchPartial'];
+                    return;
+                }
+                // osi.woSc
+                let output = osi.context && osi.context.output;
+                if (isPrevious && output != undefined && result.output == undefined) result.output = output;
+                if (isPrevious && osi.workflowScratchUpdates != undefined) result.workflowScratchPartial =
+                    Object.assign({}, osi.workflowScratchUpdates, result.workflowScratchPartial);
+                if (osi.workflowScratch != undefined) result.workflowScratchPartial =
+                    Object.assign({}, osi.workflowScratchUpdates, result.workflowScratchPartial);
+
+                let next = undefined;
+                if (osi.previous && osi.previous.length) {
+                    const pp = osi.previous[0];
+                    if (!visited.includes(pp)) {
+                        visited.push(pp);
+                        next = $scope.workflow.data.oldStepInfo[pp];
+                    }
+                }
+                gatherOutputAndScratchForStep(next, result, visited, true);
+            }
+
+            const resultForStep = {};
+            vm.getOutputAndScratchForStep = (i) => {
+                if (!resultForStep[i]) {
+                    if (!$scope.workflow || !$scope.workflow.data || !$scope.workflow.data.oldStepInfo) return {};
+                    const osi = $scope.workflow.data.oldStepInfo[i] || null;
+                    if (!osi) return {};
+                    resultForStep[i] = {};
+                    gatherOutputAndScratchForStep(osi, resultForStep[i], [i], false);
+                }
+                return resultForStep[i];
+            }
+
             function updateData() {
                 let workflow = $scope.workflow;
                 workflow.data = workflow.data || {};
@@ -124,22 +177,32 @@ export function workflowStepDirective() {
                 $scope.isFocusTask = false;
                 $scope.isErrorHandler = $scope.workflow.tag && ($scope.workflow.tag.errorHandlerForTask);
 
-                $scope.stepCurrentError = (($scope.task || {}).currentStatus === 'Error') ? 'This step returned an error.'
-                    : ($scope.isWorkflowError && $scope.isCurrentMaybeInactive) ? 'The workflow encountered an error around this step.'
-                    : null;
-                const incomplete = $scope.osi.countStarted - $scope.osi.countCompleted > ($scope.isCurrentAndActive ? 1 : 0);
-                $scope.stepCurrentWarning = incomplete && !$scope.stepCurrentError ? 'This step has previously had an error' : null;
-                $scope.stepCurrentSuccess = (!$scope.isCurrentAndActive && !incomplete && $scope.osi.countCompleted > 0)
-                    ? 'This step has completed without errors.' : null;
-
                 if ($scope.task) {
                     if (!vm.isNullish($scope.stepContext.taskId) && $scope.stepContext.taskId === $scope.task.id) {
                         $scope.isFocusTask = true;
 
                     } else if ($scope.isFocusStep) {
-                        // TODO other instance of this tag selected
+                        // careful -- other instance of this step selected
                     }
                 }
+
+                $scope.stepCurrentError =
+                    ($scope.stepContext.error && !$scope.isFocusTask)
+                    ? 'This step had an error.'
+                    : ($scope.isWorkflowError && $scope.isCurrentMaybeInactive)
+                    ? 'The workflow encountered an error at this step.'  /* odd */
+                    : null;
+                const incomplete = $scope.osi.countStarted - $scope.osi.countCompleted > ($scope.isCurrentAndActive ? 1 : 0);
+
+                $scope.stepCurrentWarning = $scope.stepCurrentError ? null :
+                    $scope.stepContext.errorHandlerTaskId
+                    ? 'This step had an error which was handled.'
+                    : incomplete
+                    ? 'This step has previously had an error'
+                    : null;
+                $scope.stepCurrentSuccess = $scope.stepCurrentError || $scope.stepCurrentWarning ? null :
+                    (!$scope.isCurrentAndActive && !incomplete && $scope.osi.countCompleted > 0)
+                    ? 'This step has completed without errors.' : null;
             }
             $scope.$watch('workflow', updateData);
             updateData();

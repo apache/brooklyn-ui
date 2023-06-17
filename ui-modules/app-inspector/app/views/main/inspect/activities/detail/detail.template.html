@@ -227,9 +227,10 @@
                                             <span ng-if="vm.model.workflow.runIsOld">a previous run of </span>
                                             <span ng-if="vm.model.workflow.runIsLatest">the most recent run of </span>
                                         </span>
-                                        <a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.taskId, workflowId})">
+                                        <button type="button" class="btn inline-button-small"
+                                                ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.taskId, workflowId})">
                                             workflow <span class="monospace">{{vm.model.workflow.data.workflowId}}</span>:
-                                            <b>{{vm.model.workflow.data.name}}</b></a>.
+                                            <b>{{vm.model.workflow.data.name}}</b></button>.
                                     </span>
                                     <span ng-if="vm.isNullish(vm.model.workflow.tag.stepIndex) && !vm.model.activity.id">
                                         part of
@@ -240,28 +241,32 @@
                                         for
                                         <span ng-if="vm.model.workflow.runIsOld" style="font-weight: bold;">
                                             a previous run of
-                                            <a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.taskId, workflowId})">
+                                            <button type="button" class="btn inline-button-small"
+                                                    ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.taskId, workflowId})">
                                                     workflow <span class="monospace">{{vm.model.workflow.data.workflowId}}</span>:
-                                                <b>{{vm.model.workflow.data.name}}</b>.</a>
+                                                <b>{{vm.model.workflow.data.name}}</b>.</button>
                                         </span>
                                         <span ng-if="!vm.model.workflow.runIsOld">
                                             <span ng-if="vm.model.workflow.runIsLatest && vm.model.workflow.runMultipleTimes">the most recent run of </span>
                                             workflow <span class="monospace">{{vm.model.workflow.data.workflowId}}</span>:
                                             <b>{{vm.model.workflow.data.name}}</b>.
                                         </span>
-                                        <span ng-if="vm.model.workflow.isError && vm.model.workflow.data.currentStepInstance && vm.model.workflow.data.currentStepInstance.taskId">
+                                        <div ng-if="vm.model.workflow.isError && vm.model.workflow.data.currentStepInstance && vm.model.workflow.data.currentStepInstance.taskId"
+                                                style="margin-top: 6px;">
                                             Details of the failure can be found by opening
-                                            <a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.currentStepInstance.taskId, workflowId})">
-                                                the failed task</a>.
-                                        </span>
+                                            <button type="button" class="btn inline-button-small"
+                                                    ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.currentStepInstance.taskId, workflowId})">
+                                                the failed task</button>.
+                                        </div>
                                     </span>
                                 </div>
 
                                 <div ng-if="vm.model.workflow.data.parentId" class="workflow-preface-para">
                                     This is a sub-workflow in
-                                    <b><a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.parentId, workflowId: vm.model.workflow.data.parentId, workflowLatestRun: true})">
+                                    <button type="button" class="btn inline-button-small"
+                                            ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.parentId, workflowId: vm.model.workflow.data.parentId, workflowLatestRun: true})">
                                         workflow <span class="monospace">{{vm.model.workflow.data.parentId}}</span
-                                    ></a></b>.
+                                    ></button>.
                                 </div>
 
                                 <div ng-if="vm.model.workflow.finishedWithNoSteps" class="workflow-preface-para">
@@ -275,34 +280,37 @@
                                     </span>
                                     <span ng-if="vm.model.activityId!=vm.model.workflow.data.errorHandlerTaskId">
                                         This workflow had an error which ran error handler
-                                        <b><a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.errorHandlerTaskId, workflowId})">
+                                        <button type="button" class="btn inline-button-small"
+                                                ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.errorHandlerTaskId, workflowId})">
                                             <span class="monospace">task {{vm.model.workflow.data.errorHandlerTaskId}}</span
-                                        ></a></b>.
+                                        ></button>.
                                     </span>
                                 </div>
 
                                 <div ng-if="vm.model.workflow.runIsOld" class="workflow-preface-para">
                                     For previous runs such as this, the subtask view
                                     <span ng-if="!vm.isNullish(vm.model.workflow.tag.stepIndex)">for
-                                        <a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.runReplayId, workflowId})">
+                                        <button type="button" class="btn inline-button-small"
+                                                ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.runReplayId, workflowId})">
                                             the relevant run
-                                        </a>
+                                        </button>
                                     </span>
                                     <span ng-if="vm.isNullish(vm.model.workflow.tag.stepIndex)">
                                         <span ng-if="showOldWorkflowRunStepDetails">further</span>
                                         below
                                     </span>
-                                    is normally more informative than workflow steps.
+                                    is normally more informative than workflow steps which focus on the most recent execution.
                                     <span ng-if="!showOldWorkflowRunStepDetails">
-                                        However the workflow step view
-                                        <a href="" ng-click="vm.toggleOldWorkflowRunStepDetails()">
-                                            can be shown</a>
-                                        below if desired.
+                                        If the non-replay-specific workflow step view is desired here, it
+                                        can <button type="button" class="btn inline-button-small"
+                                                ng-click="vm.toggleOldWorkflowRunStepDetails()">
+                                            show below</button>.
                                     </span>
                                     <span ng-if="showOldWorkflowRunStepDetails">
-                                        The workflow step view immediately below
-                                        <a href="" ng-click="vm.toggleOldWorkflowRunStepDetails()">
-                                            can be hidden</a>.
+                                        If the non-replay-specific workflow step view is no longer wanted, it can
+                                        <button type="button" class="btn inline-button-small"
+                                                ng-click="vm.toggleOldWorkflowRunStepDetails()">
+                                            hide</button>.
                                     </span>
                                 </div>
 

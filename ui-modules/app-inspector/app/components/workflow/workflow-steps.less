@@ -181,9 +181,6 @@
         }
       }
     }
-    .workflow-button-small {
-      padding: 1px 5px;
-    }
   }
 
   .workflow-step-status-indicators {
@@ -242,12 +239,24 @@
     //}
   }
 
-  .multiline-code {
+  .simple-code, .multiline-code {
     white-space: pre;
     overflow: scroll;
-    max-height: 100px;
   }
-  .multiline-code, .fixed-width {
+  .simple-code {
+    padding: 3px;
+  }
+  .multiline-code.multiline-code-resizable {
+    resize: vertical;
+    height: 100px;
+    max-height: max-content;
+    border: 1px solid @gray-lighter;
+  }
+  .multiline-code {
+    max-height: 100px;
+    padding: 2px;
+  }
+  .simple-code, .multiline-code, .fixed-width {
     .monospace();
     font-size: 85%;
   }
@@ -268,4 +277,12 @@
     opacity: 100%;
   }
 
+}
+
+.dropdown-menu.workflow-dropdown-small {
+  min-width: 120px;
+  li > a {
+    padding: 3px 16px;
+    font-size: 12px;
+  }
 }
