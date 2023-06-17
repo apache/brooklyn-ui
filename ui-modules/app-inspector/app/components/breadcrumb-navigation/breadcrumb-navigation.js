@@ -32,7 +32,8 @@ export function breadcrumbNavigation($compile, activityApi) {
         template: template,
         scope: {
             entityId: "@",
-            parentId: "@"
+            parentId: "@",
+            activitiesKnown: "@?"
         },
         link: link
     };
@@ -45,14 +46,23 @@ export function breadcrumbNavigation($compile, activityApi) {
                 parentId: $scope.parentId
             };
 
-            activityApi.activity($scope.parentId).then((response)=> {
-                $scope.breadcrumb.parentName = response.data.displayName;
-                if (response.data.submittedByTask) {
-                    $scope.breadcrumb.id = response.data.submittedByTask.metadata.id;
-                    let el = $compile('<li breadcrumb-navigation parent-id="{{breadcrumb.id}}" entity-id="{{breadcrumb.entityId}}"></li>')($scope);
+            function showParent(task) {
+                $scope.breadcrumb.parentName = task.displayName;
+                if (task.submittedByTask) {
+                    $scope.breadcrumb.id = task.submittedByTask.metadata.id;
+                    let el = $compile('<li breadcrumb-navigation parent-id="{{breadcrumb.id}}" entity-id="{{breadcrumb.entityId}}" activities-known="{{activitiesKnown}}"></li>')($scope);
                     $element.parent().prepend(el);
                 }
                 $scope.breadcrumb.loading = false;
+            }
+
+            // would be nice to have activities cached so we don't need to load; but we don't on the detail view,
+            // and the load of ancestors is pretty fast so this isn't a big issue
+            const parentActivity = $scope.activitiesKnown && $scope.activitiesKnown[$scope.parentId];
+            if (parentActivity) showParent(parentActivity);
+            // else activityApi.activity($scope.parentId).then((response)=> showParent(response.data));
+            else activityApi.activity($scope.parentId).then((response)=> {
+                showParent(response.data);
             });
         }
     }
