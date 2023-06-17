@@ -51,13 +51,16 @@ function usefulName(name) {
     // TODO replace this with intermediate ellipsis?
     // cf https://codepen.io/markchitty/pen/RNZbRE
     // (also make sure things have nice names!)
-    
-    if (name.length>50 && name.length - name.lastIndexOf('.') > 10) {
-        name = name.substring(name.lastIndexOf('.')+1);
+  
+    // where names are java classes remove leading packages 
+    if (name.length>50) {
+      name = replaceStart(name, "org.apache.brooklyn.", "o.a.b.");
+      name = replaceStart(name, "o.a.b.enricher.stock.", "o.a.b.e.s.");
+      name = replaceStart(name, "o.a.b.entity.software.base.", "o.a.b.e.s.b.");
+      while (name.length>50 && !name.includes(' ') && name.includes('.') && name.length - name.indexOf('.') > 10) {
+        name = name.substring(name.indexOf('.')+1);
+      }
     }
-    name = replaceStart(name, "org.apache.brooklyn.", "o.a.b.");
-    name = replaceStart(name, "o.a.b.enricher.stock.", "o.a.b.e.s.");
-    name = replaceStart(name, "o.a.b.entity.software.base.", "o.a.b.e.s.b.");
     return name;
 }
 
