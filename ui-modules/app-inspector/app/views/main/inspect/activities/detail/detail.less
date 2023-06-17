@@ -168,9 +168,16 @@
         .monospace();
     }
 
-    .result-parent.big-result {
+    .result-parent.very-big-result {
+        resize: vertical;
+        height: 96pt;
+        &.result-body {
+            max-height: max-content;
+        }
+    }
+    .result-parent.med-result, .result-parent.very-big-result {
         border: 1px solid @gray-lighter;
-        .result-body {
+        .result-body, &.result-body {
             white-space: pre;
             padding: 4px;
         }

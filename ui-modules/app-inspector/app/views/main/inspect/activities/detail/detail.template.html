@@ -97,9 +97,14 @@
                                     <div class="summary-item-label">ID</div>
                                     <div class="summary-item-value monospace">{{::vm.model.activity.id}}</div>
                                 </div>
-                                <div class="col-md-6 summary-item" ng-if="vm.model.activity.result!=undefined">
+                                <div class="col-md-6 summary-item" ng-if="vm.model.activity.result!=undefined && vm.model.activity.resultLineMaxLen < 36 && vm.model.activity.resultLineCount < 4">
                                     <div class="summary-item-label">Result</div>
-                                    <div class="summary-item-value result-parent" ng-class="{ 'big-result': (''+vm.model.activity.result).length > 10 }"><div class="result-body">{{::vm.yaml(vm.model.activity.result)}}</div></div>
+                                    <div class="summary-item-value result-parent" ng-class="{ 'med-result': vm.model.activity.resultLineMaxLen > 10 || vm.model.activity.resultLineCount > 1 }">
+                                        <div class="result-body">{{vm.model.activity.resultYaml}}</div></div>
+                                </div>
+                                <div class="col-md-12 summary-item" ng-if="vm.model.activity.result!=undefined && !(vm.model.activity.resultLineMaxLen < 36 && vm.model.activity.resultLineCount < 4)">
+                                    <div class="summary-item-label">Result</div>
+                                    <div class="summary-item-value result-parent very-big-result result-body">{{vm.model.activity.resultYaml}}</div>
                                 </div>
                             </div>
                         </div>

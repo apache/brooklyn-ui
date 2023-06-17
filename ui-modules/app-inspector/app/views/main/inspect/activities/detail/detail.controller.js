@@ -80,6 +80,13 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                         .then(result => $state.go($state.current, {}, {reload: true}) );
                 } };
             }
+
+            if (vm.model.activity.result!=undefined) {
+                vm.model.activity.resultYaml = vm.yaml(vm.model.activity.result);
+                const lines = vm.model.activity.resultYaml.split('\n');
+                vm.model.activity.resultLineCount = lines.length;
+                vm.model.activity.resultLineMaxLen = Math.max(...lines.map(x => x.length));
+            }
         }
 
         function loadWorkflow(workflowTag, opts) {
