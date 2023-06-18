@@ -93,8 +93,16 @@ export function taskListDirective() {
         };
         $scope.recomputeTasks = () => {
             $scope.tasksFilteredByTag = $scope.findTasksExcludingCategory(
-                tasksAfterGlobalFilters($scope.tasks, $scope.globalFilters),
-                $scope.filters.selectedFilters, '');
+                    tasksAfterGlobalFilters($scope.tasks, $scope.globalFilters),
+                    $scope.filters.selectedFilters, '')
+                .sort((t1,t2) => {
+                    if (!t1.endTimeUtc || !t2.endTimeUtc) {
+                        if (!t1.endTimeUtc && !t2.endTimeUtc) return t2.startTimeUtc - t1.startTimeUtc;
+                        if (t1.endTimeUtc) return 1;
+                        return -1;
+                    }
+                    return t2.endTimeUtc - t1.endTimeUtc;
+                });
 
             // do this to update the counts
             setFiltersForTasks($scope, isActivityChildren);
@@ -172,6 +180,7 @@ export function taskListDirective() {
                     selectFilter('_all_effectors');
                     selectFilter('EFFECTOR');
                     selectFilter('WORKFLOW');
+                    selectFilter('_scheduled');
                 } else {
                     selectFilter('SUB-TASK');
                 }
@@ -359,18 +368,18 @@ export function taskListDirective() {
                 onEnabledPre: clearOther('_top'),
                 onDisabledPost: enableFilterIfCategoryEmpty('_top'),
             }
-            filtersFullList['_recursive'] = {
-                display: 'Include sub-tasks on this entity',
-                displaySummary: 'sub-tasks',
-                filter: filterNestedSameEntityTasks,
+            filtersFullList['_all_effectors'] = {
+                display: 'Include effector sub-tasks',
+                displaySummary: 'effectors',
+                filter: filterForTasksWithTag('EFFECTOR'),
                 category: 'nested',
                 onEnabledPre: clearOther('_top'),
                 onDisabledPost: enableFilterIfCategoryEmpty('_top'),
             }
-            filtersFullList['_all_effectors'] = {
-                display: 'Include non-top-level effectors',
-                displaySummary: 'effectors',
-                filter: filterForTasksWithTag('EFFECTOR'),
+            filtersFullList['_recursive'] = {
+                display: 'Include all sub-tasks',
+                displaySummary: 'sub-tasks',
+                filter: filterNestedSameEntityTasks,
                 category: 'nested',
                 onEnabledPre: clearOther('_top'),
                 onDisabledPost: enableFilterIfCategoryEmpty('_top'),
@@ -393,6 +402,15 @@ export function taskListDirective() {
             category: 'type-tag',
             onEnabledPre: clearCategory(),
             onDisabledPost: enableOthersIfCategoryEmpty('_anyTypeTag'),
+        }
+
+        filtersFullList['_scheduled'] = {
+            display: 'Scheduled',
+            displaySummary: 'scheduled',
+            filter: tasks => tasks.filter(t => isScheduled(t)),
+            category: 'type-tag',
+            onEnabledPre: clearOther('_anyTypeTag'),
+            onDisabledPost: enableFilterIfCategoryEmpty('_anyTypeTag'),
         }
 
         function addTagFilter(tag, target, display, extra) {
@@ -439,19 +457,27 @@ export function taskListDirective() {
             categoryForEvaluation: 'status-active',
         }
         filtersFullList['_scheduled_sub'] = {
-            display: 'Only show scheduled tasks',
+            display: 'Only show scheduled/repeating tasks',
             displaySummary: 'scheduled',
             filter: tasks => tasks.filter(t => {
                 // show scheduled tasks (the parent) and each scheduled run, if sub-tasks are selected
-                if (!t || !t.submittedByTask) return false;
-                if (isScheduled(t)) return true;
-                let submitter = tasksById[t.submittedByTask.metadata.id];
-                return isScheduled(submitter);
+                // if (!t || !t.submittedByTask) return false;  // omit the parent
+                if (isScheduled(t, taskId => tasksById[taskId])) return true;
             }),
             category: 'status',
             categoryForEvaluation: 'status-scheduled',
+            onEnabledPre: clearOther('_non_scheduled_sub'),
         }
-
+        filtersFullList['_non_scheduled_sub'] = {
+            display: 'Exclude scheduled/repeating tasks',
+            displaySummary: 'non-repeating',
+            filter: tasks => tasks.filter(t => {
+                return !isScheduled(t, taskId => tasksById[taskId]);
+            }),
+            category: 'status',
+            categoryForEvaluation: 'status-scheduled',
+            onEnabledPre: clearOther('_scheduled_sub'),
+        }
 
         const filterWorkflowsReplayedTopLevel = t => !t.isWorkflowFirstRun && t.isWorkflowLastRun && t.isWorkflowTopLevel;
         const countWorkflowsReplayedTopLevel = tasksAll.filter(filterWorkflowsReplayedTopLevel).length;
@@ -606,8 +632,11 @@ export function taskListDirective() {
 
 const filterWorkflowsReplayedNested = t => !t.isWorkflowFirstRun && t.isWorkflowLastRun && !t.isWorkflowTopLevel;
 
-function isScheduled(task) {
-  return task && task.currentStatus && task.currentStatus.startsWith("Schedule");
+function isScheduled(task, optionalSubmitterFnIfSubmittersWanted) {
+  if (task && task.currentStatus && task.currentStatus.startsWith("Schedule")) return true;
+  if (!task || !task.submittedByTask || !optionalSubmitterFnIfSubmittersWanted) return false;
+  let submitter = optionalSubmitterFnIfSubmittersWanted(task.submittedByTask.metadata.id);
+  return isScheduled(submitter, optionalSubmitterFnIfSubmittersWanted);
 }
 
 function isTopLevelTask(t, tasksById) {
