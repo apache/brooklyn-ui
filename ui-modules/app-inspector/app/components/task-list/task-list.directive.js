@@ -102,9 +102,8 @@ export function taskListDirective() {
             // now update name
             const enabledCategories = _.uniq(Object.values($scope.filters.selectedFilters).map(f => f.category));
             $scope.filters.selectedDisplay = [];
-            Object.entries($scope.filters.displayNameFunctionForCategory).forEach(([category, nameFn]) => {
+            Object.entries($scope.filters.displayNameFunctionForCategory).forEach(([category, nf]) => {
                 if (!enabledCategories.includes(category)) return null;
-                let nf = $scope.filters.displayNameFunctionForCategory[category];
                 let badges = nf ? nf(Object.values($scope.filters.selectedFilters).filter(f => (f.categoryForBadges || f.category) === category)) : null;
                 badges = (badges || []).filter(x=>x);
                 if (badges.length) $scope.filters.selectedDisplay.push({ class: 'dropdown-category-'+category, badges });
@@ -169,6 +168,8 @@ export function taskListDirective() {
             } else {
                 if (!isActivityChildren) {
                     // defaults (when not in subtask view; in subtask view it is as above)
+                    selectFilter('_cross_entity');
+                    selectFilter('_all_effectors');
                     selectFilter('EFFECTOR');
                     selectFilter('WORKFLOW');
                 } else {
@@ -182,7 +183,6 @@ export function taskListDirective() {
 
             // pick other filter combos until we get some conetnt
             if ($scope.tasksFilteredByTag.length==0) {
-                selectFilter('_cross_entity');
                 selectFilter('INITIALIZATION');
             }
             if ($scope.tasksFilteredByTag.length==0) {
@@ -321,11 +321,19 @@ export function taskListDirective() {
                     // everything but first is selected, so no message (assume _top is always shown)
                     return [ 'all' ];
                 }
+                if (set.length > 1) return [ 'some' ];  // gets too big otherwise
                 return set.map(s => s.displaySummary || '');
             },
             'type-tag': set => {
                 if (!set || !set.length) return null;
                 if (set.length<=3) {
+
+                    if (scope.filters.selectedFilters['_all_effectors'] &&
+                            Object.values(scope.filters.selectedFilters).filter(f => f.category === 'nested').length==1) {
+                        // if all_effectors is the only nesting don't show '(effectors) (effector)'
+                        set = set.filter(x => x.displaySummary != 'effector');  // don't show 'effectors' and effector
+                    }
+
                     return set.map(s => (getFilterOrEmpty(s).displaySummary || '').toLowerCase()).filter(x => x);
                 } else {
                     return ['any of '+set.length+' tags'];
@@ -355,6 +363,14 @@ export function taskListDirective() {
                 display: 'Include sub-tasks on this entity',
                 displaySummary: 'sub-tasks',
                 filter: filterNestedSameEntityTasks,
+                category: 'nested',
+                onEnabledPre: clearOther('_top'),
+                onDisabledPost: enableFilterIfCategoryEmpty('_top'),
+            }
+            filtersFullList['_all_effectors'] = {
+                display: 'Include non-top-level effectors',
+                displaySummary: 'effectors',
+                filter: filterForTasksWithTag('EFFECTOR'),
                 category: 'nested',
                 onEnabledPre: clearOther('_top'),
                 onDisabledPost: enableFilterIfCategoryEmpty('_top'),
