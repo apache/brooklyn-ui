@@ -328,6 +328,10 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
         activityApi.activityChildren(activityId).then((response)=> {
             vm.model.activityChildren = processActivityChildren(response.data);
             vm.error = undefined;
+
+            // could improve by making just one call for children+deep, or combining the results;
+            // but for now just read them both frequently
+            if (!vm.model.activity.endTimeUtc || vm.model.activity.endTimeUtc<0) response.interval(1000);
             observers.push(response.subscribe((response)=> {
                 vm.model.activityChildren = processActivityChildren(response.data);
                 if (!vm.errorBasic) {
