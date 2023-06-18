@@ -20,19 +20,16 @@
     <div>
         <loading-state error="vm.error" trust-error="true" ng-if="!vm.model.activity.id || !vm.model.activityChildren"></loading-state>
 
-        <div ng-if="vm.model.activity.id && vm.model.activityChildren">
-            <ol class="breadcrumb" ng-show="showParents">
-                <li breadcrumb-navigation parent-id="{{vm.model.activity.submittedByTask.metadata.id}}"
-                    entity-id="{{vm.model.entityId}}"></li>
-                <li class="breadcrumb-item active">{{vm.model.activity.displayName}}</li>
-            </ol>
-            <ol class="breadcrumb" ng-show="!showParents && vm.model.activity.submittedByTask">
-                <li ng-click="showParents=true" class="revealParentsEllipse"> ...</li>
-                <li class="breadcrumb-item">
-                    <a class="breadcrumb-item ready"
-                       ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.activity.submittedByTask.metadata.id})">{{vm.model.activity.submittedByTask.metadata.taskName}}</a>
-                </li>
-                <li class="breadcrumb-item active">{{vm.model.activity.displayName}}</li>
+        <div>
+            <ol class="breadcrumb tasks-breadcrumbs">
+                <li class="breadcrumb-item tasks-breadcrumbs-loading" ng-if="breadcrumbsLoading"></li>
+                <li ng-repeat-start="bc in breadcrumbs" ng-if="breadcrumbsExpanded || $index<=0 || $index>=breadcrumbs.length-2 || breadcrumbs.length<=4" class="breadcrumb-item"><a
+                    class="breadcrumb-item ready"
+                       ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.activity.submittedByTask.metadata.id})"
+                    >{{bc.displayName}}</a></li>
+                <li ng-if="!breadcrumbsExpanded && $index==0 && breadcrumbs.length>4" class="breadcrumb-item"><a
+                        ng-click="vm.expandBreadcrumbs()" class="tasks-breadcrumbs-ellipsis">...</a></li>
+                <span ng-repeat-end ng-if="false"></span>
             </ol>
         </div>
 

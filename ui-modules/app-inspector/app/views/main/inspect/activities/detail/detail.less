@@ -263,3 +263,22 @@
     width: auto;
     max-width: 32em;
 }
+
+
+.tasks-breadcrumbs {
+    > li {
+        padding-right: 0.5ex;  // balance the \A0 included after the / in the bootstrap breadcrumb separator
+    }
+}
+.tasks-breadcrumbs-ellipsis {
+    cursor: pointer;
+}
+.tasks-breadcrumbs-loading {
+    display: block;
+    background-image: url(../../../../../img/loading-ellipsis.svg);
+    background-repeat: no-repeat;
+    background-position-y: center;
+    background-position-x: center;
+    width: 50px;
+    height: 1em;
+}

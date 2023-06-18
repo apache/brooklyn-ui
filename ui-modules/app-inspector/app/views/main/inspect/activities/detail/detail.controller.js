@@ -270,6 +270,8 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
         activityApi.activity(activityId).then((response)=> {
             vm.model.activity = response.data;
 
+            initializeBreadcrumbs(response.data);
+
             delete $scope.actions['effector'];
             delete $scope.actions['invokeAgain'];
             if ((vm.model.activity.tags || []).find(t => t=="EFFECTOR")) {
@@ -342,6 +344,26 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                     }
                 });
             }
+        }
+
+        $scope.breadcrumbsLoading = true;
+        $scope.breadcrumbs = [];
+        $scope.breadcrumbsExpanded = false;
+        function initializeBreadcrumbs(activity) {
+            $scope.breadcrumbs.unshift(activity);
+            if (activity.submittedByTask) {
+                activityApi.activity(activity.submittedByTask.metadata.id).then(response => {
+                    initializeBreadcrumbs(response.data);
+                }).catch(e => {
+                    console.warn("Error loading breadcrumbs", e);
+                    $scope.breadcrumbsLoading = false;
+                });
+            } else {
+                $scope.breadcrumbsLoading = false;
+            }
+        }
+        vm.expandBreadcrumbs = () => {
+            $scope.breadcrumbsExpanded = true;
         }
 
         activityApi.activityChildren(activityId).then((response)=> {
