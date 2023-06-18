@@ -325,9 +325,29 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                 });
         });
 
+        function onActivityLoadUpdate() {
+            vm.model.activityChildrenAndDeep = [];
+            let seen = {};
+            if (vm.model.activityChildren) {
+                vm.model.activityChildren.forEach(t => {
+                    vm.model.activityChildrenAndDeep.push(t);
+                    seen[t.id] = true;
+                });
+            }
+            if (vm.model.activitiesDeep) {
+                Object.values(vm.model.activitiesDeep).forEach(t => {
+                    if (!seen[t.id]) {
+                        vm.model.activityChildrenAndDeep.push(t);
+                        seen[t.id] = true;
+                    }
+                });
+            }
+        }
+
         activityApi.activityChildren(activityId).then((response)=> {
             vm.model.activityChildren = processActivityChildren(response.data);
             vm.error = undefined;
+            onActivityLoadUpdate();
 
             // could improve by making just one call for children+deep, or combining the results;
             // but for now just read them both frequently
@@ -337,6 +357,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                 if (!vm.errorBasic) {
                     vm.error = undefined;
                 }
+                onActivityLoadUpdate();
             }));
         }).catch((error)=> {
             $log.warn('Error loading activity children  for '+activityId, error);
@@ -348,6 +369,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
         activityApi.activityDescendants(activityId, 8, true).then((response)=> {
             vm.model.activitiesDeep = response.data;
             vm.error = undefined;
+            onActivityLoadUpdate();
 
             if (!vm.model.activity.endTimeUtc || vm.model.activity.endTimeUtc<0) response.interval(1000);
             observers.push(response.subscribe((response)=> {
@@ -355,6 +377,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                 if (!vm.errorBasic) {
                     vm.error = undefined;
                 }
+                onActivityLoadUpdate();
             }));
         }).catch((error)=> {
             $log.warn('Error loading activity children deep for '+activityId, error);

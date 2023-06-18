@@ -31,31 +31,33 @@
             <ul class="dropdown-menu with-checks" uib-dropdown-menu role="menu" aria-labelledby="single-button">
                 <li role="menuitem" ng-repeat="(tag,value) in filters.available track by tag"
                         class="activity-tag-filter-tag {{value.classes}}"
-                        ng-click="value.onClick(tag, value)"
+                        ng-click="clickFilter(value, tag)"
                         ng-class="{'selected': filters.selectedFilters[tag]}">
 
                     <i class="fa fa-check check if-selected"></i>
 
                     <span class="main" title="{{value.help}}">{{value.display}}</span>
 
-                    <span class="badge included"
-                          title="Activities included by this filter">
-                        {{value.count}}
-                    </span>
-                    <span class="badge excluded-here"
-                          ng-if="value.count > 0"
-                          title="Activities included by this filter">
-                        {{value.count}}
-                    </span>
-                    <span class="badge more-excluded-elsewhere"
-                          title="Additional activities excluded by other filter categories"
-                          ng-if="value.count > 0 && value.countAbsolute > value.count">
-                        {{ value.countAbsolute - value.count}}
-                    </span>
-                    <span class="badge all-excluded-elsewhere"
-                          title="Activities are excluded by other filter categories"
-                          ng-if="value.count == 0 && value.countAbsolute > 0">
-                        {{ value.countAbsolute - value.count}}
+                    <span ng-if="!value.hideBadges">
+                        <span class="badge included"
+                              title="Activities included by this filter">
+                            {{value.count}}
+                        </span>
+                        <span class="badge excluded-here"
+                              ng-if="value.count > 0"
+                              title="Activities included by this filter">
+                            {{value.count}}
+                        </span>
+                        <span class="badge more-excluded-elsewhere"
+                              title="Additional activities excluded by other filter categories"
+                              ng-if="value.count > 0 && value.countAbsolute > value.count">
+                            {{ value.countAbsolute - value.count}}
+                        </span>
+                        <span class="badge all-excluded-elsewhere"
+                              title="Activities are excluded by other filter categories"
+                              ng-if="value.count == 0 && value.countAbsolute > 0">
+                            {{ value.countAbsolute - value.count}}
+                        </span>
                     </span>
                 </li>
                 <li role="menuitem" class="activity-tag-filter-action divider-above" style="padding-bottom: 9px;"
@@ -63,6 +65,10 @@
                         ng-class="{'selected': globalFilters.transient.checked}">
                     <i class="fa fa-check check if-selected"></i>
                     <span class="main" title="{{globalFilters.transient.help}}">{{globalFilters.transient.display}}</span>
+                </li>
+                <li role="menuitem" class="activity-tag-filter-action divider-above" style="padding-bottom: 9px;"
+                    ng-if="!isEmpty(filters.available)" ng-click="resetFilters()">
+                    <span class="main" title="Recompute the default filter set for the current tasks">Reset filters</span>
                 </li>
                 <li role="menuitem" class="activity-tag-filter-error" ng-if="!globalFilters.transient && isEmpty(filters.available)">
                     <i><span class="main">No filter options</span></i>
