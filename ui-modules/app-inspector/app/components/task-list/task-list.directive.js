@@ -44,6 +44,7 @@ export function taskListDirective() {
             parentTaskId: '@?',
             filteredCallback: '&?',
             search: '<',
+            contextKey: '@?', // a key to uniquely identify the calling context to save filter settings
         },
         controller: ['$scope', '$element', controller]
     };
@@ -77,7 +78,7 @@ export function taskListDirective() {
                         Object.values(selected).filter(f => (f.categoryForEvaluation || f.category) === category).forEach(f => {
                             const filter = f.filter;
                             if (!filter) {
-                                console.warn("Incomplete activities tag filter", tagF);
+                                console.warn("Incomplete activities tag filter", f);
                             } else {
                                 newResult = newResult.concat(filter(result));
                             }
@@ -93,8 +94,16 @@ export function taskListDirective() {
         };
         $scope.recomputeTasks = () => {
             $scope.tasksFilteredByTag = $scope.findTasksExcludingCategory(
-                tasksAfterGlobalFilters($scope.tasks, $scope.globalFilters),
-                $scope.filters.selectedFilters, '');
+                    tasksAfterGlobalFilters($scope.tasks, $scope.globalFilters),
+                    $scope.filters.selectedFilters, '')
+                .sort((t1,t2) => {
+                    if (!t1.endTimeUtc || !t2.endTimeUtc) {
+                        if (!t1.endTimeUtc && !t2.endTimeUtc) return t2.startTimeUtc - t1.startTimeUtc;
+                        if (t1.endTimeUtc) return 1;
+                        return -1;
+                    }
+                    return t2.endTimeUtc - t1.endTimeUtc;
+                });
 
             // do this to update the counts
             setFiltersForTasks($scope, isActivityChildren);
@@ -102,9 +111,8 @@ export function taskListDirective() {
             // now update name
             const enabledCategories = _.uniq(Object.values($scope.filters.selectedFilters).map(f => f.category));
             $scope.filters.selectedDisplay = [];
-            Object.entries($scope.filters.displayNameFunctionForCategory).forEach(([category, nameFn]) => {
+            Object.entries($scope.filters.displayNameFunctionForCategory).forEach(([category, nf]) => {
                 if (!enabledCategories.includes(category)) return null;
-                let nf = $scope.filters.displayNameFunctionForCategory[category];
                 let badges = nf ? nf(Object.values($scope.filters.selectedFilters).filter(f => (f.categoryForBadges || f.category) === category)) : null;
                 badges = (badges || []).filter(x=>x);
                 if (badges.length) $scope.filters.selectedDisplay.push({ class: 'dropdown-category-'+category, badges });
@@ -112,14 +120,29 @@ export function taskListDirective() {
             if (!$scope.filters.selectedDisplay.length) $scope.filters.selectedDisplay.push({ class: 'dropdown-category-default', badges: ['all'] });
         };
 
-        function selectFilter(filterId, state) {
+        function selectFilter(filterId, explicitNewValueOrUndefinedForToggle) {
+            //console.debug("selecting filter: "+filterId+" = "+explicitNewValueOrUndefinedForToggle);
             const f = $scope.filters.available[filterId];
             if (!f) {
+                //console.debug("selected filter not found; available are", $scope.filters.available);
                 // we tried to select eg effector, when it didn't exist, just ignore
                 return false;
             } else {
-                f.select(filterId, f, state);
+                f.select(filterId, f, explicitNewValueOrUndefinedForToggle); // see defaultToggleFilter for params
                 return true;
+            }
+        }
+        $scope.clickFilter = (filter, tag) => {
+            filter.onClick(tag, filter);
+            if ($scope.contextKey) {
+                try {
+                    const filters = JSON.stringify(Object.keys($scope.filters.selectedFilters));
+                    const storageKey = 'brooklyn-task-list-filters-' + $scope.contextKey;
+                    sessionStorage.setItem(storageKey, filters);
+                    //console.debug("Saved filters to session storage", storageKey, filters);
+                } catch (e) {
+                    console.warn("Unable to save filiters from session storage for", $scope.contextKey, e);
+                }
             }
         }
 
@@ -151,45 +174,104 @@ export function taskListDirective() {
         });
 
         let tasksLoadedTrueReceived = false;
+        let filtersFromSessionStorage = 'initializing';  // | 'absent' | 'loaded'
+
+        $scope.resetFilters = () => {
+            tasksLoadedTrueReceived = false;
+            $scope.uiDropdownInteraction = false;
+            filtersFromSessionStorage = 'initializing';
+            sessionStorage.removeItem('brooklyn-task-list-filters-' + $scope.contextKey)
+            refreshDropdownsUntilTasksAreLoaded();
+        }
 
         function refreshDropdownsUntilTasksAreLoaded() {
             if (tasksLoadedTrueReceived || $scope.uiDropdownInteraction) return;
             tasksLoadedTrueReceived = $scope.tasksLoaded;
 
-            $scope.filters = { available: {}, selectedFilters: {} };
-            setFiltersForTasks($scope, isActivityChildren);
-            selectFilter("_top", true);
-            selectFilter("_anyTypeTag", true);
-            if ($scope.taskType) {
-                if ($scope.taskType == "ALL") {
-                    selectFilter("_top", false);
-                } else {
-                    selectFilter($scope.taskType);
+            let preselectedFilters;
+            if (filtersFromSessionStorage=='initializing') {
+                if (!$scope.contextKey) filtersFromSessionStorage = 'absent';
+                else {
+                    filtersFromSessionStorage = 'absent';
+                    try {
+                        const filters = sessionStorage.getItem('brooklyn-task-list-filters-' + $scope.contextKey);
+                        if (filters) {
+                            //console.debug("Read filters for", $scope.contextKey, filters);
+                            preselectedFilters = JSON.parse(filters);
+                        }
+                    } catch (e) {
+                        console.warn("Unable to load filiters from session storage for", $scope.contextKey, e);
+                    }
                 }
+            }
+            if (filtersFromSessionStorage=='loaded') {
+                // don't auto-compute if taken from session storage
             } else {
-                if (!isActivityChildren) {
-                    // defaults (when not in subtask view; in subtask view it is as above)
-                    selectFilter('EFFECTOR');
-                    selectFilter('WORKFLOW');
-                } else {
-                    selectFilter('SUB-TASK');
-                }
-            }
-            if (!isActivityChildren) selectFilter("_workflowStepsHidden");
-            selectFilter("_workflowReplayedTopLevel");
-            selectFilter("_workflowNonLastReplayHidden");
-            selectFilter("_workflowCompletedWithoutTaskHidden");
 
-            // pick other filter combos until we get some conetnt
-            if ($scope.tasksFilteredByTag.length==0) {
-                selectFilter('_cross_entity');
-                selectFilter('INITIALIZATION');
-            }
-            if ($scope.tasksFilteredByTag.length==0) {
-                selectFilter("_anyTypeTag", true);
-            }
-            if ($scope.tasksFilteredByTag.length==0) {
-                selectFilter("_top", false);
+                $scope.filters = {available: {}, selectedFilters: {}};
+                setFiltersForTasks($scope, isActivityChildren);
+
+                if (preselectedFilters) {
+                    try {
+                        if ($scope.selectedFilters) Object.entries($scope.selectedFilters, (k,v) => selectFilter(k, v, false));
+
+                        $scope.selectedFilters = {};
+                        preselectedFilters.forEach(fid => {
+                            const f = $scope.filters.available[fid];
+                            if (!f) {
+                                // don't keep retrying the load, unless tasks aren't loaded yet
+                                if (!$scope.tasksLoaded) {
+                                    filtersFromSessionStorage = 'initializing';  // we don't have all the filters yet
+                                }
+                            } else {
+                                selectFilter(fid, f, true);
+                            }
+                        });
+                        filtersFromSessionStorage = 'loaded';
+                    } catch (e) {
+                        filtersFromSessionStorage = 'absent';
+                        console.warn("Unable to process filiters from session storage for", $scope.contextKey, preselectedFilters, e);
+                    }
+                }
+
+                if (filtersFromSessionStorage == 'absent') {
+
+                    selectFilter("_top", true);
+                    selectFilter("_anyTypeTag", true);
+                    if ($scope.taskType) {
+                        if ($scope.taskType == "ALL") {
+                            selectFilter("_top", false);
+                        } else {
+                            selectFilter($scope.taskType);
+                        }
+                    } else {
+                        if (!isActivityChildren) {
+                            // defaults (when not in subtask view; in subtask view it is as above)
+                            selectFilter('_cross_entity');
+                            selectFilter('_all_effectors');
+                            selectFilter('EFFECTOR');
+                            selectFilter('WORKFLOW');
+                            selectFilter('_periodic');
+                        } else {
+                            // in children mode we don't want any such filters
+                        }
+                    }
+                    if (!isActivityChildren) selectFilter("_workflowStepsHidden");
+                    selectFilter("_workflowReplayedTopLevel");
+                    selectFilter("_workflowNonLastReplayHidden");
+                    selectFilter("_workflowCompletedWithoutTaskHidden");
+
+                    // pick other filter combos until we get some conetnt
+                    if ($scope.tasksFilteredByTag.length == 0) {
+                        selectFilter('INITIALIZATION');
+                    }
+                    if ($scope.tasksFilteredByTag.length == 0) {
+                        selectFilter("_anyTypeTag", true);
+                    }
+                    if (!isActivityChildren && $scope.tasksFilteredByTag.length == 0) {
+                        selectFilter("_top", false);
+                    }
+                }
             }
 
             $scope.recomputeTasks();
@@ -247,13 +329,13 @@ export function taskListDirective() {
 
         const tasks = tasksAfterGlobalFilters(tasksAll, globalFilters);
 
-        function defaultToggleFilter(tag, value, forceValue, fromUi, skipRecompute) {
+        function defaultToggleFilter(tag, filter, forceValue, fromUi, skipRecompute) {
             if ((scope.filters.selectedFilters[tag] && _.isNil(forceValue)) || forceValue===false) {
                 delete scope.filters.selectedFilters[tag];
-                if (value.onDisabledPost) value.onDisabledPost(tag, value, forceValue);
+                if (filter.onDisabledPost) filter.onDisabledPost(tag, filter, forceValue);
             } else {
-                if (value.onEnabledPre) value.onEnabledPre(tag, value, forceValue);
-                scope.filters.selectedFilters[tag] = value;
+                if (filter.onEnabledPre) filter.onEnabledPre(tag, filter, forceValue);
+                scope.filters.selectedFilters[tag] = filter;
             }
             if (fromUi) {
                 // on a UI click, don't try to be too clever about remembered IDs
@@ -302,8 +384,17 @@ export function taskListDirective() {
         const filtersFullList = {};
 
         let tasksById = tasksAll.reduce( (result,t) => { result[t.id] = t; return result; }, {} );
-        function filterTopLevelTasks(tasks) { return filterWithId(tasks, tasksById, isTopLevelTask); }
-        function filterNonTopLevelTasks(tasks) { return filterWithId(tasks, tasksById, isNonTopLevelTask); }
+        const isChild = (t,tbyid) => {
+            if (!t.submittedByTask) return false;
+            return (t.submittedByTask.metadata.id == scope.parentTaskId);
+        };
+        const isNotChild = (t,tbyid) => !isChild(t, tbyid);
+        function filterTopLevelTasks(tasks) {
+            return filterWithId(tasks, tasksById, isActivityChildren ? isChild : isTopLevelTask);
+        }
+        function filterNonTopLevelTasks(tasks) {
+            return filterWithId(tasks, tasksById, isActivityChildren ? isNotChild : isNonTopLevelTask);
+        }
         function filterCrossEntityTasks(tasks) { return filterWithId(tasks, tasksById, isCrossEntityTask); }
         function filterNestedSameEntityTasks(tasks) { return filterWithId(tasks, tasksById, isNestedSameEntityTask); }
 
@@ -319,13 +410,23 @@ export function taskListDirective() {
                 let nestedFiltersAvailable = Object.values(scope.filters.available).filter(f => f.category === 'nested');
                 if (set.length == nestedFiltersAvailable.length-1 && !set[0].isDefault) {
                     // everything but first is selected, so no message (assume _top is always shown)
-                    return [ 'all' ];
+                    let statusFiltersEnabled = Object.values(scope.filters.selectedFilters).filter(f => f.category === 'status');
+                    if (statusFiltersEnabled.length) return [ 'some' ];  // if filters applied, indicate that
+                    else return [ 'all' ];
                 }
+                if (set.length > 1) return [ 'some' ];  // gets too big otherwise
                 return set.map(s => s.displaySummary || '');
             },
             'type-tag': set => {
                 if (!set || !set.length) return null;
                 if (set.length<=3) {
+
+                    if (scope.filters.selectedFilters['_all_effectors'] &&
+                            Object.values(scope.filters.selectedFilters).filter(f => f.category === 'nested').length==1) {
+                        // if all_effectors is the only nesting don't show '(effectors) (effector)'
+                        set = set.filter(x => x.displaySummary != 'effector');  // don't show 'effectors' and effector
+                    }
+
                     return set.map(s => (getFilterOrEmpty(s).displaySummary || '').toLowerCase()).filter(x => x);
                 } else {
                     return ['any of '+set.length+' tags'];
@@ -333,7 +434,7 @@ export function taskListDirective() {
             },
         };
         filtersFullList['_top'] = {
-            display: 'Only show ' + (isActivityChildren ? 'direct sub-tasks' : 'top-level tasks'),
+            display: 'Only list ' + (isActivityChildren ? 'children sub-tasks' : 'top-level tasks'),
             displaySummary: 'only top-level',
             isDefault: true,
             filter: filterTopLevelTasks,  // redundant with starting set, but contributes the right count
@@ -352,17 +453,25 @@ export function taskListDirective() {
                 onDisabledPost: enableFilterIfCategoryEmpty('_top'),
             }
             filtersFullList['_recursive'] = {
-                display: 'Include sub-tasks on this entity',
-                displaySummary: 'sub-tasks',
+                display: 'Include local sub-tasks',
+                displaySummary: 'local',
                 filter: filterNestedSameEntityTasks,
+                category: 'nested',
+                onEnabledPre: clearOther('_top'),
+                onDisabledPost: enableFilterIfCategoryEmpty('_top'),
+            }
+            filtersFullList['_all_effectors'] = {
+                display: 'Include effector sub-tasks',
+                displaySummary: 'effectors',
+                filter: filterForTasksWithTag('EFFECTOR'),
                 category: 'nested',
                 onEnabledPre: clearOther('_top'),
                 onDisabledPost: enableFilterIfCategoryEmpty('_top'),
             }
         } else {
             filtersFullList['_recursive'] = {
-                display: 'Show all sub-tasks',
-                displaySummary: 'all sub-tasks',
+                display: 'Include recursive sub-tasks',
+                displaySummary: 'recursive',
                 filter: filterNonTopLevelTasks,
                 category: 'nested',
                 onEnabledPre: clearOther('_top'),
@@ -377,6 +486,15 @@ export function taskListDirective() {
             category: 'type-tag',
             onEnabledPre: clearCategory(),
             onDisabledPost: enableOthersIfCategoryEmpty('_anyTypeTag'),
+        }
+
+        filtersFullList['_periodic'] = {
+            display: 'Periodic',
+            displaySummary: 'periodic',
+            filter: tasks => tasks.filter(t => isScheduled(t)),
+            category: 'type-tag',
+            onEnabledPre: clearOther('_anyTypeTag'),
+            onDisabledPost: enableFilterIfCategoryEmpty('_anyTypeTag'),
         }
 
         function addTagFilter(tag, target, display, extra) {
@@ -423,19 +541,32 @@ export function taskListDirective() {
             categoryForEvaluation: 'status-active',
         }
         filtersFullList['_scheduled_sub'] = {
-            display: 'Only show scheduled tasks',
-            displaySummary: 'scheduled',
+            display: 'Only show periodic tasks',
+            displaySummary: 'periodic',
+            help: 'If debugging a scheduled repeating task such as a policy or sensor, it can be helpful to show only those tasks.',
             filter: tasks => tasks.filter(t => {
                 // show scheduled tasks (the parent) and each scheduled run, if sub-tasks are selected
-                if (!t || !t.submittedByTask) return false;
-                if (isScheduled(t)) return true;
-                let submitter = tasksById[t.submittedByTask.metadata.id];
-                return isScheduled(submitter);
+                // if (!t || !t.submittedByTask) return false;  // omit the parent
+                if (isScheduled(t, taskId => tasksById[taskId])) return true;
             }),
             category: 'status',
             categoryForEvaluation: 'status-scheduled',
+            onEnabledPre: clearOther('_non_scheduled_sub'),
         }
-
+        filtersFullList['_non_scheduled_sub'] = {
+            display: 'Exclude periodic sub-tasks',
+            displaySummary: 'non-repeating',
+            help: 'If there are a lot of repeating tasks, it can be helpful to filter them out '+
+                'to find manual and triggers tasks more easily.',
+            filter: tasks => tasks.filter(t => {
+                return !isScheduled(t, taskId => tasksById[taskId]) ||
+                    isScheduled(t) /* allow root periodic task */;
+            }),
+            category: 'status',
+            categoryForEvaluation: 'status-scheduled',
+            onEnabledPre: clearOther('_scheduled_sub'),
+            hideBadges: true, // counts don't interact with other filters so it is confusing
+        }
 
         const filterWorkflowsReplayedTopLevel = t => !t.isWorkflowFirstRun && t.isWorkflowLastRun && t.isWorkflowTopLevel;
         const countWorkflowsReplayedTopLevel = tasksAll.filter(filterWorkflowsReplayedTopLevel).length;
@@ -450,6 +581,7 @@ export function taskListDirective() {
             category: 'workflow',
             count: countWorkflowsReplayedTopLevel,
             countAbsolute: countWorkflowsReplayedTopLevel,
+            hideBadges: true, // counts don't interact with other filters so it is confusing
         }
 
         const countWorkflowsReplayedNested = tasksAll.filter(filterWorkflowsReplayedNested).length;
@@ -466,6 +598,7 @@ export function taskListDirective() {
             category: 'workflow',
             count: countWorkflowsReplayedNested,
             countAbsolute: countWorkflowsReplayedNested,
+            hideBadges: true, // counts don't interact with other filters so it is confusing
         }
 
         const filterWorkflowsWhichAreNotPreviousReplays = t => _.isNil(t.isWorkflowLastRun) || t.isWorkflowLastRun;
@@ -483,6 +616,7 @@ export function taskListDirective() {
             countAbsolute: countWorkflowsWhichArePreviousReplays,
             categoryForEvaluation: 'workflow-non-last-replays',
             category: 'workflow',
+            hideBadges: true, // counts don't interact with other filters so it is confusing
         }
 
         const filterWorkflowsWithoutTaskWhichAreCompleted = t => t.endTimeUtc>0 && t.isTaskStubFromWorkflowRecord;
@@ -499,6 +633,7 @@ export function taskListDirective() {
             countAbsolute: countWorkflowsWithoutTaskWhichAreCompleted,
             categoryForEvaluation: 'workflow-old-completed',
             category: 'workflow',
+            hideBadges: true, // counts don't interact with other filters so it is confusing
         }
 
         const filterWorkflowTasksWhichAreSteps = t => getTaskWorkflowTag(t) && !_.isNil(getTaskWorkflowTag(t));
@@ -515,15 +650,18 @@ export function taskListDirective() {
             countAbsolute: countWorkflowTasksWhichAreSteps,
             categoryForEvaluation: 'workflow-steps',
             category: 'workflow',
+            hideBadges: true, // counts don't interact with other filters so it is confusing
         }
 
         // fill in fields
         function updateSelectedFilters(newValues) {
+            //console.debug("selected filters were", Object.keys(scope.filters.selectedFilters));
             Object.entries(scope.filters.selectedFilters).forEach(([filterId, oldValue]) => {
                 const newValue = newValues[filterId];
                 scope.filters.selectedFilters[filterId] = newValue;
                 if (!newValue) delete scope.filters.selectedFilters[filterId];
             });
+            //console.debug("selected filters now", Object.keys(scope.filters.selectedFilters));
         }
 
         updateSelectedFilters(filtersFullList);
@@ -542,12 +680,16 @@ export function taskListDirective() {
         // include non-zero filters or those included if zero
         Object.entries(filtersFullList).forEach(([k, f]) => {
             if (f.countAbsolute > 0 || f.includeIfZero) result[k] = f;
+            //else console.debug("Removing filter", f.display);
         });
 
         // and delete categories that are redundant
         function deleteCategoryIfAllCountsAreEqualOrZero(category) {
             if (_.uniq(Object.values(result).filter(f => f.category === category).filter(f => f.countAbsolute).map(f => f.countAbsolute)).length==1) {
-                Object.entries(result).filter(([k,f]) => f.category === category).forEach(([k,f])=>delete result[k]);
+                Object.entries(result).filter(([k,f]) => f.category === category).forEach(([k,f])=> {
+                    //console.debug("Removing category filter", f.display);
+                    delete result[k];
+                });
             }
         }
         // function deleteFiltersInCategoryThatAreEmpty(category) {
@@ -556,7 +698,10 @@ export function taskListDirective() {
         // }
         function deleteCategoryIfSize1(category) {
             const found = Object.entries(result).filter(([k,f]) => f.category === category);
-            if (found.length==1) delete result[found[0][0]];
+            if (found.length==1) {
+                delete result[found[0][0]];
+                //console.debug("Removing size 1 category", found[0][0]);
+            }
         }
         // deleteFiltersInCategoryThatAreEmpty('nested');
         deleteCategoryIfSize1('nested');
@@ -564,7 +709,7 @@ export function taskListDirective() {
 
         if (!result['_cross_entity'] && result['_recursive']) {
             // if we don't have cross-entity sub-tasks, tidy this message
-            result['_recursive'].display = 'Include sub-tasks';
+            result['_recursive'].display = 'Include nested sub-tasks';
         }
 
         // // but if we deleted everything, restore them (better to have pointless categories than no categories)
@@ -590,8 +735,11 @@ export function taskListDirective() {
 
 const filterWorkflowsReplayedNested = t => !t.isWorkflowFirstRun && t.isWorkflowLastRun && !t.isWorkflowTopLevel;
 
-function isScheduled(task) {
-  return task && task.currentStatus && task.currentStatus.startsWith("Schedule");
+function isScheduled(task, optionalSubmitterFnIfSubmittersWanted) {
+  if (task && task.currentStatus && task.currentStatus.startsWith("Schedule")) return true;
+  if (!task || !task.submittedByTask || !optionalSubmitterFnIfSubmittersWanted) return false;
+  let submitter = optionalSubmitterFnIfSubmittersWanted(task.submittedByTask.metadata.id);
+  return isScheduled(submitter, optionalSubmitterFnIfSubmittersWanted);
 }
 
 function isTopLevelTask(t, tasksById) {
@@ -661,7 +809,7 @@ export function durationFilter() {
 
 function isTaskWithTag(task, tag) {
     if (!task.tags) {
-        console.log("Task without tags: ", task);
+        // console.log("Task without tags: ", task);
         return false;
     }
     return task.tags.indexOf(tag)>=0;

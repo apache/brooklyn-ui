@@ -37,6 +37,7 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
     } = $stateParams;
     $scope.search = $stateParams.search;
     $scope.filter = $stateParams.filter;
+    $scope.entityId = entityId || applicationId;
 
     let vm = this;
 

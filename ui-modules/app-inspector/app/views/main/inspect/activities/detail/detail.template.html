@@ -20,19 +20,16 @@
     <div>
         <loading-state error="vm.error" trust-error="true" ng-if="!vm.model.activity.id || !vm.model.activityChildren"></loading-state>
 
-        <div ng-if="vm.model.activity.id && vm.model.activityChildren">
-            <ol class="breadcrumb" ng-show="showParents">
-                <li breadcrumb-navigation parent-id="{{vm.model.activity.submittedByTask.metadata.id}}"
-                    entity-id="{{vm.model.entityId}}"></li>
-                <li class="breadcrumb-item active">{{vm.model.activity.displayName}}</li>
-            </ol>
-            <ol class="breadcrumb" ng-show="!showParents && vm.model.activity.submittedByTask">
-                <li ng-click="showParents=true" class="revealParentsEllipse"> ...</li>
-                <li class="breadcrumb-item">
-                    <a class="breadcrumb-item ready"
-                       ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.activity.submittedByTask.metadata.id})">{{vm.model.activity.submittedByTask.metadata.taskName}}</a>
-                </li>
-                <li class="breadcrumb-item active">{{vm.model.activity.displayName}}</li>
+        <div>
+            <ol class="breadcrumb tasks-breadcrumbs">
+                <li class="breadcrumb-item tasks-breadcrumbs-loading" ng-if="breadcrumbsLoading"></li>
+                <li ng-repeat-start="bc in breadcrumbs" ng-if="breadcrumbsExpanded || $index<=0 || $index>=breadcrumbs.length-2 || breadcrumbs.length<=4" class="breadcrumb-item"><a
+                    class="breadcrumb-item ready"
+                       ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.activity.submittedByTask.metadata.id})"
+                    >{{bc.displayName}}</a></li>
+                <li ng-if="!breadcrumbsExpanded && $index==0 && breadcrumbs.length>4" class="breadcrumb-item"><a
+                        ng-click="vm.expandBreadcrumbs()" class="tasks-breadcrumbs-ellipsis">...</a></li>
+                <span ng-repeat-end ng-if="false"></span>
             </ol>
         </div>
 
@@ -69,6 +66,8 @@
                         <li><a href="" ng-if="actions.invokeAgain" ng-click="actions.invokeAgain.doAction()">Reinvoke effector</a></li>
                         <li><a href="" ng-if="actions.effector" ui-sref="main.inspect.effectors({search: actions.effector.effectorName})">Open in effector tab</a></li>
 
+                        <li><a href="" ng-if="workflow_yaml" ng-click="vm.openInRunModel(workflow_yaml)">Edit and re-run</a></li>
+
                     </ul>
                 </div>
 
@@ -95,9 +94,14 @@
                                     <div class="summary-item-label">ID</div>
                                     <div class="summary-item-value monospace">{{::vm.model.activity.id}}</div>
                                 </div>
-                                <div class="col-md-6 summary-item" ng-if="vm.model.activity.result!=undefined">
+                                <div class="col-md-6 summary-item" ng-if="vm.model.activity.result!=undefined && vm.model.activity.resultLineMaxLen < 36 && vm.model.activity.resultLineCount < 4">
                                     <div class="summary-item-label">Result</div>
-                                    <div class="summary-item-value result-parent" ng-class="{ 'big-result': (''+vm.model.activity.result).length > 10 }"><div class="result-body">{{::vm.yaml(vm.model.activity.result)}}</div></div>
+                                    <div class="summary-item-value result-parent" ng-class="{ 'med-result': vm.model.activity.resultLineMaxLen > 10 || vm.model.activity.resultLineCount > 1 }">
+                                        <div class="result-body">{{vm.model.activity.resultYaml}}</div></div>
+                                </div>
+                                <div class="col-md-12 summary-item" ng-if="vm.model.activity.result!=undefined && !(vm.model.activity.resultLineMaxLen < 36 && vm.model.activity.resultLineCount < 4)">
+                                    <div class="summary-item-label">Result</div>
+                                    <div class="summary-item-value result-parent very-big-result result-body">{{vm.model.activity.resultYaml}}</div>
                                 </div>
                             </div>
                         </div>
@@ -220,9 +224,10 @@
                                             <span ng-if="vm.model.workflow.runIsOld">a previous run of </span>
                                             <span ng-if="vm.model.workflow.runIsLatest">the most recent run of </span>
                                         </span>
-                                        <a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.taskId, workflowId})">
+                                        <button type="button" class="btn inline-button-small"
+                                                ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.taskId, workflowId})">
                                             workflow <span class="monospace">{{vm.model.workflow.data.workflowId}}</span>:
-                                            <b>{{vm.model.workflow.data.name}}</b></a>.
+                                            <b>{{vm.model.workflow.data.name}}</b></button>.
                                     </span>
                                     <span ng-if="vm.isNullish(vm.model.workflow.tag.stepIndex) && !vm.model.activity.id">
                                         part of
@@ -233,28 +238,32 @@
                                         for
                                         <span ng-if="vm.model.workflow.runIsOld" style="font-weight: bold;">
                                             a previous run of
-                                            <a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.taskId, workflowId})">
+                                            <button type="button" class="btn inline-button-small"
+                                                    ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.taskId, workflowId})">
                                                     workflow <span class="monospace">{{vm.model.workflow.data.workflowId}}</span>:
-                                                <b>{{vm.model.workflow.data.name}}</b>.</a>
+                                                <b>{{vm.model.workflow.data.name}}</b>.</button>
                                         </span>
                                         <span ng-if="!vm.model.workflow.runIsOld">
                                             <span ng-if="vm.model.workflow.runIsLatest && vm.model.workflow.runMultipleTimes">the most recent run of </span>
                                             workflow <span class="monospace">{{vm.model.workflow.data.workflowId}}</span>:
                                             <b>{{vm.model.workflow.data.name}}</b>.
                                         </span>
-                                        <span ng-if="vm.model.workflow.isError && vm.model.workflow.data.currentStepInstance && vm.model.workflow.data.currentStepInstance.taskId">
+                                        <div ng-if="vm.model.workflow.isError && vm.model.workflow.data.currentStepInstance && vm.model.workflow.data.currentStepInstance.taskId"
+                                                style="margin-top: 6px;">
                                             Details of the failure can be found by opening
-                                            <a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.currentStepInstance.taskId, workflowId})">
-                                                the failed task</a>.
-                                        </span>
+                                            <button type="button" class="btn inline-button-small"
+                                                    ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.currentStepInstance.taskId, workflowId})">
+                                                the failed task</button>.
+                                        </div>
                                     </span>
                                 </div>
 
                                 <div ng-if="vm.model.workflow.data.parentId" class="workflow-preface-para">
                                     This is a sub-workflow in
-                                    <b><a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.parentId, workflowId: vm.model.workflow.data.parentId, workflowLatestRun: true})">
+                                    <button type="button" class="btn inline-button-small"
+                                            ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.parentId, workflowId: vm.model.workflow.data.parentId, workflowLatestRun: true})">
                                         workflow <span class="monospace">{{vm.model.workflow.data.parentId}}</span
-                                    ></a></b>.
+                                    ></button>.
                                 </div>
 
                                 <div ng-if="vm.model.workflow.finishedWithNoSteps" class="workflow-preface-para">
@@ -268,34 +277,37 @@
                                     </span>
                                     <span ng-if="vm.model.activityId!=vm.model.workflow.data.errorHandlerTaskId">
                                         This workflow had an error which ran error handler
-                                        <b><a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.errorHandlerTaskId, workflowId})">
+                                        <button type="button" class="btn inline-button-small"
+                                                ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.errorHandlerTaskId, workflowId})">
                                             <span class="monospace">task {{vm.model.workflow.data.errorHandlerTaskId}}</span
-                                        ></a></b>.
+                                        ></button>.
                                     </span>
                                 </div>
 
                                 <div ng-if="vm.model.workflow.runIsOld" class="workflow-preface-para">
                                     For previous runs such as this, the subtask view
                                     <span ng-if="!vm.isNullish(vm.model.workflow.tag.stepIndex)">for
-                                        <a ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.runReplayId, workflowId})">
+                                        <button type="button" class="btn inline-button-small"
+                                                ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.runReplayId, workflowId})">
                                             the relevant run
-                                        </a>
+                                        </button>
                                     </span>
                                     <span ng-if="vm.isNullish(vm.model.workflow.tag.stepIndex)">
                                         <span ng-if="showOldWorkflowRunStepDetails">further</span>
                                         below
                                     </span>
-                                    is normally more informative than workflow steps.
+                                    is normally more informative than workflow steps which focus on the most recent execution.
                                     <span ng-if="!showOldWorkflowRunStepDetails">
-                                        However the workflow step view
-                                        <a href="" ng-click="vm.toggleOldWorkflowRunStepDetails()">
-                                            can be shown</a>
-                                        below if desired.
+                                        If the non-replay-specific workflow step view is desired here, it
+                                        can <button type="button" class="btn inline-button-small"
+                                                ng-click="vm.toggleOldWorkflowRunStepDetails()">
+                                            show below</button>.
                                     </span>
                                     <span ng-if="showOldWorkflowRunStepDetails">
-                                        The workflow step view immediately below
-                                        <a href="" ng-click="vm.toggleOldWorkflowRunStepDetails()">
-                                            can be hidden</a>.
+                                        If the non-replay-specific workflow step view is no longer wanted, it can
+                                        <button type="button" class="btn inline-button-small"
+                                                ng-click="vm.toggleOldWorkflowRunStepDetails()">
+                                            hide</button>.
                                     </span>
                                 </div>
 
@@ -322,7 +334,8 @@
 
                         <div class="row">
                             <div ng-class="{ 'col-md-12': true, 'col-lg-8': !vm.wideKilt && vm.isNonEmpty(vm.model.activitiesDeep), 'col-lg-12': vm.wideKilt || !vm.isNonEmpty(vm.model.activitiesDeep)}">
-                                <task-list tasks="vm.model.activityChildren" parent-task-id="vm.model.activityId" filtered-callback="vm.onFilteredActivitiesChange"></task-list>
+                                <task-list context-key="{{ vm.model.activityId }}" tasks="vm.model.activityChildrenAndDeep" parent-task-id="{{ vm.model.activityId }}" filtered-callback="vm.onFilteredActivitiesChange"
+                                           tasks-loaded="vm.model.activityChildren && vm.model.activitiesDeep"></task-list>
                             </div>
                             <div ng-class="{ 'col-md-12': true, 'col-lg-4': !vm.wideKilt, 'col-lg-12': vm.wideKilt }" ng-if="vm.isNonEmpty(vm.model.activitiesDeep)">
                                 <expandable-panel expandable-template="vm.modalTemplate" class="panel-table">
@@ -360,7 +373,7 @@
                         <b>Activity</b>
                         <pre>{{vm.stringify(vm.model.activity)}}</pre>
                         <div ng-if="vm.model.workflow.data">
-                            <b>Workflow</b>
+                            <b>Workflow</b> ({{vm.stringifiedSize(vm.model.workflow)}} bytes)
                             <pre>{{vm.stringify(vm.model.workflow)}}</pre>
                         </div>
                     </br-collapsible>

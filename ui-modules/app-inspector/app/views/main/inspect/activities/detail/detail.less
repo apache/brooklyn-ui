@@ -168,9 +168,16 @@
         .monospace();
     }
 
-    .result-parent.big-result {
+    .result-parent.very-big-result {
+        resize: vertical;
+        height: 96pt;
+        &.result-body {
+            max-height: max-content;
+        }
+    }
+    .result-parent.med-result, .result-parent.very-big-result {
         border: 1px solid @gray-lighter;
-        .result-body {
+        .result-body, &.result-body {
             white-space: pre;
             padding: 4px;
         }
@@ -255,4 +262,23 @@
 .dropdown-menu-replays {
     width: auto;
     max-width: 32em;
+}
+
+
+.tasks-breadcrumbs {
+    > li {
+        padding-right: 0.5ex;  // balance the \A0 included after the / in the bootstrap breadcrumb separator
+    }
+}
+.tasks-breadcrumbs-ellipsis {
+    cursor: pointer;
+}
+.tasks-breadcrumbs-loading {
+    display: block;
+    background-image: url(../../../../../img/loading-ellipsis.svg);
+    background-repeat: no-repeat;
+    background-position-y: center;
+    background-position-x: center;
+    width: 50px;
+    height: 1em;
 }

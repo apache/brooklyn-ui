@@ -80,6 +80,13 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                         .then(result => $state.go($state.current, {}, {reload: true}) );
                 } };
             }
+
+            if (vm.model.activity.result!=undefined) {
+                vm.model.activity.resultYaml = vm.yaml(vm.model.activity.result);
+                const lines = vm.model.activity.resultYaml.split('\n');
+                vm.model.activity.resultLineCount = lines.length;
+                vm.model.activity.resultLineMaxLen = Math.max(...lines.map(x => x.length));
+            }
         }
 
         function loadWorkflow(workflowTag, opts) {
@@ -263,6 +270,8 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
         activityApi.activity(activityId).then((response)=> {
             vm.model.activity = response.data;
 
+            initializeBreadcrumbs(response.data);
+
             delete $scope.actions['effector'];
             delete $scope.actions['invokeAgain'];
             if ((vm.model.activity.tags || []).find(t => t=="EFFECTOR")) {
@@ -318,14 +327,59 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                 });
         });
 
+        function onActivityLoadUpdate() {
+            vm.model.activityChildrenAndDeep = [];
+            let seen = {};
+            if (vm.model.activityChildren) {
+                vm.model.activityChildren.forEach(t => {
+                    vm.model.activityChildrenAndDeep.push(t);
+                    seen[t.id] = true;
+                });
+            }
+            if (vm.model.activitiesDeep) {
+                Object.values(vm.model.activitiesDeep).forEach(t => {
+                    if (!seen[t.id]) {
+                        vm.model.activityChildrenAndDeep.push(t);
+                        seen[t.id] = true;
+                    }
+                });
+            }
+        }
+
+        $scope.breadcrumbsLoading = true;
+        $scope.breadcrumbs = [];
+        $scope.breadcrumbsExpanded = false;
+        function initializeBreadcrumbs(activity) {
+            $scope.breadcrumbs.unshift(activity);
+            if (activity.submittedByTask) {
+                activityApi.activity(activity.submittedByTask.metadata.id).then(response => {
+                    initializeBreadcrumbs(response.data);
+                }).catch(e => {
+                    console.warn("Error loading breadcrumbs", e);
+                    $scope.breadcrumbsLoading = false;
+                });
+            } else {
+                $scope.breadcrumbsLoading = false;
+            }
+        }
+        vm.expandBreadcrumbs = () => {
+            $scope.breadcrumbsExpanded = true;
+        }
+
         activityApi.activityChildren(activityId).then((response)=> {
             vm.model.activityChildren = processActivityChildren(response.data);
             vm.error = undefined;
+            onActivityLoadUpdate();
+
+            // could improve by making just one call for children+deep, or combining the results;
+            // but for now just read them both frequently
+            if (!vm.model.activity.endTimeUtc || vm.model.activity.endTimeUtc<0) response.interval(1000);
             observers.push(response.subscribe((response)=> {
                 vm.model.activityChildren = processActivityChildren(response.data);
                 if (!vm.errorBasic) {
                     vm.error = undefined;
                 }
+                onActivityLoadUpdate();
             }));
         }).catch((error)=> {
             $log.warn('Error loading activity children  for '+activityId, error);
@@ -337,6 +391,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
         activityApi.activityDescendants(activityId, 8, true).then((response)=> {
             vm.model.activitiesDeep = response.data;
             vm.error = undefined;
+            onActivityLoadUpdate();
 
             if (!vm.model.activity.endTimeUtc || vm.model.activity.endTimeUtc<0) response.interval(1000);
             observers.push(response.subscribe((response)=> {
@@ -344,6 +399,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                 if (!vm.errorBasic) {
                     vm.error = undefined;
                 }
+                onActivityLoadUpdate();
             }));
         }).catch((error)=> {
             $log.warn('Error loading activity children deep for '+activityId, error);
@@ -410,6 +466,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
     };
 
     vm.stringify = (data) => JSON.stringify(data, null, 2);
+    vm.stringifiedSize = (data) => JSON.stringify(data).length;
 
     vm.invokeEffector = (effectorName, effectorParams) => {
         entityApi.invokeEntityEffector(applicationId, entityId, effectorName, effectorParams).then((response) => {
