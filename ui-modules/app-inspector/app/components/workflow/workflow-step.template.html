@@ -46,13 +46,13 @@
                 <i class="fa fa-id-card-o"></i>
                 {{ stepTitle.id }}
             </div>
-            <div ng-if="stepTitle.id && !isFocusTask" class="workflow-step-pill step-id handy"
+            <div ng-if="stepTitle.id && !isFocusTask && stepContext.taskId" class="workflow-step-pill step-id handy"
                     title="Select this task"
                     ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId, workflowId })">
                 <i class="fa fa-id-card-o"></i>
                 {{ stepTitle.id }}
             </div>
-            <div ng-if="!stepTitle.id && !isFocusTask" class="workflow-step-pill step-id handy hover-only"
+            <div ng-if="!stepTitle.id && !isFocusTask && stepContext.taskId" class="workflow-step-pill step-id handy hover-only"
                  title="Select this task"
                  ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId, workflowId })">
                 <i class="fa fa-id-card-o"></i>
@@ -74,6 +74,7 @@
                 <div>
                     <span ng-if="!osi.countStarted" class="space-above">
                         This step has not been run<span ng-if="isRunning"> yet</span>.
+                        {{ stepCurrentError ? 'There was an error prior to running this step. More information can be found in the Details panel on the task for the workflow.' : '' }}
                     </span>
                     <span ng-if="osi.countStarted">
                         <span ng-if="osi.countCompleted == osi.countStarted">
