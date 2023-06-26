@@ -102,7 +102,10 @@ export function taskListDirective() {
                         if (t1.endTimeUtc) return 1;
                         return -1;
                     }
-                    return t2.endTimeUtc - t1.endTimeUtc;
+                    return t2.endTimeUtc - t1.endTimeUtc ||
+                        // if same end time, sort by start time
+                        (t2.startTimeUtc && t1.startTimeUtc && t2.startTimeUtc - t1.startTimeUtc) ||
+                        (t2.submitTimeUtc && t1.submitTimeUtc && t2.submitTimeUtc - t1.submitTimeUtc);
                 });
 
             // do this to update the counts
