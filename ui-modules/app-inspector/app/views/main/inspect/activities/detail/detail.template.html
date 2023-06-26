@@ -25,7 +25,7 @@
                 <li class="breadcrumb-item tasks-breadcrumbs-loading" ng-if="breadcrumbsLoading"></li>
                 <li ng-repeat-start="bc in breadcrumbs" ng-if="breadcrumbsExpanded || $index<=0 || $index>=breadcrumbs.length-2 || breadcrumbs.length<=4" class="breadcrumb-item"><a
                     class="breadcrumb-item ready"
-                       ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.activity.submittedByTask.metadata.id})"
+                       ui-sref="main.inspect.activities.detail({entityId: bc.entityId, activityId: bc.id})"
                     >{{bc.displayName}}</a></li>
                 <li ng-if="!breadcrumbsExpanded && $index==0 && breadcrumbs.length>4" class="breadcrumb-item"><a
                         ng-click="vm.expandBreadcrumbs()" class="tasks-breadcrumbs-ellipsis">...</a></li>
