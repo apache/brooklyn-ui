@@ -44,6 +44,7 @@ export function taskListDirective() {
             parentTaskId: '@?',
             filteredCallback: '&?',
             search: '<',
+            entityId: '<?',
             contextKey: '@?', // a key to uniquely identify the calling context to save filter settings
         },
         controller: ['$scope', '$element', controller]
@@ -252,9 +253,11 @@ export function taskListDirective() {
                             // defaults (when not in subtask view; in subtask view it is as above)
                             selectFilter('_cross_entity');
                             selectFilter('_all_effectors');
+                            selectFilter('TOP-LEVEL');
                             selectFilter('EFFECTOR');
                             selectFilter('WORKFLOW');
                             selectFilter('_periodic');
+                            selectFilter('_other_entity');
                         } else {
                             // in children mode we don't want any such filters
                         }
@@ -523,6 +526,8 @@ export function taskListDirective() {
         filtersFullList['SENSOR'] = false;
         filtersFullList['INITIALIZATION'] = false;
         filtersFullList['SUB-TASK'] = false;
+        filtersFullList['TOP-LEVEL'] = false;
+        filtersFullList['inessential'] = false;
 
         // add filters for other tags
         let tags = _.uniq(tasks.flatMap(t => (t.tags || []).filter(tag => typeof tag === 'string' && tag.length < 32)));
@@ -532,9 +537,12 @@ export function taskListDirective() {
 
         Object.entries(filtersFullList).forEach(([k,v]) => { if (!v) delete filtersFullList[k]; });
         ['EFFECTOR', 'WORKFLOW', 'SUB-TASK', 'SENSORS', 'INITIALIZATION'].forEach(t => { if (!filtersFullList[t]) delete filtersFullList[t]; });
-        (filtersFullList['SUB-TASK'] || {}).display = 'Sub-tasks';
         (filtersFullList['SENSOR'] || {}).display = 'Sensors';
         (filtersFullList['INITIALIZATION'] || {}).display = 'Initialization';
+        (filtersFullList['SUB-TASK'] || {}).display = 'Sub-tasks';
+        (filtersFullList['TOP-LEVEL'] || {}).display = 'Important';
+        (filtersFullList['TOP-LEVEL'] || {}).displaySummary = 'Important';
+        (filtersFullList['inessential'] || {}).display = 'Non-essential';
 
         filtersFullList['_active'] = {
             display: 'Only show active tasks',
@@ -542,6 +550,16 @@ export function taskListDirective() {
             filter: tasks => tasks.filter(t => !t.endTimeUtc || t.endTimeUtc<0),
             category: 'status',
             categoryForEvaluation: 'status-active',
+        }
+        if (scope.entityId) {
+            filtersFullList['_other_entity'] = {
+                display: 'Exclude tasks on other entities',
+                displaySummary: 'other-entity',
+                filter: tasks => tasks.filter(t => t.entityId === scope.entityId),
+                category: 'status',
+                categoryForEvaluation: 'other-entity',
+                hideBadges: true, // counts don't interact with other filters so it is confusing
+            }
         }
         filtersFullList['_scheduled_sub'] = {
             display: 'Only show periodic tasks',

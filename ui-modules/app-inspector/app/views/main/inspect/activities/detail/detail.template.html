@@ -334,7 +334,7 @@
 
                         <div class="row">
                             <div ng-class="{ 'col-md-12': true, 'col-lg-8': !vm.wideKilt && vm.isNonEmpty(vm.model.activitiesDeep), 'col-lg-12': vm.wideKilt || !vm.isNonEmpty(vm.model.activitiesDeep)}">
-                                <task-list context-key="{{ vm.model.activityId }}" tasks="vm.model.activityChildrenAndDeep" parent-task-id="{{ vm.model.activityId }}" filtered-callback="vm.onFilteredActivitiesChange"
+                                <task-list context-key="{{ vm.model.activityId }}" entity-id="vm.model.entityId" tasks="vm.model.activityChildrenAndDeep" parent-task-id="{{ vm.model.activityId }}" filtered-callback="vm.onFilteredActivitiesChange"
                                            tasks-loaded="vm.model.activityChildren && vm.model.activitiesDeep"></task-list>
                             </div>
                             <div ng-class="{ 'col-md-12': true, 'col-lg-4': !vm.wideKilt, 'col-lg-12': vm.wideKilt }" ng-if="vm.isNonEmpty(vm.model.activitiesDeep)">
