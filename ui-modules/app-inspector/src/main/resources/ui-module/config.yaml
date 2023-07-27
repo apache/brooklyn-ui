@@ -21,3 +21,7 @@ slug: ${project.artifactId}
 icon: fa-search
 types:
 - home-ui-module
+description: |
+  The <b>Inspector</b> module lets you drill down into the details of 
+  applications and blueprints currently deployed.
+  View structure and sensors, invoke effectors, and track all ongoing activities.

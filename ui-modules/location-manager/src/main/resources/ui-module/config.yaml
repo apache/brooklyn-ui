@@ -20,3 +20,7 @@ slug: ${project.artifactId}
 icon: fa-map-pin
 types:
 - home-ui-module
+description: |
+  The <b>Location Manager</b> manages the location definitions for
+  environments where blueprints can be deployed.
+

@@ -20,3 +20,7 @@ slug: ${project.artifactId}
 icon: fa-code-fork fa-flip-vertical
 types:
 - home-ui-module
+description: |
+  The <b>Blueprint Composer</b> module gives a graphical editor to create and edit blueprints,
+  using drag-and-drop and visual control, or toggling bi-drectionally to code editors.
+
