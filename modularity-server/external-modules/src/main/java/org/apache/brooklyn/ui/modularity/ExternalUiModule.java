@@ -137,6 +137,11 @@ public class ExternalUiModule implements UiModule {
     }
 
     @Override
+    public String getDescription() {
+        return null; // not supported here; could be but isn't needed
+    }
+
+    @Override
     public String getIcon() {
         return this.icon;
     }
