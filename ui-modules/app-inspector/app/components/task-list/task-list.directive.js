@@ -46,6 +46,7 @@ export function taskListDirective() {
             search: '<',
             entityId: '<?',
             contextKey: '@?', // a key to uniquely identify the calling context to save filter settings
+            activityColumnTitle: '@?',
         },
         controller: ['$scope', '$element', controller]
     };
