@@ -16,7 +16,7 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<div class="container">
+<div class="container" xmlns="http://www.w3.org/1999/html">
     <br-card class="quick-launch-group">
         <br-card-content>
             <br-card-content-headline>
@@ -61,7 +61,7 @@
 
 
     <div class="row brooklyn-modules">
-        <div class="col-md-4" ng-repeat="uiModule in vm.uiModules">
+        <div class="col-md-4" ng-repeat="uiModule in vm.uiModules" ng-mouseenter="vm.onModuleHoverEnter(uiModule)" ng-mouseleave="vm.onModuleHoverLeave(uiModule)">
             <a ng-href="{{uiModule.path}}/">
                 <br-card center="true">
                     <br-card-content>
@@ -76,6 +76,21 @@
             </a>
         </div>
     </div>
+
+    <div class="row brooklyn-module-detail">
+        <div class="main" ng-if="hoveredModule && hoveredModule.description">
+            <div class="left">
+                <i class="module-icon fa" ng-class="hoveredModule.icon"></i>
+            </div>
+            <div class="right">
+                <div class="title">{{hoveredModule.name}}</div>
+                <div class="body">
+                    <span ng-bind-html="hoveredModule.description"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <ui-view />

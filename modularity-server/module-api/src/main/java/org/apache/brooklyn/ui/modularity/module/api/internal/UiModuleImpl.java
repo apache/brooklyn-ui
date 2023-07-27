@@ -34,6 +34,7 @@ public class UiModuleImpl implements UiModule {
     private String id;
     private String name;
     private String slug;
+    private String description;
     private String icon;
     private Set<String> types = new LinkedHashSet<>();
     private Set<String> supersedesBundles = new LinkedHashSet<>();
@@ -47,6 +48,7 @@ public class UiModuleImpl implements UiModule {
         result.setName(src.getName());
         result.setOrder(src.getOrder());
         result.setSlug(src.getSlug());
+        result.setDescription(src.getDescription());
         result.setIcon(src.getIcon());
         if (src.getTypes()!=null) result.types.addAll(src.getTypes());
         if (src.getSupersedesBundles()!=null) result.supersedesBundles.addAll(src.getSupersedesBundles());
@@ -62,6 +64,7 @@ public class UiModuleImpl implements UiModule {
         result.setName(Optional.fromNullable((String) incomingMap.get("name")).or(result.getId()));
         result.setOrder(Optional.fromNullable((Integer) incomingMap.get("order")).or(UiModule.DEFAULT_ORDER));
         result.setSlug((String) incomingMap.get("slug"));
+        result.setDescription((String) incomingMap.get("description"));
         result.setIcon(Optional.fromNullable((String) incomingMap.get("icon")).or(DEFAULT_ICON));
         final Object types = incomingMap.get("types");
         if (types != null && types instanceof List) {
@@ -108,6 +111,11 @@ public class UiModuleImpl implements UiModule {
     public String getSlug() {
         return slug;
     }
+    
+    @Override
+    public String getDescription() {
+        return description;
+    }
 
     @Override
     public Set<String> getTypes() {
@@ -153,8 +161,13 @@ public class UiModuleImpl implements UiModule {
     public void setOrder(final int order){
         this.order = order;
     }
+
     public void setSlug(final String slug) {
         this.slug = slug;
+    }
+
+    public void setDescription(final String description) {
+        this.description = description;
     }
 
     public void setTypes(final Set<String> types) {
@@ -194,6 +207,11 @@ public class UiModuleImpl implements UiModule {
 
     public UiModuleImpl slug(final String slug) {
         this.slug = slug;
+        return this;
+    }
+
+    public UiModuleImpl description(final String description) {
+        this.description = description;
         return this;
     }
 

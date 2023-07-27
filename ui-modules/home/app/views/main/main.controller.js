@@ -22,10 +22,11 @@ import brooklynApi from 'brooklyn-ui-utils/brooklyn.api/brooklyn.api';
 import uiRouter from 'angular-ui-router';
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from './main.template.html';
+import angularSanitize from 'angular-sanitize';
 
 const MODULE_NAME = 'states.main';
 
-angular.module(MODULE_NAME, [brooklynUiModulesApi, uiRouter, brooklynApi])
+angular.module(MODULE_NAME, [brooklynUiModulesApi, uiRouter, brooklynApi, angularSanitize])
     .config(['$stateProvider', mainStateConfig]);
 
 export default MODULE_NAME;
@@ -84,4 +85,13 @@ export function mainStateController($scope, $state, uiModules, catalogApps, brUt
         page: 1,
         itemsPerPage: 6
     };
+
+    this.onModuleHoverEnter = (x) => {
+        console.log(x);
+        $scope.hoveredModule = x;
+    };
+    this.onModuleHoverLeave = (x) => {
+        $scope.hoveredModule = null;
+    };
+
 }

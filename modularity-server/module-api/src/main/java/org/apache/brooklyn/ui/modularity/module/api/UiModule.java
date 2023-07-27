@@ -43,6 +43,11 @@ public interface UiModule {
     String getSlug();
 
     /**
+     * @return A description of the module, in HTML format
+     */
+    String getDescription();
+
+    /**
      * @return The icon to be used for the module
      */
     String getIcon();
