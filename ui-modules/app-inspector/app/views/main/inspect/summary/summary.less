@@ -124,29 +124,28 @@ a.blueprint-button {
   font-style: italic;
 }
 
-.tooltip {
-  position: relative;
-  display: inline-block;
-  opacity: 1;
-  top: 25px;
-  filter: drop-shadow(5px 5px 4px #b3c5ab);
+.inline-tooltip {
+  &.tooltip {
+    position: relative;
+    display: inline-block;
+    opacity: 0;
+    top: 25px;
+    filter: drop-shadow(5px 5px 4px #b3c5ab);
+    .tooltiptext {
+      background-color: #e3f5db;
+      border-radius: 6px;
+      z-index: 1;
+      position: absolute;
+    }
+  }
 }
-
-.tooltip .tooltiptext {
-  background-color: #e3f5db;
-  border-radius: 6px;
-  z-index: 1;
+.entity-header:hover {
+  .inline-tooltip {
+    &.tooltip {
+      transition: opacity 0.5s;
+      opacity: 1;
+    }
+  }
 }
-
-.tooltiptext {
-  position: absolute;
-  opacity: 0;
-  transition: opacity 0.5s;
-}
-
-.tooltip:hover .tooltiptext {
-  opacity: 1;
-}
-
 
 .modal-dialog .modal-header .text-danger:extend(.text-danger) {}

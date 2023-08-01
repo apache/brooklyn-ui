@@ -20,9 +20,9 @@
     <div class="tab-header">
         <div class="entity-header">
             <h2 ng-if="!vm.entity" class="entity-name loading"><loading-state error="vm.error.entity"></loading-state></h2>
-              <span ng-if="vm.entity" class="tooltip">
-                  <span class="tooltiptext">{{ vm.entity.name }}</span>  
-              </span>
+            <span ng-if="vm.entity" class="tooltip inline-tooltip">
+              <span class="tooltiptext">{{ vm.entity.name }}</span>
+            </span>
             <h2 ng-if="vm.entity" class="entity-name">
               <span class="node-icon"><img ng-src="{{ vm.iconUrl }}"/></span>
               <span class="node-name" editable-text="vm.name" blur="submit" buttons="no" blur="submit" onaftersave="vm.updateEntityName()">{{ vm.entity.name }}</span>
@@ -207,11 +207,9 @@
             ></config-sensor-table>
         </div>
         <div class="grid-option-footer">
-            <button ng-click="vm.toggleConfigResolved()" ng-class="{ 'btn-outline': !vm.showResolvedConfig, 'btn-accent': vm.showResolvedConfig }">
-                <span ng-if="vm.showResolvedConfig" uib-tooltip="Show unresolved DSL values">
-                    <i class="fa fa-code"></i>
-                </span>
-                <span ng-if="!vm.showResolvedConfig" uib-tooltip="Show resolved values">
+            <button ng-click="vm.toggleConfigResolved()" ng-class="{ 'btn-outline': !vm.showResolvedConfig, 'btn-accent': vm.showResolvedConfig }"
+                    uib-tooltip="{{ vm.showResolvedConfig ? 'Show unresolved DSL values' : 'Show resolved values' }}">
+                <span>
                     <i class="fa fa-code"></i>
                 </span>
             </button>
