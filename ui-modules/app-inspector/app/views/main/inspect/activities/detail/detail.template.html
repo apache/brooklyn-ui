@@ -218,8 +218,34 @@
                                 </div>
                                 <div class="workflow-preface-para">
                                     This task is
-                                    <span ng-if="!vm.isNullish(vm.model.workflow.tag.stepIndex)">for step <b>{{ vm.model.workflow.tag.stepIndex+1 }}</b>
-                                        in
+                                    <span ng-if="!vm.isNullish(vm.model.workflow.tag.stepIndex)">
+                                        <span ng-if="vm.model.workflow.tag.stepIndex >= 0">
+                                            <span ng-if="vm.model.workflow.tag.errorHandlerForTask">
+                                                <span ng-if="vm.model.workflow.tag.subStepIndex"> step {{ vm.model.workflow.tag.subStepIndex + 1}} of </span>
+                                                <span ng-if="vm.isNullish(vm.model.workflow.tag.subStepIndex)"> for </span>
+                                                the error handler for
+                                                <button type="button" class="btn inline-button-small"
+                                                        ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.tag.errorHandlerForTask, workflowId})">
+                                                    step <b>{{ vm.model.workflow.tag.stepIndex+1 }}</b>
+                                                </button>
+                                            </span>
+                                            <span ng-if="!vm.model.workflow.tag.errorHandlerForTask">
+                                                <span ng-if="vm.model.workflow.tag.subStepIndex">
+                                                    sub-step <b>{{ vm.model.workflow.tag.subStepIndex + 1}}</b> of
+                                                    <button type="button" class="btn inline-button-small"
+                                                        ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.activity.submittedByTask.metadata.id, workflowId})">
+                                                        step <b>{{ vm.model.workflow.tag.stepIndex+1 }}</b>
+                                                    </button>
+                                                </span>
+                                                <span ng-if="vm.isNullish(vm.model.workflow.tag.subStepIndex)">
+                                                    for step {{ vm.model.workflow.tag.stepIndex+1 }}
+                                                </span>
+                                            </span>
+                                            in
+                                        </span>
+                                        <span ng-if="vm.model.workflow.tag.stepIndex == -3">
+                                            part of an error handler in
+                                        </span>
                                         <span ng-if="vm.model.workflow.runMultipleTimes">
                                             <span ng-if="vm.model.workflow.runIsOld">a previous run of </span>
                                             <span ng-if="vm.model.workflow.runIsLatest">the most recent run of </span>
@@ -248,13 +274,6 @@
                                             workflow <span class="monospace">{{vm.model.workflow.data.workflowId}}</span>:
                                             <b>{{vm.model.workflow.data.name}}</b>.
                                         </span>
-                                        <div ng-if="vm.model.workflow.isError && vm.model.workflow.data.currentStepInstance && vm.model.workflow.data.currentStepInstance.taskId"
-                                                style="margin-top: 6px;">
-                                            Details of the failure can be found by opening
-                                            <button type="button" class="btn inline-button-small"
-                                                    ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.currentStepInstance.taskId, workflowId})">
-                                                the failed task</button>.
-                                        </div>
                                     </span>
                                 </div>
 
@@ -270,13 +289,27 @@
                                     The workflow did not run any steps; if this is unexpected, check the conditions on the steps.
                                 </div>
 
+                                <div ng-if="vm.isNullish(vm.model.workflow.tag.stepIndex) && vm.model.activity.id && vm.model.workflow.isError && vm.model.workflow.data.currentStepInstance && vm.model.workflow.data.currentStepInstance.taskId"
+                                     style="margin-top: 6px;">
+                                    The workflow had an error in
+                                    <button type="button" class="btn inline-button-small"
+                                            ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.currentStepInstance.taskId, workflowId})">
+                                        step {{vm.model.workflow.data.currentStepInstance.stepIndex + 1}}
+                                    </button>.
+                                </div>
+
                                 <div ng-if="vm.model.workflow.data.errorHandlerTaskId" class="workflow-preface-para">
                                     <span ng-if="vm.model.activityId==vm.model.workflow.data.errorHandlerTaskId">
                                         This is the page for the error handler for this workflow.
                                         More details of how the error was handled can be found in other sections on this page.
                                     </span>
                                     <span ng-if="vm.model.activityId!=vm.model.workflow.data.errorHandlerTaskId">
-                                        This workflow had an error which ran error handler
+                                        <span ng-if="vm.model.workflow.tag.stepIndex == -3">
+                                            The workflow error handler is
+                                        </span>
+                                        <span ng-if="!vm.model.workflow.tag || !vm.model.workflow.tag.stepIndex || vm.model.workflow.tag.stepIndex != -3">
+                                            This workflow <span ng-if="vm.model.workflow.tag.errorHandlerForTask">also </span> ran an error handler in
+                                        </span>
                                         <button type="button" class="btn inline-button-small"
                                                 ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: vm.model.workflow.data.errorHandlerTaskId, workflowId})">
                                             <span class="monospace">task {{vm.model.workflow.data.errorHandlerTaskId}}</span

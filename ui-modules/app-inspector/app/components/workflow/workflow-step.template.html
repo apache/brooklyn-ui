@@ -134,7 +134,7 @@
                 <div ng-if="stepContext.errorHandlerTaskId && !isErrorHandler" class="space-above">
                     The error here triggered a handler in
                     <button type="button" class="btn inline-button-small"
-                            ui-sref="main.inspect.activities.detail({entityId: vm.model.entityId, activityId: stepContext.errorHandlerTaskId, workflowId})"
+                            ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.errorHandlerTaskId, workflowId})"
                         ><span class="monospace">task {{stepContext.errorHandlerTaskId}}</span></button
                     ><span ng-if="stepCurrentWarning"> which successfully completed.</span
                     ><span ng-if="stepCurrentError"> which threw an error.</span
