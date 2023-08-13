@@ -148,4 +148,19 @@ a.blueprint-button {
   }
 }
 
+.status .multiline-code {
+  .monospace();
+  white-space: pre;
+}
+
+.status .scroll-cell {
+  // undo padding from td
+  margin: -10px;
+  padding: 10px;
+  max-height: 120pt;
+  overflow: auto;
+}
+
+
+
 .modal-dialog .modal-header .text-danger:extend(.text-danger) {}

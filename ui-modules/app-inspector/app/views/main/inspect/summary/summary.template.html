@@ -52,7 +52,10 @@
                             <tbody>
                             <tr ng-repeat="(itemKey, itemValue) in vm.sensors[key] track by itemKey">
                                 <td>{{itemKey}}</td>
-                                <td sensitive-field field-name="itemValue">{{itemValue}}</td>
+                                <td sensitive-field field-name="itemValue">
+                                    <div ng-if="!vm.isObject(itemValue)">{{itemValue}}</div>
+                                    <div class="multiline-code scroll-cell" ng-if="vm.isObject(itemValue)">{{vm.yaml(itemValue)}}</div>
+                                </td>
                             </tr>
                             </tbody>
                         </table>
