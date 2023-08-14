@@ -97,6 +97,7 @@ function applicationConfig($urlRouterProvider, $stateProvider, $logProvider, $co
         .state(detailState)
         .state(streamState);
     $httpProvider.interceptors.push('apiObserverInterceptor');
+    // $httpProvider.useApplyAsync(true);  // could be useful if making many small calls
     apiObserverInterceptorProvider.interval(5000);
 }
 

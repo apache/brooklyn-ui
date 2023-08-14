@@ -46,37 +46,60 @@ export function configSensorTableDirective(brSnackbar) {
 
     function link(scope) {
         scope.items = [];
-        scope.mapInfo = {};
+        scope.itemsCache = {};
         scope.WARNING_TEXT = 'This value is identified as potentially sensitive based and so is masked here. ' +
             'The value should be supplied as a DSL expression not as plain text. ' +
             'Note that the unmasked value still might not reveal the actual value, ' +
             'if sensitive values are blocked by the API or if DSL resolution is skipped.';
 
-        scope.$watchGroup(['data'], (changes)=> {
-            if (angular.isObject(scope.data)) {
-                const dataPlusReconfigurable = Object.assign({}, scope.data);
-                if (scope.info) {
-                    scope.info.forEach(info => {
-                        if (info.reconfigurable && !dataPlusReconfigurable.hasOwnProperty(info.name)) {
-                            dataPlusReconfigurable[info.name] = undefined;
-                        }
-                    });
-                }
-                scope.items = Object.entries(dataPlusReconfigurable)
-                    .map(([key, value]) => ({
-                        key,
-                        value,
-                        isPlaintextSensitiveValue: scope.checkPlaintextSensitiveKeyValue && scope.checkPlaintextSensitiveKeyValue(key, value),
-                    }));
+        function dumpAndTruncate(x) {
+            let result = jsyaml.dump(x);
+            if (result && result.length > 100000) {
+                result = result.slice(0, 100000) + '\n...';
             }
-        });
+            return result;
+        }
 
+        function update() {
+            if (angular.isObject(scope.data) && scope.mapInfo) {
+                const dataPlusReconfigurable = Object.assign({}, scope.data);
+                scope.info.forEach(info => {
+                    if (info.reconfigurable && !dataPlusReconfigurable.hasOwnProperty(info.name)) {
+                        dataPlusReconfigurable[info.name] = undefined;
+                    }
+                });
+                scope.items = Object.entries(dataPlusReconfigurable)
+                    .map(([key, value]) => {
+                        const old = scope.itemsCache[key];
+                        if (old && _.isEqual(value, old.value)) {
+                            return old;
+                        }
+                        const isObject = angular.isObject(value);
+                        scope.mapInfo[key] = Object.assign({isObject}, scope.mapInfo[key]);
+                        // minimize calls to yamlification; can take 100ms+ for large objects
+                        // (and no nice way i can see to reduce that or to background it)
+                        let valueDumped = isObject ? _.escape(dumpAndTruncate(value)) : value;
+                        const result = {
+                            key,
+                            value,
+                            valueDumped,
+                            isPlaintextSensitiveValue: scope.checkPlaintextSensitiveKeyValue && scope.checkPlaintextSensitiveKeyValue(key, value),
+                        };
+                        scope.itemsCache[key] = result;
+                        return result;
+                    });
+            }
+        }
+
+        scope.$watchGroup(['data'], (changes)=> { update(); });
         scope.$watch('info', () => {
             if (angular.isArray(scope.info)) {
+                if (!scope.mapInfo) scope.mapInfo = {};
                 scope.mapInfo = scope.info.reduce((pool, infoItem) => {
-                    pool[infoItem.name] = infoItem;
+                    pool[infoItem.name] = Object.assign({}, scope.mapInfo[infoItem.name], infoItem);
                     return pool;
                 }, {});
+                update();
             }
         });
 
@@ -102,8 +125,8 @@ export function configSensorTableDirective(brSnackbar) {
     }
 }
 
-function asJsonIfJson(input, knownJson, $sanitize) {
-    if (!knownJson) {
+function asJsonIfJson(input, isKnownString, isYamledObject, $sanitize) {
+    if (isKnownString) {
         if (!input) return null;
         let inputTrimmed = input.trim();
         if ((inputTrimmed.startsWith("{") && inputTrimmed.endsWith("}")) || (inputTrimmed.startsWith("[") && inputTrimmed.endsWith("]"))) {
@@ -113,7 +136,8 @@ function asJsonIfJson(input, knownJson, $sanitize) {
             return null;
         }
     }
-    return $sanitize('<div class="multiline-code">' + _.escape(jsyaml.dump(input)) + '</div>');
+    const yamld = isYamledObject ? input : _.escape(jsyaml.dump(input));
+    return $sanitize('<div class="multiline-code">' + yamld + '</div>');
 }
 
 export function brLinkyFilter($filter, $state, $sanitize) {
@@ -121,8 +145,10 @@ export function brLinkyFilter($filter, $state, $sanitize) {
     return function(input, key, target, attributes) {
         if (input == null) {
             return '';
+        } else if (angular.isObject(key) && key.isObject) {
+            return asJsonIfJson(input, false, true, $sanitize) || $filter('linky')(angular.toJson(input), target, attributes);
         } else if (!angular.isString(input)) {
-            return asJsonIfJson(input, true, $sanitize) || $filter('linky')(angular.toJson(input), target, attributes);
+            return asJsonIfJson(input, false, false, $sanitize) || $filter('linky')(angular.toJson(input), target, attributes);
         } else if (angular.isObject(key) && angular.isString(key.name) && (key.name.indexOf('ssh') > -1 || isSensitiveFieldName(key.name))) {
             return input;
         } else if (angular.isObject(key) && key.links && key.links.hasOwnProperty('action:open')) {
@@ -131,7 +157,7 @@ export function brLinkyFilter($filter, $state, $sanitize) {
                 $sanitize('<a href="' + $state.href('main.inspect.summary', {applicationId: matches[1], entityId: matches[2]}) + '">' + input + '</a>') :
                 $filter('linky')(input, target, attributes);
         } else {
-            return asJsonIfJson(input, false, $sanitize) || $filter('linky')(input, target, attributes);
+            return asJsonIfJson(input, true, false, $sanitize) || $filter('linky')(input, target, attributes);
         }
     }
 }
