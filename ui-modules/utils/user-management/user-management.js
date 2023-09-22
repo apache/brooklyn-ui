@@ -23,13 +23,14 @@ import template from './user-menu.template.html';
 const MODULE_NAME = 'brooklyn.component.user-management';
 
 angular.module(MODULE_NAME, [serverApi])
-    .directive('brUserMenu', ['$compile', 'serverApi', userMenuDirective]);
+    .directive('brUserMenu', ['$compile', userMenuDirective])
+    .directive('brUserName', ['serverApi', userNameDirective]);
 
 export default MODULE_NAME;
 
-export function userMenuDirective($compile, serverApi) {
+export function userMenuDirective($compile) {
     return {
-        restrict: 'EA',
+        restrict: 'A',
         template: template,
         terminal: true,
         priority: 1000,
@@ -42,11 +43,24 @@ export function userMenuDirective($compile, serverApi) {
             .addClass('dropdown')
             .removeAttr('br-user-menu') //remove the attribute to avoid indefinite loop
             .removeAttr('data-br-user-menu'); //also remove the same attribute with data- prefix in case users specify data-common-things in the html
+        $compile(element)(scope);
+    }
+}
+
+export function userNameDirective(serverApi) {
+    return {
+        restrict: 'E',
+        // template: '<i class="fa fa-spin fa-loader" ng-if="!user"></i><span ng-if="user">{{user}}</span>',  // could show loader
+        template: '<span ng-if="user">{{user}}</span>',
+        link: link,
+    };
+
+    function link(scope, element, attrs, controller) {
         serverApi.getUser().then((response) => {
             scope.user = response.data;
         }).catch((response) => {
             scope.user = 'user';
         });
-        $compile(element)(scope);
     }
 }
+

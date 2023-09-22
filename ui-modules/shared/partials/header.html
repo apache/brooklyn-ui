@@ -16,25 +16,4 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<nav class="navbar navbar-default">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#br-navbar-collapse-main" aria-expanded="false" ng-click="isCollapsed = !isCollapsed">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="/">
-                ${require('ejs-html!<%= brand.product.logo.html %>')}
-            </a>
-            <h4 class="navbar-text"><a href="#!/"><%= app.appname %></a></h4>
-        </div>
-        <div class="navbar-collapse collapse" id="br-navbar-collapse-main" uib-collapse="!isCollapsed">
-            <ul class="nav navbar-nav navbar-right">
-                <li class="dropdown" br-user-menu></li>
-                <li class="dropdown" brooklyn-module-links-menu></li>
-            </ul>
-        </div>
-    </div>
-</nav>
+${require('ejs-html!<%= brand.partials.header %>')}
