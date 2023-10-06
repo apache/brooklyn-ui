@@ -79,7 +79,7 @@ public class UiModuleListener implements ServletContextListener {
                     bundle.getSymbolicName(), uiModule.getName(), bundle.getState(), TIMEOUT);
                 blockUntilBundleStarted(bundle, TIMEOUT);
             }
-            LOG.info("Registering new Brooklyn UI module {}:{} [{}] called '{}' on context-path '{}'", 
+            LOG.debug("Registering new Brooklyn UI module {}:{} [{}] called '{}' on context-path '{}'", 
                 bundle.getSymbolicName(), bundle.getVersion(), bundle.getVersion(), uiModule.getName(), uiModule.getPath() );
             registration = bundle.getBundleContext().registerService(UiModule.class, uiModule, EMPTY_DICTIONARY);
             LOG.trace("ServletContextListener on initializing UI module "+bundle.getSymbolicName()+" ["+bundle.getBundleId()+"] "
@@ -198,7 +198,7 @@ public class UiModuleListener implements ServletContextListener {
             // if it tries to start it should abort itself
             return;
         }
-        LOG.info("UiModules: " + message);
+        LOG.debug("UiModules: " + message);
         new Thread(() -> { 
             try {
                 bundleToStop.stop(); 
@@ -232,7 +232,7 @@ public class UiModuleListener implements ServletContextListener {
         
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
-        LOG.info("Unregistering Brooklyn UI module at [{}]", servletContextEvent.getServletContext().getContextPath());
+        LOG.debug("Unregistering Brooklyn UI module at [{}]", servletContextEvent.getServletContext().getContextPath());
         if (registration != null) {
             try {
                 registration.unregister();
