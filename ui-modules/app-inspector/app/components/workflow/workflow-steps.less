@@ -93,14 +93,18 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       padding-right: 1.5ex;
+      top: 1px;
+      position: relative;
 
       .step-index {
         font-size: 70%;
-        border: solid 1px black;
+        border: solid 1px @text-color;
         padding: 0px 3px;
-        border-radius: 14px;
+        border-radius: 15px;
         margin-right: 1ex;
-        //font-style: italic;
+        top: -2px;
+        position: relative;
+        padding-bottom: 1px;
       }
 
       .step-title-code {
@@ -108,11 +112,15 @@
         font-size: 85%;
         font-weight: 300;
         color: @gray-light;
+        top: -1px;
+        position: relative;
       }
       .step-left-extra {
         font-size: 90%;
         //font-weight: 300;
         color: @gray-light;
+        top: -1px;
+        position: relative;
       }
     }
 
@@ -205,6 +213,10 @@
     .color-failed { color: @color-failed; }
     .color-cancelled { color: @color-cancelled; }
     .color-active { color: @color-active; }
+
+    &.handy {
+      cursor: pointer;
+    }
 
     .running-status {
       svg {

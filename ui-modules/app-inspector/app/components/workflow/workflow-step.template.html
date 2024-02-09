@@ -18,7 +18,9 @@
 -->
 <div class="workflow-step-outer">
 
-    <div class="workflow-step-status-indicators">
+    <div class="workflow-step-status-indicators handy"
+        ui-sref="main.inspect.activities.detail({applicationId: workflow.applicationId, entityId: workflow.entityId, activityId: stepContext.taskId, workflowId })"
+    >
         <span ng-if="isCurrentAndActive" class="running-status">
             <brooklyn-status-icon value="STARTING"></brooklyn-status-icon>
         </span>
@@ -35,9 +37,6 @@
 
     <div class="workflow-step" id="workflow-step-{{stepIindex}}" ng-class="vm.getWorkflowStepClasses(stepIndex)">
         <div class="rhs-icons">
-            <div ng-if="stepTitle.name" class="step-name">
-                {{ stepTitle.name}}
-            </div>
             <div ng-if="isFocusTask" class="workflow-step-pill focus-step label-info" title="This step instance is for the task currently selected in the activity view.">
                 selected
             </div>
@@ -65,8 +64,11 @@
 
         <div class="step-block-title">
             <span class="step-index">{{ stepTitle.index }}</span>
-            <span ng-if="stepTitle.code" class="step-title-code">{{ stepTitle.code }}</span>
-            <span ng-if="stepTitle.leftExtra" class="step-left-extra">{{ stepTitle.leftExtra}}</span>
+            <span ng-if="stepTitle.name" class="step-name">
+                {{ stepTitle.name}}
+            </span>
+            <span ng-if="stepTitle.code && !stepTitle.name" class="step-title-code">{{ stepTitle.code }}</span>
+            <span ng-if="stepTitle.leftCodeAlternative && !stepTitle.name" class="step-left-extra">{{ stepTitle.leftExtra}}</span>
         </div>
 
         <div ng-if="expanded" class="step-details">

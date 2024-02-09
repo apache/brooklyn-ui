@@ -112,7 +112,7 @@ export function workflowStepDirective() {
                 }
                 if ("workflow" === $scope.stepTitle.code) {
                     $scope.stepTitle.code = null;
-                    $scope.stepTitle.leftExtra = "nested workflow";
+                    $scope.stepTitle.leftCodeAlternative = "nested workflow";
                 }
 
                 if (step.name) {
