@@ -108,9 +108,14 @@ export function workflowStepDirective() {
                 $scope.stepTitle.code = shorthand;
                 if (!shorthand) {
                     $scope.stepTitle.code = step.shorthandTypeName || step.type || '';
-                    if (step.input) $scope.stepTitle.code += ' ...';
+                    if (!$scope.stepTitle.code) {
+                        if (step.steps) $scope.stepTitle.leftCodeAlternative = "nested workflow";
+                        else $scope.stepTitle.leftCodeAlternative = "workflow step"; // odd...
+                    } else {
+                        if (step.input) $scope.stepTitle.code += ' ...';
+                    }
                 }
-                if ("workflow" === $scope.stepTitle.code) {
+                if (["workflow","subworkflow"].includes($scope.stepTitle.code)) {
                     $scope.stepTitle.code = null;
                     $scope.stepTitle.leftCodeAlternative = "nested workflow";
                 }
