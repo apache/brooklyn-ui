@@ -33,6 +33,7 @@ export function workflowStepsDirective() {
         scope: {
             workflow: '=',
             task: '=?',
+            nested: '=?',
         },
         controller: ['$sce', '$timeout', '$scope', '$element', controller],
         controllerAs: 'vm',
@@ -42,6 +43,7 @@ export function workflowStepsDirective() {
         let vm = this;
 
         vm.stringify = stringify;
+        $scope.workflowId = $scope.workflow.data.workflowId;
 
         vm.getWorkflowStepsClasses = () => {
             const c = [];
@@ -60,22 +62,23 @@ export function workflowStepsDirective() {
         vm.onSizeChange = () => $timeout(()=>recompute($scope, $element));
 
         $scope.$watch('workflow', vm.onSizeChange);
+        $scope.$watch(() => $element[0].offsetHeight, (newVal, oldVal) => {
+            if (oldVal!=newVal) vm.onSizeChange();
+        });
         vm.onSizeChange();
     }
 
     function recompute($scope, $element) {
-        let svg = $element[0].querySelector('#workflow-step-arrows');
-
-        let steps = $element[0].querySelectorAll('div');
-        // let steps = $element[0].querySelectorAll('.workflow-steps-main');
-        steps = $element[0].querySelectorAll('.workflow-step');
-        let arrows = makeArrows($scope.workflow, steps);
+        let svg = $element[0].querySelector('#workflow-step-arrows.workflow-'+$scope.workflowId);
+        let steps = $element[0].querySelectorAll('.workflow-'+$scope.workflowId+'.workflow-step');
+        let arrows = makeArrows($scope.workflow, steps, { width: $scope.nested ? 32 : 56 });
 
         svg.innerHTML = arrows.join('\n');
     }
 }
 
-function makeArrows(workflow, steps) {
+function makeArrows(workflow, steps, options) {
+    const sectionWidth = ((options || {}).width) || 56;
     workflow = workflow || {};
     workflow.data = workflow.data || {};
 
@@ -105,7 +108,7 @@ function makeArrows(workflow, steps) {
             if (!opts) opts = {};
             const color = opts.class ? '' : opts.color || (opts.colorEnd && opts.colorEnd==opts.colorStart ? opts.colorEnd : '#000');
 
-            const rightFarEdge = 56;
+            const rightFarEdge = sectionWidth;
             const rightArrowheadStart = rightFarEdge - arrowheadLength;
             const leftFarEdge = 10;
             const leftActive = rightArrowheadStart + (leftFarEdge - rightArrowheadStart) * (opts.width || 1);
@@ -250,6 +253,7 @@ function makeArrows(workflow, steps) {
         var indexOfId = {};
         for (var i = 0; i < steps.length; i++) {
             const s = workflow.data.stepsDefinition[i];
+            if (!s) console.log("XXX missing step", i, workflow.data, steps);
             if (s.id) indexOfId[s.id] = i;
         }
 

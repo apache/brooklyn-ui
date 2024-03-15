@@ -41,12 +41,19 @@ export function workflowStepDirective() {
             expanded: '=',
             onSizeChange: '=',
         },
-        controller: ['$sce', '$scope', controller],
+        controller: ['$sce', '$scope', 'entityApi', controller],
         controllerAs: 'vm',
     };
 
-    function controller($sce, $scope) {
+    function controller($sce, $scope, entityApi) {
         try {
+            let observers = [];
+            $scope.$on('$destroy', ()=> {
+                observers.forEach((observer)=> {
+                    observer.unsubscribe();
+                });
+            });
+
             let vm = this;
 
             let step = $scope.step;
@@ -89,12 +96,12 @@ export function workflowStepDirective() {
                 return "multiline-code multiline-code-resizable lines-"+lines.length;
             };
 
-            $scope.json = null;
-            $scope.jsonMode = null;
+            $scope.addlData = null;
+            $scope.addlMode = null;
             vm.showAdditional = (title, mode, obj) => {
-                $scope.jsonTitle = title;
-                $scope.jsonMode = mode;
-                $scope.json = obj==undefined ? null : vm.yamlOrPrimitive(obj);
+                $scope.addlTitle = title;
+                $scope.addlMode = mode;
+                $scope.addlData = obj==undefined ? null : vm.yamlOrPrimitive(obj);
             }
 
             $scope.stepTitle = {
@@ -211,6 +218,34 @@ export function workflowStepDirective() {
             }
             $scope.$watch('workflow', updateData);
             updateData();
+
+            $scope.showStepDefinitionInBody = true;
+            function loadUniqueSubworkflow(workflowTag) {
+                if (!workflowTag) return;
+
+                return entityApi.getWorkflow(workflowTag.applicationId, workflowTag.entityId, workflowTag.workflowId).then(wResponse => {
+                    if (wResponse.data.status === 'RUNNING') {
+                        wResponse.interval(1000);
+                        observers.push(wResponse.subscribe(() => loadUniqueSubworkflow(workflowTag)));
+                    }
+
+                    $scope.uniqueSubworkflow = {
+                        applicationId: workflowTag.applicationId,
+                        entityId: workflowTag.entityId,
+                        workflowTag: workflowTag,
+                        data: wResponse.data,
+                    };
+
+                }).catch(error => {
+                    console.log("Unable to load single unique workflow", workflowTag, error);
+                    $scope.showStepDefinitionInBody = false;
+                    $scope.uniqueSubworkflow = undefined;
+                });
+            }
+            if (!$scope.workflow.runIsOld && $scope.stepContext.subWorkflows && $scope.stepContext.subWorkflows.length==1) {
+                $scope.showStepDefinitionInBody = false;
+                loadUniqueSubworkflow($scope.stepContext.subWorkflows[0]);
+            }
 
         } catch (error) {
             console.log("error showing workflow step", error);

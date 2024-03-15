@@ -35,6 +35,11 @@
     padding-top: 5px;
     padding-bottom: 5px;
 
+    .workflow-steps .workflow-step {
+      // when nested, smaller right margin
+      margin-right: 36px;
+    }
+
     border: solid @gray-light-lighter 1px;
 
     .rhs-icons {
@@ -78,7 +83,7 @@
       visibility: hidden;
       //display: none;
     }
-    &:hover .step-id.hover-only {
+    &:hover > .rhs-icons > .step-id.hover-only {
       visibility: visible;
       display: inherit;
     }

@@ -159,7 +159,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                     let osi = vm.model.workflow.data.oldStepInfo;
                     vm.model.workflow.finishedWithNoSteps = ((osi["-2"] || {}).previous || [])[0] == -1;
 
-                        $scope.actions.workflowReplays = [];
+                    $scope.actions.workflowReplays = [];
                     if (vm.model.workflow.data.status !== 'RUNNING') {
 
                         $scope.actions.workflowReplays = [];
