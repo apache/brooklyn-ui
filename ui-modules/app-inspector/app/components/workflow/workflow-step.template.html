@@ -155,11 +155,12 @@
 
                             <button type="button" class="btn inline-button-small"
                                     ui-sref="main.inspect.activities.detail({applicationId: stepContext.subWorkflows[0].applicationId, entityId: stepContext.subWorkflows[0].entityId, activityId: stepContext.subWorkflows[0].workflowId, workflowLatestRun: true})">
-                                {{ vm.hasInterestingWorkflowNameFromReference(stepContext.subWorkflows[0]) ?
-                                    '1 nested workflow: '+
-                                    vm.getWorkflowNameFromReference(stepContext.subWorkflows[0])
-                                    : '1 nested workflow ' }}
-                                (<span class="monospace">{{ stepContext.subWorkflows[0].workflowId }}</span>)
+                                <span ng-if="vm.hasInterestingWorkflowNameFromReference(stepContext.subWorkflows[0])">
+                                    1 nested workflow: {{ vm.getWorkflowNameFromReference(stepContext.subWorkflows[0]) }}
+                                </span>
+                                <span ng-if="!vm.hasInterestingWorkflowNameFromReference(stepContext.subWorkflows[0])">
+                                    1 nested workflow <span class="monospace">{{ stepContext.subWorkflows[0].workflowId }}</span>
+                                </span>
                             </button>.
                         </span>
                         <span ng-if="stepContext.subWorkflows.length>1" class="space-above">
@@ -172,8 +173,10 @@
                                 <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="nested-workflow-dropdown-button" style="width: auto; max-width: 40em;">
                                     <li role="menuitem" ng-repeat="sub in stepContext.subWorkflows" id="sub-workflow-{{ sub.workflowId }}">
                                         <a href="" ui-sref="main.inspect.activities.detail({applicationId: sub.applicationId, entityId: sub.entityId, activityId: sub.workflowId, workflowLatestRun: true})" style="padding-left: 9px; padding-right: 9px;">
-                                            <span>{{ vm.getWorkflowNameFromReference(sub, "-") }}</span>
-                                            <span class="monospace">{{ sub.workflowId }}</span>
+                                            <span ng-if="vm.hasInterestingWorkflowNameFromReference(stepContext.subWorkflows[0])">{{
+                                                vm.getWorkflowNameFromReference(sub, "") }}</span>
+                                            <span ng-if="!vm.hasInterestingWorkflowNameFromReference(stepContext.subWorkflows[0])" class="monospace">{{
+                                                sub.workflowId }}</span>
                                     </a></li>
                                 </ul>
                             </div>.

@@ -71,19 +71,20 @@ export function workflowStepDirective() {
             vm.isNullish = _.isNil;
 
             vm.getWorkflowNameFromReference = (ref, suffixIfFound) => {
-                // would be nice to get a name, but all we have is appId, entityId, workflowId; and no lookup table;
-                // could look it up or store at server, but seems like overkill
-                if (ref && $scope.task && $scope.task.children) {
-                  var matchingChild = $scope.task.children.find(c => c.metadata && c.metadata.id === ref.workflowId);
-                  if (matchingChild && matchingChild.metadata.taskName) {
-                    return matchingChild.metadata.taskName + (suffixIfFound ? " "+suffixIfFound+" " : "");
-                  }
+                if (ref) {
+                    if (ref.workflowName) return ref.workflowName;
+                    if ($scope.task && $scope.task.children) {
+                        var matchingChild = $scope.task.children.find(c => c.metadata && c.metadata.id === ref.workflowId);
+                        if (matchingChild && matchingChild.metadata.taskName) {
+                            return matchingChild.metadata.taskName + (suffixIfFound ? " " + suffixIfFound + " " : "");
+                        }
+                    }
                 }
                 return null;
             };
             vm.hasInterestingWorkflowNameFromReference = (ref, suffixIfFound) => {
                 const wn = vm.getWorkflowNameFromReference(ref, suffixIfFound);
-                return wn && wn.toLowerCase()!='sub-workflow';
+                return wn && wn.toLowerCase()!='sub-workflow' && !wn.endsWith(' (sub-workflow)');
             };
             vm.classForCodeMaybeMultiline = (obj) => {
                 let os = vm.yamlOrPrimitive(obj);
