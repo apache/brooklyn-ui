@@ -190,6 +190,21 @@ export function workflowStepDirective() {
                 $scope.isFocusTask = false;
                 $scope.isErrorHandler = $scope.workflow.tag && ($scope.workflow.tag.errorHandlerForTask);
 
+                // for switch, possibly others -- the step task wraps a chosen step task;
+                // show details for the wrapped chosen task, without showing weird messages
+                $scope.otherMetadata = Object.assign({}, $scope.stepContext.otherMetadata || {});
+                if ($scope.stepContext.stepState && $scope.stepContext.stepState.selectedStepContext) {
+                    $scope.innerStepContext = $scope.stepContext.stepState.selectedStepContext;
+                    $scope.outerStepContext = $scope.stepContext;
+                    $scope.isWrappingStepTaskOuter = $scope.task && $scope.stepContext.taskId == $scope.task.id;
+                    $scope.stepContext = $scope.stepContext.stepState.selectedStepContext;
+                    $scope.otherMetadata = Object.assign($scope.otherMetadata, $scope.stepContext.otherMetadata || {});
+                    $scope.isWrappingStepTaskInner = $scope.task && $scope.stepContext.taskId == $scope.task.id;
+                    if ($scope.isWrappingStepTaskOuter || $scope.isWrappingStepTaskInner) {
+                        $scope.isFocusTask = true;
+                    }
+                }
+
                 if ($scope.task) {
                     if (!vm.isNullish($scope.stepContext.taskId) && $scope.stepContext.taskId === $scope.task.id) {
                         $scope.isFocusTask = true;

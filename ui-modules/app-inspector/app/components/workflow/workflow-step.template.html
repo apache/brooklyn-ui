@@ -117,7 +117,16 @@
                         </span>
 
                         <span ng-if="isFocusTask">
-                            in task <span class="monospace">{{ stepContext.taskId }}</span> which is the one currently loaded on this page.
+                            <span ng-if="isWrappingStepTaskOuter || isWrappingStepTaskInner">
+                                in task <span class="monospace">{{ outerStepContext.taskId }}</span>
+                                selecting <span
+                                    ng-if="otherMetadata['Switch match']"><b> {{ otherMetadata['Switch match'] }}</b> in </span>
+                                task <span class="monospace">{{ innerStepContext.taskId }}</span>,
+                                currently loaded on this page.
+                            </span>
+                            <span ng-if="!(isWrappingStepTaskOuter || isWrappingStepTaskInner)">
+                                in task <span class="monospace">{{ stepContext.taskId }}</span> which is the one currently loaded on this page.
+                            </span>
                             The other sections on this page pertain specifically to this step.
                         </span>
                         <span ng-if="!isFocusTask">
@@ -144,7 +153,7 @@
                     >.
                 </div>
 
-                <div ng-if="isFocusStep && !isFocusTask && !isErrorHandler" class="space-above">
+                <div ng-if="!isWrappingStepTaskOuter && !isWrappingStepTaskInner && isFocusStep && !isFocusTask && !isErrorHandler" class="space-above">
                     <b>The task currently loaded on this page (<span class="monospace">{{ task.id }}</span>) is for a previous run of this step.</b>
                 </div>
 
@@ -195,7 +204,7 @@
                     <div class="data-row" ng-if="showStepDefinitionInBody"><div class="A">Step Definition</div> <div class="B {{ vm.classForCodeMaybeMultiline(step) }}">{{ vm.yamlOrPrimitive(step) }}</div></div>
 
                     <div ng-if="!isFocusStep || isFocusTask">
-                        <div class="data-row" ng-if="stepContext.otherMetadata" ng-repeat="(key,value) in stepContext.otherMetadata" id="$key">
+                        <div class="data-row" ng-if="otherMetadata" ng-repeat="(key,value) in otherMetadata" id="$key">
                             <div class="A">{{ key }}</div> <div class="B {{ vm.classForCodeMaybeMultiline(value) }}">{{ vm.yamlOrPrimitive(value) }}</div>
                         </div>
 
