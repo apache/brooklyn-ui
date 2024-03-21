@@ -64,7 +64,7 @@
     "babel-preset-stage-0": "^6.16.0",
     "css-loader": "^0.25.0",
     "dotenv": "^2.0.0",
-    "ejs": "^2.5.2",
+    "ejs": "^3.1.7",
     "ejs-html-loader": "^2.0.2",
     "ejs-loader": "^0.3.0",
     "eslint": "^3.4.0",
