@@ -88,7 +88,7 @@
     "less-vars-to-js": "^1.1.2",
     "phantomjs-prebuilt": "^2.1.11",
     "postcss-loader": "^1.0.0",
-    "properties-reader": "0.0.15",
+    "properties-reader": "2.2.0",
     "proxy-middleware": "^0.15.0",
     "raw-loader": "^0.5.1",
     "resolve-url-loader": "^1.4.3",
