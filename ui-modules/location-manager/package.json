@@ -34,7 +34,7 @@
   },
   "engines": {
     "node": ">=8.0.0",
-    "npm": ">=5.0.0"
+    "yarn": ">=1.22.0"
   },
   "brooklyn": {
     "appname": "Location Manager"

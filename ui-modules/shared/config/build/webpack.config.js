@@ -133,6 +133,7 @@ const config = {
     },
     resolve: {
         alias: {
+            'brooklyn-ui-utils': path.resolve(ROOT_DIR, '../utils'),
             'brooklyn-shared': path.resolve(ROOT_DIR, '../shared'),
             // user-supplied brand dir for overwrites (defaults to brooklyn brand)
             'brand': BRAND_DIR,

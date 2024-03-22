@@ -75,7 +75,7 @@ Any module that has a `protractor.conf.js` file at its root has e3e tests.
 
 Steps to Run:
 1. Start webdriver `webdriver-manager start`
-2. Start your the development server `npm start`
+2. Start your the development server `yarn start`
 3. Run the tests `protractor`
 
 
@@ -85,9 +85,9 @@ Steps to Run:
 
 This can happen if you have built `brooklyn-ui-core` manually with an old version of node (< 4). In this case, delete the `node_modules` in all UI modules, upgrade `node` to the latest version and try again.
 
-### npm build errors: NormalModule.onModuleBuildFailed
+### yarn build errors: NormalModule.onModuleBuildFailed
 
-If there are npm build errors (e.g. in brooklyn-ui-home), try editing `ui-modules/home/package.json` to remove the `--bail` from the `"build": "rimraf ...` line, and re-run `npm run build` (in the `ui-modules/home` directory). This can give better errors about what is going wrong.
+If there are yarn build errors (e.g. in brooklyn-ui-home), try editing `ui-modules/home/package.json` to remove the `--bail` from the `"build": "rimraf ...` line, and re-run `npm run build` (in the `ui-modules/home` directory). This can give better errors about what is going wrong.
 
 ### "Library not loaded" error
 
