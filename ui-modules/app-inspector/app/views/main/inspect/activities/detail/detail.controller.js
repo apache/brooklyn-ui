@@ -239,7 +239,10 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                 processWorkflowData(wResponse);
 
                 if (vm.model.workflow.data.status === 'RUNNING') wResponse.interval(1000);
-                observers.push(wResponse.subscribe(processWorkflowData));
+                observers.push(wResponse.subscribe(processWorkflowData, error => {
+                    console.debug("Workflow no longer available, likely completed with retention 0. Removing from view.", error);
+                    vm.model.workflow = {};
+                }));
 
                 function initFromWorkflowFirstReplayTask(task) {
                     if (task) {

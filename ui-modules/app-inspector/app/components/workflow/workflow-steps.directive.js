@@ -253,7 +253,7 @@ function makeArrows(workflow, steps, options) {
         var indexOfId = {};
         for (var i = 0; i < steps.length; i++) {
             const s = workflow.data.stepsDefinition[i];
-            if (!s) console.log("XXX missing step", i, workflow.data, steps);
+            if (!s) console.log("Missing step", i, workflow.data, steps);
             if (s.id) indexOfId[s.id] = i;
         }
 
