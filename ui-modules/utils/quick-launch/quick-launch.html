@@ -152,7 +152,7 @@
         <em>Returning to the Form will revert any changes made here in the YAML Editor</em>
     </small>
     <div>
-        <span class="btn-group" uib-dropdown>
+        <span class="btn-group" uib-dropdown on-toggle="setComposerLink()">
             <button class="btn btn-lg btn-default " ng-if="!yamlViewDisplayed && transitionsShown()" ng-disabled="deploying" ng-click="showEditor()">
                 Edit as YAML
             </button>
@@ -164,10 +164,10 @@
             </button>
             <ul ng-if="!args.noComposerButton" class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="composer-actions">
                 <li role="menuitem">
-                    <a ng-click="openComposer($event, false)" href="#"><i class="fa fa-link"></i> Open in Composer</a>
+                    <a ng-href="{{composerLink}}"><i class="fa fa-link"></i> Open in Composer</a>
                 </li>
                 <li ng-if="!yamlViewDisplayed && vm.isComposerOpenExpandPossible()" role="menuitem">
-                    <a ng-click="openComposer($event, true)" href="#"><i class="fa fa-link"></i> Open in Composer (expanded)</a>
+                    <a ng-href="{{composerLinkExpanded}}"><i class="fa fa-link"></i> Open in Composer (expanded)</a>
                 </li>
             </ul>
         </span>
