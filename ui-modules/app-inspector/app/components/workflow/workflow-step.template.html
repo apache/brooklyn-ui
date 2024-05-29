@@ -196,7 +196,7 @@
 
                 <div class="more-space-above">
                     <div class="data-row" ng-if="uniqueSubworkflow">
-                        <workflow-steps nested="true" workflow="uniqueSubworkflow" style="flex: 1 1 auto; margin-left: -2em; margin-top: -24px; margin-right: -1em;"/>
+                        <workflow-steps nested="true" workflow="uniqueSubworkflow" style="flex: 1 1 auto; margin-left: -2em; margin-top: -24px; margin-right: -1em; width: 100%;"/>
                     </div>
 
                     <div class="data-row" ng-if="stepContext.error"><div class="A">Error</div> <div class="B {{ vm.classForCodeMaybeMultiline(stepContext.error) }}">{{ vm.yamlOrPrimitive(stepContext.error) }}</div></div>
