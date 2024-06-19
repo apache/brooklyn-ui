@@ -20,7 +20,7 @@
     <i class="fa fa-times target-close pull-right" ng-click="close()"></i>
     <div class="container">
         <div class="row">
-            <div class="col-sm-12 text-center">
+            <div class="col-sm-8 text-center">
                 <p><i class="fa fa-3x fa-upload"></i></p>
                 <p>
                     <input type="file" name="files" id="files" multiple custom-on-change="filesChanged" />
@@ -30,7 +30,7 @@
         </div>
 
         <div class="row">
-            <div class="col-sm-12 text-muted upload-item" ng-repeat="selectedFile in selectedFiles" ng-init="isDetailsCollapsed = true">
+            <div class="col-sm-8 text-muted upload-item" ng-repeat="selectedFile in selectedFiles" ng-init="isDetailsCollapsed = true">
                 <div class="progress">
                     <div class="progress-bar progress-bar-striped" role="progressbar" ng-class="{'active': !selectedFile.error && !selectedFile.result, 'progress-bar-danger': selectedFile.error, 'progress-bar-success': selectedFile.result}" style="width: 100%">
                         <span ng-if="!selectedFile.result && !selectedFile.error">Importing</span> {{selectedFile.name}}
@@ -42,12 +42,20 @@
                         <ul class="fa-ul">
                             <li ng-repeat="(key, item) in selectedFile.result track by key">
                                 <i class="fa-li fa fa-check-square"></i>
-                                <a ng-href="{{getCatalogItemUrl(item)}}">{{item.itemType}} {{item.symbolicName}}:{{item.version}}</a>
+                                <a ng-href="{{getCatalogItemUrl(item)}}" target="_blank">{{item.itemType}} {{item.symbolicName}}:{{item.version}}</a>
                             </li>
                         </ul>
                     </p>
                     <p ng-if="selectedFile.error">{{selectedFile.error}}</p>
                 </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8 text-left">
+                <button class="btn btn-success" ng-click="close()">
+                    <i class="fa fa-fw fa-arrow-circle-left"></i>
+                    Return to catalog
+                </button>
             </div>
         </div>
     </div>
