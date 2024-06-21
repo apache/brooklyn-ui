@@ -47,7 +47,7 @@ export default MODULE_NAME;
  * @description
  * Attaches an overlay on the current DOM element to handle file upload to the catalog. Files can either by added via
  * classic file selection or drag & drop. The overlay can be triggered by broadcasting an event: for this to work, the
- * event name need to be passed as value for the `brooklynCatalogUploader` attribute.
+ * event name needs to be passed as value for the `brooklynCatalogUploader` attribute.
  *
  * @param {string} brooklynCatalogUploader The value can be empty. Otherwise, the directive will listen for any event broadcasted
  * with this name and will trigger the overlay upon reception.
@@ -96,6 +96,7 @@ export function catalogUploaderDirective($compile, brooklynCatalogUploader) {
 
         scope.close = ()=> {
             counter--;
+            scope.selectedFiles = []; // clean up the imported file list on returning to catalog, still needs a manual refresh to show the imported bundle
             element.removeClass('br-drag-active');
         };
 
