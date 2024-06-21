@@ -17,46 +17,70 @@
   under the License.
 -->
 <div class="brooklyn-catalog-uploader">
-    <i class="fa fa-times target-close pull-right" ng-click="close()"></i>
-    <div class="container">
-        <div class="row">
-            <div class="col-sm-8 text-center">
-                <p><i class="fa fa-3x fa-upload"></i></p>
-                <p>
-                    <input type="file" name="files" id="files" multiple custom-on-change="filesChanged" />
-                    <label for="files" ng-click="choose()"><strong>Choose files</strong><span class="drag-upload"> or drag & drop them here</span>.</label>
+  <div class="brooklyn-catalog-uploader-screen">
+  </div>
+  <div class="brooklyn-catalog-uploader-inner">
+    <div class="pull-right" style="position: absolute; right: 10px; top: 8px;">
+        <i class="fa fa-times target-close" ng-click="close()"></i>
+    </div>
+    <div style="display: flex; flex-direction: column; height: 100%; width: 100%;">
+
+        <div style="flex: 0 1 auto; height: 60px;"></div>
+
+        <div class="text-center">
+            <p><i class="fa fa-3x fa-upload"></i></p>
+            <p>
+                <input type="file" name="files" id="files" multiple custom-on-change="filesChanged" />
+                <label for="files" ng-click="choose()"><strong>Choose files</strong><span class="drag-upload"> or drag & drop them here</span>.</label>
+            </p>
+        </div>
+
+        <div style="flex: 0 1 auto; height: 15px;"></div>
+
+        <div class="upload-item" ng-repeat="selectedFile in selectedFiles" ng-init="isDetailsCollapsed = true">
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" ng-class="{
+                        'active': !selectedFile.error && !selectedFile.result,
+                        'progress-bar-striped': !selectedFile.error && !selectedFile.result,
+                        'progress-bar-danger': selectedFile.error, 'progress-bar-success': selectedFile.result}" style="width: 100%">
+                    <span ng-if="!selectedFile.result && !selectedFile.error">Importing</span> {{selectedFile.name}}
+                </div>
+            </div>
+
+            <span class="upload-item-details-link" ng-click="isDetailsCollapsed = !isDetailsCollapsed">
+                <span ng-if="selectedFile.error" style="color: darkred;">
+                    <i class="fa fa-times"></i> Upload failed.
+                </span>
+                <span ng-if="!selectedFile.error && selectedFile.result">
+                    <i class="fa fa-check"></i> <b>Completed.</b>
+                </span>
+                <span ng-if="selectedFile.error || selectedFile.result">
+                      Click {{isDetailsCollapsed ? 'for' : 'to hide'}} {{selectedFile.error ? ' error ' : ''}} details.
+                </span>
+            </span>
+
+            <div uib-collapse="isDetailsCollapsed" class="upload-item-details">
+                <p ng-if="selectedFile.result">Successfully imported the following items:
+                    <ul class="fa-ul">
+                        <li ng-repeat="(key, item) in selectedFile.result track by key">
+                            <i class="fa-li fa fa-check-square"></i>
+                            <a ng-href="{{getCatalogItemUrl(item)}}" target="_blank">{{item.itemType}} {{item.symbolicName}}:{{item.version}}</a>
+                        </li>
+                    </ul>
                 </p>
+                <p ng-if="selectedFile.error">{{selectedFile.error}}</p>
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-sm-8 text-muted upload-item" ng-repeat="selectedFile in selectedFiles" ng-init="isDetailsCollapsed = true">
-                <div class="progress">
-                    <div class="progress-bar progress-bar-striped" role="progressbar" ng-class="{'active': !selectedFile.error && !selectedFile.result, 'progress-bar-danger': selectedFile.error, 'progress-bar-success': selectedFile.result}" style="width: 100%">
-                        <span ng-if="!selectedFile.result && !selectedFile.error">Importing</span> {{selectedFile.name}}
-                    </div>
-                </div>
-                <p ng-click="isDetailsCollapsed = !isDetailsCollapsed" class="upload-item-details-link"><i class="fa fa-info-circle"></i> {{isDetailsCollapsed ? 'View' : 'hide'}} details</p>
-                <div uib-collapse="isDetailsCollapsed" class="upload-item-details">
-                    <p ng-if="selectedFile.result">Successfully imported the following items:
-                        <ul class="fa-ul">
-                            <li ng-repeat="(key, item) in selectedFile.result track by key">
-                                <i class="fa-li fa fa-check-square"></i>
-                                <a ng-href="{{getCatalogItemUrl(item)}}" target="_blank">{{item.itemType}} {{item.symbolicName}}:{{item.version}}</a>
-                            </li>
-                        </ul>
-                    </p>
-                    <p ng-if="selectedFile.error">{{selectedFile.error}}</p>
-                </div>
-            </div>
+        <div style="flex: 1 1 auto; height: 15px;"></div>
+
+        <div class="text-right" style="flex: 0 0 auto;">
+            <button class="btn btn-success" ng-click="close()">
+                <i class="fa fa-fw fa-arrow-circle-left"></i>
+                Return to catalog
+            </button>
         </div>
-        <div class="row">
-            <div class="col-sm-8 text-left">
-                <button class="btn btn-success" ng-click="close()">
-                    <i class="fa fa-fw fa-arrow-circle-left"></i>
-                    Return to catalog
-                </button>
-            </div>
-        </div>
+        <div style="flex: 0 0 auto; height: 10px;"></div>
     </div>
+  </div>
 </div>
