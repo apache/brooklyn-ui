@@ -27,7 +27,13 @@ import './login-failed.less';
 const MODULE_NAME = 'states.login';
 
 angular.module(MODULE_NAME, [uiRouter, serverApi])
-    .config(['$stateProvider', loginStateConfig]);
+    .config(['$stateProvider', loginStateConfig])
+    .config(['$httpProvider', function($httpProvider) {
+      // Sometimes this can help prevent the auth popup from appearing,
+      // by indicating the apache and nginx that WWW-Authenticate should be omitted.
+      // Not necessary because Brooklyn server rewrites BASIC where necessary, but potentially useful.
+      $httpProvider.defaults.headers.common["X-Requested-With"] = 'XMLHttpRequest';
+    }]);
 
 export default MODULE_NAME;
 
@@ -52,13 +58,27 @@ export function loginStateController($scope, $http, $window, $uibModal, brBrandI
     let loginController = this;
     loginController.error = {};
 
-    var testAuthReq = {
+    const testAuthReq = {
         method: 'HEAD',
-        url: '/v1/server/up/extended'
+        url: '/v1/server/up/extended',
+        headers: {
+          // as above (httpProvider)
+          'X-Requested-With': 'XMLHttpRequest'
+        }
     }
 
     // If the user is already logged in then redirect to home
-    $http(testAuthReq).then( () => ( $window.location.href = '/' ) );
+    // (note httpProvider call above to prevent browser popup)
+    $http(testAuthReq).then( () => {
+        if ($window.location.pathname = '/') {
+          throw new Error('Actually API request was successful, and we are logged in, but this page is configured to be shown as the root. A redirect will result in an infinite loop, so will ignore and simply show this form.');
+          // will get caught below
+        }
+        console.debug("API request successful. Either already logged in or no login necessary. Redirecting to main page instead of showing login form. Coming from: "+$window.location.href);
+        $window.location.href = '/';
+      }).catch(err => {
+        console.debug("API request unsuccessful. Not already logged in. Showing login form.", err);
+      });
 
     $scope.login = (user)=> {
         if (user==null) {
@@ -66,9 +86,9 @@ export function loginStateController($scope, $http, $window, $uibModal, brBrandI
             return;
         }
         var req = {
-            method: 'HEAD',
-            url: '/v1/server/up/extended',
+            ...testAuthReq,
             headers: {
+                ...testAuthReq.headers,
                 'Authorization': 'Basic ' + btoa(user.name +":" + user.password)
             }
         }
