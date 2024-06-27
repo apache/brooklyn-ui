@@ -56,6 +56,12 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
         $timeout(function() { $scope.$broadcast('resize') }, 100);
     };
 
+    vm.simpleColors = window.localStorage.getItem('simpleColors') || false;
+    vm.toggleColorScheme = function () {
+        vm.simpleColors = !vm.simpleColors;
+        $timeout(function() { $scope.$broadcast('toggleColorScheme', {simpleColors: vm.simpleColors}) }, 100);
+    };
+
     onStateChange();
     $scope.$on('$stateChangeSuccess', (event, toState, toParams, fromState, fromParams, options)=> {
         // as the below only runs if we are the active state, we need to check

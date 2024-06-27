@@ -43,11 +43,18 @@ export function taskSunburstDirective() {
     };
 
     function controller($scope, $element, $state, $window, $timeout) {
+        const simpleColors = $window.localStorage.getItem('simpleColors') || false;
+        $scope.colorScheme = simpleColors ? "simple" : "normal";
         var viz = initVisualization($scope, $element, $state);
 
         angular.element($window).on('resize', viz.resize);
         $scope.$on('resize', viz.resize);
-        
+
+        $scope.$on('toggleColorScheme', (event, args) => {
+            $scope.colorScheme = args.simpleColors ? "simple" : "normal";
+            $window.localStorage.setItem('simpleColors', args.simpleColors);
+        });
+
         $scope.$on('$destroy', function() {
             angular.element($window).off('resize', viz.resize);
         });
@@ -60,6 +67,7 @@ export function taskSunburstDirective() {
         $scope.$watch('tasks', onUpdate);
         $scope.$watch('filteredTo', onUpdate);
         $scope.$watch('excludeTransient', onUpdate);
+        $scope.$watch('colorScheme', onUpdate);
 
         // seems to help with the window being ready, otherwise kilt expects to be too wide
         $timeout(onUpdate, 0);
@@ -308,7 +316,7 @@ function initVisualization($scope, $element, $state) {
           .attr("class", function(d) { return util.taskClasses(d, ["arc", "primary"]).join(" "); })
           .on("mouseover", mouseover)
           .on("click", click)
-          .style("fill", function(d) { return util.colors.f(d); });
+          .style("fill", function(d) { return util.colors.f(d, $scope.colorScheme); });
       path_enter
           .transition().duration(300)
           .attrTween("d", function (d) { return function(t) {
@@ -320,20 +328,20 @@ function initVisualization($scope, $element, $state) {
         .transition().duration(300)
         .attr("d", util.arcF({ scaling: scaling, visible_arc_length: sizing.visible_arc_length,
                 visible_arc_start_fn: sizing.visible_arc_start_fn }))
-        .style("fill", function(d) { return util.colors.f(d); });
+        .style("fill", function(d) { return util.colors.f(d, $scope.colorScheme); });
      
       path_enter.append("animate")
         .attr("attributeType", "XML")
         .attr("attributeName", "fill");
       g.select("path.arc.primary animate")
         .attr("values", function(d) { return util.isInProgress(d) 
-            ? util.colors.ACTIVE_ANIMATE_VALUES : util.colors.f(d); })
+            ? util.colors.ACTIVE_ANIMATE_VALUES : util.colors.f(d, $scope.colorScheme); })
         .attr("dur", "1.5s")
         .attr("repeatCount", function(d) { return util.isInProgress(d) ? "indefinite" : 0; });
 
       g_enter.filter(util.isNewEntity).append("path").on("click", click)
         .attr("class", function(d) { return util.taskClasses(d, ["arc", "primary"]).join(" "); })
-        .style("fill", function(d) { return util.colors.f(d); })
+        .style("fill", function(d) { return util.colors.f(d, $scope.colorScheme); })
         .transition().duration(300)
           .attrTween("d", function (d) { return function(t) {
              return util.arcF({ scaling: scaling, visible_arc_length: sizing.visible_arc_length, 
@@ -344,7 +352,7 @@ function initVisualization($scope, $element, $state) {
         .transition().duration(300)
         .attr("d", util.arcF({ scaling: scaling, visible_arc_length: sizing.visible_arc_length, 
             visible_arc_start_fn: sizing.visible_arc_start_fn, isMinimal: true}))
-        .style("fill", function(d) { return util.colors.f(d); });
+        .style("fill", function(d) { return util.colors.f(d, $scope.colorScheme); });
       
       g_enter.append("text")
           .attr("class", function(d) { return util.taskClasses(d, ["arc-label"]).join(" "); })
@@ -409,7 +417,7 @@ function initVisualization($scope, $element, $state) {
       $state.go("main.inspect.activities.detail", {entityId: t.entityId, activityId: t.id});
     }
                 
-    result.redraw = function() {
+    result.redraw = function(simpleColorScheme) {
         // update chart size
         width = $element.find("svg")[0].getBoundingClientRect().width;
         var height = width * sizing.height_width_ratio;
@@ -426,6 +434,7 @@ function initVisualization($scope, $element, $state) {
     };
 
     result.resize = result.redraw;
+    result.toggleColorScheme = result.redraw;
  
     result.prepData();
     result.redraw();

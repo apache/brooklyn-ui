@@ -26,8 +26,11 @@
 
     <div ng-class="{ 'col-md-12': true, 'col-lg-4': !vm.wideKilt, 'col-lg-12': vm.wideKilt }" ng-if="vm.isNonEmpty(vm.activitiesDeep)">
         <expandable-panel expandable-template="vm.modalTemplate" class="panel-table">
-            <heading>Progress Map</heading>
+            <heading  uib-popover-template="'Colors.html'">Progress Map</heading>
             <extra-buttons>
+                <button class="btn btn-link title-toolbar-item" ng-click="vm.toggleColorScheme()"
+                        uib-tooltip="{{vm.simpleColors ? 'Color activities by task id' : 'All finished activities have the same color' }}">
+                    <i class="fa" ng-class="{ 'fa-toggle-off': vm.simpleColors, 'fa-toggle-on': !vm.simpleColors }"></i></button>
                 <button class="visible-lg-inline-block btn btn-link title-toolbar-item" ng-click="vm.setWideKilt(!vm.wideKilt)"
                         uib-tooltip="{{ vm.wideKilt ? 'Side-by-side' : 'Full-width' }}" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
                     <i class="fa" ng-class="{ 'fa-indent': vm.wideKilt, 'fa-outdent': !vm.wideKilt }"></i></button>

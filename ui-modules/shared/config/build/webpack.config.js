@@ -179,6 +179,7 @@ const config = {
             __BUILD_COMMIT_ID__: JSON.stringify(process.env.BUILD_COMMIT_ID),
             // from bootstrap, possibly overridden, included here for access from JS
             __BRAND_SUCCESS__: JSON.stringify(brandLess['@brand-success'] || '#5cb85c'),
+            __BRAND_COMPLETE__: JSON.stringify(brandLess['@brand-complete'] || '#428342'),
             __BRAND_DANGER__: JSON.stringify(brandLess['@brand-danger'] || '#d9534f'),
             'process.env.NODE_ENV': JSON.stringify(ENV),
             // used by brBrandInfo.getBrandedText

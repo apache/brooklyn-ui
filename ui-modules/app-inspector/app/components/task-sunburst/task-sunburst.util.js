@@ -69,32 +69,42 @@ export function orderFn(d1, d2) {
 var colors;
 colors = {
   ERROR: d3.color(__BRAND_DANGER__ || "#B43"),
-  ACTIVE_NORMAL: d3.color(__BRAND_SUCCESS__ || "#090")
+  NORMAL_COMPLETE: d3.color(__BRAND_COMPLETE__ || "#007600"),
+  ACTIVE_NORMAL: d3.color(__BRAND_SUCCESS__ || "#090"),
+  PALETTES: {}
 };
 {
     // build a palette to use, avoiding anything that looks like success
     // (danger we don't avoid as it is usually bright)
-    var hueToAvoid = d3.hsl(colors.ACTIVE_NORMAL).h;
-    var palette = [];
-    var i = 0;
-    while (i<360) {
-        if ((i-hueToAvoid+360)%360 < 45 || (i-hueToAvoid+360)%360>360-45) {
-            // skip hues near the hue to avoid
-        } else {
-            palette.push(d3.hsl(i, 0.6, 0.2));
+    var palettes = ["normal", "simple"];
+    for(var p of palettes) {
+        var hueToAvoid = d3.hsl(colors.ACTIVE_NORMAL).h;
+        var palette = [];
+        var simpleColors = true;
+        var i = 0;
+        while (i<360) {
+            if ((i-hueToAvoid+360)%360 < 45 || (i-hueToAvoid+360)%360>360-45) {
+                // skip hues near the hue to avoid
+            } else {
+
+
+                // palette.push(d3.hsl(i, 0.6, 0.2));
+                palette.push((p==="simple")? colors.NORMAL_COMPLETE : d3.hsl(i, 0.6, 0.2));
+            }
+            // hue change more significant for colours at bottom of palette so larger increment above 96
+            if (i>=96) i+=12;
+            i+=6;
         }
-        // hue change more significant for colours at bottom of palette so larger increment above 96
-        if (i>=96) i+=12;
-        i+=6;
+        colors.PALETTES[p] = palette;
     }
-    colors.PALETTE = palette;
 }
 Object.assign(colors, colors, {
   ACTIVE_DARK: colors.ACTIVE_NORMAL.darker(0.4),
   ACTIVE_BRIGHT: colors.ACTIVE_NORMAL.brighter(0.2),
   scale: 
-    function(x) {
-      return colors.PALETTE[((hash(x) % colors.PALETTE.length)+colors.PALETTE.length)%colors.PALETTE.length];
+    function(x, scheme) {
+      const palette = colors.PALETTES[scheme||"normal"];
+      return palette[((hash(x) % palette.length)+palette.length)%palette.length];
     },
   nodeToUseForHue: function(x) {
     return x;
@@ -102,17 +112,17 @@ Object.assign(colors, colors, {
     // return (findTask(x.parent).id && !x.children) ? x.parent : x;
   },
   nodeName: function(x) { return (x.data && x.data.name) || x.displayName || x; },
-  succeededFn: function(x) { return colors.scale(colors.nodeName(x)); },
+  succeededFn: function(x, scheme) { return colors.scale(colors.nodeName(x), scheme); },
   unstartedFn: function(x) { 
     var base = d3.hsl(colors.succeededFn(x));
     base.s = 0.3;
     base.l = 0.9;
     return base;
   },
-  f: function(x) {
+  f: function(x, scheme) {
     var t = findTask(x);
     if (t.isError) return colors.ERROR;
-    if (t.endTimeUtc) return colors.succeededFn(colors.nodeToUseForHue(x)).toString();
+    if (t.endTimeUtc) return colors.succeededFn(colors.nodeToUseForHue(x), scheme).toString();
     if (t.startTimeUtc) return colors.ACTIVE_NORMAL;
     return colors.unstartedFn(colors.nodeToUseForHue(x)).toString();
   }
