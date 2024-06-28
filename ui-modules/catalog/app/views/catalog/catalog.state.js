@@ -24,6 +24,7 @@ import brUtils from 'brooklyn-ui-utils/utils/general';
 import template from './catalog.template.html';
 import {analyzeDescription} from 'brooklyn-ui-utils/md-helper';
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
+import {CATALOG_UPLOAD_COMPLETED} from 'brooklyn-ui-utils/catalog-uploader/catalog-uploader';
 
 const MODULE_NAME = 'catalog.state';
 
@@ -136,10 +137,15 @@ export function catalogController($scope, $rootScope, catalogApi, brUtilsGeneral
         $rootScope.$broadcast('open-catalog-uploader');
     };
 
-    catalogApi.getBundles({params: {detail: true}}).then(data => {
-        $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
-
-        processBundles(data);
+    function getBundles(initialLoad) {
+        catalogApi.getBundles({params: {detail: true}}).then(data => {
+            if (initialLoad) $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
+            processBundles(data);
+        });
+    }
+    getBundles(true);
+    $scope.$on(CATALOG_UPLOAD_COMPLETED, ()=>{
+        getBundles(false);
     });
 
     function processBundles(bundles) {

@@ -37,7 +37,7 @@
     "yarn": ">=1.22.0"
   },
   "brooklyn": {
-    "appname": "Login manager"
+    "appname": "Login"
   },
   "dependencies": {
     "angular": "^1.6.1",

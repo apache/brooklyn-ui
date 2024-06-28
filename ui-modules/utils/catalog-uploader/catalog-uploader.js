@@ -34,9 +34,11 @@ const MODULE_NAME = 'brooklyn.components.catalog-uploader';
 angular.module(MODULE_NAME, [catalogApi])
     .service('brooklynCatalogUploader', ['$q', 'catalogApi', catalogUploaderService])
     .directive('customOnChange', customOnChangeDirective)
-    .directive('brooklynCatalogUploader', ['$compile', 'brooklynCatalogUploader', catalogUploaderDirective]);
+    .directive('brooklynCatalogUploader', ['$compile', '$rootScope', 'brooklynCatalogUploader', catalogUploaderDirective]);
 
 export default MODULE_NAME;
+
+export const CATALOG_UPLOAD_COMPLETED = "brooklyn-catalog-upload-completed";
 
 /**
  * @ngdoc directive
@@ -47,12 +49,12 @@ export default MODULE_NAME;
  * @description
  * Attaches an overlay on the current DOM element to handle file upload to the catalog. Files can either by added via
  * classic file selection or drag & drop. The overlay can be triggered by broadcasting an event: for this to work, the
- * event name need to be passed as value for the `brooklynCatalogUploader` attribute.
+ * event name needs to be passed as value for the `brooklynCatalogUploader` attribute.
  *
  * @param {string} brooklynCatalogUploader The value can be empty. Otherwise, the directive will listen for any event broadcasted
  * with this name and will trigger the overlay upon reception.
  */
-export function catalogUploaderDirective($compile, brooklynCatalogUploader) {
+export function catalogUploaderDirective($compile, $rootScope, brooklynCatalogUploader) {
     return {
         restrict: 'A',
         link: link
@@ -67,27 +69,32 @@ export function catalogUploaderDirective($compile, brooklynCatalogUploader) {
         element.append($compile(template)(scope));
 
         let counter = 0;
+        let requireManualClose = false;
         element.bind('drag dragstart dragend dragover dragenter dragleave drop', (event)=> {
             event.preventDefault();
             event.stopPropagation();
         }).bind('drag dragstart dragover dragenter', (event)=> {
             event.dataTransfer.dropEffect = 'copy';
             element.addClass('br-drag-active');
+            element.addClass('br-drag-active-2');
         }).bind('dragenter', ()=> {
             counter++;
         }).bind('dragleave', (event)=> {
             counter--;
-            if (counter === 0) {
-                element.removeClass('br-drag-active');
-            }
+            element.removeClass('br-drag-active-2');
+            if (!requireManualClose && counter === 0) element.removeClass('br-drag-active'); // close if we were triggered by a drag
         }).bind('drop', (event)=> {
             scope.upload(event.dataTransfer.files);
+            counter--;
+            element.removeClass('br-drag-active-2');
+            requireManualClose = true;
+            if (!requireManualClose && counter === 0) element.removeClass('br-drag-active'); // close if we were triggered by a drag
         });
 
         let field = attrs.brooklynCatalogUploader;
         if (angular.isDefined(field)) {
             scope.$on(field, ()=> {
-                counter++;
+                requireManualClose = true;
                 element.addClass('br-drag-active');
             });
         }
@@ -95,7 +102,9 @@ export function catalogUploaderDirective($compile, brooklynCatalogUploader) {
         scope.selectedFiles = [];
 
         scope.close = ()=> {
-            counter--;
+            requireManualClose = false;
+            counter = 0;
+            scope.selectedFiles = []; // clean up the imported file list on returning to catalog, still needs a manual refresh to show the imported bundle
             element.removeClass('br-drag-active');
         };
 
@@ -109,7 +118,9 @@ export function catalogUploaderDirective($compile, brooklynCatalogUploader) {
 
                 brooklynCatalogUploader.upload(file).then((data)=> {
                     file.result = data;
+                    $rootScope.$broadcast(CATALOG_UPLOAD_COMPLETED);
                 }).catch((error)=> {
+                    console.warn("ERROR uploading "+file, error);
                     file.error = error;
                 }).finally(()=> {
                     scope.$applyAsync();
