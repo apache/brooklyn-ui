@@ -29,7 +29,7 @@ angular.module(MODULE_NAME, [])
 
 export default MODULE_NAME;
 
-export const STORAGE_KEY_COLOR_MODE = 'brooklyn.'+MODULE_NAME+'.toggle_colors';
+export const STORAGE_KEY_COLOR_MODE = 'brooklyn.'+MODULE_NAME+'.color_mode';
 
 export function taskSunburstDirective() {
     return {
@@ -46,8 +46,10 @@ export function taskSunburstDirective() {
 
 
     function controller($scope, $element, $state, $window, $timeout) {
-        const simpleColors = $window.localStorage.getItem(STORAGE_KEY_COLOR_MODE) || false;
-        $scope.colorScheme = simpleColors ? "simple" : "normal";
+        function lookupColorScheme() {
+            $scope.colorScheme = $window.localStorage.getItem(STORAGE_KEY_COLOR_MODE) || 'normal';
+        }
+        lookupColorScheme();
 
         const vizOptions = {};
         vizOptions.transitionScale = 1;
@@ -66,9 +68,7 @@ export function taskSunburstDirective() {
             console.warn("ResizeObserver not available; kilt diagram will not resize correctly.", e);
         }
 
-        $scope.$on('toggleColorScheme', (event, args) => {
-            $scope.colorScheme = args.simpleColors ? "simple" : "normal";
-        });
+        $scope.$on('changedKiltColorScheme', lookupColorScheme);
 
         function onUpdate() {
             viz.prepData();
@@ -427,7 +427,7 @@ function initVisualization($scope, $element, $state, options) {
       $state.go("main.inspect.activities.detail", {entityId: t.entityId, activityId: t.id});
     }
                 
-    result.redraw = function(simpleColorScheme) {
+    result.redraw = function() {
         // update chart size
         width = $element.find("svg")[0].getBoundingClientRect().width;
         var height = width * sizing.height_width_ratio;
@@ -444,8 +444,7 @@ function initVisualization($scope, $element, $state, options) {
     };
 
     result.resize = result.redraw;
-    result.toggleColorScheme = result.redraw;
- 
+
     result.prepData();
     result.redraw();
     chart.on("mouseleave", mouseleave);

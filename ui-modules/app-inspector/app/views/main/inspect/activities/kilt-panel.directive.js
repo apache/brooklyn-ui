@@ -55,12 +55,12 @@ export function activitiesListAndKiltPanelDirective() {
             vm.wideKilt = newValue;
         };
 
-        vm.simpleColors = window.localStorage.getItem(STORAGE_KEY_COLOR_MODE) || false;
+        vm.simpleColors = window.localStorage.getItem(STORAGE_KEY_COLOR_MODE)=='simple';
         vm.toggleColorScheme = function () {
             vm.simpleColors = !vm.simpleColors;
-            $window.localStorage.setItem(STORAGE_KEY_COLOR_MODE, vm.simpleColors);
+            $window.localStorage.setItem(STORAGE_KEY_COLOR_MODE, vm.simpleColors ? 'simple' : 'normal');
             $timeout(function () {
-                $scope.$broadcast('toggleColorScheme', {simpleColors: vm.simpleColors})
+                $scope.$broadcast('changedKiltColorScheme')
             }, 0);
         };
     }
