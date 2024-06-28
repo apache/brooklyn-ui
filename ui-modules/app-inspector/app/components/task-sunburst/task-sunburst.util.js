@@ -69,7 +69,7 @@ export function orderFn(d1, d2) {
 var colors;
 colors = {
   ERROR: d3.color(__BRAND_DANGER__ || "#B43"),
-  NORMAL_COMPLETE: d3.color(__BRAND_COMPLETE__ || "#007600"),
+  NORMAL_COMPLETE: d3.color(__BRAND_COMPLETE__ || "#007600").darker(1),
   ACTIVE_NORMAL: d3.color(__BRAND_SUCCESS__ || "#090"),
   PALETTES: {}
 };

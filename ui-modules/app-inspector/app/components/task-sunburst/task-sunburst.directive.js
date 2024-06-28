@@ -29,6 +29,8 @@ angular.module(MODULE_NAME, [])
 
 export default MODULE_NAME;
 
+export const STORAGE_KEY_COLOR_MODE = 'brooklyn.'+MODULE_NAME+'.toggle_colors';
+
 export function taskSunburstDirective() {
     return {
         template: template,
@@ -43,7 +45,7 @@ export function taskSunburstDirective() {
     };
 
     function controller($scope, $element, $state, $window, $timeout) {
-        const simpleColors = $window.localStorage.getItem('simpleColors') || false;
+        const simpleColors = $window.localStorage.getItem(STORAGE_KEY_COLOR_MODE) || false;
         $scope.colorScheme = simpleColors ? "simple" : "normal";
         var viz = initVisualization($scope, $element, $state);
 
@@ -52,7 +54,7 @@ export function taskSunburstDirective() {
 
         $scope.$on('toggleColorScheme', (event, args) => {
             $scope.colorScheme = args.simpleColors ? "simple" : "normal";
-            $window.localStorage.setItem('simpleColors', args.simpleColors);
+            $window.localStorage.setItem(STORAGE_KEY_COLOR_MODE, args.simpleColors);
         });
 
         $scope.$on('$destroy', function() {

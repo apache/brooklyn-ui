@@ -19,6 +19,7 @@
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./activities.template.html";
 import modalTemplate from './kilt.modal.template.html';
+import {STORAGE_KEY_COLOR_MODE} from "../../../../components/task-sunburst/task-sunburst.directive";
 
 export const activitiesState = {
     name: 'main.inspect.activities',
@@ -56,7 +57,7 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
         $timeout(function() { $scope.$broadcast('resize') }, 100);
     };
 
-    vm.simpleColors = window.localStorage.getItem('simpleColors') || false;
+    vm.simpleColors = window.localStorage.getItem(STORAGE_KEY_COLOR_MODE) || false;
     vm.toggleColorScheme = function () {
         vm.simpleColors = !vm.simpleColors;
         $timeout(function() { $scope.$broadcast('toggleColorScheme', {simpleColors: vm.simpleColors}) }, 100);
