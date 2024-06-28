@@ -21,6 +21,7 @@ import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-sp
 import template from './kilt-panel.template.html';
 import modalTemplate from './kilt.modal.template.html';
 import {STORAGE_KEY_COLOR_MODE} from "../../../../components/task-sunburst/task-sunburst.directive";
+import {colors} from "../../../../components/task-sunburst/task-sunburst.util";
 
 const MODULE_NAME = 'activities.kilt-panel';
 
@@ -49,6 +50,8 @@ export function activitiesListAndKiltPanelDirective() {
         let vm = this;
         vm.isNonEmpty = Utils.isNonEmpty;
         vm.modalTemplate = modalTemplate;
+
+        vm.colors = colors;
 
         vm.wideKilt = false;
         vm.setWideKilt = function (newValue) {

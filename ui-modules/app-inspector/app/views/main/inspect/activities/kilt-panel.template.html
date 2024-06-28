@@ -22,11 +22,11 @@
 
     <div ng-class="{ 'col-md-12': true, 'col-lg-4': !vm.wideKilt, 'col-lg-12': vm.wideKilt }" ng-if="vm.isNonEmpty(activities)">
         <expandable-panel expandable-template="vm.modalTemplate" class="panel-table">
-            <heading  uib-popover-template="'Colors.html'">Progress Map</heading>
+            <heading>Progress Map</heading>
             <extra-buttons>
-                <button class="btn btn-link title-toolbar-item" ng-click="vm.toggleColorScheme()"
-                        uib-tooltip="{{vm.simpleColors ? 'Color activities by task id' : 'All finished activities have the same color' }}">
-                    <i class="fa" ng-class="{ 'fa-toggle-off': vm.simpleColors, 'fa-toggle-on': !vm.simpleColors }"></i></button>
+                <button class="btn btn-link title-toolbar-item" uib-popover-template="'Settings.html'" popover-placement="auto top-right" popover-title="Progress Map Overview and Settings"
+                        popover-class="kilt-settings-popover">
+                    <i class="fa fa-gear"></i></button>
                 <button class="visible-lg-inline-block btn btn-link title-toolbar-item" ng-click="vm.setWideKilt(!vm.wideKilt)"
                         uib-tooltip="{{ vm.wideKilt ? 'Side-by-side' : 'Full-width' }}" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
                     <i class="fa" ng-class="{ 'fa-indent': vm.wideKilt, 'fa-outdent': !vm.wideKilt }"></i></button>
@@ -35,6 +35,47 @@
             <task-sunburst task-type="activity" tasks="activities" filtered-to="focusedActivities" ng-if="vm.isNonEmpty(activities)" exclude-transient="globalFilters && globalFilters.transient && !globalFilters.transient.include"></task-sunburst>
         </expandable-panel>
     </div>
+
+    <script type="text/ng-template" id="Settings.html">
+        <div>
+            <p>
+                The progress map shows task progress and completion.
+                Tasks are shown chronologically left-to-right based on start time,
+                and hierarchically (subtasks) top-to-bottom.
+            </p><p>
+                <span style="background-color: {{vm.colors.ACTIVE_BRIGHT}};" class="swatch-square"></span>
+                Active tasks are shown in bright, pulsing green.
+            </p><p>
+                <span style="background-color: {{vm.colors.ERROR}};" class="swatch-square"></span>
+                Failed tasks are shown in red.
+            </p><p>
+                <span style="background-color: {{vm.colors.unstartedFn('sample','simple')}};" class="swatch-square"></span>
+                Unstarted tasks are shown as pale.
+            </p><p>
+                <span style="background-color: {{vm.colors.succeededFn('sample','simple')}};" class="swatch-square"></span>
+                Completed tasks are shown as dark.
+            </p>
+            <div style="display: flex;">
+                <div style="flex: 0 0 auto; padding-left: 1em; padding-right: 1em;">
+                    <button class="btn btn-link title-toolbar-item" ng-click="vm.toggleColorScheme()" style="margin-left: 0">
+                        <i class="fa" ng-class="{ 'fa-toggle-off': vm.simpleColors, 'fa-toggle-on': !vm.simpleColors }"></i></button>
+                </div>
+                <div style="flex: 1 1 auto;">
+                    <b>Enable multi-colored mode</b> <br/>
+                    <span ng-if="vm.simpleColors">
+                        Currently "simple-colored mode" is selected.
+                        Unstarted and completed tasks are shown in pale and dark green.
+                    </span>
+                    <span ng-if="!vm.simpleColors">
+                        Currently "multi-colored mode" is selected.
+                        Unstarted and completed tasks use a color computed from a hash of the task name.
+                        This means the colors for tasks vary, but are consistent for a given task name,
+                        so the color can be used to find it more quickly.
+                    </span>
+                </div>
+            </div>
+        </div>
+    </script>
 
 </div>
 
