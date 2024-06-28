@@ -21,6 +21,6 @@
     <h3 class="modal-title">Progress Map</h3>
 </div>
 <div class="modal-body">
-    <h4 class="text-center" ng-if="!vm.activitiesDeep || vm.activitiesDeep.length === 0">No tasks</h4>
-    <task-sunburst task-type="activity" tasks="vm.activitiesDeep" ng-if="vm.activitiesDeep && vm.activitiesDeep.length > 0"></task-sunburst>
+    <h4 class="text-center" ng-if="!activities || activities.length === 0">No tasks</h4>
+    <task-sunburst task-type="activity" tasks="activities" filtered-to="focusedActivities" ng-if="vm.isNonEmpty(activities)" exclude-transient="globalFilters && globalFilters.transient && !globalFilters.transient.include"></task-sunburst>
 </div>

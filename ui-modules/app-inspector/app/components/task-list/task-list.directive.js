@@ -201,7 +201,7 @@ export function taskListDirective() {
                     try {
                         const filters = sessionStorage.getItem('brooklyn-task-list-filters-' + $scope.contextKey);
                         if (filters) {
-                            //console.debug("Read filters for", $scope.contextKey, filters);
+                            // console.debug("Read filters for", $scope.contextKey, filters);
                             preselectedFilters = JSON.parse(filters);
                         }
                     } catch (e) {
@@ -250,17 +250,18 @@ export function taskListDirective() {
                             selectFilter($scope.taskType);
                         }
                     } else {
-                        if (!isActivityChildren) {
-                            // defaults (when not in subtask view; in subtask view it is as above)
-                            selectFilter('_cross_entity');
-                            selectFilter('_all_effectors');
-                            selectFilter('TOP-LEVEL');
-                            selectFilter('EFFECTOR');
-                            selectFilter('WORKFLOW');
-                            selectFilter('_periodic');
-                            selectFilter('_other_entity');
-                        } else {
-                            // in children mode we don't want any such filters
+                        selectFilter('_cross_entity');
+                        selectFilter('_all_effectors');
+                        selectFilter('TOP-LEVEL');
+                        selectFilter('EFFECTOR');
+                        selectFilter('WORKFLOW');
+                        selectFilter('_periodic');
+                        selectFilter('_other_entity');
+
+                        if (isActivityChildren) {
+                            // in children mode we also want sub-tasks
+                            // (previously selected no filters in subtask view)
+                            selectFilter('SUB-TASK');
                         }
                     }
                     if (!isActivityChildren) selectFilter("_workflowStepsHidden");

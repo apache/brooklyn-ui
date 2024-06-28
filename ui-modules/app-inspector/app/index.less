@@ -73,6 +73,11 @@
   flex-grow: 0;
 }
 
+// don't show button focus (blue border) unless keyboard is in use
+.btn:focus:not(:focus-visible) {
+  outline: 0 !important;
+  box-shadow: none !important;
+}
 
 // Load last so that these style rules and var values trump others
 @import "~brooklyn-shared/style/last.less";
