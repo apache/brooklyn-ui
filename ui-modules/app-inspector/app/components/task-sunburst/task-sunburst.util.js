@@ -18,6 +18,10 @@
  */
 
 import * as d3 from "d3";
+import MODULE_NAME from "./task-sunburst.directive";
+
+export const COLOR_MODES = [ 'simple', 'multi' ];
+export const DEFAULT_COLOR_MODE = COLOR_MODES[0];
 
 export function isNewEntity(d) {
   return d.data.task && d.parent && d.parent.data.task && d.data.task.entityId && d.data.task.entityId != d.parent.data.task.entityId;
@@ -76,7 +80,7 @@ colors = {
 {
     // build a palette to use, avoiding anything that looks like success
     // (danger we don't avoid as it is usually bright)
-    var palettes = ["normal", "simple"];
+    var palettes = COLOR_MODES;
     for(var p of palettes) {
         var hueToAvoid = d3.hsl(colors.ACTIVE_NORMAL).h;
         var palette = [];
@@ -103,7 +107,7 @@ Object.assign(colors, colors, {
   ACTIVE_BRIGHT: colors.ACTIVE_NORMAL.brighter(0.2),
   scale: 
     function(x, scheme) {
-      const palette = colors.PALETTES[scheme||"normal"];
+      const palette = colors.PALETTES[scheme||DEFAULT_COLOR_MODE];
       return palette[((hash(x) % palette.length)+palette.length)%palette.length];
     },
   nodeToUseForHue: function(x) {
@@ -186,4 +190,13 @@ export function arcF(options) {
 export function taskId(d) { return findTask(d).id; }
 
 export function id(x) { return x; }
-          
+
+const STORAGE_KEY_COLOR_MODE = 'brooklyn.'+MODULE_NAME+'.color_mode';
+
+export function getSunburstColorMode($window) {
+    return $window.localStorage.getItem(STORAGE_KEY_COLOR_MODE) || DEFAULT_COLOR_MODE;
+}
+export function toggleSunburstColorMode($window) {
+    const m = getSunburstColorMode($window);
+    $window.localStorage.setItem(STORAGE_KEY_COLOR_MODE, COLOR_MODES[ (COLOR_MODES.findIndex(x => x == m) + 1) % COLOR_MODES.length ]);
+}

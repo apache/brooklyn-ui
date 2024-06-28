@@ -29,8 +29,6 @@ angular.module(MODULE_NAME, [])
 
 export default MODULE_NAME;
 
-export const STORAGE_KEY_COLOR_MODE = 'brooklyn.'+MODULE_NAME+'.color_mode';
-
 export function taskSunburstDirective() {
     return {
         template: template,
@@ -47,7 +45,7 @@ export function taskSunburstDirective() {
 
     function controller($scope, $element, $state, $window, $timeout) {
         function lookupColorScheme() {
-            $scope.colorScheme = $window.localStorage.getItem(STORAGE_KEY_COLOR_MODE) || 'normal';
+            $scope.colorScheme = util.getSunburstColorMode($window);
         }
         lookupColorScheme();
 

@@ -40,8 +40,9 @@
         <div>
             <p>
                 The progress map shows task progress and completion.
+            </p><p>
                 Tasks are shown chronologically left-to-right based on start time,
-                and hierarchically (subtasks) top-to-bottom.
+                and hierarchically top-to-bottom with sub-tasks under their submitter.
             </p><p>
                 <span style="background-color: {{vm.colors.ACTIVE_BRIGHT}};" class="swatch-square"></span>
                 Active tasks are shown in bright, pulsing green.
@@ -49,28 +50,29 @@
                 <span style="background-color: {{vm.colors.ERROR}};" class="swatch-square"></span>
                 Failed tasks are shown in red.
             </p><p>
-                <span style="background-color: {{vm.colors.unstartedFn('sample','simple')}};" class="swatch-square"></span>
+                <span style="background-color: {{vm.colors.unstartedFn('sample',vm.colorMode)}};" class="swatch-square"></span>
                 Unstarted tasks are shown as pale.
             </p><p>
-                <span style="background-color: {{vm.colors.succeededFn('sample','simple')}};" class="swatch-square"></span>
+                <span style="background-color: {{vm.colors.succeededFn('sample',vm.colorMode)}};" class="swatch-square"></span>
                 Completed tasks are shown as dark.
             </p>
-            <div style="display: flex;">
+            <hr></hr>
+            <div style="display: flex; margin-bottom: 16px;">
                 <div style="flex: 0 0 auto; padding-left: 1em; padding-right: 1em;">
-                    <button class="btn btn-link title-toolbar-item" ng-click="vm.toggleColorScheme()" style="margin-left: 0">
-                        <i class="fa" ng-class="{ 'fa-toggle-off': vm.simpleColors, 'fa-toggle-on': !vm.simpleColors }"></i></button>
+                    <button class="btn btn-link title-toolbar-item" ng-click="vm.toggleColorScheme()" style="margin-left: 0; width: 1em; padding-top: 0;">
+                        <i class="fa" ng-class="{ 'fa-toggle-off': vm.colorMode=='simple', 'fa-toggle-on': vm.colorMode!='simple' }"></i></button>
                 </div>
                 <div style="flex: 1 1 auto;">
                     <b>Enable multi-colored mode</b> <br/>
-                    <span ng-if="vm.simpleColors">
+                    <span ng-if="vm.colorMode=='simple'">
                         Currently "simple-colored mode" is selected.
                         Unstarted and completed tasks are shown in pale and dark green.
                     </span>
-                    <span ng-if="!vm.simpleColors">
+                    <span ng-if="vm.colorMode!='simple'">
                         Currently "multi-colored mode" is selected.
                         Unstarted and completed tasks use a color computed from a hash of the task name.
                         This means the colors for tasks vary, but are consistent for a given task name,
-                        so the color can be used to find it more quickly.
+                        allowing the color to be used to find known tasks more quickly.
                     </span>
                 </div>
             </div>

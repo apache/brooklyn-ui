@@ -20,8 +20,11 @@ import angular from "angular";
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from './kilt-panel.template.html';
 import modalTemplate from './kilt.modal.template.html';
-import {STORAGE_KEY_COLOR_MODE} from "../../../../components/task-sunburst/task-sunburst.directive";
-import {colors} from "../../../../components/task-sunburst/task-sunburst.util";
+import {
+    colors,
+    getSunburstColorMode,
+    toggleSunburstColorMode
+} from "../../../../components/task-sunburst/task-sunburst.util";
 
 const MODULE_NAME = 'activities.kilt-panel';
 
@@ -58,10 +61,10 @@ export function activitiesListAndKiltPanelDirective() {
             vm.wideKilt = newValue;
         };
 
-        vm.simpleColors = window.localStorage.getItem(STORAGE_KEY_COLOR_MODE)=='simple';
+        vm.colorMode = getSunburstColorMode($window);
         vm.toggleColorScheme = function () {
-            vm.simpleColors = !vm.simpleColors;
-            $window.localStorage.setItem(STORAGE_KEY_COLOR_MODE, vm.simpleColors ? 'simple' : 'normal');
+            toggleSunburstColorMode($window);
+            vm.colorMode = getSunburstColorMode($window);
             $timeout(function () {
                 $scope.$broadcast('changedKiltColorScheme')
             }, 0);
