@@ -47,6 +47,7 @@ import entityEffector from "components/entity-effector/entity-effector.directive
 import entityPolicy from "components/entity-policy/entity-policy.directive";
 import taskList from "components/task-list/task-list.directive";
 import taskSunburst from "components/task-sunburst/task-sunburst.directive";
+import activitiesListAndKiltPanel from "views/main/inspect/activities/kilt-panel.directive";
 import stream from "components/stream/stream.directive";
 import adjunctsList from "components/adjuncts-list/adjuncts-list";
 import workflowSteps from "components/workflow/workflow-steps.directive";
@@ -72,7 +73,7 @@ angular.module('brooklynAppInspector', [ngResource, ngCookies, ngSanitize, uiRou
     dropdownNested,
     brServerStatus, brIconGenerator, brInterstitialSpinner, brooklynModuleLinks, brSensitiveField, brooklynUserManagement,
     brYamlEditor, brWebNotifications, brExpandablePanel, 'xeditable', brLogbook, apiProvider, entityTree, loadingState, serverApi,
-    configSensorTable, entityEffector, entityPolicy, taskList, taskSunburst, stream, adjunctsList,
+    configSensorTable, entityEffector, entityPolicy, taskList, taskSunburst, activitiesListAndKiltPanel, stream, adjunctsList,
     workflowSteps, workflowStep,
     managementDetail, brandAngularJs])
     .provider('catalogApi', catalogApiProvider)

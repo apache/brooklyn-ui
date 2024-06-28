@@ -44,25 +44,6 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
 
     let observers = [];
 
-    vm.modalTemplate = modalTemplate;
-
-    vm.isNonEmpty = Utils.isNonEmpty;
-
-    vm.wideKilt = false;
-    vm.setWideKilt = function (newValue) {
-        vm.wideKilt = newValue;
-        // empirically delay of 100ms means it runs after the resize;
-        // seems there is no way to hook in to resize events so it is
-        // either this or a $scope.$watch with very low interval
-        $timeout(function() { $scope.$broadcast('resize') }, 100);
-    };
-
-    vm.simpleColors = window.localStorage.getItem(STORAGE_KEY_COLOR_MODE) || false;
-    vm.toggleColorScheme = function () {
-        vm.simpleColors = !vm.simpleColors;
-        $timeout(function() { $scope.$broadcast('toggleColorScheme', {simpleColors: vm.simpleColors}) }, 100);
-    };
-
     onStateChange();
     $scope.$on('$stateChangeSuccess', (event, toState, toParams, fromState, fromParams, options)=> {
         // as the below only runs if we are the active state, we need to check
@@ -172,19 +153,6 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
             workflowLoadAttemptFinished = true;
             checkTasksLoadAttemptsFinished();
         });
-
-        // previously we loaded these separately, and the (now Deep) call above was previously entityActivities
-        // but the only difference is for cross-entitiy activities, and calling just Deep and using for both is more efficient
-//        entityApi.entityActivitiesDeep(applicationId, entityId).then((response) => {
-//            vm.activitiesDeep = response.data;
-//            observers.push(response.subscribe((response) => {
-//                vm.activitiesDeep = response.data;
-//                vm.error = undefined;
-//            }));
-//        }).catch((error) => {
-//            $log.warn('Error loading activity children deep for entity ' + entityId, error);
-//            vm.error = 'Cannot load activities (deep) for entity with ID: ' + entityId;
-//        });
 
         $scope.$on('$destroy', () => {
           observers.forEach((observer) => {

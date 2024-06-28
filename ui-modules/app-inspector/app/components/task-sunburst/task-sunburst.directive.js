@@ -47,6 +47,7 @@ export function taskSunburstDirective() {
     function controller($scope, $element, $state, $window, $timeout) {
         const simpleColors = $window.localStorage.getItem(STORAGE_KEY_COLOR_MODE) || false;
         $scope.colorScheme = simpleColors ? "simple" : "normal";
+
         var viz = initVisualization($scope, $element, $state);
 
         angular.element($window).on('resize', viz.resize);
@@ -54,7 +55,6 @@ export function taskSunburstDirective() {
 
         $scope.$on('toggleColorScheme', (event, args) => {
             $scope.colorScheme = args.simpleColors ? "simple" : "normal";
-            $window.localStorage.setItem(STORAGE_KEY_COLOR_MODE, args.simpleColors);
         });
 
         $scope.$on('$destroy', function() {

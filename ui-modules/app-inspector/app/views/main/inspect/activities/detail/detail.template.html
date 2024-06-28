@@ -366,22 +366,12 @@
                         <heading> Sub-tasks</heading>
 
                         <div class="row">
-                            <div ng-class="{ 'col-md-12': true, 'col-lg-8': !vm.wideKilt && vm.isNonEmpty(vm.model.activitiesDeep), 'col-lg-12': vm.wideKilt || !vm.isNonEmpty(vm.model.activitiesDeep)}">
+                            <!-- children will include background non-subtasks, but deep will not; deep tasks are usually the more interesting -->
+                            <activities-list-and-kilt-panel activities="vm.model.activitiesDeep" global-filters="globalFilters">
                                 <task-list context-key="{{ vm.model.activityId }}" entity-id="vm.model.entityId" tasks="vm.model.activityChildrenAndDeep" parent-task-id="{{ vm.model.activityId }}" filtered-callback="vm.onFilteredActivitiesChange"
                                            tasks-loaded="vm.model.activityChildren && vm.model.activitiesDeep"></task-list>
-                            </div>
-                            <div ng-class="{ 'col-md-12': true, 'col-lg-4': !vm.wideKilt, 'col-lg-12': vm.wideKilt }" ng-if="vm.isNonEmpty(vm.model.activitiesDeep)">
-                                <expandable-panel expandable-template="vm.modalTemplate" class="panel-table">
-                                    <heading>Progress Map</heading>
-                                    <extra-buttons>
-                                        <button class="visible-lg-inline-block btn btn-link title-toolbar-item" ng-click="vm.setWideKilt(!vm.wideKilt)"
-                                                uib-tooltip="{{ vm.wideKilt ? 'Side-by-side' : 'Full-width' }}" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
-                                            <i class="fa" ng-class="{ 'fa-indent': vm.wideKilt, 'fa-outdent': !vm.wideKilt }"></i></button>
-                                    </extra-buttons>
-                                    <h4 class="text-center" ng-if="!vm.isNonEmpty(vm.model.activitiesDeep)">No tasks</h4>
-                                    <task-sunburst task-type="activity" tasks="vm.model.activitiesDeep" exclude-transient="globalFilters && globalFilters.transient && !globalFilters.transient.include" ng-if="vm.isNonEmpty(vm.model.activitiesDeep)"></task-sunburst>
-                                </expandable-panel>
-                            </div>
+                            </activities-list-and-kilt-panel>
+
                         </div>
                     </br-collapsible>
 

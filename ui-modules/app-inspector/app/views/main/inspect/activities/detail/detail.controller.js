@@ -18,7 +18,6 @@
  */
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./detail.template.html";
-import modalTemplate from './kilt.modal.template.html';
 import {makeTaskStubFromWorkflowRecord} from "../activities.controller";
 import jsyaml from 'js-yaml';
 import runWorkflowModalTemplate from "../../run-workflow-modal.template.html";
@@ -31,6 +30,7 @@ export const detailState = {
     controller: ['$scope', '$state', '$stateParams', '$location', '$log', '$uibModal', '$timeout', '$sanitize', '$sce', 'activityApi', 'entityApi', 'brUtilsGeneral', DetailController],
     controllerAs: 'vm',
 }
+
 function DetailController($scope, $state, $stateParams, $location, $log, $uibModal, $timeout, $sanitize, $sce, activityApi, entityApi, Utils) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
@@ -56,8 +56,6 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
         workflow: {},
     };
 
-    vm.modalTemplate = modalTemplate;
-    vm.wideKilt = false;
     vm.toggleOldWorkflowRunStepDetails = () => { $scope.showOldWorkflowRunStepDetails = !$scope.showOldWorkflowRunStepDetails; }
 
     $scope.actions = {};
@@ -391,7 +389,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
             }
         });
         
-        activityApi.activityDescendants(activityId, 8, true).then((response)=> {
+        activityApi.activityDescendants(activityId, 8).then((response)=> {
             vm.model.activitiesDeep = response.data;
             vm.error = undefined;
             onActivityLoadUpdate();
@@ -413,7 +411,6 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
         
     }
 
-    vm.isNonEmpty = Utils.isNonEmpty;
     vm.yaml = (o) => typeof o === 'string' ? o : jsyaml.dump(o);
 
     vm.openInRunModel = function (workflowYaml) {
@@ -460,14 +457,6 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
         return Object.keys($scope.streamsById);
     };
 
-    vm.setWideKilt = function (newValue) {
-        vm.wideKilt = newValue;
-        // empirically delay of 100ms means it runs after the resize;
-        // seems there is no way to hook in to resize events so it is
-        // either this or a $scope.$watch with very low interval
-        $timeout(function() { $scope.$broadcast('resize') }, 100);
-    };
-
     vm.stringify = (data) => JSON.stringify(data, null, 2);
     vm.stringifiedSize = (data) => JSON.stringify(data).length;
 
@@ -506,8 +495,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
     }
 
     vm.isNullish = _.isNil;
-    vm.isEmpty = x => vm.isNullish(x) || (x.length==0) || (typeof x === 'object' && !Object.keys(x).length);
-    vm.isNonEmpty = x => !vm.isEmpty(x);
+    vm.isNonEmpty = Utils.isNonEmpty;
 }
 
 export function getTaskWorkflowTag(task) {

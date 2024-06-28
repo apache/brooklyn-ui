@@ -1,0 +1,40 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<div class="row">
+    <div ng-class="{ 'col-md-12': true, 'col-lg-8': !vm.wideKilt && vm.isNonEmpty(activities), 'col-lg-12': vm.wideKilt || !vm.isNonEmpty(activities)}" ng-transclude>
+    </div>
+
+    <div ng-class="{ 'col-md-12': true, 'col-lg-4': !vm.wideKilt, 'col-lg-12': vm.wideKilt }" ng-if="vm.isNonEmpty(activities)">
+        <expandable-panel expandable-template="vm.modalTemplate" class="panel-table">
+            <heading  uib-popover-template="'Colors.html'">Progress Map</heading>
+            <extra-buttons>
+                <button class="btn btn-link title-toolbar-item" ng-click="vm.toggleColorScheme()"
+                        uib-tooltip="{{vm.simpleColors ? 'Color activities by task id' : 'All finished activities have the same color' }}">
+                    <i class="fa" ng-class="{ 'fa-toggle-off': vm.simpleColors, 'fa-toggle-on': !vm.simpleColors }"></i></button>
+                <button class="visible-lg-inline-block btn btn-link title-toolbar-item" ng-click="vm.setWideKilt(!vm.wideKilt)"
+                        uib-tooltip="{{ vm.wideKilt ? 'Side-by-side' : 'Full-width' }}" tooltip-placement="top" tooltip-popup-delay="500" tooltip-append-to-body="true">
+                    <i class="fa" ng-class="{ 'fa-indent': vm.wideKilt, 'fa-outdent': !vm.wideKilt }"></i></button>
+            </extra-buttons>
+            <h4 class="text-center" ng-if="!vm.isNonEmpty(activities)">No tasks</h4>
+            <task-sunburst task-type="activity" tasks="activities" filtered-to="focusedActivities" ng-if="vm.isNonEmpty(activities)" exclude-transient="globalFilters && globalFilters.transient && !globalFilters.transient.include"></task-sunburst>
+        </expandable-panel>
+    </div>
+
+</div>
+
