@@ -18,8 +18,6 @@
  */
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./activities.template.html";
-import modalTemplate from './kilt.modal.template.html';
-import {STORAGE_KEY_COLOR_MODE} from "../../../../components/task-sunburst/task-sunburst.directive";
 
 export const activitiesState = {
     name: 'main.inspect.activities',

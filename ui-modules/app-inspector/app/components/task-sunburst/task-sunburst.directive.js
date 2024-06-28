@@ -41,49 +41,56 @@ export function taskSunburstDirective() {
             filteredTo: '=?', // optionally restrict tasks to a subset (and descendants); for use with tag and name filters
             excludeTransient: '=?', // optionally descendants not to include transients
         },
-        controller: ['$scope', '$element', '$state', '$window', '$timeout', controller]
+        controller: ['$scope', '$element', '$state', '$window', '$timeout', controller],
     };
+
 
     function controller($scope, $element, $state, $window, $timeout) {
         const simpleColors = $window.localStorage.getItem(STORAGE_KEY_COLOR_MODE) || false;
         $scope.colorScheme = simpleColors ? "simple" : "normal";
 
-        var viz = initVisualization($scope, $element, $state);
+        const vizOptions = {};
+        vizOptions.transitionScale = 1;
 
-        angular.element($window).on('resize', viz.resize);
-        $scope.$on('resize', viz.resize);
+        var viz = initVisualization($scope, $element, $state, vizOptions);
+
+        try {
+            new ResizeObserver(() => {
+                vizOptions.transitionScale = 0;
+                setTimeout(() => {
+                    viz.resize();
+                    vizOptions.transitionScale = 1;
+                }, 0);
+            }).observe($element[0])
+        } catch (e) {
+            console.warn("ResizeObserver not available; kilt diagram will not resize correctly.", e);
+        }
 
         $scope.$on('toggleColorScheme', (event, args) => {
             $scope.colorScheme = args.simpleColors ? "simple" : "normal";
         });
 
-        $scope.$on('$destroy', function() {
-            angular.element($window).off('resize', viz.resize);
-        });
-
         function onUpdate() {
             viz.prepData();
             viz.redraw();
+            viz.redraw();  // second redraw needed because we don't update chart right away
         }
 
         $scope.$watch('tasks', onUpdate);
         $scope.$watch('filteredTo', onUpdate);
         $scope.$watch('excludeTransient', onUpdate);
         $scope.$watch('colorScheme', onUpdate);
-
-        // seems to help with the window being ready, otherwise kilt expects to be too wide
-        $timeout(onUpdate, 0);
     }
 }
 
 // this could be its own class independent of angular in future
-function initVisualization($scope, $element, $state) {
+function initVisualization($scope, $element, $state, options) {
 
     var result = {};
     var tasksData;
     var tasksById;
         
-    result.prepData = function() { 
+    result.prepData = function() {
         tasksData = {name: "root", task: null, children: []};
 
         const tasks = Array.isArray($scope.tasks) ? $scope.tasks : Object.values($scope.tasks);
@@ -224,7 +231,7 @@ function initVisualization($scope, $element, $state) {
       // Transition each segment to full opacity and then reactivate it.
       d3_root.selectAll("path")
           .transition()
-          .duration(300)
+          .duration(300 * options.transitionScale)
           .style("opacity", 1);
 
       d3_root.selectAll(".detail #detail1 .value").style("display", "none");
@@ -265,7 +272,7 @@ function initVisualization($scope, $element, $state) {
       chart.selectAll("path")
       // Fade all the segments.
           .transition()
-          .duration(100)
+          .duration(100 * options.transitionScale)
           .style("opacity", 0.3);
     
       // But highlight those that are an ancestor of the current segment.
@@ -274,7 +281,7 @@ function initVisualization($scope, $element, $state) {
                     return (sequenceArray.indexOf(node) >= 0);
                   })
           .transition()
-          .duration(100)
+          .duration(100 * options.transitionScale)
           .style("opacity", 1);
     }
     
@@ -285,7 +292,8 @@ function initVisualization($scope, $element, $state) {
       } else {
         d3_root.style("display", "");
       }
-      
+
+      if (rawData.children.length>5) return;
       var root = d3.hierarchy(rawData);
       
       // set depth on the data so we can stop recursively sizing beyond a given depth
@@ -320,14 +328,14 @@ function initVisualization($scope, $element, $state) {
           .on("click", click)
           .style("fill", function(d) { return util.colors.f(d, $scope.colorScheme); });
       path_enter
-          .transition().duration(300)
+          .transition().duration(300 * options.transitionScale)
           .attrTween("d", function (d) { return function(t) {
              return util.arcF({ scaling: scaling, visible_arc_length: sizing.visible_arc_length, 
                 visible_arc_start_fn: sizing.visible_arc_start_fn, t: t })(d);
           }; });
       g.select("path.arc.primary")
         .attr("class", function(d) { return util.taskClasses(d, ["arc", "primary"]).join(" "); })
-        .transition().duration(300)
+        .transition().duration(300 * options.transitionScale)
         .attr("d", util.arcF({ scaling: scaling, visible_arc_length: sizing.visible_arc_length,
                 visible_arc_start_fn: sizing.visible_arc_start_fn }))
         .style("fill", function(d) { return util.colors.f(d, $scope.colorScheme); });
@@ -344,14 +352,14 @@ function initVisualization($scope, $element, $state) {
       g_enter.filter(util.isNewEntity).append("path").on("click", click)
         .attr("class", function(d) { return util.taskClasses(d, ["arc", "primary"]).join(" "); })
         .style("fill", function(d) { return util.colors.f(d, $scope.colorScheme); })
-        .transition().duration(300)
+        .transition().duration(300 * options.transitionScale)
           .attrTween("d", function (d) { return function(t) {
              return util.arcF({ scaling: scaling, visible_arc_length: sizing.visible_arc_length, 
                 visible_arc_start_fn: sizing.visible_arc_start_fn, isMinimal: true, t: t })(d);
           }; });
       g.select("path.arc.entering-new-entity")
         .attr("class", function(d) { return util.taskClasses(d, ["arc", "entering-new-entity"]).join(" "); })
-        .transition().duration(300)
+        .transition().duration(300 * options.transitionScale)
         .attr("d", util.arcF({ scaling: scaling, visible_arc_length: sizing.visible_arc_length, 
             visible_arc_start_fn: sizing.visible_arc_start_fn, isMinimal: true}))
         .style("fill", function(d) { return util.colors.f(d, $scope.colorScheme); });
@@ -362,7 +370,7 @@ function initVisualization($scope, $element, $state) {
           .attr("dy", ".35em")
           .style("opacity", 0)
           .on("click", click)
-          .transition().duration(600).style("opacity", function(t) {
+          .transition().duration(600 * options.transitionScale).style("opacity", function(t) {
             return t < 0.5 ? 0 : (t-0.5)*2;
           });
       // fade in text, slower than arcs so that they are in the right place when text becomes visible
@@ -389,7 +397,7 @@ function initVisualization($scope, $element, $state) {
             // margin - slightly greater on inner arcs, and if it's a cross-entity
             return (shouldTextBeHorizontal(d) ? "0" : "" + ((d.depth > 3 ? 2 : 4 - d.depth/2) + (util.isNewEntity(d) ? 1.5 : 0)));
           })
-          .transition().duration(600).style("opacity", 1);
+          .transition().duration(600 * options.transitionScale).style("opacity", 1);
     }
 
     function xPosOfText(d) {

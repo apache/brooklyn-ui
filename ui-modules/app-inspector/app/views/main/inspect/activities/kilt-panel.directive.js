@@ -53,12 +53,6 @@ export function activitiesListAndKiltPanelDirective() {
         vm.wideKilt = false;
         vm.setWideKilt = function (newValue) {
             vm.wideKilt = newValue;
-            // empirically delay of 100ms means it runs after the resize;
-            // seems there is no way to hook in to resize events so it is
-            // either this or a $scope.$watch with very low interval
-            $timeout(function () {
-                $scope.$broadcast('resize')
-            }, 100);
         };
 
         vm.simpleColors = window.localStorage.getItem(STORAGE_KEY_COLOR_MODE) || false;
@@ -67,7 +61,7 @@ export function activitiesListAndKiltPanelDirective() {
             $window.localStorage.setItem(STORAGE_KEY_COLOR_MODE, vm.simpleColors);
             $timeout(function () {
                 $scope.$broadcast('toggleColorScheme', {simpleColors: vm.simpleColors})
-            }, 100);
+            }, 0);
         };
     }
 
