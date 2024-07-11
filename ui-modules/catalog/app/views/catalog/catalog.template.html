@@ -74,7 +74,7 @@
                         ng-class="{'expanded': !isCollapsed, 'is-expandable': bundle.types.length > 0}"
                         class="list-group-item bundles-list">
                     <div class="media bundle-top-region" ng-init="isCollapsed = true" ng-click="isCollapsed = bundle.types.length > 0 ? !isCollapsed : true">
-                        <div class="media-left">
+                        <div class="media-left icon-96">
                             <a ui-sref="bundle({bundleId: bundle.symbolicName, bundleVersion: bundle.version})">
                                 <img ng-src="{{::bundle | iconGeneratorPipe:'symbolicName'}}" class="media-object" alt="{{::bundle.symbolicName}}'s logo" />
                             </a>
