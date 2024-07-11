@@ -78,8 +78,23 @@ export function deployStateController($scope, $state, $stateParams, $uibModal, b
     });
 
     function modalController($scope, $location, entitySpec, locations) {
+        // update entity spec to keep the right format (repeated in catalog type.state.js)
+        const specItem = entitySpec.specList[0];
+        // if the implementation plan does not declare its format but the first spec list item does
+        // then we should replace the low-level implementation plan (probably auto-generated) with
+        // the first spec list item (which is what the user created)
+        var preferredContents = entitySpec.plan && entitySpec.plan.data;
+        var preferredFormat = entitySpec.plan && entitySpec.plan.format;
+        if (!preferredFormat) {
+            if (specItem && specItem.format && specItem.contents) {
+                preferredFormat = specItem.format;
+                // also take those contents
+                preferredContents = specItem.contents;
+                entitySpec.plan = { data: preferredContents, format: preferredFormat };
+            }
+        }
+
         $scope.app = entitySpec;
-        $scope.app.plan.format = $scope.app.specList[0].format;
         $scope.locations = filterCatalogQuickLaunch(locations, (t) => {
                 $scope.usingLocationCatalogQuickLaunchTags = t.length > 0;
             });
@@ -93,7 +108,6 @@ export function deployStateController($scope, $state, $stateParams, $uibModal, b
                 noCreateLocationLink: $scope.usingLocationCatalogQuickLaunchTags
             },
             $location.search());
-        
     }
 }
 

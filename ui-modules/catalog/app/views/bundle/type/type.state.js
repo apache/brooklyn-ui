@@ -126,22 +126,25 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
         $scope.bundle = responses[0];
         $scope.type = responses[1];
 
-        // this is the initially selected item in the dropdown of the definition
-        const specItem = this.specItem = $scope.type.specList[0];
-
+        const entitySpec = $scope.type;
+        // update entity spec to keep the right format (repeated in home deploy.controller.js)
+        const specItem = entitySpec.specList[0];
         // if the implementation plan does not declare its format but the first spec list item does
         // then we should replace the low-level implementation plan (probably auto-generated) with 
         // the first spec list item (which is what the user created)
-        var preferredContents = $scope.type.plan && $scope.type.plan.data;
-        var preferredFormat = $scope.type.plan && $scope.type.plan.format;
+        var preferredContents = entitySpec.plan && entitySpec.plan.data;
+        var preferredFormat = entitySpec.plan && entitySpec.plan.format;
         if (!preferredFormat) {
           if (specItem && specItem.format && specItem.contents) {
             preferredFormat = specItem.format;
             // also take those contents
             preferredContents = specItem.contents;
-            $scope.type.plan = { data: preferredContents, format: preferredFormat };
+            entitySpec.plan = { data: preferredContents, format: preferredFormat };
           }
         }
+
+        // save this as the initially selected item in the dropdown of the definition
+        this.specItem = specItem;
 
         // this is used to link to the right editor in composer, preserve the format used to define the item being quick-launched
         $scope.typeFormat = preferredFormat ? 'format=' + preferredFormat + '&' : '';
