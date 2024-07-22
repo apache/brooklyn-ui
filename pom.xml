@@ -97,7 +97,7 @@
         <maven-resources-plugin.version>3.0.1</maven-resources-plugin.version>
         <maven-war-plugin.version>3.0.0</maven-war-plugin.version>
         <frontend-maven-plugin.version>1.9.0</frontend-maven-plugin.version>
-        <pax-web.version>7.3.9</pax-web.version>
+        <pax-web.version>8.0.27</pax-web.version>
         <pax-web-extender-whiteboard.version>${pax-web.version}</pax-web-extender-whiteboard.version>
 
         <!-- new deps not used in brooklyn-server -->
@@ -187,7 +187,7 @@
                                     <BROOKLYN_VERSION>${brooklyn.version}</BROOKLYN_VERSION>
                                     <BUILD_VERSION>${build.version}</BUILD_VERSION>
                                     <BUILD_NAME>${build.name}</BUILD_NAME>
-                                    <BUILD_BRANCH>${scmBranch}</BUILD_BRANCH> 
+                                    <BUILD_BRANCH>${scmBranch}</BUILD_BRANCH>
                                     <BUILD_COMMIT_ID>${buildNumber}</BUILD_COMMIT_ID>
                                     <BROOKLYN_UI_BRAND_DIR>${brooklyn.ui.brand.dir}</BROOKLYN_UI_BRAND_DIR>
                                 </environmentVariables>
@@ -206,7 +206,7 @@
                                     <BROOKLYN_VERSION>${brooklyn.version}</BROOKLYN_VERSION>
                                     <BUILD_VERSION>${build.version}</BUILD_VERSION>
                                     <BUILD_NAME>${build.name}</BUILD_NAME>
-                                    <BUILD_BRANCH>${scmBranch}</BUILD_BRANCH> 
+                                    <BUILD_BRANCH>${scmBranch}</BUILD_BRANCH>
                                     <BUILD_COMMIT_ID>${buildNumber}</BUILD_COMMIT_ID>
                                     <BROOKLYN_UI_BRAND_DIR>${brooklyn.ui.brand.dir}</BROOKLYN_UI_BRAND_DIR>
                                 </environmentVariables>
@@ -349,15 +349,15 @@
     </repositories>
 
     <profiles>
-        <profile>   
+        <profile>
             <id>clean-node</id>
             <activation>
                 <property>
                     <name>clean-node</name>
                 </property>
             </activation>
-            <build>         
-                <plugins>   
+            <build>
+                <plugins>
                     <plugin>
                         <artifactId>maven-clean-plugin</artifactId>
                         <configuration>
@@ -378,7 +378,7 @@
                         </configuration>
                     </plugin>
                 </plugins>
-            </build>    
+            </build>
         </profile>
         <profile>
             <id>skip-npm-install</id>

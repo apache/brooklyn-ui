@@ -35,8 +35,9 @@ import javax.servlet.ServletContextListener;
 import org.apache.brooklyn.ui.modularity.module.api.internal.UiModuleImpl;
 import org.apache.karaf.web.WebBundle;
 import org.apache.karaf.web.WebContainerService;
-import org.ops4j.pax.web.service.spi.WebEvent;
-import org.ops4j.pax.web.service.spi.WebListener;
+import org.ops4j.pax.web.service.spi.model.events.WebApplicationEvent;
+import org.ops4j.pax.web.service.spi.model.events.WebApplicationEventListener;
+import org.ops4j.pax.web.service.spi.model.info.WebApplicationInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -46,15 +47,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
+import static org.ops4j.pax.web.service.spi.model.events.WebApplicationEvent.State.DEPLOYING;
+
 /** Invoked by modules in their web.xml to create and register the {@link UiModule} service for that UI module. */
 public class UiModuleListener implements ServletContextListener {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(UiModuleListener.class);
     private static final Dictionary<String, ?> EMPTY_DICTIONARY = new Hashtable<>();
     public static final String CONFIG_PATH = "/WEB-INF/classes/ui-module/config.yaml";
 
     private ServiceRegistration<UiModule> registration;
-    private AtomicReference<WebListener> listener = new AtomicReference<>();
+    private AtomicReference<WebApplicationEventListener> listener = new AtomicReference<>();
 
     public UiModuleListener() {
     }
@@ -63,27 +66,27 @@ public class UiModuleListener implements ServletContextListener {
         final UiModule uiModule = createUiModule(servletContextEvent.getServletContext());
         Object moduleBundle = servletContextEvent.getServletContext().getAttribute("osgi-bundlecontext");
         final Bundle bundle = moduleBundle instanceof BundleContext ? ((BundleContext)moduleBundle).getBundle() : FrameworkUtil.getBundle(this.getClass());
-        
+
         initWebListener(bundle);
-        
+
         // register service against the bundle where it came from if possible (it always is, from what I've seen)
         // this prevents errors if this.getClass()'s bundle is not yet active and avoids needing to delay
         // (it also means service would be unregistered on that bundle destroy without listening for servlet context
-        // destroy but servlet context destroy is useful for symmetry with this and in case it is destroyed without 
+        // destroy but servlet context destroy is useful for symmetry with this and in case it is destroyed without
         // destroying the bundle; also we were already doing it)
-        
+
         try {
             if (bundle.getState() != Bundle.ACTIVE) {
                 final Duration TIMEOUT = Duration.ofMinutes(2);
-                LOG.warn("Bundle [{}] not ACTIVE to register Brooklyn UI module [{}], bundle current state [{}], will wait up to {}", 
-                    bundle.getSymbolicName(), uiModule.getName(), bundle.getState(), TIMEOUT);
+                LOG.warn("Bundle [{}] not ACTIVE to register Brooklyn UI module [{}], bundle current state [{}], will wait up to {}",
+                        bundle.getSymbolicName(), uiModule.getName(), bundle.getState(), TIMEOUT);
                 blockUntilBundleStarted(bundle, TIMEOUT);
             }
-            LOG.debug("Registering new Brooklyn UI module {}:{} [{}] called '{}' on context-path '{}'", 
-                bundle.getSymbolicName(), bundle.getVersion(), bundle.getVersion(), uiModule.getName(), uiModule.getPath() );
+            LOG.debug("Registering new Brooklyn UI module {}:{} [{}] called '{}' on context-path '{}'",
+                    bundle.getSymbolicName(), bundle.getVersion(), bundle.getVersion(), uiModule.getName(), uiModule.getPath() );
             registration = bundle.getBundleContext().registerService(UiModule.class, uiModule, EMPTY_DICTIONARY);
             LOG.trace("ServletContextListener on initializing UI module "+bundle.getSymbolicName()+" ["+bundle.getBundleId()+"] "
-                + "to "+uiModule.getPath()+", checking whether any bundles need stopping");
+                    + "to "+uiModule.getPath()+", checking whether any bundles need stopping");
             stopAnyExistingOrSuperseded(uiModule, bundle);
         } catch (Exception e) {
             LOG.error("Failed registration of Brooklyn UI module [" + uiModule.getName() + "] to [" + uiModule.getPath() + "]: "+e, e);
@@ -92,23 +95,23 @@ public class UiModuleListener implements ServletContextListener {
 
     private void initWebListener(Bundle bundle) {
         if (listener.compareAndSet(null, new UiModuleWebListener())) {
-            bundle.getBundleContext().registerService(WebListener.class, listener.get(), null);
+            bundle.getBundleContext().registerService(WebApplicationEventListener.class, listener.get(), null);
         }
     }
 
-    public class UiModuleWebListener implements WebListener {
+    public class UiModuleWebListener implements WebApplicationEventListener {
         long lastId = -1;
         @Override
-        public void webEvent(WebEvent event) {
+        public void webEvent(WebApplicationEvent event) {
             try {
-                if (event.getType() == WebEvent.DEPLOYING && lastId != event.getBundleId()) {
+                if (event.getType() == DEPLOYING && lastId != event.getBundleId()) {
                     // on deployment of new bundles check whether they are UI modules
                     // (this seems to be called about 10 times for any deployment; keep a note of the last bundle id to avoid duplication
                     lastId = event.getBundleId();
                     URL config = event.getBundle().getResource(CONFIG_PATH);
                     if (config!=null) {
                         LOG.trace("WebListener on deploying UI module "+event.getBundle().getSymbolicName()+" ["+event.getBundleId()+"] "
-                            + "to "+event.getContextPath()+", checking whether any bundles need stopping");
+                                + "to "+event.getContextPath()+", checking whether any bundles need stopping");
                         stopAnyExistingOrSuperseded(createUiModule(config.openStream(), event.getContextPath()), event.getBundle());
                     }
                 }
@@ -121,7 +124,7 @@ public class UiModuleListener implements ServletContextListener {
             }
         }
     }
-    
+
     protected void stopAnyExistingOrSuperseded(final UiModule uiModule, final Bundle bundle) throws Exception {
         if (uiModule.getStopExisting()) {
             stopExistingModulesListeningOnOurEndpoint(bundle, uiModule);
@@ -130,20 +133,21 @@ public class UiModuleListener implements ServletContextListener {
             stopSupersededBundles(bundle, uiModule);
         }
     }
-    
+
     /** stop modules on the same endpoint that with a lower number ID;
      * or if a module supersedes us, stop ourselves */
     private void stopExistingModulesListeningOnOurEndpoint(Bundle bundle, UiModule uiModule) throws Exception {
         ServiceReference<WebContainerService> webS = bundle.getBundleContext().getServiceReference(WebContainerService.class);
         WebContainerService web = bundle.getBundleContext().getService(webS);
-        
-        for (WebBundle bi: web.list()) {
-            if (bi.getBundleId()==bundle.getBundleId()) continue;
+
+        for (WebApplicationInfo bi: web.list()) {
+            long bundleId = bi.getBundle().getBundleId();
+            if (bundleId==bundle.getBundleId()) continue;
             if (uiModule.getPath().equals(bi.getContextPath()) || (uiModule.getPath().equals("") && bi.getContextPath().equals("/"))) {
-                Bundle bb = bundle.getBundleContext().getBundle(bi.getBundleId());
+                Bundle bb = bundle.getBundleContext().getBundle(bundleId);
                 Collection<ServiceReference<UiModule>> modules = bundle.getBundleContext().getServiceReferences(UiModule.class, null);
                 for (ServiceReference<UiModule> modS: modules) {
-                    if (modS.getBundle()!=null && modS.getBundle().getBundleId()==bi.getBundleId()) {
+                    if (modS.getBundle()!=null && modS.getBundle().getBundleId()==bundleId) {
                         // found UiModule for the potentially conflicting bundle
                         UiModule mod = bundle.getBundleContext().getService(modS);
                         if (isBundleSuperseded(mod, bundle)) {
@@ -199,9 +203,9 @@ public class UiModuleListener implements ServletContextListener {
             return;
         }
         LOG.debug("UiModules: " + message);
-        new Thread(() -> { 
+        new Thread(() -> {
             try {
-                bundleToStop.stop(); 
+                bundleToStop.stop();
             } catch (Exception e) {
                 LOG.warn("UiModules: error "+message+": "+e, e);
             }
@@ -210,10 +214,10 @@ public class UiModuleListener implements ServletContextListener {
 
     protected boolean isBundleStartingOrActive(Bundle bundleToStop) {
         switch (bundleToStop.getState()) {
-        case Bundle.START_TRANSIENT:
-        case Bundle.STARTING:
-        case Bundle.ACTIVE:
-            return true;
+            case Bundle.START_TRANSIENT:
+            case Bundle.STARTING:
+            case Bundle.ACTIVE:
+                return true;
         }
         return false;
     }
@@ -229,7 +233,7 @@ public class UiModuleListener implements ServletContextListener {
         } while (System.currentTimeMillis() < endTime);
         throw new IllegalStateException("Bundle "+bundle.getSymbolicName()+":"+bundle.getVersion()+" is not ACTIVE, even after waiting");
     }
-        
+
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
         LOG.debug("Unregistering Brooklyn UI module at [{}]", servletContextEvent.getServletContext().getContextPath());
