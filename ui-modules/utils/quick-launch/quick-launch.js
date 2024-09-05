@@ -43,11 +43,11 @@ export function quickLaunchDirective() {
             args: '=?', // default behaviour of code is: { noEditButton: false, noComposerButton: false, noCreateLocationLink: false, location: null }
             callback: '=?',
         },
-        controller: ['$scope', '$http', '$location', 'brSnackbar', 'brBrandInfo' , 'quickLaunchOverrides', controller],
+        controller: ['$scope', '$http', '$location', '$timeout', 'brSnackbar', 'brBrandInfo' , 'quickLaunchOverrides', controller],
         controllerAs: 'vm',
     };
 
-    function controller($scope, $http, $location, brSnackbar, brBrandInfo, quickLaunchOverrides) {
+    function controller($scope, $http, $location, $timeout, brSnackbar, brBrandInfo, quickLaunchOverrides) {
 
         let quickLaunch = this;
 
@@ -210,6 +210,7 @@ export function quickLaunchDirective() {
                                 brSnackbar.create('Application Deployed');
                             }
                             $scope.deploying = false;
+                            applyScope();
                         })
                         .catch((senderError) => {
                             // handling API error response. data attribute contains failure message
@@ -365,7 +366,7 @@ export function quickLaunchDirective() {
                     $scope.editorYaml = appPlan.yaml;
                     $scope.editorFormat = appPlan.format || quickLaunch.getOriginalPlanFormat;
                     $scope.yamlViewDisplayed = true;
-                    $scope.$apply(); // making sure that $scope is updated from async context
+                    applyScope();
                 })
                 .catch(error => {
                     console.error('Problem with Editor YAML generation:', error);
@@ -416,10 +417,16 @@ export function quickLaunchDirective() {
         function setComposerLink() {
             Promise.resolve(getComposerLinkWithFallback(false)).then(href => {
                 $scope.composerLink = href;
+                applyScope();
             });
             Promise.resolve(getComposerLinkWithFallback(true)).then(href => {
                 $scope.composerLinkExpanded = href;
+                applyScope();
             });
+        }
+
+        function applyScope() {  // making sure that $scope is updated from async context
+            $timeout(() => $scope.$apply());
         }
 
         function openComposer($event, expanded) {
