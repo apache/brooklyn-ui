@@ -87,6 +87,7 @@ export function quickLaunchDirective() {
             };
 
         quickLaunch.convertPlanToPreferredFormat = convertPlanToPreferredFormat;
+        quickLaunch.convertPlanFromOriginalFormat = convertPlanFromOriginalFormat;
         quickLaunch.getComposerHref = getComposerHref;
         quickLaunch.getPlanObject = getPlanObject;
         quickLaunch.getCampPlanObjectFromForm = getCampPlanObjectFromForm;
@@ -103,6 +104,49 @@ export function quickLaunchDirective() {
                 // model.location = locations[0].id; // predefined/uploaded Location objects, ID prop is sufficient
             }
         };
+        quickLaunch.getWidgetKind = (key, configMap, v) => {
+            if (!configMap || !configMap[key]) return undefined;  // ad hoc config?
+            if (configMap[key].json) return 'json';
+            if (v==null && configMap[key].defaults && configMap[key].defaults.length) return 'defaults';
+            return configMap[key].type;
+        }
+        quickLaunch.getDefaultsDropdown = (key, configMap) => {
+            const options = [];
+            const defaults = configMap[key].defaults;
+            options.push({
+                value: null,
+                description: 'Use '+defaults[0].source+': '+(defaults[0].jsonString || defaults[0].value),
+            });
+            options.push({
+                value: defaults[0].value,
+                description: 'Copy '+defaults[0].source,
+            });
+            for (let i=1; i<defaults.length; i++) {
+                if (options.find(x => angular.equals(x.value, defaults[i].value))) {
+                    // skip
+                } else {
+                    options.push({
+                        value: defaults[i].value,
+                        description: 'Copy ' + defaults[i].source + ': ' + (defaults[i].jsonString || defaults[i].value),
+                    });
+                }
+            }
+            return options;
+        }
+        quickLaunch.onDefaultsDropdown = (key, configMap, v) => {
+            if (v==null) return; //nothing to do
+
+            $scope.entityToDeploy['brooklyn.config'][key] = v;  // already done, if coming from dropdown, but no harm
+            for (let opt of configMap[key].defaults) {
+                if (angular.equals(opt.value, v)) {
+                    if (opt.isJson) {
+                        $scope.entityToDeployConfigJson[v] = opt.jsonString;
+                    }
+                    return;
+                }
+            }
+            // odd, nothing matched; just ignore
+        }
 
         $scope.formEnabled = true;
         $scope.editorEnabled = !$scope.args.noEditButton;
@@ -130,15 +174,22 @@ export function quickLaunchDirective() {
         $scope.clearError = () => { delete $scope.model.deployError; };
         $scope.transitionsShown = () => $scope.editorEnabled && $scope.formEnabled && !$scope.forceFormOnly;
 
-        $scope.$watch('app', () => {
+        $scope.$watch('app', async () => {
             quickLaunch.loadLocation($scope);
             $scope.clearError();
             $scope.editorYaml = $scope.app.plan.data;
             $scope.editorFormat = quickLaunch.getOriginalPlanFormat();
 
+            let campPlanYaml;
+            try {
+                campPlanYaml = (await quickLaunch.convertPlanFromOriginalFormat($scope.app.plan)).data;
+            } catch (error) {
+                console.warn("Unable to restore CAMP format", error, $scope.app.plan);
+                campPlanYaml = $scope.app.plan.data;
+            }
             let parsedPlan = null;
             try {
-                parsedPlan = yaml.safeLoad($scope.editorYaml);
+                parsedPlan = yaml.safeLoad(campPlanYaml);
             } catch (e) { /*console.log('Failed to parse YAML', e)*/ }
 
             // enable wizard if it's parseble and doesn't specify a location
@@ -160,22 +211,45 @@ export function quickLaunchDirective() {
             if ($scope.app.config) {
                 $scope.configMap = $scope.app.config.reduce((result, config) => {
                     result[config.name] = config;
+                    result[config.name].defaults = [];
+                    let showWithDefaultsDropdown = false;
 
                     let configValue = (parsedPlan[BROOKLYN_CONFIG] || {})[config.name];
-                    if (typeof configValue === 'undefined' &&  parsedPlan.services && parsedPlan.services.length === 1) {
+                    if (typeof configValue === 'undefined' && parsedPlan.services && parsedPlan.services.length === 1) {
                         configValue = (parsedPlan.services[0] && parsedPlan.services[0][BROOKLYN_CONFIG] || {})[config.name];
                     }
-
                     if (typeof configValue !== 'undefined') {
-                        $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = configValue;
-                    } else if (config.pinned || (isRequired(config) && (typeof config.defaultValue !== 'undefined'))) {
-                        $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = get(config, 'defaultValue', null);
+                        result[config.name].defaults.push({
+                            source: 'default from template',
+                            value: configValue,
+                        });
+                        showWithDefaultsDropdown = true;
                     }
 
-                    let json = getJsonOfConfigValue($scope.entityToDeploy[BROOKLYN_CONFIG][config.name]);
-                    if (json!=null) {
-                        $scope.entityToDeployConfigJson[config.name] = json;
-                        result[config.name].json = true;
+                    if (typeof config.defaultValue !== 'undefined') {
+                        result[config.name].defaults.push({
+                            source: 'default from parameter',
+                            value: config.defaultValue,
+                        });
+                        showWithDefaultsDropdown = showWithDefaultsDropdown || config.pinned || (isRequired(config) && (typeof config.defaultValue !== 'undefined'));
+                    }
+
+                    result[config.name].defaults.forEach(d => {
+                        let jsonString = getJsonOfConfigValue($scope.entityToDeploy[BROOKLYN_CONFIG][config.name]);
+                        if (jsonString != null) {
+                            // TODO do we need this?
+                            result[config.name].json = true;
+
+                            d.isJson = true;
+                            d.jsonString = jsonString;
+                        }
+                    });
+
+                    if (result[config.name].defaults.length) {
+                        result[config.name].defaultsForDropdown = quickLaunch.getDefaultsDropdown(config.name, result);
+                        if (showWithDefaultsDropdown) {
+                            $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = null;
+                        }
                     }
 
                     return result;
@@ -461,6 +535,7 @@ export function quickLaunchDirective() {
         }
 
         function convertPlanToPreferredFormat(plan) { return plan; }
+        function convertPlanFromOriginalFormat(plan) { return plan; }
 
         function getOriginalPlanFormat(scope) {
             scope = scope || $scope;
