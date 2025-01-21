@@ -18,14 +18,22 @@
  */
 package org.apache.brooklyn.ui.modularity.module.registry;
 
-import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.google.common.io.CharStreams;
 import org.apache.brooklyn.ui.modularity.module.api.UiModule;
 import org.apache.brooklyn.ui.modularity.module.api.UiModuleRegistry;
+import org.apache.brooklyn.ui.modularity.module.api.internal.UiModuleImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.events.Event;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class UiModuleRegistryImpl implements UiModuleRegistry {
     private static final Logger LOG = LoggerFactory.getLogger(UiModuleRegistryImpl.class);
@@ -41,8 +49,47 @@ public class UiModuleRegistryImpl implements UiModuleRegistry {
             LOG.error("Skipping invalid Brooklyn UI module "+uiModule, new Throwable("source of error"));
             return;
         }
-        LOG.info("Registering new Brooklyn web component [{}] [{}]", uiModule.getId(), uiModule.getName());
-        registry.put(uiModule.getId(), uiModule);
+        if (isExcluded(uiModule)) {
+            LOG.info("Brooklyn web component [{}] [{}] is excluded from the registry in this deployment", uiModule.getId(), uiModule.getName());
+        } else {
+            LOG.info("Registering new Brooklyn web component [{}] [{}]", uiModule.getId(), uiModule.getName());
+            registry.put(uiModule.getId(), uiModule);
+        }
+    }
+
+    Map brooklynUiCfg;
+    public boolean isExcluded(UiModule uiModule) {
+        InputStream s = null;
+        try {
+            s = new URL("file:etc/brooklyn-ui.cfg").openStream();
+            if (s==null) return false;
+        } catch (IOException e) {
+            LOG.trace("No brooklyn-ui.cfg found. Module settings will use defaults.");
+        }
+        try {
+            if (brooklynUiCfg==null) {
+                brooklynUiCfg = new Yaml().load(s);
+                if (brooklynUiCfg==null) brooklynUiCfg = Collections.emptyMap();
+            }
+            String bundleId = uiModule.getBundleId();
+
+            if (bundleId==null) {
+                Boolean excludeNull = (Boolean) brooklynUiCfg.get("exclude_bundle_unset");
+                if (excludeNull == null) return false;
+                return excludeNull;
+            } else {
+                List<String> exclusions = (List<String>) brooklynUiCfg.get("exclude_bundle_regex");
+                if (exclusions != null) {
+                    for (String ex : exclusions) {
+                        if (bundleId.matches(ex)) return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Invalid brooklyn-ui.cfg (ignoring): "+e, e);
+            if (brooklynUiCfg==null) brooklynUiCfg = Collections.emptyMap();
+        }
+        return false;
     }
 
     public void unregister(final UiModule uiModule) {

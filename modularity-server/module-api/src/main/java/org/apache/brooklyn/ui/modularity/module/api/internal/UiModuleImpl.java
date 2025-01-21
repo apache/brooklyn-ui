@@ -42,6 +42,8 @@ public class UiModuleImpl implements UiModule {
     private String path;
     private List<UiModuleAction> actions = new ArrayList<>();
     private int order;
+    private String bundleId;
+
     public static UiModuleImpl copyOf(UiModule src) {
         final UiModuleImpl result = new UiModuleImpl();
         result.setId(src.getId());
@@ -233,5 +235,17 @@ public class UiModuleImpl implements UiModule {
     public UiModuleImpl order(final int order) {
         this.order=order;
         return this;
+    }
+
+    public UiModuleImpl bundleId(final String bundleId) {
+        this.bundleId = bundleId;
+        return this;
+    }
+    public void setBundleId(final String bundleId) {
+        this.bundleId = bundleId;
+    }
+    @Override
+    public String getBundleId() {
+        return bundleId;
     }
 }

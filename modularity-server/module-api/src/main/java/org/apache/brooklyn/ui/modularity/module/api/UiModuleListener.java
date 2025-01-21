@@ -18,6 +18,20 @@
  */
 package org.apache.brooklyn.ui.modularity.module.api;
 
+import org.apache.brooklyn.ui.modularity.module.api.internal.UiModuleImpl;
+import org.apache.karaf.web.WebBundle;
+import org.apache.karaf.web.WebContainerService;
+import org.ops4j.pax.web.service.spi.WebEvent;
+import org.ops4j.pax.web.service.spi.WebListener;
+import org.osgi.framework.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
+
+import javax.annotation.Nullable;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import java.io.InputStream;
 import java.net.URL;
 import java.time.Duration;
@@ -27,24 +41,6 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-
-import org.apache.brooklyn.ui.modularity.module.api.internal.UiModuleImpl;
-import org.apache.karaf.web.WebBundle;
-import org.apache.karaf.web.WebContainerService;
-import org.ops4j.pax.web.service.spi.WebEvent;
-import org.ops4j.pax.web.service.spi.WebListener;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.ServiceReference;
-import org.osgi.framework.ServiceRegistration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yaml.snakeyaml.Yaml;
 
 /** Invoked by modules in their web.xml to create and register the {@link UiModule} service for that UI module. */
 public class UiModuleListener implements ServletContextListener {
@@ -60,10 +56,10 @@ public class UiModuleListener implements ServletContextListener {
     }
 
     public void contextInitialized(ServletContextEvent servletContextEvent) {
-        final UiModule uiModule = createUiModule(servletContextEvent.getServletContext());
         Object moduleBundle = servletContextEvent.getServletContext().getAttribute("osgi-bundlecontext");
         final Bundle bundle = moduleBundle instanceof BundleContext ? ((BundleContext)moduleBundle).getBundle() : FrameworkUtil.getBundle(this.getClass());
-        
+        final UiModule uiModule = createUiModule(servletContextEvent.getServletContext(), bundle);
+
         initWebListener(bundle);
         
         // register service against the bundle where it came from if possible (it always is, from what I've seen)
@@ -109,7 +105,7 @@ public class UiModuleListener implements ServletContextListener {
                     if (config!=null) {
                         LOG.trace("WebListener on deploying UI module "+event.getBundle().getSymbolicName()+" ["+event.getBundleId()+"] "
                             + "to "+event.getContextPath()+", checking whether any bundles need stopping");
-                        stopAnyExistingOrSuperseded(createUiModule(config.openStream(), event.getContextPath()), event.getBundle());
+                        stopAnyExistingOrSuperseded(createUiModule(config.openStream(), event.getContextPath(), event.getBundle()), event.getBundle());
                     }
                 }
             } catch (Exception e) {
@@ -247,19 +243,21 @@ public class UiModuleListener implements ServletContextListener {
         }
     }
 
-    private UiModule createUiModule(ServletContext servletContext) {
+    private UiModule createUiModule(ServletContext servletContext, @Nullable Bundle bundle) {
         final InputStream is = servletContext.getResourceAsStream(CONFIG_PATH);
         final String path = servletContext.getContextPath();
-        return createUiModule(is, path);
+        return createUiModule(is, path, bundle);
     }
 
-    protected UiModule createUiModule(final InputStream is, final String path) {
+    protected UiModule createUiModule(final InputStream is, final String path, @Nullable Bundle bundle) {
         if (is == null) {
             throw new RuntimeException(String.format("Module on path [%s] will not be registered as it does not have any configuration", path));
         }
         @SuppressWarnings("unchecked")
         Map<String, ?> config = (Map<String, ?>) new Yaml().load(is);
         LOG.debug("Creating Brooklyn UI module definition for "+path+"; "+config+" / "+is);
-        return UiModuleImpl.createFromMap(config).path(path);
+        UiModuleImpl ui = UiModuleImpl.createFromMap(config).path(path);
+        ui.bundleId(bundle.getSymbolicName()+":"+bundle.getVersion());
+        return ui;
     }
 }

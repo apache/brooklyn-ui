@@ -28,7 +28,7 @@ public interface UiModule {
     int DEFAULT_ORDER = 10_000;
 
     /**
-     * @return The unique ID of the module
+     * @return The unique ID of the module, a UUID created by the framework
      */
     String getId();
 
@@ -81,6 +81,12 @@ public interface UiModule {
     default int getOrder(){
         return DEFAULT_ORDER;
     }
+
+    default String getBundleId(){
+        return null;
+    }
+
+
     public class Utils {
         public static UiModule copyUiModule(UiModule src) {
             return UiModuleImpl.copyOf(src);
