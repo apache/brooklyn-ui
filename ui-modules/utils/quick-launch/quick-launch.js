@@ -115,22 +115,23 @@ export function quickLaunchDirective() {
             const defaults = configMap[key].defaults;
             options.push({
                 value: null,
-                description: 'Use '+defaults[0].source+': '+(defaults[0].jsonString || defaults[0].value),
+                description: (defaults[0].jsonString || defaults[0].value) + '  ('+defaults[0].source+')',
             });
-            options.push({
-                value: defaults[0].value,
-                description: 'Copy '+defaults[0].source,
-            });
-            for (let i=1; i<defaults.length; i++) {
+            for (let i=0; i<defaults.length; i++) {
                 if (options.find(x => angular.equals(x.value, defaults[i].value))) {
                     // skip
                 } else {
                     options.push({
                         value: defaults[i].value,
-                        description: 'Copy ' + defaults[i].source + ': ' + (defaults[i].jsonString || defaults[i].value),
+                        isJson: defaults[i].isJson,
+                        description: 'Use ' + defaults[i].source + ':  ' + (defaults[i].jsonString || defaults[i].value),
                     });
                 }
             }
+            options.push({
+                value: '',
+                description: 'Use new value',
+            });
             return options;
         }
         quickLaunch.onDefaultsDropdown = (key, configMap, v) => {
@@ -140,7 +141,8 @@ export function quickLaunchDirective() {
             for (let opt of configMap[key].defaults) {
                 if (angular.equals(opt.value, v)) {
                     if (opt.isJson) {
-                        $scope.entityToDeployConfigJson[v] = opt.jsonString;
+                        $scope.entityToDeployConfigJson[key] = opt.jsonString;
+                        configMap[key].json = true;
                     }
                     return;
                 }
@@ -181,8 +183,10 @@ export function quickLaunchDirective() {
             $scope.editorFormat = quickLaunch.getOriginalPlanFormat();
 
             let campPlanYaml;
+            let campPlanModified = false;
             try {
                 campPlanYaml = (await quickLaunch.convertPlanFromOriginalFormat($scope.app.plan)).data;
+                campPlanModified = $scope.app.plan.data != campPlanYaml;
             } catch (error) {
                 console.warn("Unable to restore CAMP format", error, $scope.app.plan);
                 campPlanYaml = $scope.app.plan.data;
@@ -190,7 +194,9 @@ export function quickLaunchDirective() {
             let parsedPlan = null;
             try {
                 parsedPlan = yaml.safeLoad(campPlanYaml);
-            } catch (e) { /*console.log('Failed to parse YAML', e)*/ }
+            } catch (e) {
+                console.log('Failed to parse YAML', e)
+            }
 
             // enable wizard if it's parseble and doesn't specify a location
             // (if it's not parseable, or it specifies a location, then the YAML view is displayed)
@@ -209,46 +215,65 @@ export function quickLaunchDirective() {
                 $scope.setServiceName = true;
             }
             if ($scope.app.config) {
+                const singleServiceConfig = parsedPlan.services && parsedPlan.services.length === 1 && parsedPlan.services[0][BROOKLYN_CONFIG];
                 $scope.configMap = $scope.app.config.reduce((result, config) => {
                     result[config.name] = config;
                     result[config.name].defaults = [];
-                    let showWithDefaultsDropdown = false;
 
-                    let configValue = (parsedPlan[BROOKLYN_CONFIG] || {})[config.name];
-                    if (typeof configValue === 'undefined' && parsedPlan.services && parsedPlan.services.length === 1) {
-                        configValue = (parsedPlan.services[0] && parsedPlan.services[0][BROOKLYN_CONFIG] || {})[config.name];
-                    }
-                    if (typeof configValue !== 'undefined') {
+                    let configValueOuter = (parsedPlan[BROOKLYN_CONFIG] || {})[config.name];
+                    const hasTemplateValueOuter = typeof configValueOuter !== 'undefined';
+                    if (hasTemplateValueOuter) {
                         result[config.name].defaults.push({
-                            source: 'default from template',
-                            value: configValue,
+                            source: 'template default',
+                            value: configValueOuter,
                         });
-                        showWithDefaultsDropdown = true;
                     }
 
-                    if (typeof config.defaultValue !== 'undefined') {
+                    const hasTemplateValueInner = !campPlanModified && singleServiceConfig && (typeof singleServiceConfig[config.name] != 'undefined');
+                    if (hasTemplateValueInner) {
                         result[config.name].defaults.push({
-                            source: 'default from parameter',
+                            source: 'template inner default',
+                            value: singleServiceConfig[config.name],
+                        });
+                    }
+
+                    const hasParameterDefault = typeof config.defaultValue !== 'undefined';
+                    if (hasParameterDefault) {
+                        result[config.name].defaults.push({
+                            source: 'parameter default',
                             value: config.defaultValue,
                         });
-                        showWithDefaultsDropdown = showWithDefaultsDropdown || config.pinned || (isRequired(config) && (typeof config.defaultValue !== 'undefined'));
                     }
 
+                    let atLeastOneJsonValue = false;
                     result[config.name].defaults.forEach(d => {
-                        let jsonString = getJsonOfConfigValue($scope.entityToDeploy[BROOKLYN_CONFIG][config.name]);
+                        let jsonString = getJsonOfConfigValue(d.value);
                         if (jsonString != null) {
-                            // TODO do we need this?
-                            result[config.name].json = true;
-
                             d.isJson = true;
                             d.jsonString = jsonString;
+
+                            // don't set this yet; it gets set once/if user picks to copy a json value
+                            // result[config.name].json = true;
+
+                            // force dropdown so user knows what they are getting into
+                            atLeastOneJsonValue = true;
                         }
                     });
+                    // was (isRequired && hasTemplateDefault) -- but that doesn't make sense (rarely matters as root items are always pinned)
+                    const showPossiblyWithDefaultsDropdown = hasTemplateValueOuter || hasTemplateValueInner || atLeastOneJsonValue || config.pinned || isRequired(config);
 
-                    if (result[config.name].defaults.length) {
-                        result[config.name].defaultsForDropdown = quickLaunch.getDefaultsDropdown(config.name, result);
-                        if (showWithDefaultsDropdown) {
-                            $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = null;
+                    if (showPossiblyWithDefaultsDropdown) {
+                        // initialize this field so it displays explicitly; null is a good choice because it allows either dropdown or blank if no dropdown
+                        $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = null;
+
+                        // compute dropdowns to show, and if there is exactly one default value (removing duplicates), and if it is editable (not json),
+                        // then don't use the dropdown, set that as the editable value
+                        if (result[config.name].defaults.length) {
+                            result[config.name].defaultsForDropdown = quickLaunch.getDefaultsDropdown(config.name, result);
+                            if (result[config.name].defaultsForDropdown.length-2==1 && !atLeastOneJsonValue) {
+                                // if just one value, and not json then use it
+                                $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = result[config.name].defaults[0].value;
+                            }
                         }
                     }
 

@@ -101,7 +101,7 @@
                         <label for="{{key}}">{{key}} <i ng-click="deleteConfigField(key)" class="fa fa-trash form-delete"></i></label>
                         <input type="text" id="{{key}}" name="{{key}}" class="form-control" ng-model="entityToDeployConfigJson[key]" ng-required="isRequired(configMap[key])" disabled auto-focus="focus === key" />
                         <small class="help-block">
-                            <span>This complex value can only be edited in composer.</span>
+                            <span>This complex value can only be edited in Composer or as YAML.</span>
                         </small>
                     </div>
                     <div class="form-group" ng-class="{'has-error': deploy[key].$invalid && deploy[key].$touched}" ng-switch-when="defaults">
