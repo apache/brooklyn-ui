@@ -86,8 +86,6 @@ export function quickLaunchDirective() {
                 }
             };
 
-        quickLaunch.convertPlanToPreferredFormat = convertPlanToPreferredFormat;
-        quickLaunch.convertPlanFromOriginalFormat = convertPlanFromOriginalFormat;
         quickLaunch.getComposerHref = getComposerHref;
         quickLaunch.getPlanObject = getPlanObject;
         quickLaunch.getCampPlanObjectFromForm = getCampPlanObjectFromForm;
@@ -182,21 +180,7 @@ export function quickLaunchDirective() {
             $scope.editorYaml = $scope.app.plan.data;
             $scope.editorFormat = quickLaunch.getOriginalPlanFormat();
 
-            let campPlanYaml;
-            let campPlanModified = false;
-            try {
-                campPlanYaml = (await quickLaunch.convertPlanFromOriginalFormat($scope.app.plan)).data;
-                campPlanModified = $scope.app.plan.data != campPlanYaml;
-            } catch (error) {
-                console.warn("Unable to restore CAMP format", error, $scope.app.plan);
-                campPlanYaml = $scope.app.plan.data;
-            }
-            let parsedPlan = null;
-            try {
-                parsedPlan = yaml.safeLoad(campPlanYaml);
-            } catch (e) {
-                console.log('Failed to parse YAML', e)
-            }
+            const {parsedPlan, campPlanModified} = await quickLaunch.getAsCampPlan($scope.app.plan);
 
             // enable wizard if it's parseble and doesn't specify a location
             // (if it's not parseable, or it specifies a location, then the YAML view is displayed)
@@ -292,7 +276,7 @@ export function quickLaunchDirective() {
         });
 
         // Configure this controller from outside. Customization
-        (quickLaunchOverrides.configureQuickLaunch || function () {})(quickLaunch, $scope, $http);
+        quickLaunchOverrides.configureQuickLaunch(quickLaunch, $scope, $http);
 
         // === Private members below ====================
 
@@ -558,9 +542,6 @@ export function quickLaunchDirective() {
                         })
                 });
         }
-
-        function convertPlanToPreferredFormat(plan) { return plan; }
-        function convertPlanFromOriginalFormat(plan) { return plan; }
 
         function getOriginalPlanFormat(scope) {
             scope = scope || $scope;

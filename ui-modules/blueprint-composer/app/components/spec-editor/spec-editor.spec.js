@@ -25,6 +25,7 @@ import {Entity} from '../util/model/entity.model';
 import {paletteApiProvider} from '../providers/palette-api.provider';
 import {dslServiceProvider} from '../providers/dsl-service.provider';
 import {blueprintServiceProvider} from '../providers/blueprint-service.provider';
+import {quickLaunchOverridesProvider} from "brooklyn-ui-utils/providers/quick-launch-overrides.provider";
 
 /**
  * Tests for the spec-editor directive.
@@ -69,6 +70,7 @@ describe('Spec Editor', () => {
         $provide.provider('brBrandInfo', {$get: () => {}});
 
         // Dependencies of the spec-editor.
+        $provide.provider('quickLaunchOverrides', quickLaunchOverridesProvider);
         $provide.provider('blueprintService', blueprintServiceProvider);
         $provide.provider('$state', {$get: () => {return {}}}); // Produces 'Object {}'.
         $provide.factory('mdHelper', mdHelperFactory);

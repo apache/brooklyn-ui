@@ -17,6 +17,7 @@
  * under the License.
  */
 import angular from 'angular';
+import yaml from 'js-yaml';
 
 const MODULE_NAME = 'brooklyn.quick-launch-overrides-service';
 
@@ -25,10 +26,42 @@ angular.module(MODULE_NAME, [])
 
 export default MODULE_NAME;
 
-function quickLaunchOverridesProvider() {
+// visible for testing
+export function quickLaunchOverridesProvider() {
     // callers can do angular.config(['quickLaunchOverridesProvider', function (provider) { provider.add({ ... }) })
     // to set various configuration. to see what configuration is supported, grep for quickLaunchOverrides in this project.
-    var result = {};
+    var methods = {
+        convertPlanFromOriginalFormat: plan => plan,
+        convertPlanToPreferredFormat: plan => plan,
+    }
+    methods.actor = methods;
+    methods.getAsCampPlan = async (plan)=>{
+        let campPlanYaml;
+        let campPlanModified = false;
+        try {
+            campPlanYaml = (await methods.actor.convertPlanFromOriginalFormat(plan)).data;
+            campPlanModified = plan.data != campPlanYaml;
+        } catch (error) {
+            console.warn("Unable to restore CAMP format", error, plan);
+            campPlanYaml = plan.data;
+        }
+        let parsedPlan = null;
+        try {
+            parsedPlan = yaml.safeLoad(campPlanYaml);
+        } catch (e) {
+            console.log('Failed to parse YAML', e)
+        }
+        return { campPlanModified, campPlanYaml, parsedPlan };
+    };
+    const result = {}
+
+    result.configureQuickLaunchOverride = () => {}
+    result.configureQuickLaunch = (quickLaunch, scope, httpCaller) => {
+        methods.actor = quickLaunch;
+        Object.assign(quickLaunch, methods);
+        result.configureQuickLaunchOverride(quickLaunch, scope, httpCaller);
+    }
+
     return {
         $get: () => result,
         add: (props) => angular.extend(result, props),

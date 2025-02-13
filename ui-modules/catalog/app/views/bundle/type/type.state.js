@@ -32,8 +32,7 @@ import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-sp
 
 const MODULE_NAME = 'type.state';
 
-angular.module(MODULE_NAME, [ngSanitize, brooklynCatalogApi, brooklynQuickLaunch, brooklynTypeItem, brUtils,
-    brTable, mdHelper])
+angular.module(MODULE_NAME, [ngSanitize, brooklynCatalogApi, brooklynQuickLaunch, brooklynTypeItem, brUtils, brTable, mdHelper])
     .provider('locationApi', locationApiProvider)
     .config(['$stateProvider', typeStateConfig]);
 
@@ -43,7 +42,8 @@ export const bundleState = {
     name: 'bundle.type',
     url: '/types/:typeId/:typeVersion',
     template: template,
-    controller: ['$scope', '$state', '$stateParams', '$q', '$uibModal', 'brBrandInfo', 'brUtilsGeneral', 'brSnackbar', 'catalogApi', 'mdHelper', typeController],
+    controller: ['$scope', '$state', '$stateParams', '$q', '$uibModal', 'brBrandInfo', 'brUtilsGeneral', 'brSnackbar', 'catalogApi', 'mdHelper', 'quickLaunchOverrides',
+        typeController],
     controllerAs: 'ctrl'
 };
 
@@ -51,7 +51,10 @@ export function typeStateConfig($stateProvider) {
     $stateProvider.state(bundleState);
 }
 
-export function typeController($scope, $state, $stateParams, $q, $uibModal, brBrandInfo, brUtilsGeneral, brSnackbar, catalogApi, mdHelper) {
+export function typeController($scope, $state, $stateParams, $q, $uibModal, brBrandInfo, brUtilsGeneral, brSnackbar, catalogApi, mdHelper, quickLaunchOverrides) {
+    const quickLaunchHelper = {}
+    quickLaunchOverrides.configureQuickLaunch(quickLaunchHelper, $scope);
+
     $scope.state = {
         default: 2,
         limit: 2
@@ -69,6 +72,7 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
         );
     };
 
+    $scope.isNonNull = (o) => typeof o !== 'undefined' && o!=null;
     $scope.isNonEmpty = (o) => brUtilsGeneral.isNonEmpty(o);
 
     $scope.composerUrl = brBrandInfo.blueprintComposerBaseUrl;
@@ -122,7 +126,7 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
         catalogApi.getBundleType($stateParams.bundleId, $stateParams.bundleVersion, $stateParams.typeId, $stateParams.typeVersion),
         catalogApi.getTypeVersions($stateParams.typeId),
     ])
-    .then(responses => {
+    .then(async responses => {
         $scope.bundle = responses[0];
         $scope.type = responses[1];
 
@@ -133,6 +137,12 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
         // then we should replace the low-level implementation plan (probably auto-generated) with 
         // the first spec list item (which is what the user created)
         var preferredContents = entitySpec.plan && entitySpec.plan.data;
+        const { parsedPlan } = await quickLaunchHelper.getAsCampPlan(entitySpec.plan);
+        $scope.templateConfigValues =
+            (parsedPlan && parsedPlan['brooklyn.config']) ||
+            (parsedPlan && parsedPlan.services && parsedPlan.services.length==1 && parsedPlan.services[0]['brooklyn.config']) ||
+            {};
+
         var preferredFormat = entitySpec.plan && entitySpec.plan.format;
         if (!preferredFormat) {
           if (specItem && specItem.format && specItem.contents) {
@@ -213,8 +223,12 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
     addColumn({
         config: {
             field: 'defaultValue',
-            colspan: 3,
-            template: '<div class="mozilla-td-scroll-fix"><samp>{{ item.defaultValue }}</samp></div>',
+            colspan: 5,
+            template: '<div class="mozilla-td-scroll-fix">' +
+                '<p ng-if="isNonNull(templateConfigValues[item.name])"><samp>{{ templateConfigValues[item.name] }}</samp>' +
+                    '<span class="label-color oneline label label-info" style="margin-left: 1em;">template</span></p>' +
+                '<p ng-if="isNonNull(item.defaultValue)"><samp>{{ item.defaultValue }}</samp></span>' +
+                    '<span ng-if="isNonNull(templateConfigValues[item.name])" class="label-color oneline label label-supertype" style="margin-left: 1em;">parameter</span></div>',
         },
     });
 
