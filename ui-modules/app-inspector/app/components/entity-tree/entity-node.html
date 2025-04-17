@@ -42,7 +42,7 @@
                      ng-if="child.viewModes.has(viewMode) && (!entity.children || entity.children.length === 0)"
                      entity="child" application-id="applicationId" view-mode="viewMode"></entity-node>
         <!-- Other nodes under entity -->
-        <entity-node ng-repeat="child in entity.otherNodes track by child.id"
+        <entity-node ng-repeat="child in entity.otherNodes track by 'other-'+$index+'-'+child.id"
                      ng-if="child.viewModes.has(viewMode)"
                      entity="child" application-id="applicationId" view-mode="viewMode"></entity-node>
     </div>
