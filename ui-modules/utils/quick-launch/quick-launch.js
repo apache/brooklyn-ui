@@ -74,18 +74,9 @@ export function quickLaunchDirective() {
         quickLaunch.getOriginalPlanFormat = getOriginalPlanFormat;
         quickLaunch.planSender =
             (plan) => {
-                if (!plan.format) {
-                    return $http.post('/v1/applications', plan.yaml);
-                } else {
-                    const formData = new FormData();
-                    formData.append('plan', plan.yaml);
-                    formData.append('format', plan.format);
-                    return $http.post('/v1/applications', formData, {
-                        headers: {'Content-Type': 'multipart/form-data'}
-                    });
-                }
+                const url = `/v1/applications${plan.format ? `?format=${encodeURIComponent(plan.format)}` : ''}`;
+                return $http.post(url, plan.yaml);            
             };
-
         quickLaunch.convertPlanToPreferredFormat = convertPlanToPreferredFormat;
         quickLaunch.getComposerHref = getComposerHref;
         quickLaunch.getPlanObject = getPlanObject;
