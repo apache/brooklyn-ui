@@ -86,7 +86,7 @@ For developers, the following links may be useful:
 
 ### Build Failure (Cached Dependencies)
 
-The first time `mvn clean install` or `npm build` is run, it will cache dependencies in `node_modules`.
+The first time `mvn clean install` or `yarn run build` is run, it will cache dependencies in `node_modules`.
 If a dependency is subsequently upgraded, this could cause an incompatibility. For example, it can cause
 a test failure such as:
 
@@ -119,7 +119,7 @@ arch -x86_64 /usr/local/bin/brew install libpng
 This installs th x86 version of brew and uses that to install the x86 version of the libpng library.  This won't affect your arm64 brew or anything installed using it.
 
 If it still fails, try installing `nvm` (curl-to-bash) then `nvm ls-remote` and `nvm install v12.9.0` (or other latest).
-Then retry the `mvn` build; even though `mvn` uses a different version of `node` and `npm`, simply installing the latest
+Then retry the `mvn` build; even though `mvn` uses a different version of `node` and `yarn`, simply installing the latest
 node version sometimes sorts out errors.
 
 
@@ -253,7 +253,7 @@ docker run -i --rm --name brooklyn-ui -v ${HOME}/.m2:/root/.m2 -v ${PWD}:/usr/bu
 ### Dockerfile Development
 
 The Dockerfile should work for you. The notes below are for if you are trying to tweak the
-Dockerfile. The dependencies (e.g. `make`) are to allow npm to build particular modules
+Dockerfile. The dependencies (e.g. `make`) are to allow yarn to build particular modules
 from source. Without this, it gives an error like:
 
 ```

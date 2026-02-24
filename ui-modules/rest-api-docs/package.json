@@ -17,7 +17,7 @@
   ],
   "name": "brooklyn-ui-rest-api-docs",
   "versionBuildNote": "BROOKLYN_VERSION_BELOW this exists so scripts update this automatically",
-  "version": "1.1.0-SNAPSHOT",
+  "version": "1.2.0-SNAPSHOT",
   "description": "Brooklyn UI :: Modules - REST API Docs",
   "repository": {
     "type": "git",
@@ -34,7 +34,7 @@
   },
   "engines": {
     "node": ">=8.0.0",
-    "npm": ">=5.0.0"
+    "yarn": ">=1.22.0"
   },
   "brooklyn": {
     "appname": "REST API"

@@ -27,6 +27,7 @@ import {dslServiceProvider} from '../providers/dsl-service.provider';
 import {blueprintServiceProvider} from '../providers/blueprint-service.provider';
 import {paletteDragAndDropServiceProvider} from '../providers/palette-dragndrop.provider';
 import {Entity} from "../util/model/entity.model";
+import {quickLaunchOverridesProvider} from "brooklyn-ui-utils/providers/quick-launch-overrides.provider";
 
 /**
  * Tests for the designer directive.
@@ -58,6 +59,7 @@ describe('Designer', () => {
 
         // Dependencies of the designer.
         $provide.provider('$state', {$get: () => {}}); // Produces 'undefined', not needed just now.
+        $provide.provider('quickLaunchOverrides', quickLaunchOverridesProvider);
         $provide.provider('blueprintService', blueprintServiceProvider);
         $provide.provider('paletteDragAndDropService', paletteDragAndDropServiceProvider);
         $provide.factory('brSnackbar', brSnackbar);

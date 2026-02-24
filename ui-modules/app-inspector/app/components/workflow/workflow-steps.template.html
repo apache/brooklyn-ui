@@ -17,15 +17,14 @@
   under the License.
 -->
 <div class="workflow-steps" ng-class="vm.getWorkflowStepsClasses()">
-
     <svg width="100%" height="100%" style="position: absolute;" class="workflow-arrows">
-        <g transform="scale(-1,1)" transform-origin="center" id="workflow-step-arrows">
+        <g transform="scale(-1,1)" transform-origin="center" class="workflow-{{workflowId}}" id="workflow-step-arrows">
         </g>
     </svg>
 
     <div style="position: relative;">
         <div ng-if="workflow.data.stepsDefinition" class="workflow-steps-main">
-            <div ng-repeat="step in workflow.data.stepsDefinition track by $index" id="workflow-step-outer-{{$index}}">
+            <div ng-repeat="step in workflow.data.stepsDefinition track by $index" id="workflow-{{workflowId}}-step-outer-{{$index}}">
                 <workflow-step workflow="workflow" task="task" step="step" step-index="$index" expanded="expandStates[$index]" on-size-change="vm.onSizeChange"></workflow-step>
             </div>
         </div>

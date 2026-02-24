@@ -32,7 +32,7 @@ spec-editor {
   color: @gray;
 
   .toolbar-button-affordance() {
-    color: mix(@gray, @gray-lighter);
+    color: @label-gray;
     cursor: pointer;
     transition: 0.1s ease all;
     &:hover {
@@ -341,7 +341,7 @@ spec-editor {
         margin-right: 1ex;
         text-align: center;
         .fa-info-circle {
-          color: @gray-lightish;
+          color: @label-gray;
           transition: color 0.3s ease;
           &:hover {
             color: @brand-primary;
@@ -940,6 +940,13 @@ spec-editor {
     &.active {
       color: @gray;
     }
+  }
+
+  .no-entries-buttons {
+    i {
+      .toolbar-button-affordance();
+    }
+    padding-left: 1ex;
   }
 }
 

@@ -17,50 +17,77 @@
  * under the License.
  */
 .brooklyn-catalog-uploader {
-  padding: 50px;
-  z-index: 100;
   visibility: hidden;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: white;
-  overflow-y: scroll;
-  transition: all 0.3s ease;
   opacity: 0;
 
-  .upload-box {
-    background: @gray-lighter;
-    border: 5px @gray-light dashed;
+  z-index: 100;
+  width: 100%;
+  height: 100%;
+
+  &, .brooklyn-catalog-uploader-screen, .brooklyn-catalog-uploader-inner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
 
-  .target-close {
-    cursor: pointer;
+  .brooklyn-catalog-uploader-screen {
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    opacity: 60%;
+    z-index: 50;
   }
+  .brooklyn-catalog-uploader-inner {
+    padding: 50px;
+    z-index: 100;
+    width: 70%;
+    height: 60%;
+    margin: auto;
+    margin-top: 10%;
 
-  input[type=file] {
-    display: none;
-  }
+    border: 3px @brand-primary solid;
+    border-radius: 6px;
 
-  label > strong {
-    text-decoration: underline;
-    cursor: pointer;
-    color: @brand-primary;
-  }
+    background-color: white;
+    overflow-y: scroll;
+    opacity: 1;
 
-  .upload-item {
-    margin-bottom: 1em;
-
-    .progress {
-      margin-bottom: 0;
-
-      .progress-bar {
-        transition: background-color 0.3s ease;
-      }
+    .upload-box {
+      background: @gray-lighter;
+      border: 5px @gray-light dashed;
     }
-    .upload-item-details-link {
+
+    .target-close {
       cursor: pointer;
+    }
+
+    input[type=file] {
+      display: none;
+    }
+
+    label > strong {
+      text-decoration: underline;
+      cursor: pointer;
+      color: @brand-primary;
+    }
+
+    .upload-item {
+      margin-bottom: 1em;
+      color: @gray-light;
+
+      .progress {
+        margin-bottom: 0;
+
+        .progress-bar {
+          transition: background-color 0.3s ease;
+        }
+      }
+
+      .upload-item-details-link {
+        cursor: pointer;
+      }
     }
   }
 }
@@ -68,5 +95,11 @@
 .br-drag-active .brooklyn-catalog-uploader {
   visibility: visible;
   opacity: 1;
+  transition: 0.3s ease;
 }
 
+.br-drag-active-2 .brooklyn-catalog-uploader {
+  .brooklyn-catalog-uploader-inner {
+    border: 3px @brand-primary dashed !important;
+  }
+}

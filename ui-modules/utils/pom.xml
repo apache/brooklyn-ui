@@ -50,7 +50,7 @@
                 <artifactId>frontend-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>npm build</id>
+                        <id>yarn build</id>
                         <phase>none</phase>
                     </execution>
                 </executions>

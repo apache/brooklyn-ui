@@ -30,6 +30,7 @@ const ICONS = {
     NO_STATE: 'NO_STATE',
     COMPLETED: 'COMPLETED',
     FAILED: 'FAILED',
+    SCHEDULED: 'SCHEDULED',
 };
 
 const STATUS = {
@@ -49,6 +50,7 @@ const STATUS = {
     'Failed': {name: 'Failed', icon: ICONS.FAILED},
     'Unavailable': {name: 'Incomplete', icon: ICONS.FAILED},
     'Cancelled': {name: 'Cancelled', icon: ICONS.FAILED},
+    'Scheduled': {name: 'Scheduled', icon: ICONS.SCHEDULED},
 };
 
 const MODULE_NAME = 'brooklyn.components.status';

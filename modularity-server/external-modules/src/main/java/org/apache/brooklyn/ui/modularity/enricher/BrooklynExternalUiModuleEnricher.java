@@ -140,6 +140,12 @@ public class BrooklynExternalUiModuleEnricher extends AbstractEnricher {
             }
 
             @Override
+            public String getDescription() {
+                // not supported here (it could be but isn't needed)
+                return null;
+            }
+
+            @Override
             public String getIcon() {
                 return icon;
             }

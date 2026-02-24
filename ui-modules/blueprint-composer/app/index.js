@@ -75,6 +75,7 @@ import bottomSheet from "brooklyn-ui-utils/bottom-sheet/bottom-sheet";
 import stackViewer from 'angular-java-stack-viewer';
 import {EntityFamily} from "./components/util/model/entity.model";
 import scriptTagDecorator from 'brooklyn-ui-utils/script-tag-non-overwrite/script-tag-non-overwrite';
+import quickLaunchOverrides from 'brooklyn-ui-utils/providers/quick-launch-overrides.provider';
 
 import brandAngularJs from 'brand-angular-js';
 
@@ -85,7 +86,7 @@ angular.module('brooklynBlueprintComposer', [ngAnimate, ngResource, ngCookies, n
     brYamlEditor, brUtils, brSpecEditor, brooklynCatalogSaver, brooklynApi, bottomSheet, stackViewer, brDragndrop, mdHelper,
     customActionDirective, customConfigSuggestionDropdown, paletteApiProvider, paletteServiceProvider, blueprintLoaderApiProvider,
     breadcrumbs, catalogSelector, designer, objectCache, entityFilters, locationFilter, actionService, tabService, composerOverrides, quickFix, blueprintService,
-    dslService, paletteDragAndDropService, recentlyUsedService, scriptTagDecorator, brandAngularJs])
+    dslService, paletteDragAndDropService, recentlyUsedService, scriptTagDecorator, quickLaunchOverrides, brandAngularJs])
     .provider('catalogApi', catalogApiProvider)
     .filter('dslParamLabel', ['$filter', dslParamLabelFilter])
     .config(['$urlRouterProvider', '$stateProvider', '$logProvider', '$compileProvider', applicationConfig])

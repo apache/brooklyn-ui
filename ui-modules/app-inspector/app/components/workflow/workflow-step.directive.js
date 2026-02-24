@@ -41,12 +41,19 @@ export function workflowStepDirective() {
             expanded: '=',
             onSizeChange: '=',
         },
-        controller: ['$sce', '$scope', controller],
+        controller: ['$sce', '$scope', 'entityApi', controller],
         controllerAs: 'vm',
     };
 
-    function controller($sce, $scope) {
+    function controller($sce, $scope, entityApi) {
         try {
+            let observers = [];
+            $scope.$on('$destroy', ()=> {
+                observers.forEach((observer)=> {
+                    observer.unsubscribe();
+                });
+            });
+
             let vm = this;
 
             let step = $scope.step;
@@ -63,17 +70,39 @@ export function workflowStepDirective() {
             vm.nonEmpty = (data) => data && (data.length || Object.keys(data).length);
             vm.isNullish = _.isNil;
 
-            vm.getWorkflowNameFromReference = (ref) => {
-                // would be nice to get a name, but all we have is appId, entityId, workflowId; and no lookup table;
-                // could look it up or store at server, but seems like overkill
+            vm.getWorkflowNameFromReference = (ref, suffixIfFound) => {
+                if (ref) {
+                    if (ref.workflowName) return ref.workflowName;
+                    if ($scope.task && $scope.task.children) {
+                        var matchingChild = $scope.task.children.find(c => c.metadata && c.metadata.id === ref.workflowId);
+                        if (matchingChild && matchingChild.metadata.taskName) {
+                            return matchingChild.metadata.taskName + (suffixIfFound ? " " + suffixIfFound + " " : "");
+                        }
+                    }
+                }
                 return null;
             };
+            vm.hasInterestingWorkflowNameFromReference = (ref, suffixIfFound) => {
+                const wn = vm.getWorkflowNameFromReference(ref, suffixIfFound);
+                return wn && wn.toLowerCase()!='sub-workflow' && !wn.endsWith(' (sub-workflow)');
+            };
+            vm.classForCodeMaybeMultiline = (obj) => {
+                let os = vm.yamlOrPrimitive(obj);
+                if (!os) return "simple-code";
+                os = ''+os;
+                if (os.endsWith('\n')) os = os.substring(0, os.length-1);
+                const lines = os.split('\n');
+                if (lines.length==1) return "simple-code";
+                if (lines.length <= 5) return "multiline-code lines-"+lines.length;
+                return "multiline-code multiline-code-resizable lines-"+lines.length;
+            };
 
-            $scope.json = null;
-            $scope.jsonMode = null;
-            vm.showJson = (mode, json) => {
-                $scope.jsonMode = mode;
-                $scope.json = json ? stringify(json) : null;
+            $scope.addlData = null;
+            $scope.addlMode = null;
+            vm.showAdditional = (title, mode, obj) => {
+                $scope.addlTitle = title;
+                $scope.addlMode = mode;
+                $scope.addlData = obj==undefined ? null : vm.yamlOrPrimitive(obj);
             }
 
             $scope.stepTitle = {
@@ -87,11 +116,16 @@ export function workflowStepDirective() {
                 $scope.stepTitle.code = shorthand;
                 if (!shorthand) {
                     $scope.stepTitle.code = step.shorthandTypeName || step.type || '';
-                    if (step.input) $scope.stepTitle.code += ' ...';
+                    if (!$scope.stepTitle.code) {
+                        if (step.steps) $scope.stepTitle.leftCodeAlternative = "nested workflow";
+                        else $scope.stepTitle.leftCodeAlternative = "workflow step"; // odd...
+                    } else {
+                        if (step.input) $scope.stepTitle.code += ' ...';
+                    }
                 }
-                if ("workflow" === $scope.stepTitle.code) {
+                if (["workflow","subworkflow"].includes($scope.stepTitle.code)) {
                     $scope.stepTitle.code = null;
-                    $scope.stepTitle.leftExtra = "nested workflow";
+                    $scope.stepTitle.leftCodeAlternative = "nested workflow";
                 }
 
                 if (step.name) {
@@ -100,6 +134,44 @@ export function workflowStepDirective() {
                 if (step.id) {
                     $scope.stepTitle.id = step.id;
                 }
+            }
+
+            function gatherOutputAndScratchForStep(osi, result, visited, isPrevious) {
+                if (result.output!=undefined && result.workflowScratch!=undefined) return ;
+                if (osi==undefined) {
+                    if (result.workflowScratchPartial != undefined) result.workflowScratch = result.workflowScratchPartial;
+                    delete result['workflowScratchPartial'];
+                    return;
+                }
+                // osi.woSc
+                let output = osi.context && osi.context.output;
+                if (isPrevious && output != undefined && result.output == undefined) result.output = output;
+                if (isPrevious && osi.workflowScratchUpdates != undefined) result.workflowScratchPartial =
+                    Object.assign({}, osi.workflowScratchUpdates, result.workflowScratchPartial);
+                if (osi.workflowScratch != undefined) result.workflowScratchPartial =
+                    Object.assign({}, osi.workflowScratchUpdates, result.workflowScratchPartial);
+
+                let next = undefined;
+                if (osi.previous && osi.previous.length) {
+                    const pp = osi.previous[0];
+                    if (!visited.includes(pp)) {
+                        visited.push(pp);
+                        next = $scope.workflow.data.oldStepInfo[pp];
+                    }
+                }
+                gatherOutputAndScratchForStep(next, result, visited, true);
+            }
+
+            const resultForStep = {};
+            vm.getOutputAndScratchForStep = (i) => {
+                if (!resultForStep[i]) {
+                    if (!$scope.workflow || !$scope.workflow.data || !$scope.workflow.data.oldStepInfo) return {};
+                    const osi = $scope.workflow.data.oldStepInfo[i] || null;
+                    if (!osi) return {};
+                    resultForStep[i] = {};
+                    gatherOutputAndScratchForStep(osi, resultForStep[i], [i], false);
+                }
+                return resultForStep[i];
             }
 
             function updateData() {
@@ -118,25 +190,78 @@ export function workflowStepDirective() {
                 $scope.isFocusTask = false;
                 $scope.isErrorHandler = $scope.workflow.tag && ($scope.workflow.tag.errorHandlerForTask);
 
-                $scope.stepCurrentError = (($scope.task || {}).currentStatus === 'Error') ? 'This step returned an error.'
-                    : ($scope.isWorkflowError && $scope.isCurrentMaybeInactive) ? 'The workflow encountered an error around this step.'
-                    : null;
-                const incomplete = $scope.osi.countStarted - $scope.osi.countCompleted > ($scope.isCurrentAndActive ? 1 : 0);
-                $scope.stepCurrentWarning = incomplete && !$scope.stepCurrentError ? 'This step has previously had an error' : null;
-                $scope.stepCurrentSuccess = (!$scope.isCurrentAndActive && !incomplete && $scope.osi.countCompleted > 0)
-                    ? 'This step has completed without errors.' : null;
+                // for switch, possibly others -- the step task wraps a chosen step task;
+                // show details for the wrapped chosen task, without showing weird messages
+                $scope.otherMetadata = Object.assign({}, $scope.stepContext.otherMetadata || {});
+                if ($scope.stepContext.stepState && $scope.stepContext.stepState.selectedStepContext) {
+                    $scope.innerStepContext = $scope.stepContext.stepState.selectedStepContext;
+                    $scope.outerStepContext = $scope.stepContext;
+                    $scope.isWrappingStepTaskOuter = $scope.task && $scope.stepContext.taskId == $scope.task.id;
+                    $scope.stepContext = $scope.stepContext.stepState.selectedStepContext;
+                    $scope.otherMetadata = Object.assign($scope.otherMetadata, $scope.stepContext.otherMetadata || {});
+                    $scope.isWrappingStepTaskInner = $scope.task && $scope.stepContext.taskId == $scope.task.id;
+                    if ($scope.isWrappingStepTaskOuter || $scope.isWrappingStepTaskInner) {
+                        $scope.isFocusTask = true;
+                    }
+                }
 
                 if ($scope.task) {
                     if (!vm.isNullish($scope.stepContext.taskId) && $scope.stepContext.taskId === $scope.task.id) {
                         $scope.isFocusTask = true;
 
                     } else if ($scope.isFocusStep) {
-                        // TODO other instance of this tag selected
+                        // careful -- other instance of this step selected
                     }
                 }
+
+                $scope.stepCurrentError =
+                    ($scope.stepContext.error && !$scope.isFocusTask)
+                    ? 'This step had an error.'
+                    : ($scope.isWorkflowError && $scope.isCurrentMaybeInactive)
+                    ? 'The workflow encountered an error at this step.'  /* odd */
+                    : null;
+                const incomplete = $scope.osi.countStarted - $scope.osi.countCompleted > ($scope.isCurrentAndActive ? 1 : 0);
+
+                $scope.stepCurrentWarning = $scope.stepCurrentError ? null :
+                    $scope.stepContext.errorHandlerTaskId
+                    ? 'This step had an error which was handled.'
+                    : incomplete
+                    ? 'This step has previously had an error'
+                    : null;
+                $scope.stepCurrentSuccess = $scope.stepCurrentError || $scope.stepCurrentWarning ? null :
+                    (!$scope.isCurrentAndActive && !incomplete && $scope.osi.countCompleted > 0)
+                    ? 'This step has completed without errors.' : null;
             }
             $scope.$watch('workflow', updateData);
             updateData();
+
+            $scope.showStepDefinitionInBody = true;
+            function loadUniqueSubworkflow(workflowTag) {
+                if (!workflowTag) return;
+
+                return entityApi.getWorkflow(workflowTag.applicationId, workflowTag.entityId, workflowTag.workflowId).then(wResponse => {
+                    if (wResponse.data.status === 'RUNNING') {
+                        wResponse.interval(1000);
+                        observers.push(wResponse.subscribe(() => loadUniqueSubworkflow(workflowTag)));
+                    }
+
+                    $scope.uniqueSubworkflow = {
+                        applicationId: workflowTag.applicationId,
+                        entityId: workflowTag.entityId,
+                        workflowTag: workflowTag,
+                        data: wResponse.data,
+                    };
+
+                }).catch(error => {
+                    console.log("Unable to load single unique workflow", workflowTag, error);
+                    $scope.showStepDefinitionInBody = false;
+                    $scope.uniqueSubworkflow = undefined;
+                });
+            }
+            if (!$scope.workflow.runIsOld && $scope.stepContext.subWorkflows && $scope.stepContext.subWorkflows.length==1) {
+                $scope.showStepDefinitionInBody = false;
+                loadUniqueSubworkflow($scope.stepContext.subWorkflows[0]);
+            }
 
         } catch (error) {
             console.log("error showing workflow step", error);

@@ -22,13 +22,13 @@ utils_clean:
 	cd ../utils && rm -rf ./node_modules
 
 utils_install:
-	@echo "Installing utils npm modules..."
-	cd ../utils && npm install
+	@echo "Installing utils yarn modules..."
+	cd ../utils && yarn install
 
 
 build:
 	@echo "Building production bundle..."
-	NODE_ENV="production" npm run build
+	NODE_ENV="production" yarn run build
 
 local_clean:
 	@echo "Cleaning modules and builds..."
@@ -38,21 +38,21 @@ clean:	utils_clean local_clean
 
 dev:
 	@echo "Starting dev web server..."
-	npm start
+	yarn start
 
 server: build
 	@echo "Starting api proxy server..."
-	NODE_ENV="production" npm start
+	NODE_ENV="production" yarn start
 
 local_install:
-	@echo "Installing npm modules..."
-	npm install
+	@echo "Installing node modules..."
+	yarn install
 
 install:	utils_install local_install
 
 test:
 	@echo "Running tests..."
-	npm test
+	yarn test
 
 setup: clean install
 

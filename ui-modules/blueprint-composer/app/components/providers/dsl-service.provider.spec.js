@@ -23,6 +23,7 @@ import {blueprintServiceProvider} from "./blueprint-service.provider";
 import {catalogApiProvider} from "brooklyn-ui-utils/providers/catalog-api.provider";
 import {locationApiProvider} from "brooklyn-ui-utils/providers/location-api.provider";
 import {iconGeneratorProvider} from "brooklyn-ui-utils/icon-generator/icon-generator";
+import {quickLaunchOverridesProvider} from "brooklyn-ui-utils/providers/quick-launch-overrides.provider";
 
 
 describe('Dsl Service', ()=> {
@@ -32,6 +33,7 @@ describe('Dsl Service', ()=> {
         $provide.provider('catalogApi', catalogApiProvider);
         $provide.provider('locationApi', locationApiProvider);
         $provide.provider('iconGenerator', iconGeneratorProvider);
+        $provide.provider('quickLaunchOverrides', quickLaunchOverridesProvider);
         $provide.provider('blueprintService', blueprintServiceProvider);
         $provide.provider('dslService', dslServiceProvider);
     }));

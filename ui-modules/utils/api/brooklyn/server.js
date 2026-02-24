@@ -115,6 +115,6 @@ function ServerApi($http, $q, cache) {
     }
 
     function importPersistenceData(data, opts) {
-        return $http.post('v1/server/ha/persist/import', data, opts);
+        return $http.post('/v1/server/ha/persist/import', data, opts);
     }
 }

@@ -43,7 +43,7 @@ export const promptState = {
     url: '/prompt?debug',
     params: { prompt: true },
     template: require('ejs-html!./main.template.html'),
-    controller: ['$scope', '$http', '$state', '$stateParams', mainStateController],
+    controller: ['$scope', '$http', '$state', '$stateParams', '$log', '$timeout', mainStateController],
     controllerAs: 'vm'
 };
 
@@ -81,14 +81,29 @@ export function mainStateController($scope, $http, $state, $stateParams, $log, $
         if (ua.indexOf('MSIE ') >= 0 || ua.indexOf(' Edge/') >= 0 || ua.indexOf(' Trident/') >= 0) {
             document.execCommand('ClearAuthenticationCache', 'false');
         } else if (ua.indexOf('Mozilla') >= 0) {
-            // this forces the page cache to be cleared so page will be re-requested (but it doesn't clear basic auth cache)
-            $http({
-                method: 'GET',
-                url: '/',
-                headers: {
-                    'Authorization': 'Basic ' + btoa("logout:logout")
-                }
-            });
+            // // the code below clears some locally remembered-and-resent Authorization headers that make it look as though the user is still logged in.
+            // // however it has the unfortunate side effect that a user might be repeatedly prompted for credentials after logout,
+            // // as the behavior on some newer browsers is (stupidly) to ignore user-prompted creds -- but repeatedly prompt for them! -- if an Authorization header is present.
+            // // setting something like `window.location.protocol + '//' + 'logout:logout@' + window.location.hostname + ':' + window.location.port + '/'` can stop that behavior.
+            // // but best is not to make any extra crazy request, which seems to suit modern browsers which no longer seem to silently re-send the Authorization.
+            // // https://stackoverflow.com/questions/233507/how-to-log-out-user-from-web-site-using-basic-authentication
+            // const url = '/';
+            // // url = window.location.protocol + '//' + 'logout:logout@' + window.location.hostname + ':' + window.location.port + '/';
+            // $http({
+            //     method: 'GET',
+            //     url,
+            //     headers: {
+            //         'Authorization': 'Basic ' + btoa("logout:logout")
+            //     }
+            // }).then((success)=>{
+            //     console.log("Post-logout confirmation request completed", success);
+            // }, (error)=>{
+            //     console.log("Post-logout confirmation request gave error (expected)", error);
+            // });
+            // //// could try setting this, even before
+            // // setTimeout(function () {
+            // //     window.location.href = 'http://logout:logout@localhost:8080/';
+            // // }, 200);
         }
     }
 

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-@dropdown-link-hover-bg: lighten(@primary-500, 55%);
-@dropdown-link-active-bg: @dropdown-link-hover-bg;
-@dropdown-link-active-color: black;
+
+@dropdown-link-hover-bg: @primary-light;
+@dropdown-link-active-bg: white;
 
 .dropdown-menu {
     overflow-y: auto;
@@ -28,6 +28,39 @@
 
     padding-top: 0;
     padding-bottom: 0;
+
+    .active a {
+        color: @primary-900;
+        &:hover,
+        &:focus {
+            color: @primary-900;
+            background-color: @dropdown-link-hover-bg;
+        }
+    }
+
+    .a {
+        color: @primary-900;
+        &:hover,
+        &:focus {
+            color: @primary-900;
+            background-color: @dropdown-link-hover-bg;
+        }
+    }
+
+    .toggle.active a {
+        &:hover,
+        &:focus {
+            color: @primary-900;
+            background-color: @dropdown-link-hover-bg;
+        }
+    }
+
+    .toggle a {
+        &:hover,
+        &:focus {
+            color: @primary-900;
+        }
+    }
 
     li a {
         padding: 7px 20px;
@@ -77,6 +110,10 @@
         background-color: @dropdown-link-hover-bg;
         &:not(:first-child) {
             border-top: 1px solid lighten(@primary-500, 65%);
+        }
+        &:hover,
+        &:focus {
+            background-color: @dropdown-link-hover-bg;
         }
     }
 

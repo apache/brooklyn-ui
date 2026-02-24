@@ -22,6 +22,7 @@ import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-sp
 import template from "./summary.template.html";
 import { isSensitiveFieldName } from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
 import { stringify as stringifyForQuery } from 'query-string';
+import jsyaml from 'js-yaml';
 
 export const summaryState = {
     name: 'main.inspect.summary',
@@ -260,6 +261,9 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
 
     this.isObject = function(item) {
         return angular.isObject(item);
+    };
+    this.yaml = function(item) {
+        return jsyaml.dump(item);
     };
 
     this.isEmpty = function(item) {

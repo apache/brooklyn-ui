@@ -23,6 +23,7 @@ import {locationApiProvider} from "brooklyn-ui-utils/providers/location-api.prov
 import {iconGeneratorProvider} from "brooklyn-ui-utils/icon-generator/icon-generator";
 import {Entity} from "../util/model/entity.model";
 import {paletteApiProvider} from './palette-api.provider';
+import {quickLaunchOverridesProvider} from "brooklyn-ui-utils/providers/quick-launch-overrides.provider";
 
 
 describe('Blueprint Service', ()=> {
@@ -34,6 +35,7 @@ describe('Blueprint Service', ()=> {
         $provide.provider('paletteApi', paletteApiProvider);
         $provide.provider('iconGenerator', iconGeneratorProvider);
         $provide.provider('dslService', dslServiceProvider);
+        $provide.provider('quickLaunchOverrides', quickLaunchOverridesProvider);
         $provide.provider('blueprintService', blueprintServiceProvider);
         $provide.provider('brBrandInfo', {$get: () => {}});
     }));

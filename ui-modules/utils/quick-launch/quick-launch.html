@@ -67,7 +67,7 @@
         <section class="quick-launch-section quick-launch-configuration">
             <h3 class="quick-launch-section-title">Configuration</h3>
             <div class="quick-launch-section-content">
-                <div ng-repeat="(key,value) in entityToDeploy['brooklyn.config'] track by key" ng-switch="configMap[key].json ? 'json' : type">
+                <div ng-repeat="(key,value) in entityToDeploy['brooklyn.config'] track by key" ng-switch="vm.getWidgetKind(key, configMap, entityToDeploy['brooklyn.config'][key])">
                     <div class="checkbox" ng-class="{'has-error': deploy[key].$invalid && deploy[key].$touched}" ng-switch-when="java.lang.Boolean">
                         <label>
                             <input type="checkbox" ng-model="entityToDeploy['brooklyn.config'][key]" ng-disabled="deploying" auto-focus="focus === key" />
@@ -101,8 +101,19 @@
                         <label for="{{key}}">{{key}} <i ng-click="deleteConfigField(key)" class="fa fa-trash form-delete"></i></label>
                         <input type="text" id="{{key}}" name="{{key}}" class="form-control" ng-model="entityToDeployConfigJson[key]" ng-required="isRequired(configMap[key])" disabled auto-focus="focus === key" />
                         <small class="help-block">
-                            <span>This complex value can only be edited in composer.</span>
+                            <span>This complex value can only be edited in Composer or as YAML.</span>
                         </small>
+                    </div>
+                    <div class="form-group" ng-class="{'has-error': deploy[key].$invalid && deploy[key].$touched}" ng-switch-when="defaults">
+                        <label for="{{key}}">{{key}} <i ng-click="deleteConfigField(key)" class="fa fa-trash form-delete"></i></label>
+                        <select class="form-control" id="{{key}}" name="{{key}}"
+                                ng-options="s.value as s.description for s in configMap[key].defaultsForDropdown"
+                                ng-model="entityToDeploy['brooklyn.config'][key]"
+                                ng-change="vm.onDefaultsDropdown(key, configMap, entityToDeploy['brooklyn.config'][key])"
+                                ng-required="isRequired(configMap[key])"
+                                ng-disabled="deploying"
+                                auto-focus="focus === key">
+                        </select>
                     </div>
                     <div class="form-group" ng-class="{'has-error': deploy[key].$invalid && deploy[key].$touched}" ng-switch-default>
                         <label for="{{key}}">{{key}} <i ng-click="deleteConfigField(key)" class="fa fa-trash form-delete"></i></label>
@@ -152,7 +163,7 @@
         <em>Returning to the Form will revert any changes made here in the YAML Editor</em>
     </small>
     <div>
-        <span class="btn-group" uib-dropdown>
+        <span class="btn-group" uib-dropdown on-toggle="setComposerLink()">
             <button class="btn btn-lg btn-default " ng-if="!yamlViewDisplayed && transitionsShown()" ng-disabled="deploying" ng-click="showEditor()">
                 Edit as YAML
             </button>
@@ -164,10 +175,10 @@
             </button>
             <ul ng-if="!args.noComposerButton" class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="composer-actions">
                 <li role="menuitem">
-                    <a ng-click="openComposer($event, false)" href="#"><i class="fa fa-link"></i> Open in Composer</a>
+                    <a ng-href="{{composerLink}}"><i class="fa fa-link"></i> Open in Composer</a>
                 </li>
                 <li ng-if="!yamlViewDisplayed && vm.isComposerOpenExpandPossible()" role="menuitem">
-                    <a ng-click="openComposer($event, true)" href="#"><i class="fa fa-link"></i> Open in Composer (expanded)</a>
+                    <a ng-href="{{composerLinkExpanded}}"><i class="fa fa-link"></i> Open in Composer (expanded)</a>
                 </li>
             </ul>
         </span>

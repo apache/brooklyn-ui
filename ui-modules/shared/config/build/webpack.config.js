@@ -133,6 +133,7 @@ const config = {
     },
     resolve: {
         alias: {
+            'brooklyn-ui-utils': path.resolve(ROOT_DIR, '../utils'),
             'brooklyn-shared': path.resolve(ROOT_DIR, '../shared'),
             // user-supplied brand dir for overwrites (defaults to brooklyn brand)
             'brand': BRAND_DIR,
@@ -171,13 +172,14 @@ const config = {
         new ExtractTextPlugin('[name].[chunkhash].css'),
         new webpack.optimize.OccurenceOrderPlugin(),
         new webpack.DefinePlugin({
-            __BROOKLYN_VERSION__: JSON.stringify(process.env.BROOKLYN_VERSION || '1.1.0-SNAPSHOT'),
+            __BROOKLYN_VERSION__: JSON.stringify(process.env.BROOKLYN_VERSION || '1.2.0-SNAPSHOT'),
             __BUILD_NAME__: JSON.stringify(process.env.BUILD_NAME),
             __BUILD_VERSION__: JSON.stringify(process.env.BUILD_VERSION),
             __BUILD_BRANCH__: JSON.stringify(process.env.BUILD_BRANCH),
             __BUILD_COMMIT_ID__: JSON.stringify(process.env.BUILD_COMMIT_ID),
             // from bootstrap, possibly overridden, included here for access from JS
             __BRAND_SUCCESS__: JSON.stringify(brandLess['@brand-success'] || '#5cb85c'),
+            __BRAND_COMPLETE__: JSON.stringify(brandLess['@brand-complete'] || '#428342'),
             __BRAND_DANGER__: JSON.stringify(brandLess['@brand-danger'] || '#d9534f'),
             'process.env.NODE_ENV': JSON.stringify(ENV),
             // used by brBrandInfo.getBrandedText

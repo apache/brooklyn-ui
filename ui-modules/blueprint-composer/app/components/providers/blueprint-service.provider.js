@@ -45,14 +45,17 @@ export const COMMON_HINTS = {
 
 export function blueprintServiceProvider() {
     return {
-        $get: ['$log', '$q', '$sce', 'paletteApi', 'iconGenerator', 'dslService', 'brBrandInfo',
+        $get: ['$log', '$q', '$sce', 'paletteApi', 'iconGenerator', 'dslService', 'quickLaunchOverrides', 'brBrandInfo',
             function ($log, $q, $sce, paletteApi, iconGenerator, dslService, brBrandInfo) {
                 return new BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService, brBrandInfo);
             }]
     }
 }
 
-function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService, brBrandInfo) {
+function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService, quickLaunchOverrides, brBrandInfo) {
+    const quickLaunchUtils = {}
+    quickLaunchOverrides.configureQuickLaunch(quickLaunchUtils);
+
     let blueprint = new Entity();
     let entityRelationshipProviders = {};
 
@@ -369,7 +372,12 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
                 : paletteApi.getType(entity.type, entity.version, entity.config);
 
             promise.then((data)=> {
-                deferred.resolve(populateEntityFromApiSuccess(entity, data));
+                quickLaunchUtils.getAsCampPlan(data.plan).then(({parsedPlan})=>{
+                    deferred.resolve(populateEntityFromApiSuccess(entity, data, parsedPlan));
+                }).catch(function (error) {
+                    console.debug("No parsed plan available", error, data);
+                    deferred.resolve(populateEntityFromApiSuccess(entity, data));
+                })
             }).catch(function (error) {
                 deferred.resolve(populateEntityFromApiError(entity, error));
             });
@@ -740,7 +748,7 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
         entity.addParameterDefinition(null, false, false);
     }
 
-    function populateEntityFromApiSuccess(entity, data) {
+    function populateEntityFromApiSuccess(entity, data, parsedPlan) {
         function mapped(list, field) {
             let result = {};
             if (list) {
@@ -770,6 +778,20 @@ function BlueprintService($log, $q, $sce, paletteApi, iconGenerator, dslService,
 
         entity.miscData.set('config', data.config || []);
         entity.miscData.set('configMap', mapped(data.config, 'name'));
+        // if a template sets an explicit value for a parameter, use that as the default everywhere
+        const configTemplateDefaults =
+                (parsedPlan && parsedPlan['brooklyn.config']) ||
+                (parsedPlan && parsedPlan.services && parsedPlan.services.length==1 && parsedPlan.services[0]['brooklyn.config']) ||
+                {};
+        entity.miscData.set('configTemplateDefaults', configTemplateDefaults);
+        (data.config || []).forEach(item => {
+            const override = configTemplateDefaults[item.name];
+            if (typeof override !== 'undefined') {
+                item.defaultValueParameter = item.defaultValue;
+                item.defaultValueTemplate = override;
+                item.defaultValue = override;
+            }
+        });
         entity.miscData.set('parameters', data.parameters || []);
         entity.miscData.set('parametersMap', mapped(data.parameters, 'name'));
 

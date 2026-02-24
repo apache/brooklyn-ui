@@ -18,7 +18,6 @@
  */
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./detail.template.html";
-import modalTemplate from './kilt.modal.template.html';
 import {makeTaskStubFromWorkflowRecord} from "../activities.controller";
 import jsyaml from 'js-yaml';
 import runWorkflowModalTemplate from "../../run-workflow-modal.template.html";
@@ -31,6 +30,7 @@ export const detailState = {
     controller: ['$scope', '$state', '$stateParams', '$location', '$log', '$uibModal', '$timeout', '$sanitize', '$sce', 'activityApi', 'entityApi', 'brUtilsGeneral', DetailController],
     controllerAs: 'vm',
 }
+
 function DetailController($scope, $state, $stateParams, $location, $log, $uibModal, $timeout, $sanitize, $sce, activityApi, entityApi, Utils) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
 
@@ -56,8 +56,6 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
         workflow: {},
     };
 
-    vm.modalTemplate = modalTemplate;
-    vm.wideKilt = false;
     vm.toggleOldWorkflowRunStepDetails = () => { $scope.showOldWorkflowRunStepDetails = !$scope.showOldWorkflowRunStepDetails; }
 
     $scope.actions = {};
@@ -79,6 +77,13 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                     entityApi.deleteWorkflow(vm.model.workflow.tag.applicationId || applicationId, vm.model.workflow.tag.entityId || entityId, $scope.workflowId)
                         .then(result => $state.go($state.current, {}, {reload: true}) );
                 } };
+            }
+
+            if (vm.model.activity.result!=undefined) {
+                vm.model.activity.resultYaml = vm.yaml(vm.model.activity.result);
+                const lines = vm.model.activity.resultYaml.split('\n');
+                vm.model.activity.resultLineCount = lines.length;
+                vm.model.activity.resultLineMaxLen = Math.max(...lines.map(x => x.length));
             }
         }
 
@@ -152,7 +157,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                     let osi = vm.model.workflow.data.oldStepInfo;
                     vm.model.workflow.finishedWithNoSteps = ((osi["-2"] || {}).previous || [])[0] == -1;
 
-                        $scope.actions.workflowReplays = [];
+                    $scope.actions.workflowReplays = [];
                     if (vm.model.workflow.data.status !== 'RUNNING') {
 
                         $scope.actions.workflowReplays = [];
@@ -232,7 +237,10 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                 processWorkflowData(wResponse);
 
                 if (vm.model.workflow.data.status === 'RUNNING') wResponse.interval(1000);
-                observers.push(wResponse.subscribe(processWorkflowData));
+                observers.push(wResponse.subscribe(processWorkflowData, error => {
+                    console.debug("Workflow no longer available, likely completed with retention 0. Removing from view.", error);
+                    vm.model.workflow = {};
+                }));
 
                 function initFromWorkflowFirstReplayTask(task) {
                     if (task) {
@@ -262,6 +270,8 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
 
         activityApi.activity(activityId).then((response)=> {
             vm.model.activity = response.data;
+
+            initializeBreadcrumbs(response.data);
 
             delete $scope.actions['effector'];
             delete $scope.actions['invokeAgain'];
@@ -318,14 +328,59 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                 });
         });
 
+        function onActivityLoadUpdate() {
+            vm.model.activityChildrenAndDeep = [];
+            let seen = {};
+            if (vm.model.activityChildren) {
+                vm.model.activityChildren.forEach(t => {
+                    vm.model.activityChildrenAndDeep.push(t);
+                    seen[t.id] = true;
+                });
+            }
+            if (vm.model.activitiesDeep) {
+                Object.values(vm.model.activitiesDeep).forEach(t => {
+                    if (!seen[t.id]) {
+                        vm.model.activityChildrenAndDeep.push(t);
+                        seen[t.id] = true;
+                    }
+                });
+            }
+        }
+
+        $scope.breadcrumbsLoading = true;
+        $scope.breadcrumbs = [];
+        $scope.breadcrumbsExpanded = false;
+        function initializeBreadcrumbs(activity) {
+            $scope.breadcrumbs.unshift(activity);
+            if (activity.submittedByTask) {
+                activityApi.activity(activity.submittedByTask.metadata.id).then(response => {
+                    initializeBreadcrumbs(response.data);
+                }).catch(e => {
+                    console.warn("Error loading breadcrumbs", e);
+                    $scope.breadcrumbsLoading = false;
+                });
+            } else {
+                $scope.breadcrumbsLoading = false;
+            }
+        }
+        vm.expandBreadcrumbs = () => {
+            $scope.breadcrumbsExpanded = true;
+        }
+
         activityApi.activityChildren(activityId).then((response)=> {
             vm.model.activityChildren = processActivityChildren(response.data);
             vm.error = undefined;
+            onActivityLoadUpdate();
+
+            // could improve by making just one call for children+deep, or combining the results;
+            // but for now just read them both frequently
+            if (!vm.model.activity.endTimeUtc || vm.model.activity.endTimeUtc<0) response.interval(1000);
             observers.push(response.subscribe((response)=> {
                 vm.model.activityChildren = processActivityChildren(response.data);
                 if (!vm.errorBasic) {
                     vm.error = undefined;
                 }
+                onActivityLoadUpdate();
             }));
         }).catch((error)=> {
             $log.warn('Error loading activity children  for '+activityId, error);
@@ -334,9 +389,10 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
             }
         });
         
-        activityApi.activityDescendants(activityId, 8, true).then((response)=> {
+        activityApi.activityDescendants(activityId, 8).then((response)=> {
             vm.model.activitiesDeep = response.data;
             vm.error = undefined;
+            onActivityLoadUpdate();
 
             if (!vm.model.activity.endTimeUtc || vm.model.activity.endTimeUtc<0) response.interval(1000);
             observers.push(response.subscribe((response)=> {
@@ -344,6 +400,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                 if (!vm.errorBasic) {
                     vm.error = undefined;
                 }
+                onActivityLoadUpdate();
             }));
         }).catch((error)=> {
             $log.warn('Error loading activity children deep for '+activityId, error);
@@ -354,7 +411,6 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
         
     }
 
-    vm.isNonEmpty = Utils.isNonEmpty;
     vm.yaml = (o) => typeof o === 'string' ? o : jsyaml.dump(o);
 
     vm.openInRunModel = function (workflowYaml) {
@@ -401,15 +457,8 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
         return Object.keys($scope.streamsById);
     };
 
-    vm.setWideKilt = function (newValue) {
-        vm.wideKilt = newValue;
-        // empirically delay of 100ms means it runs after the resize;
-        // seems there is no way to hook in to resize events so it is
-        // either this or a $scope.$watch with very low interval
-        $timeout(function() { $scope.$broadcast('resize') }, 100);
-    };
-
     vm.stringify = (data) => JSON.stringify(data, null, 2);
+    vm.stringifiedSize = (data) => JSON.stringify(data).length;
 
     vm.invokeEffector = (effectorName, effectorParams) => {
         entityApi.invokeEntityEffector(applicationId, entityId, effectorName, effectorParams).then((response) => {
@@ -446,8 +495,7 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
     }
 
     vm.isNullish = _.isNil;
-    vm.isEmpty = x => vm.isNullish(x) || (x.length==0) || (typeof x === 'object' && !Object.keys(x).length);
-    vm.isNonEmpty = x => !vm.isEmpty(x);
+    vm.isNonEmpty = Utils.isNonEmpty;
 }
 
 export function getTaskWorkflowTag(task) {

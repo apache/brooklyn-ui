@@ -208,12 +208,15 @@ export function CatalogItemModalController($scope, $filter, blueprintService, pa
     };
 
     $scope.getCatalogURL = () => {
+        const urlPartVersion = _.get($scope, 'config.current.version') || _.get($scope, 'config.version');
+        if (!urlPartVersion) return "";
+
         switch ($scope.state.view) {
             case VIEWS.form:
                 return '';
             case VIEWS.saved:
                 // TODO where do these come from
-                return `/brooklyn-ui-catalog/#!/bundles/${$scope.config.catalogBundleId}/${$scope.config.version}/types/${$scope.config.catalogBundleSymbolicName}/${$scope.config.version}`;
+                return `/brooklyn-ui-catalog/#!/bundles/${$scope.config.catalogBundleId}/${urlPartVersion}/types/${$scope.config.catalogBundleSymbolicName}/${urlPartVersion}`;
         }
     };
 

@@ -19,6 +19,7 @@
 
 @brooklyn-home-button-color: @brand-primary;
 @brooklyn-home-button-color-hover: @primary-700;
+@brooklyn-home-detail-color: @primary-800;
 
 .module-icon {
   font-size: 30px;
@@ -240,6 +241,43 @@
         h3 {
           color: @brooklyn-home-button-color-hover;
         }
+      }
+    }
+  }
+}
+
+.brooklyn-module-detail {
+  display: flex;
+  color: @brooklyn-home-detail-color;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40px;
+  margin-bottom: 8px;
+  min-height: 160px;
+  > .main {
+    //background: white;
+    padding: 8px;
+    width: 66%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    > .left {
+      flex: 0 0 auto;
+      width: 180px;
+      text-align: center;
+      align-self: flex-start;
+    }
+    > .right {
+      flex: 1 1 auto;
+      text-align: left;
+      .title {
+        //font-weight: 700;
+        display: none;
+        font-size: 200%;
+        margin-bottom: 8px;
+      }
+      .body {
+        font-size: 140%;
       }
     }
   }

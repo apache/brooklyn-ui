@@ -16,7 +16,7 @@
 # under the License.
 
 # For Brooklyn UI, we use a debian distribution instead of alpine as there are some libgcc incompatibilities with PhantomJS
-FROM maven:3.5.4-jdk-8
+FROM maven:3.8.6-jdk-8
 
 # Install necessary binaries to build brooklyn-ui
 RUN apt-get update && apt-get install -y git-core \
@@ -32,10 +32,11 @@ RUN apt-get update && apt-get install -y git-core \
     nasm \
     gcc
 
-# Make sure the /.config && /.npm (for UI module builds) is writable for all users
+# Make sure the /.config && /.yarn (for UI module builds) is writable for all users
 RUN mkdir -p /.config && chmod -R 777 /.config
-RUN mkdir -p /.npm && chmod -R 777 /.npm
+RUN mkdir -p /.yarn && chmod -R 777 /.yarn
 
 # Make sure the /var/maven is writable for all users
 RUN mkdir -p /var/maven/.m2/ && chmod -R 777 /var/maven/
 ENV MAVEN_CONFIG=/var/maven/.m2
+ENV OPENSSL_CONF=/etc/ssl

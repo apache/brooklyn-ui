@@ -43,7 +43,7 @@ PORT=8080
 HOSTNAME="0.0.0.0"
 ```
 
-Or just run any `make` or `npm` command with env prefix variable to change it in place, for example:
+Or just run any `make` or `yarn` command with env prefix variable to change it in place, for example:
 ```
 API_PORT=8080 PORT=80 make server
 ```

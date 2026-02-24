@@ -32,8 +32,7 @@ import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-sp
 
 const MODULE_NAME = 'type.state';
 
-angular.module(MODULE_NAME, [ngSanitize, brooklynCatalogApi, brooklynQuickLaunch, brooklynTypeItem, brUtils,
-    brTable, mdHelper])
+angular.module(MODULE_NAME, [ngSanitize, brooklynCatalogApi, brooklynQuickLaunch, brooklynTypeItem, brUtils, brTable, mdHelper])
     .provider('locationApi', locationApiProvider)
     .config(['$stateProvider', typeStateConfig]);
 
@@ -43,7 +42,8 @@ export const bundleState = {
     name: 'bundle.type',
     url: '/types/:typeId/:typeVersion',
     template: template,
-    controller: ['$scope', '$state', '$stateParams', '$q', '$uibModal', 'brBrandInfo', 'brUtilsGeneral', 'brSnackbar', 'catalogApi', 'mdHelper', typeController],
+    controller: ['$scope', '$state', '$stateParams', '$q', '$uibModal', 'brBrandInfo', 'brUtilsGeneral', 'brSnackbar', 'catalogApi', 'mdHelper', 'quickLaunchOverrides',
+        typeController],
     controllerAs: 'ctrl'
 };
 
@@ -51,7 +51,10 @@ export function typeStateConfig($stateProvider) {
     $stateProvider.state(bundleState);
 }
 
-export function typeController($scope, $state, $stateParams, $q, $uibModal, brBrandInfo, brUtilsGeneral, brSnackbar, catalogApi, mdHelper) {
+export function typeController($scope, $state, $stateParams, $q, $uibModal, brBrandInfo, brUtilsGeneral, brSnackbar, catalogApi, mdHelper, quickLaunchOverrides) {
+    const quickLaunchHelper = {}
+    quickLaunchOverrides.configureQuickLaunch(quickLaunchHelper, $scope);
+
     $scope.state = {
         default: 2,
         limit: 2
@@ -69,6 +72,7 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
         );
     };
 
+    $scope.isNonNull = (o) => typeof o !== 'undefined' && o!=null;
     $scope.isNonEmpty = (o) => brUtilsGeneral.isNonEmpty(o);
 
     $scope.composerUrl = brBrandInfo.blueprintComposerBaseUrl;
@@ -122,12 +126,39 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
         catalogApi.getBundleType($stateParams.bundleId, $stateParams.bundleVersion, $stateParams.typeId, $stateParams.typeVersion),
         catalogApi.getTypeVersions($stateParams.typeId),
     ])
-    .then(responses => {
+    .then(async responses => {
         $scope.bundle = responses[0];
         $scope.type = responses[1];
-        this.specItem = $scope.type.specList[0];
-        $scope.typeFormat = this.specItem.format ? 'format=' + this.specItem.format + '&' : '';
-        $scope.type.plan.format = this.specItem.format;
+
+        const entitySpec = $scope.type;
+        // update entity spec to keep the right format (repeated in home deploy.controller.js)
+        const specItem = entitySpec.specList[0];
+        // if the implementation plan does not declare its format but the first spec list item does
+        // then we should replace the low-level implementation plan (probably auto-generated) with 
+        // the first spec list item (which is what the user created)
+        var preferredContents = entitySpec.plan && entitySpec.plan.data;
+        const { parsedPlan } = await quickLaunchHelper.getAsCampPlan(entitySpec.plan);
+        $scope.templateConfigValues =
+            (parsedPlan && parsedPlan['brooklyn.config']) ||
+            (parsedPlan && parsedPlan.services && parsedPlan.services.length==1 && parsedPlan.services[0]['brooklyn.config']) ||
+            {};
+
+        var preferredFormat = entitySpec.plan && entitySpec.plan.format;
+        if (!preferredFormat) {
+          if (specItem && specItem.format && specItem.contents) {
+            preferredFormat = specItem.format;
+            // also take those contents
+            preferredContents = specItem.contents;
+            entitySpec.plan = { data: preferredContents, format: preferredFormat };
+          }
+        }
+
+        // save this as the initially selected item in the dropdown of the definition
+        this.specItem = specItem;
+
+        // this is used to link to the right editor in composer, preserve the format used to define the item being quick-launched
+        $scope.typeFormat = preferredFormat ? 'format=' + preferredFormat + '&' : '';
+
         $scope.versions = responses[2].map(typeVersion => ({
             bundleSymbolicName: typeVersion.containingBundle.split(':')[0],
             bundleVersion: typeVersion.containingBundle.split(':')[1],
@@ -192,8 +223,12 @@ export function typeController($scope, $state, $stateParams, $q, $uibModal, brBr
     addColumn({
         config: {
             field: 'defaultValue',
-            colspan: 3,
-            template: '<div class="mozilla-td-scroll-fix"><samp>{{ item.defaultValue }}</samp></div>',
+            colspan: 5,
+            template: '<div class="mozilla-td-scroll-fix">' +
+                '<p ng-if="isNonNull(templateConfigValues[item.name])"><samp>{{ templateConfigValues[item.name] }}</samp>' +
+                    '<span class="label-color oneline label label-info" style="margin-left: 1em;">template</span></p>' +
+                '<p ng-if="isNonNull(item.defaultValue)"><samp>{{ item.defaultValue }}</samp></span>' +
+                    '<span ng-if="isNonNull(templateConfigValues[item.name])" class="label-color oneline label label-supertype" style="margin-left: 1em;">parameter</span></div>',
         },
     });
 

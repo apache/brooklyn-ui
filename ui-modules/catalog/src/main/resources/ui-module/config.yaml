@@ -20,3 +20,7 @@ slug: ${project.artifactId}
 icon: fa-list
 types:
 - home-ui-module
+description: |
+  The <b>Catalog</b> module shows and manages the bundles of entities and other blueprints
+  available in the system.
+

@@ -27,11 +27,11 @@
                typeahead-template-url="SuggestionTemplate.html" />
         <span class="input-group-btn" uib-dropdown auto-close="outsideClick">
             <button class="btn btn-default" uib-dropdown-toggle><i class="fa fa-fw fa-cog"></i></button>
-            <ul class="dropdown-menu dropdown-menu-right" role="menu" uib-dropdown-menu>
+            <ul class="dropdown-menu with-checks" role="menu" uib-dropdown-menu>
                 <li role="menuitem" class="dropdown-header">Columns to display</li>
                 <li ng-repeat="column in ctrl.state.columns track by $index" ng-class="{'active': !column.hidden}" class="toggle" role="menuitem">
                     <a ng-click="hideColumn(column)">
-                        <i class="fa fa-fw " ng-class="{'fa-circle': !column.hidden, 'fa-circle-thin': column.hidden}"></i>
+                        <i class="fa fa-fw " ng-class="{'fa-check': !column.hidden, 'fa-check-thin': column.hidden}"></i>
                         {{column.header}}
                     </a>
                 </li>

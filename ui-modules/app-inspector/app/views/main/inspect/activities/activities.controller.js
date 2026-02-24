@@ -18,7 +18,6 @@
  */
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./activities.template.html";
-import modalTemplate from './kilt.modal.template.html';
 
 export const activitiesState = {
     name: 'main.inspect.activities',
@@ -37,23 +36,11 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
     } = $stateParams;
     $scope.search = $stateParams.search;
     $scope.filter = $stateParams.filter;
+    $scope.entityId = entityId || applicationId;
 
     let vm = this;
 
     let observers = [];
-
-    vm.modalTemplate = modalTemplate;
-
-    vm.isNonEmpty = Utils.isNonEmpty;
-
-    vm.wideKilt = false;
-    vm.setWideKilt = function (newValue) {
-        vm.wideKilt = newValue;
-        // empirically delay of 100ms means it runs after the resize;
-        // seems there is no way to hook in to resize events so it is
-        // either this or a $scope.$watch with very low interval
-        $timeout(function() { $scope.$broadcast('resize') }, 100);
-    };
 
     onStateChange();
     $scope.$on('$stateChangeSuccess', (event, toState, toParams, fromState, fromParams, options)=> {
@@ -133,11 +120,11 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
         const checkTasksLoadAttemptsFinished = () => {
             $scope.activitiesLoaded = activitiesRawLoadAttemptFinished && workflowLoadAttemptFinished;
         }
-        entityApi.entityActivities(applicationId, entityId).then((response) => {
-            vm.activitiesRaw = response.data;
+        entityApi.entityActivitiesDeep(applicationId, entityId).then((response) => {
+            vm.activitiesDeep = vm.activitiesRaw = response.data;
             mergeActivities();
             observers.push(response.subscribe((response) => {
-                vm.activitiesRaw = response.data;
+                vm.activitiesDeep = vm.activitiesRaw = response.data;
                 mergeActivities();
                 vm.error = undefined;
             }));
@@ -163,17 +150,6 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
             $log.warn('Error loading workflows for entity ' + entityId, error);
             workflowLoadAttemptFinished = true;
             checkTasksLoadAttemptsFinished();
-        });
-
-        entityApi.entityActivitiesDeep(applicationId, entityId).then((response) => {
-            vm.activitiesDeep = response.data;
-            observers.push(response.subscribe((response) => {
-                vm.activitiesDeep = response.data;
-                vm.error = undefined;
-            }));
-        }).catch((error) => {
-            $log.warn('Error loading activity children deep for entity ' + entityId, error);
-            vm.error = 'Cannot load activities (deep) for entity with ID: ' + entityId;
         });
 
         $scope.$on('$destroy', () => {

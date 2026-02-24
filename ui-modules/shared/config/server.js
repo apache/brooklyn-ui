@@ -30,7 +30,8 @@ dotenv.config({silent: true});
 const HOSTNAME = process.env.HOSTNAME || '0.0.0.0';
 const PORT = process.env.PORT || 8080;
 const API_HOSTNAME = process.env.API_HOSTNAME || HOSTNAME;
-const API_PORT = process.env.API_PORT || '8081';
+const API_PORT_DEFAULT = '8081';
+const API_PORT = process.env.API_PORT || API_PORT_DEFAULT;
 const API_PATH = process.env.API_PATH || '/v1/';
 
 const ENV = process.env.NODE_ENV || 'development';
@@ -43,7 +44,12 @@ app.use(API_PATH, proxy(
     url.parse(`http://${API_HOSTNAME}:${API_PORT}${API_PATH}`)
 ));
 
+let extraMessage = "";
+
+if (API_PORT != API_PORT_DEFAULT) extraMessage += " proxying to port "+API_PORT;
+
 if (DEV) {
+    extraMessage += " in dev mode (hot reload)";
     app.use(
         webpackDevMiddleware(compiler, {
             contentBase: config.output.path,
@@ -69,6 +75,7 @@ app.listen(PORT, (err) => {
             url = url + `:${PORT}`
         }
 
-        console.info(`==> 🌎  Running server with ${ENV} bundle. Open up ${url} in your browser.`)
+        console.info(`==> 🌎  Running UI server${extraMessage}. Open up ${url} in your browser.`)
     }
 });
+

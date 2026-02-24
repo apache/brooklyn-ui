@@ -43,11 +43,11 @@ export function quickLaunchDirective() {
             args: '=?', // default behaviour of code is: { noEditButton: false, noComposerButton: false, noCreateLocationLink: false, location: null }
             callback: '=?',
         },
-        controller: ['$scope', '$http', '$location', 'brSnackbar', 'brBrandInfo' , 'quickLaunchOverrides', controller],
+        controller: ['$scope', '$http', '$location', '$timeout', 'brSnackbar', 'brBrandInfo' , 'quickLaunchOverrides', controller],
         controllerAs: 'vm',
     };
 
-    function controller($scope, $http, $location, brSnackbar, brBrandInfo, quickLaunchOverrides) {
+    function controller($scope, $http, $location, $timeout, brSnackbar, brBrandInfo, quickLaunchOverrides) {
 
         let quickLaunch = this;
 
@@ -94,11 +94,58 @@ export function quickLaunchDirective() {
                 // model.location = locations[0].id; // predefined/uploaded Location objects, ID prop is sufficient
             }
         };
+        quickLaunch.getWidgetKind = (key, configMap, v) => {
+            if (!configMap || !configMap[key]) return undefined;  // ad hoc config?
+            if (configMap[key].json) return 'json';
+            if (v==null && configMap[key].defaults && configMap[key].defaults.length) return 'defaults';
+            return configMap[key].type;
+        }
+        quickLaunch.getDefaultsDropdown = (key, configMap) => {
+            const options = [];
+            const defaults = configMap[key].defaults;
+            options.push({
+                value: null,
+                description: (defaults[0].jsonString || defaults[0].value) + '  ('+defaults[0].source+')',
+            });
+            for (let i=0; i<defaults.length; i++) {
+                if (options.find(x => angular.equals(x.value, defaults[i].value))) {
+                    // skip
+                } else {
+                    options.push({
+                        value: defaults[i].value,
+                        isJson: defaults[i].isJson,
+                        description: 'Use ' + defaults[i].source + ':  ' + (defaults[i].jsonString || defaults[i].value),
+                    });
+                }
+            }
+            options.push({
+                value: '',
+                description: 'Use new value',
+            });
+            return options;
+        }
+        quickLaunch.onDefaultsDropdown = (key, configMap, v) => {
+            if (v==null) return; //nothing to do
+
+            $scope.entityToDeploy['brooklyn.config'][key] = v;  // already done, if coming from dropdown, but no harm
+            for (let opt of configMap[key].defaults) {
+                if (angular.equals(opt.value, v)) {
+                    if (opt.isJson) {
+                        $scope.entityToDeployConfigJson[key] = opt.jsonString;
+                        configMap[key].json = true;
+                    }
+                    return;
+                }
+            }
+            // odd, nothing matched; just ignore
+        }
 
         $scope.formEnabled = true;
         $scope.editorEnabled = !$scope.args.noEditButton;
         $scope.forceFormOnly = false;
         $scope.deploying = false;
+        $scope.composerLink = "#";
+        $scope.composerLinkExpanded = "#";
         $scope.model = {
             newConfigFormOpen: false,
             
@@ -114,21 +161,18 @@ export function quickLaunchDirective() {
         $scope.deleteConfigField = deleteConfigField;
         $scope.deployApp = deployApp;
         $scope.showEditor = showEditor;
-        $scope.openComposer = openComposer;
         $scope.hideEditor = hideEditor;
+        $scope.setComposerLink = setComposerLink;
         $scope.clearError = () => { delete $scope.model.deployError; };
         $scope.transitionsShown = () => $scope.editorEnabled && $scope.formEnabled && !$scope.forceFormOnly;
 
-        $scope.$watch('app', () => {
+        $scope.$watch('app', async () => {
             quickLaunch.loadLocation($scope);
             $scope.clearError();
             $scope.editorYaml = $scope.app.plan.data;
             $scope.editorFormat = quickLaunch.getOriginalPlanFormat();
 
-            let parsedPlan = null;
-            try {
-                parsedPlan = yaml.safeLoad($scope.editorYaml);
-            } catch (e) { /*console.log('Failed to parse YAML', e)*/ }
+            const {parsedPlan, campPlanModified} = await quickLaunch.getAsCampPlan($scope.app.plan);
 
             // enable wizard if it's parseble and doesn't specify a location
             // (if it's not parseable, or it specifies a location, then the YAML view is displayed)
@@ -147,24 +191,66 @@ export function quickLaunchDirective() {
                 $scope.setServiceName = true;
             }
             if ($scope.app.config) {
+                const singleServiceConfig = parsedPlan.services && parsedPlan.services.length === 1 && parsedPlan.services[0][BROOKLYN_CONFIG];
                 $scope.configMap = $scope.app.config.reduce((result, config) => {
                     result[config.name] = config;
+                    result[config.name].defaults = [];
 
-                    let configValue = (parsedPlan[BROOKLYN_CONFIG] || {})[config.name];
-                    if (typeof configValue == 'undefined' && parsedPlan.services.length==1) {
-                        configValue = (parsedPlan.services[0] && parsedPlan.services[0][BROOKLYN_CONFIG] || {})[config.name];
+                    let configValueOuter = (parsedPlan[BROOKLYN_CONFIG] || {})[config.name];
+                    const hasTemplateValueOuter = typeof configValueOuter !== 'undefined';
+                    if (hasTemplateValueOuter) {
+                        result[config.name].defaults.push({
+                            source: 'template default',
+                            value: configValueOuter,
+                        });
                     }
 
-                    if (typeof configValue !== 'undefined') {
-                        $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = configValue;
-                    } else if (config.pinned || (isRequired(config) && (typeof config.defaultValue !== 'undefined'))) {
-                        $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = get(config, 'defaultValue', null);
+                    const hasTemplateValueInner = !campPlanModified && singleServiceConfig && (typeof singleServiceConfig[config.name] != 'undefined');
+                    if (hasTemplateValueInner) {
+                        result[config.name].defaults.push({
+                            source: 'template inner default',
+                            value: singleServiceConfig[config.name],
+                        });
                     }
 
-                    let json = getJsonOfConfigValue($scope.entityToDeploy[BROOKLYN_CONFIG][config.name]);
-                    if (json!=null) {
-                        $scope.entityToDeployConfigJson[config.name] = json;
-                        result[config.name].json = true;
+                    const hasParameterDefault = typeof config.defaultValue !== 'undefined';
+                    if (hasParameterDefault) {
+                        result[config.name].defaults.push({
+                            source: 'parameter default',
+                            value: config.defaultValue,
+                        });
+                    }
+
+                    let atLeastOneJsonValue = false;
+                    result[config.name].defaults.forEach(d => {
+                        let jsonString = getJsonOfConfigValue(d.value);
+                        if (jsonString != null) {
+                            d.isJson = true;
+                            d.jsonString = jsonString;
+
+                            // don't set this yet; it gets set once/if user picks to copy a json value
+                            // result[config.name].json = true;
+
+                            // force dropdown so user knows what they are getting into
+                            atLeastOneJsonValue = true;
+                        }
+                    });
+                    // was (isRequired && hasTemplateDefault) -- but that doesn't make sense (rarely matters as root items are always pinned)
+                    const showPossiblyWithDefaultsDropdown = hasTemplateValueOuter || hasTemplateValueInner || atLeastOneJsonValue || config.pinned || isRequired(config);
+
+                    if (showPossiblyWithDefaultsDropdown) {
+                        // initialize this field so it displays explicitly; null is a good choice because it allows either dropdown or blank if no dropdown
+                        $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = null;
+
+                        // compute dropdowns to show, and if there is exactly one default value (removing duplicates), and if it is editable (not json),
+                        // then don't use the dropdown, set that as the editable value
+                        if (result[config.name].defaults.length) {
+                            result[config.name].defaultsForDropdown = quickLaunch.getDefaultsDropdown(config.name, result);
+                            if (result[config.name].defaultsForDropdown.length-2==1 && !atLeastOneJsonValue) {
+                                // if just one value, and not json then use it
+                                $scope.entityToDeploy[BROOKLYN_CONFIG][config.name] = result[config.name].defaults[0].value;
+                            }
+                        }
                     }
 
                     return result;
@@ -182,7 +268,7 @@ export function quickLaunchDirective() {
         });
 
         // Configure this controller from outside. Customization
-        (quickLaunchOverrides.configureQuickLaunch || function () {})(quickLaunch, $scope, $http);
+        quickLaunchOverrides.configureQuickLaunch(quickLaunch, $scope, $http);
 
         // === Private members below ====================
 
@@ -199,6 +285,7 @@ export function quickLaunchDirective() {
                                 brSnackbar.create('Application Deployed');
                             }
                             $scope.deploying = false;
+                            applyScope();
                         })
                         .catch((senderError) => {
                             // handling API error response. data attribute contains failure message
@@ -354,7 +441,7 @@ export function quickLaunchDirective() {
                     $scope.editorYaml = appPlan.yaml;
                     $scope.editorFormat = appPlan.format || quickLaunch.getOriginalPlanFormat;
                     $scope.yamlViewDisplayed = true;
-                    $scope.$apply(); // making sure that $scope is updated from async context
+                    applyScope();
                 })
                 .catch(error => {
                     console.error('Problem with Editor YAML generation:', error);
@@ -363,31 +450,6 @@ export function quickLaunchDirective() {
 
         function hideEditor() {
             $scope.yamlViewDisplayed = false;
-        }
-
-        function openComposer($event, expanded) {
-            $event.preventDefault();
-            if (!brBrandInfo.blueprintComposerBaseUrl) {
-              console.warn("Composer unavailable in this build");
-              return;
-            }
-            Promise.resolve(quickLaunch.getComposerHref({ expanded, validateYaml: true }))
-                .then(href => {
-                    window.location.href = href;
-                })
-                .catch((error) => {
-                    console.warn("Opening composer in YAML text editor mode because we cannot generate a model for this configuration:", error);
-                    Promise.resolve(quickLaunch.getComposerHref({
-                            expanded, yamlEditor: true, validateYaml: false,
-                            yamlPrefix:
-                            "# This plan may have items which require attention so is being opened in YAML text editor mode.\n"+
-                            "# The YAML was autogenerated by merging the plan with any values provided in UI, but issues were\n"+
-                            "# detected that mean it might not be correct. Please check the blueprint below carefully.\n"+
-                            "\n" }))
-                        .then(query => {
-                            window.location.href = href;
-                        })
-                })
         }
 
         function getPlanObject({expanded, validateYaml=true}) {
@@ -426,7 +488,52 @@ export function quickLaunchDirective() {
             return result + 'graphical?'+stringifyForQuery(plan);
         }
 
-        function convertPlanToPreferredFormat(plan) { return plan; }
+
+        function setComposerLink() {
+            Promise.resolve(getComposerLinkWithFallback(false)).then(href => {
+                $scope.composerLink = href;
+                applyScope();
+            });
+            Promise.resolve(getComposerLinkWithFallback(true)).then(href => {
+                $scope.composerLinkExpanded = href;
+                applyScope();
+            });
+        }
+
+        function applyScope() {  // making sure that $scope is updated from async context
+            $timeout(() => $scope.$apply());
+        }
+
+        function openComposer($event, expanded) {
+            $event.preventDefault();
+            Promise.resolve(getComposerLinkWithFallback(expanded)).then(href => {
+                window.location.href = href;
+            });
+        }
+
+        function getComposerLinkWithFallback(expanded) {
+            if (!brBrandInfo.blueprintComposerBaseUrl) {
+                console.warn("Composer unavailable in this build");
+                return;
+            }
+            return Promise.resolve(quickLaunch.getComposerHref({ expanded, validateYaml: true }))
+                .then(href => {
+                    return href;
+                })
+                .catch((error) => {
+                    console.warn("Will open composer in YAML text editor mode because we cannot generate a model for this configuration:", error);
+                    Promise.resolve(quickLaunch.getComposerHref({
+                        expanded, yamlEditor: true, validateYaml: false,
+                        yamlPrefix:
+                            "# This plan may have items which require attention so is being opened in YAML text editor mode.\n"+
+                            "# The YAML was autogenerated by merging the plan with any values provided in UI, but issues were\n"+
+                            "# detected that mean it might not be correct. Please check the blueprint below carefully.\n"+
+                            "\n" }))
+                        .then(href => {
+                            return href;
+                        })
+                });
+        }
 
         function getOriginalPlanFormat(scope) {
             scope = scope || $scope;

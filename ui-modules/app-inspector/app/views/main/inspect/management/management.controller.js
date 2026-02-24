@@ -19,6 +19,7 @@
 import angular from "angular";
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./management.template.html";
+import {usefulNameFilter} from "../../../../components/adjuncts-list/adjuncts-list";
 
 export const managementState = {
     name: 'main.inspect.management',
@@ -28,8 +29,25 @@ export const managementState = {
     controllerAs: 'vm'
 };
 
+const getUsefulName = usefulNameFilter();
+/**
+ * Filter function generator. Checks if the query string is part of the adjunct item. Comparison ignores leading
+ * or trailing whitespace and is case-sensitive. Checks both the `name` and the `usefulName` as displayed by the
+ * nested `adjuncts-list` directive.
+ * Usage: `filterFor('he')({name: 'hello world', ...}) // returns true`
+ *
+ * @param query substring to search for
+ * @returns {function(adjunct: adjunctEntry): boolean}
+ */
+const filterFor = (query) => (adjunct) =>
+    getUsefulName(adjunct.name || '').trim().includes(query.trim()) ||
+    (adjunct.name || '').trim().includes(query.trim())
+
+
 function managementController($scope, $state, $stateParams, entityApi, catalogApi) {
     $scope.$emit(HIDE_INTERSTITIAL_SPINNER_EVENT);
+    $scope.filterResult = []; // array/subset of vm.adjuncts
+    $scope.filterValue = $stateParams.search || '';
 
     const {
         applicationId,
@@ -110,6 +128,12 @@ function managementController($scope, $state, $stateParams, entityApi, catalogAp
     vm.cancelNewPolicy = function () {
         vm.newPolicy = angular.copy(vm.masterPolicy);
     };
+
+    $scope.$watchGroup(['filterValue', 'vm.adjuncts'], () => {
+        if (vm.adjuncts) {
+            $scope.filterResult = vm.adjuncts.filter(filterFor($scope.filterValue));
+        }
+    });
 
     $scope.$on('$destroy', ()=> {
         observers.forEach((observer)=> {
