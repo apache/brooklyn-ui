@@ -68,6 +68,7 @@ export function logbook() {
         $scope.waitingResponse = false;
         $scope.logtext = '';
         $scope.wordwrap = true;
+        $scope.showOptions = false;
         $scope.logEntries = [];
         $scope.minNumberOfItems = 1;
         $scope.maxNumberOfItems = 10000;
@@ -86,7 +87,8 @@ export function logbook() {
             dateTimeFrom: null,
             dateTimeTo: null,
             numberOfItems: 1000,
-            phrase: ''
+            phrase: '',
+            loggerName: ''
         };
 
         // Define search result filters.
@@ -237,6 +239,7 @@ export function logbook() {
                 tail: $scope.search.latest,
                 recursive: $scope.search.recursive,
                 searchPhrase: $scope.search.phrase,
+                loggerName: $scope.search.loggerName,
                 taskId: $scope.taskId,
                 entityId: $scope.entityId,
                 numberOfItems: $scope.search.numberOfItems,
