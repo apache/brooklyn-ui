@@ -17,6 +17,7 @@
  * under the License.
  */
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
+import {signatureOf} from '../../../../../../util/change-detection.util';
 import template from "./stream.template.html";
 
 export const streamState = {
@@ -44,10 +45,16 @@ export function streamController($scope, $stateParams, activityApi) {
 
     let observers = [];
 
+    let lastActivityData = null;
     activityApi.activity(activityId).then((response)=> {
+        lastActivityData = signatureOf(response.data);
         vm.model.activity = response.data;
         observers.push(response.subscribe((response)=> {
-            vm.model.activity = response.data;
+            const newData = signatureOf(response.data);
+            if (newData !== lastActivityData) {
+                lastActivityData = newData;
+                vm.model.activity = response.data;
+            }
             vm.error = undefined;
         }, (response)=> {
             vm.error = 'Cannot load activity with ID: ' + activityId;

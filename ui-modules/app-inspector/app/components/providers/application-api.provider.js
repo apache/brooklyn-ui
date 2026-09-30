@@ -42,7 +42,8 @@ function ApplicationApi($http) {
         return $http.get('/v1/applications', {observable: true, ignoreLoadingBar: true});
     }
     function getApplicationsTree(opts = {}) {
-        return $http.get('/v1/applications/fetch', {params: opts, observable: true, ignoreLoadingBar: true});
+        //return $http.get('/v1/applications/fetch', {params: opts, observable: true, ignoreLoadingBar: true});
+        return $http.get('/v1/applications/details', {params: opts, observable: true, ignoreLoadingBar: true});
     }
     function getApplication(applicationId) {
         return $http.get('/v1/applications/' + applicationId, {observable: true, ignoreLoadingBar: true});

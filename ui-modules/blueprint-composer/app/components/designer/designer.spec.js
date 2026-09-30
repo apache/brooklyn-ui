@@ -58,7 +58,7 @@ describe('Designer', () => {
         $provide.provider('brBrandInfo', {$get: () => {}}); // Produces 'undefined', not needed just now.
 
         // Dependencies of the designer.
-        $provide.provider('$state', {$get: () => {}}); // Produces 'undefined', not needed just now.
+        $provide.provider('$state', {$get: () => ({go: () => {}})}); // Clicks in the canvas (e.g. confirmation menu) navigate via $state.go.
         $provide.provider('quickLaunchOverrides', quickLaunchOverridesProvider);
         $provide.provider('blueprintService', blueprintServiceProvider);
         $provide.provider('paletteDragAndDropService', paletteDragAndDropServiceProvider);

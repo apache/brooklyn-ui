@@ -17,6 +17,7 @@
  * under the License.
  */
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
+import {signatureOf} from '../../../../../util/change-detection.util';
 import template from "./detail.template.html";
 import {makeTaskStubFromWorkflowRecord} from "../activities.controller";
 import jsyaml from 'js-yaml';
@@ -125,7 +126,16 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                             : 'The workflow is known but this task is no longer stored in memory.'));
                 }
 
+                let lastWorkflowData = null;
                 function processWorkflowData(wResponse2) {
+                    // Skip the reassignment/re-processing (and the digest it triggers) when the
+                    // poll returned the same workflow data as last time.
+                    const newWorkflowData = signatureOf(wResponse2.data);
+                    if (newWorkflowData === lastWorkflowData) {
+                        return;
+                    }
+                    lastWorkflowData = newWorkflowData;
+
                     // change the workflow object so widgets get refreshed
                     vm.model.workflow = { ...vm.model.workflow, data: wResponse2.data };
 
@@ -299,9 +309,16 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                 }
             }
 
+            let lastActivityData = null;
             function saveActivity(response) {
-                vm.model.activity = response.data;
-                onActivityOrWorkflowUpdate();
+                // Skip the reassignment/re-processing (and the digest it triggers) when the
+                // poll returned the same activity data as last time.
+                const newActivityData = signatureOf(response.data);
+                if (newActivityData !== lastActivityData) {
+                    lastActivityData = newActivityData;
+                    vm.model.activity = response.data;
+                    onActivityOrWorkflowUpdate();
+                }
                 vm.error = undefined;
                 vm.errorBasic = false;
             }
@@ -367,7 +384,9 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
             $scope.breadcrumbsExpanded = true;
         }
 
+        let lastActivityChildrenData = null;
         activityApi.activityChildren(activityId).then((response)=> {
+            lastActivityChildrenData = signatureOf(response.data);
             vm.model.activityChildren = processActivityChildren(response.data);
             vm.error = undefined;
             onActivityLoadUpdate();
@@ -376,11 +395,18 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
             // but for now just read them both frequently
             if (!vm.model.activity.endTimeUtc || vm.model.activity.endTimeUtc<0) response.interval(1000);
             observers.push(response.subscribe((response)=> {
-                vm.model.activityChildren = processActivityChildren(response.data);
+                // Skip the reassignment/re-processing (and the digest it triggers) when the
+                // poll returned the same data as last time. Compared against the raw payload,
+                // not vm.model.activityChildren, since processActivityChildren decorates it in place.
+                const newData = signatureOf(response.data);
+                if (newData !== lastActivityChildrenData) {
+                    lastActivityChildrenData = newData;
+                    vm.model.activityChildren = processActivityChildren(response.data);
+                    onActivityLoadUpdate();
+                }
                 if (!vm.errorBasic) {
                     vm.error = undefined;
                 }
-                onActivityLoadUpdate();
             }));
         }).catch((error)=> {
             $log.warn('Error loading activity children  for '+activityId, error);
@@ -388,19 +414,25 @@ function DetailController($scope, $state, $stateParams, $location, $log, $uibMod
                 vm.error = 'Cannot load activity children for activity ID: ' + activityId;
             }
         });
-        
+
+        let lastActivitiesDeepData = null;
         activityApi.activityDescendants(activityId, 8).then((response)=> {
+            lastActivitiesDeepData = signatureOf(response.data);
             vm.model.activitiesDeep = response.data;
             vm.error = undefined;
             onActivityLoadUpdate();
 
             if (!vm.model.activity.endTimeUtc || vm.model.activity.endTimeUtc<0) response.interval(1000);
             observers.push(response.subscribe((response)=> {
-                vm.model.activitiesDeep = response.data;
+                const newData = signatureOf(response.data);
+                if (newData !== lastActivitiesDeepData) {
+                    lastActivitiesDeepData = newData;
+                    vm.model.activitiesDeep = response.data;
+                    onActivityLoadUpdate();
+                }
                 if (!vm.errorBasic) {
                     vm.error = undefined;
                 }
-                onActivityLoadUpdate();
             }));
         }).catch((error)=> {
             $log.warn('Error loading activity children deep for '+activityId, error);

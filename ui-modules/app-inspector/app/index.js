@@ -99,7 +99,7 @@ function applicationConfig($urlRouterProvider, $stateProvider, $logProvider, $co
         .state(streamState);
     $httpProvider.interceptors.push('apiObserverInterceptor');
     // $httpProvider.useApplyAsync(true);  // could be useful if making many small calls
-    apiObserverInterceptorProvider.interval(5000);
+    apiObserverInterceptorProvider.interval(5000); // increased to avoid browser turning slow too fast
 }
 
 function applicationInitialization(editableOptions, editableThemes) {

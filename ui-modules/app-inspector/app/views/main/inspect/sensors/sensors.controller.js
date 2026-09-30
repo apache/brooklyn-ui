@@ -17,6 +17,7 @@
  * under the License.
  */
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
+import {signatureOf} from '../../../../util/change-detection.util';
 import template from "./sensors.template.html";
 
 export const sensorsState = {
@@ -45,22 +46,34 @@ function sensorsController($scope, $stateParams, entityApi) {
         // Currently out of scope
     }
 
+    let lastSensorsData = null;
     entityApi.entitySensorsState(applicationId, entityId).then((response)=> {
+        lastSensorsData = signatureOf(response.data);
         vm.sensors = response.data;
         vm.error.sensors = undefined;
         observers.push(response.subscribe((response)=> {
-            vm.sensors = response.data;
+            const newData = signatureOf(response.data);
+            if (newData !== lastSensorsData) {
+                lastSensorsData = newData;
+                vm.sensors = response.data;
+            }
             vm.error.sensors = undefined;
         }));
     }).catch((error)=> {
         vm.error.sensors =  'Cannot load sensors for entity with ID: ' + entityId;
     });
 
+    let lastSensorsInfoData = null;
     entityApi.entitySensorsInfo(applicationId, entityId).then((response)=> {
+        lastSensorsInfoData = signatureOf(response.data);
         vm.sensorsInfo = response.data;
         vm.error.sensors = undefined;
         observers.push(response.subscribe((response)=> {
-            vm.sensorsInfo = response.data;
+            const newData = signatureOf(response.data);
+            if (newData !== lastSensorsInfoData) {
+                lastSensorsInfoData = newData;
+                vm.sensorsInfo = response.data;
+            }
             vm.error.sensors = undefined;
         }));
     }).catch((error)=> {

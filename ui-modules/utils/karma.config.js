@@ -42,12 +42,12 @@ module.exports = function (config) {
         autoWatch: !PRODUCTION_BUILD,
         singleRun: PRODUCTION_BUILD,
         reporters: ['progress'],
-        browsers: ['PhantomJS'],
+        browsers: ['ChromeHeadless'],
         plugins: [
             require('karma-webpack'),
             require('karma-sourcemap-loader'),
             'karma-jasmine',
-            'karma-phantomjs-launcher'
+            'karma-chrome-launcher'
         ]
     };
     config.set(conf);

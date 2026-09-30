@@ -17,6 +17,7 @@
  * under the License.
  */
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
+import {signatureOf} from '../../../../util/change-detection.util';
 import template from "./activities.template.html";
 
 export const activitiesState = {
@@ -112,6 +113,8 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
 
     let activitiesRawLoadAttemptFinished = false;
     let workflowLoadAttemptFinished = false;
+    let lastActivitiesRawData = null;
+    let lastWorkflowsData = null;
 
     function onStateChange() {
       if ($state.current.name === activitiesState.name && !vm.activities) {
@@ -122,10 +125,17 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
         }
         entityApi.entityActivitiesDeep(applicationId, entityId).then((response) => {
             vm.activitiesDeep = vm.activitiesRaw = response.data;
+            lastActivitiesRawData = signatureOf(response.data);
             mergeActivities();
             observers.push(response.subscribe((response) => {
-                vm.activitiesDeep = vm.activitiesRaw = response.data;
-                mergeActivities();
+                // Skip the reassignment/re-merge (and the digest it triggers) when the
+                // poll returned the same data as last time.
+                const newData = signatureOf(response.data);
+                if (newData !== lastActivitiesRawData) {
+                    lastActivitiesRawData = newData;
+                    vm.activitiesDeep = vm.activitiesRaw = response.data;
+                    mergeActivities();
+                }
                 vm.error = undefined;
             }));
             activitiesRawLoadAttemptFinished = true;
@@ -139,10 +149,15 @@ function ActivitiesController($scope, $state, $stateParams, $log, $timeout, enti
 
         entityApi.getWorkflows(applicationId, entityId).then((response) => {
             vm.workflows = response.data;
+            lastWorkflowsData = signatureOf(response.data);
             mergeActivities();
             observers.push(response.subscribe((response) => {
-                vm.workflows = response.data;
-                mergeActivities();
+                const newData = signatureOf(response.data);
+                if (newData !== lastWorkflowsData) {
+                    lastWorkflowsData = newData;
+                    vm.workflows = response.data;
+                    mergeActivities();
+                }
             }));
             workflowLoadAttemptFinished = true;
             checkTasksLoadAttemptsFinished();

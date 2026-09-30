@@ -33,6 +33,7 @@ import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-sp
 import {RELATIONSHIP_VIEW_DELIMITER, VIEW_PARENT_CHILD} from '../../views/main/main.controller';
 
 const MODULE_NAME = 'inspector.entity.tree';
+import {signatureAppOf} from '../../util/change-detection.util';
 
 angular.module(MODULE_NAME, [brooklynStatus, brWebNotifications])
     .directive('entityTree', entityTreeDirective)
@@ -59,13 +60,17 @@ export function entityTreeDirective() {
         let vm = this;
 
         let observers = [];
+        let lastApplicationsData = null;
 
         applicationApi.applicationsTree({
-            sensors: 'deployment.metadata'
+            //sensors: 'deployment.metadata'
+            depth: -1,
+            // the tree view never reads entity tags (e.g. spec_hierarchy/yaml_spec), which can be
+            // the bulk of the response size since they embed full catalog/type spec text per entity
+            includeTags: false
         }).then((response)=> {
             vm.applications = response.data;
             analyzeRelationships(vm.applications);
-
             observers.push(response.subscribe((response)=> {
                 response.data
                     .filter(x => vm.applications.map(y => y.id).indexOf(x.id) === -1)
@@ -84,8 +89,15 @@ export function entityTreeDirective() {
                         });
                     });
 
-                vm.applications = response.data;
-                analyzeRelationships(vm.applications);
+                // Skip the reassignment/re-analysis (and the digest + re-render it triggers) when the
+                // poll returned the same data as last time. Compared against the raw payload, not
+                // vm.applications, since analyzeRelationships decorates vm.applications in place.
+                const newData = signatureAppOf(response.data);
+                if (newData !== lastApplicationsData) {
+                    lastApplicationsData = newData;
+                    vm.applications = response.data;
+                    analyzeRelationships(vm.applications);
+                }
 
                 function spawnNotification(app, opts) {
                     iconService.get(app).then((icon)=> {

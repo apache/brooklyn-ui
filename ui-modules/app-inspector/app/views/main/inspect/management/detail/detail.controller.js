@@ -19,6 +19,7 @@
 import angular from 'angular';
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import {managementState} from '../management.controller';
+import {signatureOf} from '../../../../../util/change-detection.util';
 import template from './detail.template.html';
 
 const MODULE_NAME = 'brooklyn.views.inspect.management.details';
@@ -60,10 +61,16 @@ export function detailController($scope, $state, $stateParams, entityApi, brSnac
     vm.entityId = entityId;
     vm.adjunctId = adjunctId;
 
+    let lastEntityData = null;
     entityApi.entity(applicationId, entityId).then((response)=> {
+        lastEntityData = signatureOf(response.data);
         vm.entity = response.data;
         observers.push(response.subscribe((response)=> {
-            vm.entity = response.data;
+            const newData = signatureOf(response.data);
+            if (newData !== lastEntityData) {
+                lastEntityData = newData;
+                vm.entity = response.data;
+            }
         }, (response)=> {
             vm.entityNotFound = true;
         }));
@@ -87,24 +94,36 @@ export function detailController($scope, $state, $stateParams, entityApi, brSnac
         return result2;
     }
 
+    let lastAdjunctData = null;
     entityApi.entityAdjunct(applicationId, entityId, adjunctId).then((response)=> {
+        lastAdjunctData = signatureOf(response.data);
         vm.adjunct = response.data;
         vm.highlights = sortHighlights(vm.adjunct.highlights);
         vm.errors.adjunct = undefined;
         observers.push(response.subscribe((response)=> {
-            vm.adjunct = response.data;
-            vm.highlights = sortHighlights(vm.adjunct.highlights);
+            const newData = signatureOf(response.data);
+            if (newData !== lastAdjunctData) {
+                lastAdjunctData = newData;
+                vm.adjunct = response.data;
+                vm.highlights = sortHighlights(vm.adjunct.highlights);
+            }
             vm.errors.adjunct = undefined;
         }));
     }).catch((error)=> {
         vm.errors.adjunct = 'Cannot load adjunct with ID: ' + adjunctId;
     });
 
+    let lastAdjunctActivitiesData = null;
     entityApi.entityAdjunctActivities(applicationId, entityId, adjunctId).then((response)=> {
+        lastAdjunctActivitiesData = signatureOf(response.data);
         vm.activities = response.data;
         vm.errors.activities = undefined;
         observers.push(response.subscribe((response)=> {
-            vm.activities = response.data;
+            const newData = signatureOf(response.data);
+            if (newData !== lastAdjunctActivitiesData) {
+                lastAdjunctActivitiesData = newData;
+                vm.activities = response.data;
+            }
             vm.errors.activities = undefined;
         }));
     }).catch((error)=> {

@@ -20,6 +20,7 @@ import angular from "angular";
 import {HIDE_INTERSTITIAL_SPINNER_EVENT} from 'brooklyn-ui-utils/interstitial-spinner/interstitial-spinner';
 import template from "./management.template.html";
 import {usefulNameFilter} from "../../../../components/adjuncts-list/adjuncts-list";
+import {signatureOf} from '../../../../util/change-detection.util';
 
 export const managementState = {
     name: 'main.inspect.management',
@@ -76,11 +77,17 @@ function managementController($scope, $state, $stateParams, entityApi, catalogAp
         vm.entity = response.data;
     });
 
+    let lastAdjunctsData = null;
     entityApi.entityAdjuncts(applicationId, entityId).then((response)=> {
+        lastAdjunctsData = signatureOf(response.data);
         vm.adjuncts = response.data;
         vm.error.adjuncts = undefined;
         observers.push(response.subscribe((response)=> {
-            vm.adjuncts = response.data;
+            const newData = signatureOf(response.data);
+            if (newData !== lastAdjunctsData) {
+                lastAdjunctsData = newData;
+                vm.adjuncts = response.data;
+            }
             vm.error.adjuncts = undefined;
         }));
     }).catch((error)=> {

@@ -171,9 +171,6 @@ export function MainController($scope, $element, $log, $state, $stateParams, brB
         // 'edit' is the details of an existing blueprint from catalog being edited, which via state parameters are loaded and passed to controller
         // it might be a template in which case we take the values SUGGESTED BY the template and make them _current_
         // or it might be an existing bundle (non-template), in which case we take the values OF the item being edited
-        console.log("EDIT TYPE", edit.type);
-        console.log("VERSIONS", edit.versions);
-        console.log("EDIT", edit);
         vm.saveToCatalogConfig = Object.assign(vm.saveToCatalogConfig, {
             initial: {
                 version: edit.type.version,

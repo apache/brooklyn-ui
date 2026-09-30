@@ -23,6 +23,7 @@ import template from "./summary.template.html";
 import { isSensitiveFieldName } from 'brooklyn-ui-utils/sensitive-field/sensitive-field';
 import { stringify as stringifyForQuery } from 'query-string';
 import jsyaml from 'js-yaml';
+import {signatureOf} from '../../../../util/change-detection.util';
 
 export const summaryState = {
     name: 'main.inspect.summary',
@@ -57,12 +58,17 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
 
     let observers = [];
 
+    let lastEntityData = null;
     entityApi.entity(applicationId, entityId).then((response)=> {
         let set = (response) => {
-            vm.entity = response.data;
-            vm.name = response.data.name;
+            const newData = signatureOf(response.data);
+            if (newData !== lastEntityData) {
+                lastEntityData = newData;
+                vm.entity = response.data;
+                vm.name = response.data.name;
+                iconService.get(response.data, true).then(value => vm.iconUrl = value);
+            }
             vm.error.entity = undefined;
-            iconService.get(response.data, true).then(value => vm.iconUrl = value);
         };
         set(response);
         observers.push(response.subscribe(set));
@@ -170,7 +176,9 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
         vm.refreshConfig();
     }
 
+    let lastSpecListData = null;
     entityApi.entitySpecList(applicationId, entityId).then((response)=> {
+        lastSpecListData = signatureOf(response.data);
         vm.specList = response.data;
         if (!vm.specList || !vm.specList.length) {
           vm.error.specList = 'No blueprint spec available';
@@ -178,7 +186,11 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
           vm.specItem = vm.specList[0];
           vm.error.specList = undefined;
           observers.push(response.subscribe((response)=> {
-            vm.specList = response.data;
+            const newData = signatureOf(response.data);
+            if (newData !== lastSpecListData) {
+                lastSpecListData = newData;
+                vm.specList = response.data;
+            }
             vm.error.specList = undefined;
           }));
         }
@@ -186,54 +198,76 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
         vm.error.specList = 'Cannot load specs for entity with ID: ' + entityId;
     });
 
+    let lastActivitiesData = null;
     entityApi.entityActivities(applicationId, entityId).then((response)=> {
+        lastActivitiesData = signatureOf(response.data);
         vm.activities = parseActivitiesResponse(response.data);
         vm.error.activities = undefined;
         observers.push(response.subscribe((response)=> {
-            vm.activities = parseActivitiesResponse(response.data);
+            const newData = signatureOf(response.data);
+            if (newData !== lastActivitiesData) {
+                lastActivitiesData = newData;
+                vm.activities = parseActivitiesResponse(response.data);
+            }
             vm.error.activities = undefined;
         }));
     }).catch((error)=> {
         vm.error.activities = 'Cannot load activities for entity with ID: ' + entityId;
     });
 
+    let lastSensorsData = null;
     entityApi.entitySensorsState(applicationId, entityId).then((response)=> {
+        lastSensorsData = signatureOf(response.data);
         vm.sensors = response.data;
         vm.error.sensors = undefined;
         observers.push(response.subscribe((response)=> {
-            vm.sensors = response.data;
+            const newData = signatureOf(response.data);
+            if (newData !== lastSensorsData) {
+                lastSensorsData = newData;
+                vm.sensors = response.data;
+            }
             vm.error.sensors = undefined;
         }));
     }).catch((error)=> {
         vm.error.sensors = 'Cannot load sensors for entity with ID: ' + entityId;
     });
 
+    let lastSensorsInfoData = null;
     entityApi.entitySensorsInfo(applicationId, entityId).then((response)=> {
+        lastSensorsInfoData = signatureOf(response.data);
         vm.sensorsInfo = response.data;
         vm.error.sensors = undefined;
         observers.push(response.subscribe((response)=> {
-            vm.sensorsInfo = response.data;
+            const newData = signatureOf(response.data);
+            if (newData !== lastSensorsInfoData) {
+                lastSensorsInfoData = newData;
+                vm.sensorsInfo = response.data;
+            }
             vm.error.sensors = undefined;
         }));
     }).catch((error)=> {
         vm.error.sensors = 'Cannot load sensors information for entity with ID: ' + entityId;
     });
 
+    let lastPoliciesData = null;
     entityApi.entityPolicies(applicationId, entityId).then((response)=> {
-        // vm.policies = response.data;
         // TODO: Replace once the new adjunct endpoint has been merged
+        lastPoliciesData = signatureOf(response.data);
         vm.policies = response.data.map(policy => {
             policy.type = 'policy';
             return policy;
         });
         vm.error.policies = undefined;
         observers.push(response.subscribe((response)=> {
-            // vm.policies = response.data;
-            // TODO: Replace once the new adjunct endpoint has been merged
-            vm.policies = response.data.map(policy => {
-                policy.type = 'policy';
-                return policy;
-            });
+            const newData = signatureOf(response.data);
+            if (newData !== lastPoliciesData) {
+                lastPoliciesData = newData;
+                // TODO: Replace once the new adjunct endpoint has been merged
+                vm.policies = response.data.map(policy => {
+                    policy.type = 'policy';
+                    return policy;
+                });
+            }
             vm.error.policies = undefined;
         }));
     }).catch((error)=> {
@@ -244,10 +278,16 @@ export function summaryController($scope, $state, $stateParams, $q, $http, $http
         vm.metadata = response.data;
     });
 
+    let lastLocationsData = null;
     entityApi.entityLocations(applicationId, entityId).then(response => {
+        lastLocationsData = signatureOf(response.data);
         parseLocationsResponse(response.data);
         observers.push(response.subscribe(response => {
-            parseLocationsResponse(response.data);
+            const newData = signatureOf(response.data);
+            if (newData !== lastLocationsData) {
+                lastLocationsData = newData;
+                parseLocationsResponse(response.data);
+            }
         }));
     }).catch(error => {
         vm.error.location = 'Cannot load location for entity with ID: ' + entityId;

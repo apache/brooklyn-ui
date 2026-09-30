@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import {signatureOf} from '../../../util/change-detection.util';
 import template from "./inspect.template.html";
 import addChildModalTemplate from "./add-child-modal.template.html";
 import runWorkflowModalTemplate from "./run-workflow-modal.template.html";
@@ -40,10 +41,16 @@ export function inspectController($scope, $state, $stateParams, $uibModal, brSna
     vm.entityNotFound = false;
 
     let observers = [];
+    let lastEntityData = null;
     entityApi.entity(applicationId, entityId).then((response)=> {
+        lastEntityData = signatureOf(response.data);
         vm.entity = response.data;
         observers.push(response.subscribe((response)=> {
-            vm.entity = response.data;
+            const newData = signatureOf(response.data);
+            if (newData !== lastEntityData) {
+                lastEntityData = newData;
+                vm.entity = response.data;
+            }
         }, (response)=> {
             vm.entityNotFound = true;
         }));
