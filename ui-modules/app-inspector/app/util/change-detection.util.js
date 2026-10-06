@@ -25,6 +25,19 @@ export function signatureOf(data) {
     return JSON.stringify(data);
 }
 
+/**
+ * Signature of an applications tree response. Must cover every field the entity tree renders
+ * (status icon, name, popover, relationship views) for every entity at every depth, otherwise
+ * changes deeper in the tree (e.g. a child going STARTING -> RUNNING) are never re-rendered.
+ */
 export function signatureAppOf(data) {
-    return JSON.stringify(data.map(a => [a.id, a.serviceUp, a.children ? a.children.length : 0]));
+    return JSON.stringify(signatureEntitiesOf(data));
+}
+
+function signatureEntitiesOf(entities) {
+    if (!Array.isArray(entities)) {
+        return null;
+    }
+    return entities.map(e => [e.id, e.name, e.type, e.serviceUp, e.serviceState, e.iconUrl, e.description,
+        e.relations, e.sensors, signatureEntitiesOf(e.children), signatureEntitiesOf(e.members)]);
 }
