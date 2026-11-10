@@ -69,3 +69,14 @@
   vertical-align: baseline;
   padding: 1px 6px;
 }
+
+// On the two-column layout keep the detail pane in view and let it scroll independently of the app list
+@media (min-width: @screen-md-min) {
+  .entity-detail-pane {
+    position: sticky;
+    top: 10px;
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
